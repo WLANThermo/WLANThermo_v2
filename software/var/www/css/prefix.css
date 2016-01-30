@@ -1,0 +1,510 @@
+body{
+margin:0;
+margin-bottom:10px;
+padding:0;
+color:#000000;
+background:url("../images/grau5x5cm.jpg");
+font-family:OptimusPrincepsSemiBold;
+font-size:11px;
+}
+
+input{
+border:0px dashed #7A6369;
+background:url("../images/beige5x5cm.jpg");
+}
+
+select{
+border:0px dashed #7A6369;
+background:url("../images/beige5x5cm.jpg");
+}
+
+/* Zusätzliche Schriften einbinden ################################################################################ */
+
+@font-face{
+font-family:"OptimusPrinceps";
+src:local("OptimusPrinceps"),url("../font/OptimusPrinceps.ttf")format("TrueType");
+}
+
+@font-face{
+font-family: "OptimusPrincepsSemiBold"; 
+src: local("OptimusPrincepsSemiBold"),
+url("../font/OptimusPrincepsSemiBold.ttf")
+format("TrueType")
+}
+
+/* ################################################################################################################ */
+
+#wrapper{
+color:#000000;
+margin:20px auto 0 auto;
+padding:0px;
+background:url("../images/beige5x5cm.jpg");
+width:900px;
+}
+
+#header{
+float:left;
+margin:10px;
+background:url("../images/grau5x5cm.jpg");
+height:120px;
+width:120px;
+}
+
+#header_logo{
+background:url("../images/celsius.png");
+height:120px;
+width:120px;
+}
+
+#header_title{
+margin:0px;
+margin-top:20px;
+background:url("../images/WLANThermometer.png");
+margin-left:190px;
+padding:0 0 0 0;
+color:#000000;
+height:68px;
+width:700px;
+}
+
+#main{
+position:relative;
+margin:10px;
+font-family:verdana;
+font-size:11px;
+}
+
+#content{
+margin:0 0 0 0;
+border-style:none;
+border-width:0 0px 0px 0;
+color:#000000;
+font-family:verdana;
+font-size:11px;
+}
+#content .inner{
+margin:0px 0px 0px 0px;
+}
+
+#mainmenu{
+margin:10px;
+margin-left:190px;
+margin-top:6px;
+padding:0 0 0 0;
+font-family:chintzy;
+color:#000000;
+}
+
+input, textarea, select{
+font-family:verdana;
+font-size:10px;
+padding:2px;
+}
+
+td.mainmenu{
+color:#000000;
+font-family:verdana;
+font-size:15px;
+}
+
+td{
+font-family:verdana;
+font-size:11px;
+}
+
+h1{
+font-family:verdana;
+font-size:20px;
+text-align:center;
+color:#000000;
+}
+
+input.submit{
+font-family:verdana;
+font-size:10px;
+border-color:#ff0000;
+border-width:1px;
+border-style:dotted;
+background-color:#dddddd;
+padding:4px;
+}
+
+/* ################################################################################################################ */
+
+/* CSS Regeln für <a> Elemente im Menü ########################################################################### */
+
+a.mainmenu:link, a.mainmenu:visited, a.mainmenu:hover{
+color:#000000;
+font-family:OptimusPrinceps;
+font-size:20px;
+font-weight:bold;
+text-decoration:none;
+padding:2px 5px 2px 5px;
+}
+
+a.mainmenu:hover{
+text-decoration:underline;
+}
+
+/* ################################################################################################################ */
+
+/* CSS Regeln für Lederoptik (Naht,Rundung,Schatten ############################################################### */
+
+#header,#mainmenu, #wrapper, #info_site, #ThermoPlot, #main, #thermolog, .channel_view, .small, .middle{
+border-style:solid;
+border-width:26px 26px 27px;
+-moz-border-image:url(../images/border.png) 26 26 27 round;
+-webkit-border-image:url(../images/border.png) 26 26 27 round;
+-o-border-image:url(../images/border.png) 26 26 27 round;
+border-image:url(../images/border.png) 26 26 27 fill round;
+}
+
+#header, #wrapper, #info_site, #ThermoPlot, #thermolog, .channel_view, .small, .middle{
+/*border-radius*/
+-webkit-border-radius:15px;
+   -moz-border-radius:15px;
+        border-radius:15px; 
+/*box-shadow*/
+-webkit-box-shadow:4px 4px 10px rgba(43, 50, 50, 1);
+   -moz-box-shadow:4px 4px 10px rgba(43, 50, 50, 1);
+        box-shadow:4px 4px 10px rgba(43, 50, 50, 1);
+}
+
+/* ################################################################################################################ */
+
+/* CSS Regeln für die INFO/&/new_log_file Seite ################################################################### */
+
+#info_site{
+float:left;
+margin-top:510px;
+margin:10px;
+color:#FFFFFF;
+width:400px;
+background:url("../images/grau5x5cm.jpg");
+}
+
+div#info_site b{ /* CSS Regel für <b> - Elemente in der Info */
+color:#FFC000; /* Schriftfarbe für <b> - Element */
+}
+
+#info_site_gutglut{
+margin-top:0px;
+margin-left:530px;
+width:235px;
+height:112px;
+background:url("../images/GutGlut.png");
+}
+
+#info_site_gutglut_{
+width:235px;
+height:400px;
+}
+
+#info_site p{ /* CSS Regel für <p> - Elemente in der Info */
+text-align:center;
+font-size:16px;
+line-height:0.75;
+}
+
+#new_log_file_site h1, #info_site h1, #shutdown h1, #thermolog h1{ /* CSS Regel für <h1> - Element in der new_log_file/info Seite */
+text-align:center;
+font-size:24px;
+font-weight:bold;
+line-height:0.75;
+}
+
+#info_site h1{
+color:#FFC000;
+}
+
+#new_log_file_site p, #shutdown p, #thermolog p{ /* CSS Regel für <p> - Elemente in der new_log_file Seite */
+text-align:left;
+font-size:16px;
+line-height:0.75;
+margin-left:30px;
+}
+/* ################################################################################################################ */
+
+/* Anzeige für die index.php ###################################################################################### */
+
+.last_measure_view{ /* CSS Regel für die "Letzte Messung am */
+margin-top:10px;
+margin-right:10px;
+text-align:right;
+font-size:14px;
+float:right;
+padding:0 0 15px 0;
+}
+.last_regulation_view{ /* CSS Regel für die "Letzte Regelung am */
+margin-top:10px;
+margin-left:10px;
+text-align:left;
+float:left;
+font-size:14px;
+padding:0 0 15px 0;
+}
+.clear{
+clear:both;
+}
+.channel_view{ /* Anzeige für die einzelnen Kanäle */
+position:relative;
+margin:10px;
+padding:0 0 0 0;
+left:0px;
+top:0px;
+background:url("../images/grau5x5cm.jpg");
+height:60px;
+}
+.channel_name{ /* Anzeige für die Beschriftung der Kanäle */
+position:relative;
+height:25px;
+line-height:4px;
+text-align:center;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:16px;
+font-weight:bold;
+color:#FFC000;
+}
+.temperature_indicator, .temperature_indicator_red, .temperature_indicator_blue{ /* Anzeige der Temperatur */
+position:absolute;
+left:22px;
+top:25px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:22px;
+font-weight:bold;
+color:#FFFFFF;
+line-height:140%;
+letter-spacing:1px;
+}
+.temperature_indicator_red{ /* Anzeige der Temperatur bei Überschreitung */
+color:#FF0000;
+}
+.temperature_indicator_blue{ /* Anzeige der Temperatur bei Unterschreitung */
+color:#0000FF;
+}
+.headicon_left{ /* Icon's oben links ausrichten */
+position:absolute;
+left:12px;
+top:-4px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:12px;
+font-weight:bold;
+line-height:4px;
+color:#FFFFFF;
+}
+.pitmaster_left{ /* Icon's oben links ausrichten */
+position:absolute;
+top:0px;
+left:32px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:14px;
+font-weight:bold;
+line-height:4px;
+color:#FFFFFF;
+}
+.tempmm{
+position:absolute;
+right:10px;
+top:32px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:12px;
+color:#FFFFFF;
+line-height:140%;
+letter-spacing:1px;
+}
+.webalert{
+position:absolute;
+right:12px;
+top:32px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:22px;
+font-weight:bold;
+color:#000000;
+line-height:140%;
+letter-spacing:1px;
+}
+/* ################################################################################################################ */
+
+/* CSS Regeln für die Plotanzeige ################################################################################# */
+
+#ThermoPlot{
+background:url("../images/beige5x5cm.jpg");
+height:350px;
+margin:10px;
+}
+IMG#ThermoPlot{
+display:block;
+margin-left:auto;
+margin-right:auto;
+}
+/* ################################################################################################################ */
+
+/* CSS Regeln für die Webcamanzeige ############################################################################### */
+
+.webcam{
+width:700px;
+height:350px;
+margin:0 auto;
+}
+/* ################################################################################################################ */
+
+/* CSS Regeln für die config.php ################################################################################## */
+.headline{ /* Ãœberschrift der Konfigurationsfelder */
+position:relative;
+height:25px;
+width:650px;
+line-height:4px;
+text-align:center;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:16px;
+font-weight:bold;
+color:#FFC000;
+}
+.headicon{ /* Icon's oben rechts ausrichten */
+position:absolute;
+right:0px;
+line-height:4px;
+top:-4px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:14px;
+font-weight:bold;
+color:#FFFFFF;
+}
+.config{
+position:relative;
+margin:auto;
+left:0px;
+top:0px;
+width:650px;
+}
+.config_text{
+position:absolute;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:15px;
+font-weight:bold;
+color:#FFFFFF;
+line-height:140%;
+letter-spacing:1px;
+}
+.row_1{
+top:32px;
+}
+.row_2{
+top:57px;
+}
+.row_3{
+top:82px;
+}
+.row_4{
+top:107px;
+}
+.col_1{
+left:12px;
+}
+.col_2{
+left:155px;
+}
+.col_3{
+right:380px;
+}
+.col_4{
+left:285px;
+}
+.col_5{
+right:250px;
+}
+.col_6{
+left:445px;
+}
+.col_7{
+right:12px;
+}
+.small{
+height:100px;
+background:url("../images/grau5x5cm.jpg");
+}
+.middle{
+height:125px;
+background:url("../images/grau5x5cm.jpg");
+}
+/* ################################################################################################################ */
+
+/* CSS Regeln für die Thermolog.php ############################################################################### */
+
+#thermolog{
+background:url("../images/grau5x5cm.jpg");
+color:#FFFFFF;
+margin:20px;
+font-size:14px;
+font-weight:bold;
+}
+#thermolog h1{
+color:#FFC000;/* Schriftfarbe für <h1> - Element */
+}
+#thermolog tr{
+height:26px;
+padding:0px;
+margin:0px;
+font-size:12px;
+}
+#thermolog td{
+padding:0px;
+margin:0px;
+font-size:12px;
+}
+#thermolog table{
+margin-top:10px;
+width:650px;
+vertical-align:middle;
+text-align:center;
+margin-left:auto;
+margin-right:auto;
+}
+#thermolog a{
+color:#FFC000;
+}
+#thermolog tr:nth-child(even) a{
+color:#000000;
+}
+#thermolog td:first-child{
+text-align:left;
+padding-left:12px;
+}
+#thermolog thead{
+background-image:url(../images/beige5x5cm.jpg);
+color:#000000;
+}
+#thermolog tfoot{
+background-color:rgba(0,0,0, .0);
+}
+#thermolog tr:nth-child(even){
+background-image:url(../images/beige5x5cm.jpg);
+color:#000000;
+}
+/* ################################################################################################################ */
+
+/* CSS Regeln für die Buttons ##################################################################################### */
+
+.button_beige{
+height:80px;
+width:160px;
+font-family:Verdana,sans;
+font-size:11px;
+color:#000000;
+background-image:url(../images/beige5x5cm.jpg);
+cursor:pointer;
+border-style:solid;
+border-width:26px 26px 27px;
+-moz-border-image:url(../images/border.png) 26 26 27 round;
+-webkit-border-image:url(../images/border.png) 26 26 27 round;
+-o-border-image:url(../images/border.png) 26 26 27 round;
+border-image:url(../images/border.png) 26 26 27 fill round;
+/*border-radius*/
+-webkit-border-radius:15px;
+   -moz-border-radius:15px;
+        border-radius:15px;
+/*box-shadow*/
+-webkit-box-shadow:4px 4px 10px rgba(43, 50, 50, 1);
+   -moz-box-shadow:4px 4px 10px rgba(43, 50, 50, 1);
+        box-shadow:4px 4px 10px rgba(43, 50, 50, 1);
+}

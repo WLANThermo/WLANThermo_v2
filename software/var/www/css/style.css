@@ -1,0 +1,859 @@
+body{
+	margin:0;
+	margin-bottom:10px;
+	padding:0;
+	color:#000000;
+	background:url("../images/grau5x5cm.jpg");
+	font-family:OptimusPrincepsSemiBold;
+	font-size:11px;
+}
+
+input, select{
+	border:0px dashed #7A6369;
+	background:url("../images/beige5x5cm.jpg");
+}
+
+input, textarea, select{
+	font-family:verdana;
+	font-size:10px;
+	padding:2px;
+}
+/* Zusätzliche Schriften einbinden ################################################################################ */
+
+@font-face{
+	font-family:"OptimusPrinceps";
+	src:local("OptimusPrinceps"),url("../font/OptimusPrinceps.ttf")format("TrueType");
+}
+
+@font-face{
+	font-family: "OptimusPrincepsSemiBold"; 
+	src: local("OptimusPrincepsSemiBold"),
+	url("../font/OptimusPrincepsSemiBold.ttf")
+	format("TrueType")
+}
+
+/* ################################################################################################################ */
+
+#wrapper{
+color:#000000;
+margin:20px auto 0 auto;
+padding:0px;
+background:url("../images/beige5x5cm.jpg");
+width:900px;
+}
+
+#header{
+float:left;
+margin:10px;
+background:url("../images/grau5x5cm.jpg");
+height:120px;
+width:120px;
+}
+
+#header_logo{
+background:url("../images/celsius.png");
+height:120px;
+width:120px;
+}
+
+#header_title{
+margin:0px;
+margin-top:20px;
+background:url("../images/WLANThermometer.png");
+margin-left:190px;
+padding:0 0 0 0;
+color:#000000;
+height:68px;
+width:700px;
+}
+
+#main{
+position:relative;
+margin:10px;
+font-family:verdana;
+font-size:11px;
+}
+
+#content{
+margin:0 0 0 0;
+border-style:none;
+border-width:0 0px 0px 0;
+color:#000000;
+font-family:verdana;
+font-size:11px;
+}
+#content .inner{
+margin:0px 0px 0px 0px;
+}
+
+#mainmenu{
+margin-left:190px;
+margin-top:3px;
+margin-bottom:0px;
+margin-right:0px;
+height:38px;
+padding:0 0 0 0;
+font-family:chintzy;
+color:#000000;
+}
+
+img{ 
+border: 0; 
+}
+
+nav {
+background-color: transparent;    
+}
+nav ul {
+    padding: 0px;
+    margin: 0px;
+}
+
+nav ul:after {
+    clear: both;
+    content: " ";
+    display: block;
+    font-size: 0;
+    height: 0;
+    visibility: hidden;
+}
+nav ul li {
+	list-style: none;
+    position:relative;
+	float:right;
+}
+
+nav ul li:last-child {
+	list-style: none;
+    position:relative;
+	float:left;
+}
+
+nav ul li a {
+    text-decoration: none;
+    display: block;
+    color: #333;
+    padding: 14px 24px 14px 24px;
+    -webkit-transition: background 0.3s ease-out 0s;
+    -moz-transition: background 0.3s ease-out 0s;
+    -o-transition: background 0.3s ease-out 0s;
+    transition: background 0.3s ease-out 0s;
+}
+
+nav ul li.shutdown_menu:hover a, nav ul li.shutdown_menu:hover > ul li a  {
+    background-color: #E9B20E;
+}
+
+nav ul li.shutdown_menu{
+padding:0px;
+}
+nav ul li:hover > a {
+    color: #FAFAFA;
+}
+nav ul li ul li a {
+    color: #FAFAFA;
+}
+nav ul li ul li a:hover{
+    color: #333;
+    background-color: #FAFAFA !important;
+}
+nav ul li:hover > ul {
+    visibility: visible;
+}
+
+nav ul li ul{
+	font-family:verdana;
+	font-size:13px;
+    display: inline;
+    visibility: hidden;
+    position: absolute;
+	right:0px;
+    padding:0px;
+}
+#newlogmenu{
+	height:34px;
+	padding-top:8px;
+}
+
+#newlogmenu a{
+	padding:0px;
+	margin:0px;
+}
+
+nav ul li ul li{
+    float: none;
+}
+
+h1{
+	font-family:verdana;
+	font-size:20px;
+	text-align:center;
+	color:#000000;
+}
+
+input.submit{
+font-family:verdana;
+font-size:10px;
+border-color:#ff0000;
+border-width:1px;
+border-style:dotted;
+background-color:#dddddd;
+padding:4px;
+}
+
+.linie{
+border:none;
+border-top: 1px solid #FFC000;
+border-bottom: 1px solid #E9B20E;
+-webkit-border-radius: 1px;
+-moz-border-radius: 1px;
+border-radius: 1px;
+ opacity: 0.8;
+ filter: alpha(opacity=80);
+height: 0px;
+margin: 0px 65px 0px 65px;
+}
+
+/* ################################################################################################################ */
+
+/* CSS Regeln für <a> Elemente im Menü ########################################################################### */
+
+a.mainmenu:link, a.mainmenu:visited, a.mainmenu:hover{
+color:#000000;
+font-family:OptimusPrinceps;
+font-size:20px;
+font-weight:bold;
+text-decoration:none;
+padding:2px 5px 2px 5px;
+}
+
+
+a.mainmenu:hover{
+text-decoration:underline;
+}
+
+/* ################################################################################################################ */
+
+/* CSS Regeln für Lederoptik (Naht,Rundung,Schatten ############################################################### */
+
+#header,#mainmenu, #wrapper, #info_site, #ThermoPlot, #new_log_file_site, #main, #thermolog, #shutdown,#webcam1,#raspicam1, .wifi_site, .infofield, .channel_view, .small, .middle, .little , .big{
+border-style:solid;
+border: 1px solid rgba(255, 0, 0, .0);
+border-width:26px 26px 27px;
+border-image:url(../images/border.png) 26 26 27 fill round;
+-moz-border-image:url(../images/border.png) 26 26 27 round;
+-webkit-border-image:url(../images/border.png) 26 26 27 round;
+-o-border-image:url(../images/border.png) 26 26 27 round;
+}
+
+#header, #wrapper, #info_site, #new_log_file_site, #ThermoPlot, #thermolog, #shutdown ,#webcam1,#raspicam1,.wifi_site, .infofield, .channel_view, .small, .middle, .little, .big{
+/*border-radius*/
+-webkit-border-radius:15px;
+   -moz-border-radius:15px;
+        border-radius:15px; 
+}
+
+#header, #wrapper, #info_site, #new_log_file_site, #thermolog, #shutdown , .infofield, .channel_view, .small, .middle, .little, .big, .wifi_site{
+/*box-shadow*/
+-webkit-box-shadow:4px 4px 10px rgba(43, 50, 50, 1);
+   -moz-box-shadow:4px 4px 10px rgba(43, 50, 50, 1);
+        box-shadow:4px 4px 10px rgba(43, 50, 50, 1);
+}
+
+#info_site, #new_log_file_site, #shutdown, .infofield, .wifi_site{ /* Lederhintergrund Grau */
+background:url("../images/grau5x5cm.jpg");
+}
+
+/* ################################################################################################################ */
+#config, #new_log_file_site, #shutdown, #info_site, .infofield, .wifi_site{
+margin:30px 10px 10px 10px;
+color:#FFFFFF;
+}
+
+/* CSS Regeln für die INFO/&/new_log_file Seite ################################################################### */
+ 
+/* ---------------------------------------------------------------*/
+#info_site{
+
+  z-index: 1;
+}
+
+#info_site2{
+position:absolute;
+  z-index: 2;
+}
+
+
+#info_site_left{
+height: 600px;
+float: left;
+width: 50%;
+color:#FFFFFF;
+margin-right:-2px;
+border: none;
+border-right: 1px solid rgba(255, 192, 0, .75);
+border-radius: 1px;
+}
+
+#info_site_right{
+height: 600px;
+float: right;
+width: 50%;
+margin-left:-2px;
+border: none;
+border-left: 1px solid rgba(255, 192, 0, .75);
+border-radius: 1px;
+position: relative;
+}
+
+div#info_site b{ /* CSS Regel für <b> - Elemente in der Info */
+font-size:16px;
+text-align:center;
+color:#FFC000; /* Schriftfarbe für <b> - Element */
+}
+
+#info_site_gutglut{
+margin: auto;
+margin-bottom: 0px;
+position: absolute;
+bottom: 0;
+width:100%;
+height:112px;
+background:url("../images/GutGlut.png")no-repeat center;
+}
+
+#info_site p{ /* CSS Regel für <p> - Elemente in der Info */
+text-align:center;
+font-size:16px;
+line-height:0.75;
+}
+
+#new_log_file_site h1, #info_site h1, #shutdown h1, #thermolog h1, #config h1, .wifi_header h1{ /* CSS Regel für <h1> - Element in der new_log_file/info Seite */
+font-family:OptimusPrincepsSemiBold;
+text-align:center;
+font-size:26px;
+font-weight:bold;
+line-height:0.75;
+}
+
+#info_site h1, #new_log_file_site h1, #shutdown h1, .wifi_header h1{
+color:#FFC000;
+}
+#config h1{
+color:#000000;
+}
+
+#new_log_file_site p, #shutdown p{ /* CSS Regel für <p> - Elemente in der new_log_file Seite */
+text-align:left;
+font-size:16px;
+line-height:0.75;
+margin-left:30px;
+}
+#thermolog p{
+text-align:right;
+font-size:16px;
+line-height:0.75;
+margin-right:30px;
+}
+
+/* ################################################################################################################ */
+
+/* Anzeige für die index.php ###################################################################################### */
+
+.last_measure_view{ /* CSS Regel für die "Letzte Messung am */
+margin-top:10px;
+margin-right:20px;
+text-align:left;
+font-size:14px;
+float:right;
+padding:0 0 15px 0;
+}
+.last_regulation_view{ /* CSS Regel für die "Letzte Regelung am */
+margin-top:10px;
+margin-left:20px;
+text-align:left;
+float:left;
+font-size:14px;
+padding:0 0 15px 0;
+}
+.clear{
+clear:both;
+}
+.channel_view{ /* Anzeige für die einzelnen Kanäle */
+position:relative;
+margin:10px;
+padding:0 0 0 0;
+left:0px;
+top:0px;
+background:url("../images/grau5x5cm.jpg");
+height:60px;
+}
+.channel_name{ /* Anzeige für die Beschriftung der Kanäle */
+position:relative;
+height:25px;
+line-height:4px;
+text-align:center;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:16px;
+font-weight:bold;
+color:#FFC000;
+}
+.temperature_indicator, .temperature_indicator_red, .temperature_indicator_blue{ /* Anzeige der Temperatur */
+position:absolute;
+left:22px;
+top:25px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:22px;
+font-weight:bold;
+color:#FFFFFF;
+line-height:140%;
+letter-spacing:1px;
+}
+.temperature_indicator_red{ /* Anzeige der Temperatur bei Überschreitung */
+color:#FF0000;
+}
+.temperature_indicator_blue{ /* Anzeige der Temperatur bei Unterschreitung */
+color:#0000FF;
+}
+.headicon_left{ /* Icon's oben links ausrichten */
+position:absolute;
+left:12px;
+top:-4px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:12px;
+font-weight:bold;
+line-height:4px;
+color:#FFFFFF;
+}
+.pitmaster_left{ /* Icon's oben links ausrichten */
+position:absolute;
+top:0px;
+left:32px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:14px;
+font-weight:bold;
+line-height:4px;
+color:#FFFFFF;
+}
+.tempmm{
+position:absolute;
+right:10px;
+top:32px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:12px;
+color:#FFFFFF;
+line-height:140%;
+letter-spacing:1px;
+}
+.webalert{
+position:absolute;
+left:150px;
+top:22px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:22px;
+font-weight:bold;
+color:#000000;
+line-height:140%;
+letter-spacing:1px;
+}
+/* ################################################################################################################ */
+
+/* CSS Regeln für die Plotanzeige ################################################################################# */
+
+#ThermoPlot{
+height:350px;
+width:92%;
+margin:10px;
+}
+IMG#ThermoPlot{
+display:block;
+margin-left:auto;
+margin-right:auto;
+}
+/* ################################################################################################################ */
+
+/* CSS Regeln für die Webcamanzeige ############################################################################### */
+
+#webcam1, #raspicam1{
+width:92%;
+margin:10px;
+}
+IMG#webcam, IMG#raspicam{
+max-width:98%;
+display:block;
+margin-left:auto;
+margin-right:auto;
+}
+
+/* ################################################################################################################ */
+
+/* CSS Regeln für die config.php ################################################################################## */
+
+.config{
+position:relative;
+margin:auto;
+left:0px;
+top:0px;
+
+}
+
+.headline{ /* Überschrift der Konfigurationsfelder */
+position:relative;
+height:25px;
+line-height:4px;
+text-align:center;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:16px;
+font-weight:bold;
+color:#FFC000;
+}
+
+.headicon{ /* Icon's oben rechts ausrichten */
+position:absolute;
+right:0px;
+line-height:4px;
+top:-4px;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:14px;
+font-weight:bold;
+color:#FFFFFF;
+}
+
+.config_text{
+position:absolute;
+font-family:Verdana,Arial,Helvetica,sans-serif;
+font-size:15px;
+font-weight:bold;
+color:#FFFFFF;
+line-height:140%;
+letter-spacing:1px;
+}
+
+.row_1{
+top:32px;
+}
+
+.row_2{
+top:57px;
+}
+
+.row_3{
+top:82px;
+}
+
+.row_4{
+top:107px;
+}
+
+.row_5{
+top:132px;
+}
+
+.row_6{
+top:157px;
+}
+
+.row_7{
+top:182px;
+}
+
+.row_8{
+top:207px;
+}
+
+.col_1{
+left:8px;
+}
+
+.col_1_5{
+left:80px;
+}
+
+.col_2{
+left:155px;
+}
+
+.col_3{
+right:555px;
+}
+
+.col_4{
+left:285px;
+}
+
+.col_5{
+right:420px;
+}
+
+.col_6{
+left:545px;
+}
+
+.col_7{
+right:8px;
+}
+
+.small{
+height:100px;
+background:url("../images/grau5x5cm.jpg");
+margin-bottom: 12px;
+}
+
+.middle{
+height:125px;
+background:url("../images/grau5x5cm.jpg");
+margin-bottom: 12px;
+}
+.big{
+height:200px;
+background:url("../images/grau5x5cm.jpg");
+margin-bottom: 12px;
+}
+
+.little{
+height:50px;
+background:url("../images/grau5x5cm.jpg");
+margin-bottom: 12px;
+}
+/* ################################################################################################################ */
+
+/* CSS Regeln für die Thermolog.php ############################################################################### */
+
+#thermolog{
+background:url("../images/grau5x5cm.jpg");
+color:#FFFFFF;
+margin:30px 10px 10px 10px;
+font-size:14px;
+font-weight:bold;
+}
+
+#thermolog h1{
+color:#FFC000;/* Schriftfarbe für <h1> - Element */
+}
+
+#thermolog tr{
+height:26px;
+padding:0px;
+margin:0px;
+font-size:12px;
+}
+
+#thermolog td{
+padding:0px;
+margin:0px;
+font-size:12px;
+}
+
+#thermolog table{
+margin-top:10px;
+width:650px;
+border-style:none;
+vertical-align:middle;
+text-align:center;
+margin-left:auto;
+margin-right:auto;
+    border-spacing: 2px;
+    border-collapse: separate;
+}
+
+#thermolog a{
+color:#FFC000;
+}
+
+#thermolog tr:nth-child(even) a{
+color:#000000;
+}
+
+#thermolog td:first-child{
+text-align:left;
+padding-left:12px;
+}
+
+#thermolog thead{
+background-image:url(../images/beige5x5cm.jpg);
+color:#000000;
+}
+
+#thermolog tfoot{
+background-color:rgba(0,0,0, .0);
+}
+
+#thermolog tr:nth-child(even){
+background-image:url(../images/beige5x5cm.jpg);
+color:#000000;
+}
+
+/* ################################################################################################################ */
+
+/* CSS Regeln für die Buttons ##################################################################################### */
+
+.button_yes, .button_delete, .button_save, .button_back{
+margin:10px;
+height:80px;
+width:80px;
+font-family:Verdana,sans;
+font-size:11px;
+color:#000000;
+cursor:pointer;
+}
+
+.button_yes{
+background-image:url(../templates/leather/button/ButtonJa.png);
+}
+.button_delete{
+background-image:url(../templates/leather/button/ButtonLoschen.png);
+}
+.button_save{
+background-image:url(../templates/leather/button/ButtonSpeichern.png);
+}
+.button_back{
+background-image:url(../templates/leather/button/ButtonZuruck.png);
+}
+
+/*################################################################################################################### */
+
+.red {
+	color:red;
+}
+
+.green {
+	color:green;
+}
+
+.network {
+        border:1px solid;
+        padding-top:5px;
+        padding-left:5px;
+}
+
+.tableft {
+        text-align:right;
+        width:50px;
+		display:inline-block;
+}
+
+.wifi_menu {
+	width:100%;
+	text-align:center;
+	margin-bottom:20px;
+	
+}
+
+.wifi_content {
+        border:1px solid;
+		border-color:#FFFFFF;
+        width:100%;
+        height: auto;
+		padding:0px;
+		font-size:14px;
+}
+
+.wifi_header {
+    width:100%;
+	margin:10px 10px 10px 10px;
+	text-align:center;
+}
+
+textarea {
+        width:699px;
+        height:499px;
+}
+
+input.button {
+        width:90px;
+		height:30px;
+}
+
+.footer {
+        text-align:center;
+        width:100%;
+        float:left;
+}
+
+input[type=text],input[type=password] {
+	border:1px solid;
+}
+
+
+input[type=button]:hover {
+	font-weight:bold;
+}
+input[type=submit]:hover {
+	font-weight:bold;
+}
+
+.infoheader {
+	font-size:18px;
+	font-weight:bold;
+	width:100%;
+	text-align:center;
+	margin-top:10px;
+	border-bottom:1px solid;
+}
+
+.infobox {
+	width:100%;
+}
+
+#intinfo {
+	width:48%;
+	padding-left:10px;
+	border-right:1px solid;
+	float:left;
+}
+
+#wifiinfo {
+	width:48%;
+	padding-left:10px;
+	float:left;
+}
+
+.intheader {
+	margin-top:10px;
+	margin-bottom:10px;
+	font-size:14px;
+	text-align:center;
+	color:#FFC000;
+	font-weight:bold;
+	width:100%;	
+}
+
+.intfooter {
+	width:100%;
+	border-top:1px solid;
+	float:left;
+	text-align:center;
+	padding-top:4px;
+	padding-bottom:4px;
+}
+
+/* Start by setting display:none to make this hidden.
+   Then we position it in relation to the viewport window
+   with position:fixed. Width, height, top and left speak
+   speak for themselves. Background we set to 80% white with
+   our animation centered, and no-repeating */
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .4 ) 
+                url('../images/ajax-loader.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading {
+    overflow: hidden;   
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .modal {
+    display: block;
+}
