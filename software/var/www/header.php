@@ -52,7 +52,7 @@ $document_root = getenv('DOCUMENT_ROOT');
 	}
 ?>
 </head>
-<body>
+<body onload="bildreload();garden()">
 	<div id="wrapper">
 		<div id="header">
 			<div id="header_logo"><div class="header_link"><a href="../index.php"></a></div></div>
