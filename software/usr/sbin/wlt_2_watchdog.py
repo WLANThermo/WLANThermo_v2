@@ -158,7 +158,8 @@ def reboot_pi():
             time.sleep(0.1)
             continue
         break
-    
+		
+    time.sleep(2)
     bashCommand = 'sudo reboot'
     retcode = subprocess.Popen(bashCommand.split())
     retcode.wait()
