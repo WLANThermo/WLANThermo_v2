@@ -117,17 +117,17 @@ dhcp-range='.$_POST['RangeStart'].','.$_POST['RangeEnd'].',255.255.255.0,'.$_POS
 		$strWlan0 = implode(" ",$return);
 		$strWlan0 = preg_replace('/\s\s+/', ' ', $strWlan0);
 
-		if (preg_match('/HWaddr ([0-9a-f:]+)/i',$strWlan0,$result)){
+		if ((preg_match('/HWaddr ([0-9a-f:]+)/i',$strWlan0,$result)) or (preg_match('/Hardware Adresse ([0-9a-f:]+)/i',$strWlan0,$result))){
 			$strHWAddress = $result[1];
 		}else{
 			$strHWAddress = "no result";
 		}
-		if (preg_match('/inet addr:([0-9.]+)/i',$strWlan0,$result)){
+		if ((preg_match('/inet addr:([0-9.]+)/i',$strWlan0,$result)) or (preg_match('/inet Adresse:([0-9.]+)/i',$strWlan0,$result))){
 			$strIPAddress = $result[1];
 		}else{
 			$strIPAddress = "no result";
 		}
-		if (preg_match('/Mask:([0-9.]+)/i',$strWlan0,$result)){
+		if ((preg_match('/Mask:([0-9.]+)/i',$strWlan0,$result)) or (preg_match('/Maske:([0-9.]+)/i',$strWlan0,$result))){
 			$strNetMask = $result[1];
 		}else{
 			$strNetMask = "no result";
