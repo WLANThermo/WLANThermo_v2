@@ -125,10 +125,10 @@
 	function check_pid_present(){
 		if( $('#pit_controller_type').is(':checked') ) { 
 			pid_settings_enable();
-			document.getElementById("pit_curve").disabled=false;
+			document.getElementById("pit_curve").disabled=true;
 		}else{
 			pid_settings_disable();
-			document.getElementById("pit_curve").disabled=true;
+			document.getElementById("pit_curve").disabled=false;
 		}
 	}
 	function check_lcd_present() {
