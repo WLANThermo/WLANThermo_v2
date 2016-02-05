@@ -10,7 +10,7 @@ if(isset ($_POST['id']) AND isset ($_POST['id'])) {
 	$current_logfilename = ''.$directory_log.''.$_POST['id'].'';	//Alter Name des Logfile's ohne .csv
 	$new_logfilename = $_POST['value'];
 	$new_logfilename = preg_replace($umlaute, $replace, $new_logfilename); 
-	$new_logfilename = preg_replace("/[^a-zA-Z0-9_\-\.]/","",$new_logfilename);
+	$new_logfilename = preg_replace("/[^a-zA-Z0-9_\-]/","",$new_logfilename);
 	//$new_logfilename = preg_replace("/[^a-zA-Z0-9_\-\. ]/","",$new_logfilename);
 	$new_logfilename = ''.$directory_log.$new_logfilename.'.csv';
 
@@ -19,7 +19,7 @@ if(isset ($_POST['id']) AND isset ($_POST['id'])) {
 	
 	$new_plotfilename = $_POST['value'];
 	$new_plotfilename = preg_replace($umlaute, $replace, $new_plotfilename); 
-	$new_plotfilename = preg_replace("/[^a-zA-Z0-9_\-\.]/","",$new_plotfilename);
+	$new_plotfilename = preg_replace("/[^a-zA-Z0-9_\-]/","",$new_plotfilename);
 	$new_plotfilename = ''.$directory_plot.''.$new_plotfilename.'.png';
 	
 	if (file_exists(iconv("UTF-8", "ISO-8859-1", $current_logfilename))) {
