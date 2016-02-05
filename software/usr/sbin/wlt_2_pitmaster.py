@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # coding=utf-8
+
+# WLANThermo
+# wlt_2_pitmaster.py - Sets pit temperature by controlling a fan, servo, heater or likely devices.
 #
 # Copyright (c) 2013, Joe16
 # Copyright (c) 2015, Björn Schrader
@@ -212,7 +215,7 @@ class BBQpit:
             # PWM-modulierter Schaltausgang (Schwingungspaketsteuerung)
             # Zyklusdauer in s
             cycletime = 2
-            width = ((self.pit_min + ((self.pit_max - self.pit_min)) / 100.0 * (control_out / 100.0))) * cycletime
+            width = (self.pit_min / 100.0 + ((self.pit_max - self.pit_min) / 100.0 * (control_out / 100.0))) * cycletime
             if not self.pit_inverted:
                 on = width
                 off = cycletime - width
@@ -248,10 +251,10 @@ class BBQpit:
             with self.pit_io_pwm_lock:
                 on = self.pit_io_pwm_on
                 off = self.pit_io_pwm_off
-            if self.pit_io_pwm_on > 0:
+            if on > 0:
                 self.pi.write(gpio, 1)
                 time.sleep(on)
-            if self.pit_io_pwm_off > 0:
+            if off > 0:
                 self.pi.write(gpio, 0)
                 time.sleep(off)
         self.logger.debug('io_pwm - Beende Thread')
