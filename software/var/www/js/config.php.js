@@ -118,6 +118,15 @@
 		if( $('#pit_on').is(':checked') ) { 
 			pit_settings_enable();
 			check_pid_present();
+			if($('select#pit_type').val() == "servo"){
+					document.getElementById("pit_pwm_min").disabled=true;
+					document.getElementById("pit_pwm_max").disabled=true;
+			}
+			if(($('select#pit_type').val() == "fan") || ($('select#pit_type').val() == "fan_pwm") || ($('select#pit_type').val() == "io") || ($('select#pit_type').val() == "io_pwm") ){
+					document.getElementById("pit_servo_min").disabled=true;
+					document.getElementById("pit_servo_max").disabled=true;
+			}
+
 		}else{
 			pit_settings_disable();
 		}	
@@ -125,13 +134,13 @@
 	function check_pid_present(){
 		if( $('#pit_controller_type').is(':checked') ) { 
 			pid_settings_enable();
-			document.getElementById("pit_curve").disabled=true;
+			document.getElementById("pit_curve").disabled=true;			
 		}else{
 			pid_settings_disable();
 			document.getElementById("pit_curve").disabled=false;
 		}
 	}
-	function check_lcd_present() {
+	function check_lcd_present(){
 		if( $('#lcd_present').is(':checked') ) { 
 			lcd_settings_enable();
 			check_lcd_type();
@@ -326,7 +335,10 @@
 	check_webcam();
 	check_raspicam();
 	check_lcd_present();
-
+	
+    $("#pit_type").change(function () {
+        check_pit_present();
+    });
 	$( "#pit_on" ).change(function() {
 		check_pit_present();
 	});	
