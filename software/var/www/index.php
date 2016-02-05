@@ -16,7 +16,7 @@
 
 					<div id="webcam1" class="webcam" style="display: none;">
 						<p>
-						<?php if (file_exists("".$document_root."tmp/webcam.jpg")){ ?>
+						<?php if (file_exists("".$document_root."/tmp/webcam.jpg")){ ?>
 							<img name="webcam" id="webcam" src="../tmp/webcam.jpg" onload="reload_webcam(9000)" onerror="reload_webcam(1)" alt="">
 						<?php } ?>
 						</p>
@@ -24,7 +24,7 @@
 
 					<div id="raspicam1" class="raspicam" style="display: none;">
 						<p>
-						<?php if (file_exists("".$document_root."tmp/raspicam.jpg")){ ?>
+						<?php if (file_exists("".$document_root."/tmp/raspicam.jpg")){ ?>
 							<img name="raspicam" id="raspicam" src="../tmp/raspicam.jpg" onload="reload_raspicam(9000)" onerror="reload_raspicam(1)" alt="">
 						<?php } ?>
 						</p>
