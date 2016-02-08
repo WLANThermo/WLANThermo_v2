@@ -340,4 +340,45 @@ function write_ini($inipath, $ini) {
 	fclose($new_ini);
 	rename($inipath . '_phptmp', $inipath);
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------- 
+// Funktion für wifi.php ##############################################################################################################
+//-------------------------------------------------------------------------------------------------------------------------------------
+
+function ConvertToChannel($freq) {
+	$base = 2412;
+	$channel = 1;
+	for($x = 0; $x < 13; $x++) {
+		if($freq != $base) {
+			$base = $base + 5;
+			$channel++;
+		} else {
+			return $channel;
+		}
+	}
+	return "Invalid Channel";
+}
+
+function ConvertToSecurity($security) {
+	switch($security) {
+		case "[WPA2-PSK-CCMP][ESS]":
+			return "WPA2-PSK (AES)";
+		break;
+		case "[WPA2-PSK-TKIP][ESS]":
+			return "WPA2-PSK (TKIP)";
+		break;
+		case "[WPA-PSK-TKIP+CCMP][WPS][ESS]":
+			return "WPA-PSK (TKIP/AES) with WPS";
+		break;
+		case "[WPA-PSK-TKIP+CCMP][WPA2-PSK-TKIP+CCMP][ESS]":
+			return "WPA/WPA2-PSK (TKIP/AES)";
+		break;
+		case "[WPA-PSK-TKIP][ESS]":
+			return "WPA-PSK (TKIP)";
+		break;
+		case "[WEP][ESS]":
+			return "WEP";
+		break;
+	}
+}
  ?>

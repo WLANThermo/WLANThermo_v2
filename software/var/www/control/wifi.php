@@ -1,7 +1,7 @@
 <?php
 session_start();
 include('../header.php');
-include('phpincs.php');
+include('../function.php');
 $output = $return = 0;
 
 if(isset($_GET['page'])) {
@@ -11,105 +11,18 @@ if(isset($_GET['page'])) {
 }
 ?>
 <div class="wifi_site">
-<div class="wifi_header">
-	<h1>Raspbian WiFi Configuration Portal</h1>
-</div>
-<div class="wifi_menu">
-	<input class="button" type="button" value="WiFi Info" name="wlan0_info" onclick="document.location='?page='+this.name" />
-	<input class="button" type="button" value="Einstellungen" name="wpa_conf" onclick="document.location='?page='+this.name" />
-	
-<!-- <input class="button" type="button" value="Configure
-Hotspot" name="hostapd_conf" onclick="document.location=\'?page=\'+this.name" />
-<input class="button" type="button" value="Configure
-DHCP Server" name="dhcpd_conf" onclick="document.location=\'?page=\'+this.name" />
--->
-</div>
+	<div class="wifi_header">
+		<h1>Raspbian WiFi Configuration Portal</h1>
+	</div>
+	<div class="wifi_menu">
+		<input class="button" type="button" value="WiFi Info" name="wlan0_info" onclick="document.location='?page='+this.name" />
+		<input class="button" type="button" value="Einstellungen" name="wpa_conf" onclick="document.location='?page='+this.name" />
+	</div>
 
 <div class="wifi_content">
 
 <?php
 switch($page) {
-	case "dhcpd_conf":
-		exec('cat /etc/dnsmasq.conf',$return);
-		$conf = ParseConfig($return);
-		$arrRange = explode(",",$conf['dhcp-range']);
-		$RangeStart = $arrRange[0];
-		$RangeEnd = $arrRange[1];
-		$RangeMask = $arrRange[2];
-		preg_match('/([0-9]*)([a-z])/i',$arrRange[3],$arrRangeLeaseTime);
-		switch($arrRangeLeaseTime[2]) {
-			case "h":
-				$hselected = " selected";
-			break;
-			case "m":
-				$mselected = " selected";
-			break;
-			case "d":
-				$dselected = " selected";
-			break;
-		}
-		exec('pidof dnsmasq | wc -l',$dnsmasq);
-		if($dnsmasq[0] == 0) {
-			$status = '<span class="red">dnsmasq not running</span>';
-		} else {
-			$status = '<span class="green">dnsmasq is running</span>';
-		}
-		echo 'DHCP Server Options<br />
-<span id="dnsmasqstatus">Status : '.$status.'</span>
-<form method="POST" action="?page=dhcpd_conf">
-Interface : <select name="interface">';
-		exec("cat /proc/net/dev | tail -n -3 | awk -F :\  ' { print $1 } ' | tr -d ' '",$interfaces);
-		foreach($interfaces as $int) {
-			$select = '';
-			if($int == $conf['interface']) {
-				$select = " selected";
-			}
-				echo '<option value="'.$int.'"'.$select.'>'.$int.'</option>';
-		}
-
-echo'</select><br />
-Starting IP Address : <input type="text" name="RangeStart" value="'.$RangeStart.'" /> <br />
-Ending IP Address : <input type="text" name="RangeEnd" value="'.$RangeEnd.'" /><br />
-Lease Time <input type="text" name="RangeLeaseTime" value="'.$arrRangeLeaseTime[1].'" /><select name="RangeLeaseTimeUnits"><option value="m"'.$mselected.'>Minutes</option><option value="h"'.$hselected.'>Hours</option><option value="d"'.$dselected.'>Days</option><option value="infinite">Infinite</option>
-</select> <br />
-<input type="submit" value="Save" name="savedhcpdsettings" />';
-		if($dnsmasq[0] == 0) {
-			echo'<input type="submit" value="Start dnsmasq" name="startdhcpd" />';
-		} else {
-			echo '<input type="submit" value="Stop dnsmasq" name="stopdhcpd" />';
-		}
-		echo'
-</form>
-<hr>
-Client list<br />
-';
-		exec('cat /var/lib/misc/dnsmasq.leases',$leases);
-		foreach($leases as $lease) {
-			echo $lease;
-		}
-
-		if(isset($_POST['savedhcpdsettings'])) {
-			$config = 'interface='.$_POST['interface'].'
-dhcp-range='.$_POST['RangeStart'].','.$_POST['RangeEnd'].',255.255.255.0,'.$_POST['RangeLeaseTime'].''.$_POST['RangeLeaseTimeUnits'];
-			exec('echo "'.$config.'" > /tmp/dhcpddata',$temp);
-			system('sudo cp /tmp/dhcpddata /etc/dnsmasq.conf',$return);
-			if($return == 0) {
-				echo "dnsmasq configuration updated successfully";
-			} else {
-				echo "Dnsmasq configuration failed to be updated";
-			}
-		}
-
-		if(isset($_POST['startdhcpd'])) {
-			$line = system('sudo /etc/init.d/dnsmasq start',$return);
-			echo "Attempting to start dnsmasq";
-		}
-
-		if(isset($_POST['stopdhcpd'])) {
-			$line = system('sudo /etc/init.d/dnsmasq stop',$return);
-			echo "Stopping dnsmasq";
-		}
-	break;
 
 	case "wlan0_info":
 		exec('ifconfig wlan0',$return);
@@ -269,9 +182,9 @@ update_config=1
 			$network = '';
 			$ssid = escapeshellarg($_POST['ssid'.$x]);
 			$psk = escapeshellarg($_POST['psk'.$x]);
-echo "wpa_passphrase ".$ssid." ".$psk.",".$network."<br>";
+			echo "wpa_passphrase ".$ssid." ".$psk.",".$network."<br>";
 			exec('wpa_passphrase '.$ssid. ' ' . $psk,$network);
-echo "network: ".$network[0]."<br>";			
+			echo "network: ".$network[0]."<br>";			
 			if ($network[0] <> "Passphrase must be 8..63 characters"){
 				foreach($network as $b) {
 					$config .= "$b
@@ -311,137 +224,6 @@ echo "network: ".$network[0]."<br>";
 	}
 
 	break;
-
-	case "hostapd_conf":
-		exec('cat /etc/hostapd/hostapd.conf',$return);
-		exec('pidof hostapd | wc -l',$hostapdstatus);
-		if($hostapdstatus[0] == 0) {
-			$status = '<span class="red">hostapd is not running</span>';
-		} else {
-			$status = '<span class="green">hostapd is running</span>';
-		}
-
-		$arrConfig = array();
-		$arrChannel = array('a','b','g');
-		$arrSecurity = array( 1 => 'WPA', 2 => 'WPA2',3=> 'WPA+WPA2');
-		$arrEncType = array('TKIP' => 'TKIP', 'CCMP' => 'CCMP', 'TKIP CCMP' => 'TKIP+CCMP');
-
-		foreach($return as $a) {
-			if($a[0] != "#") {
-				$arrLine = explode("=",$a);
-				$arrConfig[$arrLine[0]]=$arrLine[1];
-			}
-		}
-		echo '<form action="?page=save_hostapd_conf" method="POST">
-HostAPD status : ' . $status . '<br />
-Interface : <select name="interface">';
-		exec("cat /proc/net/dev | tail -n -3 | awk -F :\  ' { print $1 } ' | tr -d ' '",$interfaces);
-		foreach($interfaces as $int) {
-			$select = '';
-			if($int == $arrConfig['interface']) {
-				$select = " selected";
-			}
-				echo '<option value="'.$int.'"'.$select.'>'.$int.'</option>';
-		}
-		echo'</select><br />
-SSID : <input type="text" name="ssid" value="'.$arrConfig['ssid'].'" /><br />
-Wireless Mode : <select name="hw_mode">';
-		foreach($arrChannel as $Mode) {
-			$select = '';
-			if($arrConfig['hw_mode'] == $Mode) {
-				$select = ' selected';
-			}
-			echo '<option value="'.$Mode.'"'.$select.'>'.$Mode.'</option>';
-		}
-		echo '</select><br />
-Channel : <select name="channel">';
-		for($channel = 1; $channel < 14; $channel++) {
-			$select = '';
-			if($channel == $arrConfig['channel']) {
-				$select = " selected";
-			}
-		echo '<option value="'.$channel.'"'.$select.'>'.$channel.'</option>';
-		}
-		echo '</select><br />
-
-Security type : <select name="wpa">';
-		foreach($arrSecurity as $SecVal => $SecMode) {
-			$select = '';
-			if($SecVal == $arrConfig['wpa']) {
-				$select = ' selected';
-			}
-			echo '<option value="'.$SecVal.'"'.$select.'>'.$SecMode.'</option>';
-		}
-		echo'</select><br />
-Encryption Type : <select name="wpa_pairwise">';
-		foreach($arrEncType as $EncConf => $Enc) {
-			$select = '';
-			if($Enc == $arrConfig['wpa_pairwise']) {
-				$select = ' selected';
-			}
-			echo '<option value="'.$EncConf.'"'.$select.'>'.$Enc.'</option>';
-		}
-		echo'</select><br />
-PSK : <input type="text" name="wpa_passphrase" value="'.$arrConfig['wpa_passphrase'].'" /> <br />
-<input type="submit" name="SaveHostAPDSettings" value="Save Hostapd settings" /> ';
-		if($hostapdstatus[0] == 0) {
-			echo '<input type="submit" name="StartHotspot" value="Start Hotspot" />';
-		} else {
-			echo '<input type="submit" name="StopHotspot" value="Stop hotspot" />';
-		}
-		echo'<hr>
-Advanced Settings<br />
-Country Code : <input type="text" name="country_code" value="'.$arrConfig['country_code'].'" />
-</form>';
-break;
-
-case "save_hostapd_conf":
-	if(isset($_POST['SaveHostAPDSettings'])) {
-		$config = 'driver=nl80211
-ctrl_interface=/var/run/hostapd
-ctrl_interface_group=0
-beacon_int=100
-auth_algs=1
-wpa_key_mgmt=WPA-PSK
-';
-		$config .= "interface=".$_POST['interface']."
-";
-		$config .= "ssid=".$_POST['ssid']."
-";
-		$config .= "hw_mode=".$_POST['hw_mode']."
-";
-		$config .= "channel=".$_POST['channel']."
-";
-$config .= "wpa=".$_POST['wpa']."
-";
-$config .='wpa_passphrase='.$_POST['wpa_passphrase'].'
-';
-$config .="wpa_pairwise=".$_POST['wpa_pairwise']."
-";
-$config .="country_code=".$_POST['country_code'];
-	exec("echo '$config' > /tmp/hostapddata",$return);
-	system("sudo cp /tmp/hostapddata /etc/hostapd/hostapd.conf",$return);
-	if($return == 0) {
-		echo "Wifi Hotspot settings saved";
-	} else {
-		echo "Wifi Hotspot settings failed to be saved";
-	}
-
-} elseif(isset($_POST['StartHotspot'])) {
-	echo "Attempting to start hotspot";
-	exec('sudo /etc/init.d/hostapd start',$return);
-	foreach($return as $line) {
-		echo $line."<br />";
-	}
-} elseif(isset($_POST['StopHotspot'])) {
-	echo "Attempting to stop hotspot";
-	exec('sudo /etc/init.d/hostapd stop',$return);
-	foreach($return as $line) {
-		echo $line."<br />";
-	}
-}
-	break;
-
 }
 ?>
 
