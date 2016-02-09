@@ -243,14 +243,13 @@ function restoreConfig($newconfig,$oldconfig) {
 	write_ini($inipath, $ini);
 }
 
-function getPlotConfig(){
+function getPlotConfig($plot){
 	if($_SESSION["keyboxframe"] == "True"){ 
 		$keyboxframe_value = "box lw 2";
 	}
 	if($_SESSION["keyboxframe"] == "False"){ 
 		$keyboxframe_value = "";
 	}
-	$plot = "";
 	$plotsize = explode("x", $_SESSION["plotsize"]);
 	$plotsize = "".$plotsize[0].",".$plotsize[1]."";	
 	$plot_setting = "reset;";
@@ -272,9 +271,14 @@ function getPlotConfig(){
 	if ($_SESSION["plot_pit"] == "True") {
 		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:10 with lines lw 2 lc rgbcolor '" . $_SESSION["color_pit"] ."' t 'Pitmaster %' axes x1y2";
 		$plot_setting .= "set y2label \\\"Pitmaster %\\\";";
-		$plot_setting .= 'set y2range ["0":"100"];';
+		$plot_setting .= 'set y2range ["0":"105"];';
 		$plot_setting .= "set y2tics nomirror;";
-	}
+	}else{
+		$plot_setting .= "set y2label \\\"Temperatur [°C]\\\";";
+		$plot_setting .= "set y2range [".$_SESSION["plotbereich_min"].":".$_SESSION["plotbereich_max"]."];";
+		$plot_setting .= "set y2tics nomirror;";		
+	}	
+	$plot_setting = "".$plot_setting."".$plot."";
 	return $plot_setting;
 }
 //------------------------------------------------------------------------------------------------------------------------------------- 

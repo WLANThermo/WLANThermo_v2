@@ -233,7 +233,6 @@ if (isset($_SESSION["to_update"])){
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	// Variablen für den Plot #############################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
-
 	$plot = "plot ";
 	for ($i = 0; $i <= 7; $i++){
 		$a = $i + 2 ;
@@ -296,9 +295,8 @@ if (isset($_SESSION["to_update"])){
 	// Plot erzeugen ######################################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------	
 	
-	$plot_setting = getPlotConfig();
-	
 	if ($_SESSION["plot_start"] == "True"){
+		$plot_setting = getPlotConfig($plot);
 		if (is_dir("/var/www/tmp")){
 			$message .= "Verzeichnis 'tmp' vorhanden! \n";
 			$plotdateiname = '/var/www/tmp/temperaturkurve.png';
@@ -321,7 +319,7 @@ if (isset($_SESSION["to_update"])){
 					$message .=" PID: ".$plot_ret[0]." \n";
 				}
 				if (empty($plot_ret)){
-					exec("echo \"".$plot_setting."".$plot."\" | /usr/bin/gnuplot > /var/www/tmp/error.txt &",$output);
+					exec("echo \"".$plot_setting."\" | /usr/bin/gnuplot > /var/www/tmp/error.txt &",$output);
 					$message .= "Temperaturkurve.png wird erstellt. \n";
 					//echo "".$plot_setting."".$plot."";
 				}
