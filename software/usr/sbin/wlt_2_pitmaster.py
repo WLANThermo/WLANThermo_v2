@@ -177,7 +177,11 @@ class BBQpit:
             # Puls/ Pause berechnen
             pulselength = 47.0
             if not self.pit_inverted:
-                width = int(round(self.pit_min + ((self.pit_max - self.pit_min) * (control_out / 100.0))) / (100 / (pulselength - 1)))
+                if control_out < 0.1:
+                # Zerocut
+                    width = 0
+                else:
+                    width = int(round(self.pit_min + ((self.pit_max - self.pit_min) * (control_out / 100.0))) / (100 / (pulselength - 1)))
             else:
                 width = int(round(self.pit_max - ((self.pit_max - self.pit_min) * (control_out / 100.0))) / (100 / (pulselength - 1)))
             # Ohne Impuls = 100%, daher minimum 1!
@@ -198,7 +202,11 @@ class BBQpit:
         elif self.pit_type == 'fan':
             # Lüftersteuerung v3
             if not self.pit_inverted:
-                width = int(round(self.pit_min + ((self.pit_max - self.pit_min) * (control_out / 100.0))) * 2.55)
+                if control_out < 0.1:
+                # Zerocut
+                    width = 0
+                else:
+                    width = int(round(self.pit_min + ((self.pit_max - self.pit_min) * (control_out / 100.0))) * 2.55)
             else:
                 width = int(round(self.pit_max - ((self.pit_max - self.pit_min) * (control_out / 100.0))) * 2.55)
             self.pi.set_PWM_dutycycle(self.pit_gpio, width)
