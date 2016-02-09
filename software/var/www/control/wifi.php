@@ -180,15 +180,17 @@ update_config=1
 		$networks = $_POST['Networks'];
 		for($x = 0; $x <= $networks; $x++) {
 			$network = '';
-			$ssid = escapeshellarg($_POST['ssid'.$x]);
-			$psk = escapeshellarg($_POST['psk'.$x]);
-			echo "wpa_passphrase ".$ssid." ".$psk.",".$network."<br>";
-			exec('wpa_passphrase '.$ssid. ' ' . $psk,$network);
-			echo "network: ".$network[0]."<br>";			
-			if ($network[0] <> "Passphrase must be 8..63 characters"){
-				foreach($network as $b) {
-					$config .= "$b
+			if (isset($_POST['ssid'.$x]) AND isset($_POST['psk'.$x])){
+				$ssid = escapeshellarg($_POST['ssid'.$x]);
+				$psk = escapeshellarg($_POST['psk'.$x]);
+				echo "wpa_passphrase ".$ssid." ".$psk.",".$network."<br>";
+				exec('wpa_passphrase '.$ssid. ' ' . $psk,$network);
+				echo "network: ".$network[0]."<br>";			
+				if ($network[0] <> "Passphrase must be 8..63 characters"){
+					foreach($network as $b) {
+						$config .= "$b
 	";
+					}
 				}
 			}
 		}
