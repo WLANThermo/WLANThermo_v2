@@ -552,27 +552,36 @@ def tempcsv_write(config):
         break
 
 
+def set_tempflag():
+    # Flag Datei für WebGUI anlegen
+    open('/var/www/tmp/flag', 'w').close()
+
+
 def channels_setvalues(channel, high= None, low=None, sensor=None):
     global configfile, configfile_lock
     restart_comp = False
-    rewrite_tempcsv = False
+    temp_changed = False
     with configfile_lock:
         newconfig = ConfigParser.SafeConfigParser()
         newconfig.read(configfile)
         if low != None:
             newconfig.set('temp_min','temp_min' + str(channel), str(low))
-            rewrite_tempcsv = True
+            temp_changed = True
         if high != None:
             newconfig.set('temp_max','temp_max' + str(channel), str(high))
-            rewrite_tempcsv = True
+            temp_changed = True
         if sensor != None:
             newconfig.set('Sensoren','ch' + str(channel), str(sensor))
             restart_comp = True
             
         if restart_comp:
             newconfig.set('ToDo','restart_thermo', 'True')
-        elif rewrite_tempcsv:
+        elif temp_changed:
             tempcsv_write(newconfig)
+        
+        if temp_changed:
+            set_tempflag()
+            
         config_write(configfile, newconfig)
 
 
