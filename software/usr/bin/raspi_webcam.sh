@@ -63,9 +63,11 @@ imp=/var/www/tmp/
 
 #Dateiname fuer Bild ohne Text 
 img=webcam_ohne.jpg
+img2=raspicam_ohne.jpg
 
 #Pfad und Dateiname Input-Bild
 impn=$imp$img
+impn2=$imp$img2
 
 #Pfad und Dateiname Output-Bild
 impk=$imp$imk
@@ -81,9 +83,9 @@ case "$Typ" in
 		#Test-Datei setzen
 		touch /var/www/tmp/raspi.txt
 		#Bild aufnehmen und speichern
-		/usr/bin/raspistill -w $breite -h $hoehe -ex $exposure -q 75 -o $impn 2>/dev/null
+		/usr/bin/raspistill -w $breite -h $hoehe -ex $exposure -q 75 -o $impn2 2>/dev/null
 		#Bild kleinrechnen und beschriften
-                /usr/bin/convert $impn -font bookman-demi -fill white -pointsize 20 -annotate 0x0+20+$anno "$pt" $impk 2> /dev/null
+                /usr/bin/convert $impn2 -font bookman-demi -fill white -pointsize 20 -annotate 0x0+20+$anno "$pt" $impk 2> /dev/null
 		rm /var/www/tmp/raspi.txt
 	    fi
 	;;
@@ -96,7 +98,9 @@ case "$Typ" in
 		#Test-Datei setzen
 		touch /var/www/tmp/webcam.txt
 		echo '#Bild aufnehmen und speichern'
-		/usr/bin/fswebcam -S 5 -r $breite'x'$hoehe --jpeg 95 --no-timestamp  --title "$pt" -d /dev/video0 $impk /dev/null 
+		/usr/bin/fswebcam -S 5 -r $breite'x'$hoehe --jpeg 95 --no-timestamp  --no-banner -d /dev/video0 $impn /dev/null 
+		/usr/bin/convert $impn -font bookman-demi -fill white -pointsize 20 -gravity SouthWest -annotate +0+0 "  $pt" $impk
+2> /dev/null
 		rm /var/www/tmp/webcam.txt
 	    fi
 	;;
