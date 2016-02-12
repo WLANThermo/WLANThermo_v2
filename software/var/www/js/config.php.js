@@ -320,6 +320,12 @@
 			$( "#ch7" ).hide();
 		}
 	}
+	function enableallcheckbox(){
+		//$("input:checkbox").attr('disabled', 'disabled'); //disable
+		$("input:checkbox").removeAttr('disabled'); //enable		
+		
+	}
+	
 	check_pit_present();
 	check_plot_present();
 	check_channel_ch0();

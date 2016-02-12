@@ -37,7 +37,11 @@ if(isset($_POST["save"])) {
 						$ini['Sensoren']['ch'.$i] = $_POST['fuehler'.$i];
 						$restart = "1";
 					}
-
+					// Überprüfen ob sich der Messwiderstand geändert hat (Restart)
+					if($ini['Messen']['messwiderstand'.$i] !== $_POST['measuring_resistance'.$i]){ 
+						$ini['Messen']['messwiderstand'.$i] = $_POST['measuring_resistance'.$i];
+						$restart = "1";
+					}
 					// Farben für den Plotter ändern --------------------------------
 					$ini['plotter']['color_ch'.$i] = $_POST['plot_color'.$i];
 
@@ -483,20 +487,21 @@ if(isset($_POST["save"])) {
 // Formular Fühler/Farbe/Temp min/Temp max/Kanal ------------------------------------
 // ##################################################################################
 
-		for ($i = 0; $i <= 7; $i++){ 
-			?>
+		for ($i = 0; $i <= 7; $i++){ ?>
 			<div id="ch<?php echo $i; ?>" class="config small">
 				<div class="headline"><?php echo htmlentities($ini['ch_name']['ch_name'.$i], ENT_QUOTES, "iso-8859-1"); ?></div>
 				<div class="headicon"><font color="<?php echo $ini['plotter']['color_ch'.$i];?>">#<?php echo $i?></font></div>
 				<div class="config_text row_1 col_1">Name:</div>
-				<div class="config_text row_3 col_1">Temperatur</div>
+				<div class="config_text row_1 col_6">F&uuml;hler:</div>
 				<div class="config_text row_1 col_3"><input type="text" name="tch<?php echo $i;?>" size="25" maxlength="28" value="<?php echo $ini['ch_name']['ch_name'.$i];?>"></div>
+				<div class="config_text row_3 col_1">Temperatur</div>
 				<div class="config_text row_3 col_2">min:</div>
 				<div class="config_text row_3 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9-]/g,'');" name="temp_min<?php echo $i;?>" size="6" maxlength="3" value="<?php echo $ini['temp_min']['temp_min'.$i];?>"></div>
 				<div class="config_text row_3 col_4">max:</div>
 				<div class="config_text row_3 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="temp_max<?php echo $i;?>" size="6" maxlength="3" value="<?php echo $ini['temp_max']['temp_max'.$i];?>"></div>
-				<div class="config_text row_1 col_6">F&uuml;hler:</div>
 				<div class="config_text row_2 col_6">Plotfarbe:</div>
+				<div class="config_text row_2 col_1">Messwiderstand:</div>
+				<div class="config_text row_2 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="measuring_resistance<?php echo $i;?>" size="6" maxlength="6" value="<?php echo $ini['Messen']['messwiderstand'.$i];?>"></div>
 				<div class="config_text row_1 col_7">
 					<select name="fuehler<?php echo $i?>" size="1">	
 						<?php
@@ -714,7 +719,7 @@ if(isset($_POST["save"])) {
             <div class="config_text row_4 col_1">Servo min (500-2500&micro;s): </div>
             <div class="config_text row_4 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit_servo_min" id="pit_servo_min" size="5" maxlength="4" value="<?php echo $ini['Pitmaster']['pit_servo_min'];?>"></div>      
             <div class="config_text row_6 col_6">PID Regelung:</div>
-			<div class="config_text row_6 col_7"><input type="checkbox" name="pit_controller_type" id="pit_controller_type" value="PID" <?php if($ini['Pitmaster']['pit_controller_type'] == "PID") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_6 col_7"><input type="checkbox" name="pit_controller_type" id="pit_controller_type" value="True" <?php if($ini['Pitmaster']['pit_controller_type'] == "PID") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_5 col_6">Deckel&uuml;berwachung:</div>
 			<div class="config_text row_5 col_7"><input type="checkbox" name="pit_open_lid_detection" id="pit_open_lid_detection" value="True" <?php if($ini['Pitmaster']['pit_open_lid_detection'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_5 col_1">Servo max (500-2500&micro;s):</div>
@@ -795,14 +800,16 @@ if(isset($_POST["save"])) {
 // ##################################################################################
 ?>
 	<script type="text/javascript" src="../js/config.php.js"></script>
+ 
 <?php
+
 // ##################################################################################
 // Speichern/Zurück Button ----------------------------------------------------------
 // ##################################################################################
 ?>
 		<br>
 			<table align="center" width="80%"><tr><td width="20%"></td>
-				<td align="center"> <input type="submit" class=button_save name="save"  value="">
+				<td align="center"> <input type="submit" class=button_save name="save"  value="" onclick="enableallcheckbox()">
 					<input type="submit" class=button_back name="back"  value=""> </td>
 				<td width="20%"></td></tr>
 			</table>
