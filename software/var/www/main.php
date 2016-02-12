@@ -170,32 +170,6 @@ if (isset($_SESSION["to_update"])){
 			$pit_val = $pits[3];
 		}
 
-	//-------------------------------------------------------------------------------------------------------------------------------------	
-	// Temperaturwerte fuer iPhone App bereitstellen ############################################################################################
-	//-------------------------------------------------------------------------------------------------------------------------------------	
-
-	if(isset($_GET['getAll']) AND $_GET['getAll']=='getAll') {
-		$ini = readINIfile("./conf/WLANThermo.conf", ";");
-		// Array der Temperaturdaten erstellen
-		$arrT = array ('temp_0'=>$temp_0, 'temp_1'=>$temp_1, 'temp_2'=>$temp_2, 'temp_3'=>$temp_3, 'temp_4'=>$temp_4, 'temp_5'=>$temp_5, 'temp_6'=>$temp_6, 'temp_7'=>$temp_7, 'time_stamp'=>$time_stamp, 'currentlogfilename'=>$_SESSION["currentlogfilename"]);
-		// Array Erzeugung aller Configdaten die fÃŒr die App erforderlich sind
-		for ($i = 0; $i <= 7; $i++){
-			$temp_min[] = $ini['temp_min']['temp_min'.$i];  
-			$temp_max[] = $ini['temp_max']['temp_max'.$i];
-			$ch_name[] = $ini['ch_name']['ch_name'.$i];			
-			// Array erstellen incl. Kanal am ende
-			$arr = array ('temp_min'=>$temp_min[$i], 'temp_max'=>$temp_max[$i], 'ch_name'=>$ch_name[$i], 'ch'=>$i);
-			// Array beschreiben
-			$arrayGesamt[] = array ($arr);
-		} //Ende forschleife			
-		// Array der Temperaturdaten zusammenfassen
-		$arrayGesamt[] = array($arrT);
-		//JSon Encode des Arrays
-		echo json_encode($arrayGesamt);	
-		//Beenden des weiteren Codes
-		exit;	
-	}
-
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	// Anzeige Letzte Messung #############################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
