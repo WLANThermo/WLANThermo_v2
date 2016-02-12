@@ -210,7 +210,7 @@ if (isset($_SESSION["to_update"])){
 	$plot = "plot ";
 	for ($i = 0; $i <= 7; $i++){
 		$a = $i + 2 ;
-		$chp[$i] = "'/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:$a with lines lw 2 lc rgb \\\"$color_ch[$i]\\\" t '$channel_name[$i]'  axes x1y1";
+		$chp[$i] = "'/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:$a with lines lw 2 lc rgb \\\"$color_ch[$i]\\\" t '$channel_name[$i]'  axes x1y2";
 	}	
 			
 	//-------------------------------------------------------------------------------------------------------------------------------------
