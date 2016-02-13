@@ -99,8 +99,7 @@ case "$Typ" in
 		touch /var/www/tmp/webcam.txt
 		echo '#Bild aufnehmen und speichern'
 		/usr/bin/fswebcam -S 5 -r $breite'x'$hoehe --jpeg 95 --no-timestamp  --no-banner -d /dev/video0 $impn /dev/null 
-		/usr/bin/convert $impn -font bookman-demi -fill white -pointsize 20 -gravity SouthWest -annotate +0+0 "  $pt" $impk
-2> /dev/null
+		/usr/bin/convert $impn -font bookman-demi -fill white -pointsize 20 -gravity SouthWest -annotate +0+0 "  $pt" $impk 2> /dev/null
 		rm /var/www/tmp/webcam.txt
 	    fi
 	;;
