@@ -99,7 +99,7 @@ switch($page) {
 			exec('ifconfig wlan0 | grep -i running | wc -l',$test);
 			if($test[0] == 1) {
 				exec('sudo ifdown wlan0',$return);
-				echo '<p>Please wait...</p><script type="text/Javascript">window.setTimeout("document.location=\"?page=wlan0_info\"", 5000)</script>';
+				echo '<p>Bitte warten...</p><script type="text/Javascript">window.setTimeout("document.location=\"?page=wlan0_info\"", 5000)</script>';
 			} else {
 				echo 'Interface already down';
 			}
@@ -107,16 +107,20 @@ switch($page) {
 			exec('ifconfig wlan0 | grep -i running | wc -l',$test);
 			if($test[0] == 0) {
 				exec('sudo ifup wlan0',$return);
-				echo '<p>Please wait...</p><script type="text/Javascript">window.setTimeout("document.location=\"?page=wlan0_info\"", 5000)</script>';
+				echo '<p>Bitte warten...</p><script type="text/Javascript">window.setTimeout("document.location=\"?page=wlan0_info\"", 5000)</script>';
 			} else {
 				echo 'Interface already up';
 			}
+		} elseif(isset($_POST['ifdown_up_wlan0'])) {
+			exec('sudo ifdown wlan0 && sudo ifup wlan0',$return);
+			echo '<p>Bitte warten...</p><script type="text/Javascript">window.setTimeout("document.location=\"?page=wlan0_info\"", 5000)</script>';
 		}
 	//print_r($strWlan0);
 	echo '<div class="infobox">
 <form action="?page=wlan0_info" method="POST">
 <input type="submit" value="ifdown wlan0" name="ifdown_wlan0" />
 <input type="submit" value="ifup wlan0" name="ifup_wlan0" />
+<input type="submit" value="ifdown/ifup wlan0" name="ifdown_up_wlan0" />
 <input type="button" value="Refresh" onclick="document.location.reload(true)" />
 </form>
 <div class="infoheader">Wireless Information and Statistics</div>
