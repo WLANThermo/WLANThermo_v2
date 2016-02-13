@@ -18,25 +18,25 @@
 		<h1><?php echo $title; ?></h1>
 		<p>ein Projekt der BBQ-Community</p>
 		<br>
-		<p>Idee, Hardware und Backend (C) 2013-2015 by </p><p>&#10026; <b>Armin Thinnes</b> &#10026;</p>
+		<p>Idee, Hardware und Backend (C) 2013-2016 by </p><p>&#10026; <b>Armin Thinnes</b> &#10026;</p>
 		<hr class="linie">
-		<p>Web-Frontend (C) 2013-2015 by </p><p>&#10026; <b>Florian Riedl</b> &#10026;</p>
+		<p>Web-Frontend (C) 2013-2016 by </p><p>&#10026; <b>Florian Riedl</b> &#10026;</p>
 		<hr class="linie">
 		<p>Watchdog &amp; Pitmaster (C) 2013-2015 by</p><p>&#10026; <b>Joe16</b> &#10026;</p>
 		<hr class="linie">
-		<p>Display &amp; Pitmaster (C) 2015 by</p><p>&#10026; <b>Bj&ouml;rn</b> &#10026;</p>
+		<p>Display &amp; Pitmaster (C) 2015-2016 by</p><p>&#10026; <b>Bj&ouml;rn</b> &#10026;</p>
 		<hr class="linie">
 		<p>Grafik (C) 2013 by</p><p>&#10026; <b>Michael Spanel</b> &#10026;</p>
 		<hr class="linie">
 		<p>PCB Design und Layout (C) 2013-2015 by </p><p>&#10026; <b>Grillprophet</b> &#10026;</p>
 		<hr class="linie">
-		<p>Display Design (C) 2015 by </p><p>&#10026; <b>Alexander Sch&auml;fer</b> &#10026;</p>
+		<p>Display Design &amp; PCB v3 Mini(C) 2015-2016 by </p><p>&#10026; <b>Alexander Sch&auml;fer</b> &#10026;</p>
 	</div>
 	<div id="info_site_right">
 		<h1>Information</h1>
 		<p>&nbsp;</p>
 		<br>
-		<p>Backend: <b><?php if (isset($_SESSION["webGUIversion"])) {echo $_SESSION["webGUIversion"];}?></b> Frontend: <b><?php if (isset($_SESSION["webGUIversion"])) {echo $_SESSION["webGUIversion"];}?></b></p>
+		<p>Software Version: <b><?php if (isset($_SESSION["webGUIversion"])) {echo $_SESSION["webGUIversion"];}?></b></p>
 		<br>
 		<br>
 		<hr class="linie">
