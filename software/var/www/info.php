@@ -37,8 +37,7 @@
 		<p>&nbsp;</p>
 		<br>
 		<p>Software Version: <b><?php if (isset($_SESSION["webGUIversion"])) {echo $_SESSION["webGUIversion"];}?></b></p>
-		<br>
-		<br>
+		<p>Diese Software steht unter der <b><a href="LICENSE.txt" target="_blank">GPL</a></b> Lizenz</p>
 		<hr class="linie">
 		<?php
 		if ($_SESSION["checkUpdate"] == "True"){
