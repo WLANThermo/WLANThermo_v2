@@ -263,19 +263,8 @@ border-image:url(../images/border.png) 26 26 27 fill round;
 #info_site, #new_log_file_site, #shutdown, .infofield, .wifi_site{ /* Lederhintergrund Grau */
 background:url("../images/grau5x5cm.jpg");
 }
-#info_site a:link {
-    color: #ffc000;
-}
 
-#info_site a:visited {
-    color: #ffc000;
-}
-
-#info_site a:hover {
-    color: #ffc000;
-}
-
-#info_site a:active {
+#info_site a:link, #info_site a:visited, #info_site a:hover, #info_site a:active {
     color: #ffc000;
 }
 
