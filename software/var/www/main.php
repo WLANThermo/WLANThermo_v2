@@ -141,6 +141,10 @@ if (isset($_SESSION["to_update"])){
 			}
 		}
 	}	
+	function get_cputemp(){
+		exec("sudo /opt/vc/bin/vcgencmd measure_temp | tr -d \"temp=\" | tr -d \"'C\"",$output);
+		return $output[0];
+	}
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	// Temperaturwerte einlesen ###########################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
@@ -183,7 +187,7 @@ if (isset($_SESSION["to_update"])){
 	$cpuload = new CPULoad();
 	$cpuload->get_load();
 	$CPULOAD = round($cpuload->load["cpu"],1);
-	echo "CPU Auslastung: <b>".$CPULOAD."%</b>";
+	echo "CPU Auslastung: <b>".$CPULOAD."% / ".get_cputemp()."&#176;C</b>";
 	}
 	?>
 	</div>						 
@@ -375,22 +379,18 @@ if (isset($_SESSION["to_update"])){
 	// Alarmierung bei über/unterschreitung ###############################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
 
-	?>
-	<div id="sound">
-	<?php
 	if	($esound == "1")
 		{
 			if ($_SESSION["websoundalert"] == "True"){
-				echo    '<audio autoplay>';
-				echo		'<source src="buzzer.mp3" type="audio/mpeg" />';
-				echo		'<source src="buzzer.ogg" type="audio/ogg" />';
-				echo		'<source src="buzzer.m4a" type="audio/x-aac" />';
-				echo	'</audio>';
+				echo 	'<div id="sound">';
+				echo    	'<audio autoplay>';
+				echo			'<source src="buzzer.mp3" type="audio/mpeg" />';
+				echo			'<source src="buzzer.ogg" type="audio/ogg" />';
+				echo			'<source src="buzzer.m4a" type="audio/x-aac" />';
+				echo		'</audio>';
+				echo	'</div>';
 			}
 	}else{ $_SESSION["websoundalert"] = "True";}
-	?>
-	</div>
-<?php
 
 //-------------------------------------------------------------------------------------------------------------------------------------
 // Ausgabe diverser Variablen/SESSION - Nur für Debugzwecke ###########################################################################
