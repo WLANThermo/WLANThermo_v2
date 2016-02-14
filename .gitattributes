@@ -3,6 +3,8 @@
 
 *.py eol=lf
 *.php eol=lf
+*.js eol=lf
+*.conf eol=lf
 
 # Denote all files that are truly binary and should not be modified.
 *.png binary
