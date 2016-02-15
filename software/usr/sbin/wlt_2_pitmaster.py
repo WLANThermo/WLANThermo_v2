@@ -32,7 +32,6 @@ import threading
 import signal
 
 #GPIO START
-PIT_IO   = 2 # Pitmaster Relais 
 PIT_PWM  = 4 # Pitmaster PWM
 
 # Wir laufen als root, auch andere müssen die Config schreiben!
@@ -296,7 +295,7 @@ def main():
     last_pit = 0
     
     # Konfigurationsdatei einlesen
-    defaults = {'pit_startup_min': '25', 'pit_startup_threshold': '0', 'pit_startup_time':'0.5'}
+    defaults = {'pit_startup_min': '25', 'pit_startup_threshold': '0', 'pit_startup_time':'0.5', 'pit_io_gpio':'2'}
     Config = ConfigParser.SafeConfigParser(defaults)
     for i in range(0,5):
         while True:
@@ -362,6 +361,7 @@ def main():
     
     restart_pit = False
     pit_type = None
+    pit_io_gpio = None
     pit_inverted = False
     
     bbqpit = BBQpit(logger)
@@ -390,13 +390,23 @@ def main():
                     break
                 
                 pit_type_new = Config.get('Pitmaster','pit_type')
+                pit_io_gpio_new = Config.getint('Pitmaster','pit_io_gpio')
                 
                 if pit_type != pit_type_new:
                     logger.debug('Setting Pit type to: ' + pit_type_new)
                     if pit_type_new in ['io', 'io_pwm']:
-                        gpio = PIT_IO
+                        # GPIO für IO aus der Config
+                        logger.debug('Setting Pit IO GPIO to: ' + str(pit_io_gpio_new))
+                        gpio = pit_io_gpio_new
+                        pit_io_gpio = pit_io_gpio_new
                     else:
                         gpio = PIT_PWM
+                    restart_pit = True
+                
+                if pit_io_gpio != pit_io_gpio_new:
+                    # GPIO für IO geändert
+                    logger.debug('Setting Pit IO GPIO to: ' + str(pit_io_gpio_new))
+                    gpio = pit_io_gpio_new
                     restart_pit = True
                 
                 if pit_type_new in ['fan_pwm', 'fan', 'io_pwm']:
@@ -418,6 +428,7 @@ def main():
                 if restart_pit:
                     logger.debug('Restarting Pit...')
                     pit_type = pit_type_new
+                    pit_io_gpio = pit_io_gpio_new
                     bbqpit.stop_pit()
                     bbqpit.start_pit(pit_type, gpio)
                     restart_pit = False
