@@ -264,6 +264,10 @@ border-image:url(../images/border.png) 26 26 27 fill round;
 background:url("../images/grau5x5cm.jpg");
 }
 
+#info_site a:link, #info_site a:visited, #info_site a:hover, #info_site a:active {
+    color: #ffc000;
+}
+
 /* ################################################################################################################ */
 #config, #new_log_file_site, #shutdown, #info_site, .infofield, .wifi_site{
 margin:30px 10px 10px 10px;
