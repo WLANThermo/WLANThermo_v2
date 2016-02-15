@@ -339,11 +339,18 @@ def NX_sendvalues(values):
     global ser, NX_lf, NX_returnq, NX_wake_event
     # NX_sendcmd('sleep=0')
     error = False
-    for key, value in values.iteritems():
+    for rawkey, value in values.iteritems():
+        # Länge wird im Key mit codiert "key:länge"
+        keys = rawkey.split(':')
+        key = keys[0]
+        if len(keys) == 2:
+            length = int(keys[1])
+        else
+            length = None
         # Sendet die Daten zum Display und wartet auf eine Rückmeldung
         logger.debug("Sende " + key + ' zum Display: ' + str(value))
         if key[-3:] == 'txt':
-            ser.write(str(key) + '="' + str(value) + '"\xff\xff\xff')
+            ser.write(str(key) + '="' + str(value)[:length] + '"\xff\xff\xff')
         elif key[-3:]  == 'val':
             ser.write(str(key) + '=' + str(value) + '\xff\xff\xff')
         else:
@@ -831,7 +838,7 @@ def NX_display():
         NX_sendcmd('page update')
         stop_event.wait()
         return False
-    NX_sendvalues({'boot.text.txt':'Temperaturen werden geladen'})
+    NX_sendvalues({'boot.text.txt:35':'Temperaturen werden geladen'})
     # Werte initialisieren
     temps_event.clear()
     channels_event.clear()
@@ -842,7 +849,7 @@ def NX_display():
         temps_event.wait(0.1)
         temps = temp_getvalues()
     
-    NX_sendvalues({'boot.text.txt':'Konfiguration wird geladen'})
+    NX_sendvalues({'boot.text.txt:35':'Konfiguration wird geladen'})
     
     logger.debug('Hole Displaykonfiguration...')
     display = display_getvalues()
@@ -872,22 +879,22 @@ def NX_display():
     
     values = dict()
     for i in range(1, 11):
-        values['main.sensor_name' + str(i) + '.txt'] = sensors[i]['name']
+        values['main.sensor_name' + str(i) + '.txt:10'] = sensors[i]['name']
     for i in range(8):
         if temps[i]['value'] == '999.9':
-            values['main.kanal' + str(i) + '.txt'] = channels[i]['name']
+            values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name']
         else:
-            values['main.kanal' + str(i) + '.txt'] = temps[i]['value']
-        values['main.alert' + str(i) + '.txt'] = temps[i]['alert']
-        values['main.al' + str(i) + 'minist.txt'] = int(round(channels[i]['temp_min']))
-        values['main.al' + str(i) + 'maxist.txt'] = int(round(channels[i]['temp_max']))
+            values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value']
+        values['main.alert' + str(i) + '.txt:10'] = temps[i]['alert']
+        values['main.al' + str(i) + 'minist.txt:10'] = int(round(channels[i]['temp_min']))
+        values['main.al' + str(i) + 'maxist.txt:10'] = int(round(channels[i]['temp_max']))
         values['main.sensor_type' + str(i) + '.val'] = channels[i]['sensor']
-        values['main.name' + str(i) + '.txt'] = channels[i]['name']
+        values['main.name' + str(i) + '.txt:10'] = channels[i]['name']
     for interface in interfaces:
-        values['wlaninfo.' + interfaces[interface]['name'] + '.txt'] = interfaces[interface]['ip']
+        values['wlaninfo.' + interfaces[interface]['name'] + '.txt:20'] = interfaces[interface]['ip']
     values['main.pit_ch.val'] = int(pitconf['ch'])
     values['main.pit_power.val'] = int(round(pitmaster['new']))
-    values['main.pit_set.txt'] = round(pitconf['set'],1)
+    values['main.pit_set.txt:10'] = round(pitconf['set'],1)
     values['main.pit_lid.val'] = int(pitconf['open_lid_detection'])
     values['main.pit_on.val'] = int(pitconf['on'])
     values['main.pit_inverted.val'] = int(pitconf['inverted'])
@@ -900,11 +907,11 @@ def NX_display():
     # NX_sendcmd('thsp=' + str(values['main.timeout.val']))
     pit_types = {'fan':0, 'servo':1, 'io':2, 'io_pwm':3, 'fan_pwm':4}
     values['main.pit_type.val'] = pit_types[pitconf['type']]
-    NX_sendvalues({'boot.text.txt':'Werte werden uebertragen'})
+    NX_sendvalues({'boot.text.txt:35':'Werte werden uebertragen'})
     NX_sendvalues(values)
     
     # Ruft die Startseite auf, vorher Text zurücksetzen
-    NX_sendvalues({'boot.text.txt':'Verbindung wird hergestellt'})
+    NX_sendvalues({'boot.text.txt:35':'Verbindung wird hergestellt'})
     NX_sendcmd('page ' + display['start_page'])
     NX_wake_event.set()
     
@@ -993,15 +1000,15 @@ def NX_display():
                             interfaces = lan_getvalues()
                             if 'wlan0' in interfaces:
                                 # wlan0 hat eine IP-Adresse
-                                NX_sendvalues({'main.result.txt': 'IP:' + interfaces['wlan0']['ip']})
+                                NX_sendvalues({'main.result.txt:20': 'IP:' + interfaces['wlan0']['ip']})
                                 NX_sendcmd('page result')
                                 for interface in interfaces:
-                                    values['wlaninfo.' + interfaces[interface]['name'] + '.txt'] = interfaces[interface]['ip']
+                                    values['wlaninfo.' + interfaces[interface]['name'] + '.txt:20'] = interfaces[interface]['ip']
                                 NX_sendvalues(values)
                                 break
                             elif i == 44:
                                 # wlan0 hat nach 20s noch keine IP-Adresse
-                                NX_sendvalues({'main.result.txt': 'fehlgeschlagen'})
+                                NX_sendvalues({'main.result.txt:20': 'fehlgeschlagen'})
                                 NX_sendcmd('page result')
                                 break
                             else:
@@ -1012,7 +1019,7 @@ def NX_display():
                         values = dict()
                         interfaces = lan_getvalues()
                         for interface in interfaces:
-                            values['wlaninfo.' + interfaces[interface]['name'] + '.txt'] = interfaces[interface]['ip']
+                            values['wlaninfo.' + interfaces[interface]['name'] + '.txt:20'] = interfaces[interface]['ip']
                         signal = wlan_getsignal('wlan0')
                         values['main.signal.val'] = signal
                         NX_sendvalues(values)
@@ -1034,10 +1041,10 @@ def NX_display():
                             ssids_i = 0
                             logger.debug('SSIDs:' + str(ssids))
                             if not ssids:
-                                NX_sendvalues({'main.ssid.txt': 'Kein WLAN'})
+                                NX_sendvalues({'main.ssid.txt:35': 'Kein WLAN'})
                                 NX_sendcmd('page setup')
                             else:
-                                NX_sendvalues({'main.ssid.txt': ssids[ssids_i]})
+                                NX_sendvalues({'main.ssid.txt:35': ssids[ssids_i]})
                                 NX_sendcmd('page ssidselect')
                         elif event['data']['action'] == 1:
                             # voherige SSID
@@ -1045,14 +1052,14 @@ def NX_display():
                                 ssids_i = len(ssids)-1
                             else:
                                 ssids_i = ssids_i - 1
-                            NX_sendvalues({'main.ssid.txt': ssids[ssids_i]})
+                            NX_sendvalues({'main.ssid.txt:35': ssids[ssids_i]})
                         elif event['data']['action'] == 2:
                             # nächste SSID
                             if ssids_i >= len(ssids)-1:
                                 ssids_i = 0
                             else:
                                 ssids_i = ssids_i + 1
-                            NX_sendvalues({'main.ssid.txt': ssids[ssids_i]})
+                            NX_sendvalues({'main.ssid.txt:35': ssids[ssids_i]})
                 elif event['data']['area'] == 6:
                     if event['data']['id'] == 0:
                         if event['data']['action'] == 0:
@@ -1068,12 +1075,12 @@ def NX_display():
                 for i in range(8):
                     if temps[i]['value'] != new_temps[i]['value']:
                         if new_temps[i]['value'] == '999.9':
-                            values['main.kanal' + str(i) + '.txt'] = channels[i]['name']
+                            values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name']
                         else:
-                            values['main.kanal' + str(i) + '.txt'] = new_temps[i]['value']
+                            values['main.kanal' + str(i) + '.txt:10'] = new_temps[i]['value']
                     
                     if temps[i]['alert'] != new_temps[i]['alert']:
-                        values['main.alert' + str(i) + '.txt'] = new_temps[i]['alert']
+                        values['main.alert' + str(i) + '.txt:10'] = new_temps[i]['alert']
                 if not NX_sendvalues(values):
                     # Im Fehlerfall später wiederholen
                     temps_event.set()
@@ -1086,7 +1093,7 @@ def NX_display():
             new_pitconf = pitmaster_config_getvalues()
             
             if pitconf['set'] != new_pitconf['set']:
-                values['main.pit_set.txt'] = round(new_pitconf['set'],1)
+                values['main.pit_set.txt:10'] = round(new_pitconf['set'],1)
             if pitconf['ch'] != new_pitconf['ch']:
                 values['main.pit_ch.val'] = int(new_pitconf['ch'])
             if pitconf['open_lid_detection'] != new_pitconf['open_lid_detection']:
@@ -1132,15 +1139,15 @@ def NX_display():
             
             for i in range(8):
                 if channels[i]['temp_min'] != new_channels[i]['temp_min']:
-                    values['main.al' + str(i) + 'minist.txt'] = new_channels[i]['temp_min']
+                    values['main.al' + str(i) + 'minist.txt:10'] = new_channels[i]['temp_min']
                 if channels[i]['temp_max'] != new_channels[i]['temp_max']:
-                    values['main.al' + str(i) + 'maxist.txt'] = new_channels[i]['temp_max']
+                    values['main.al' + str(i) + 'maxist.txt:10'] = new_channels[i]['temp_max']
                 if channels[i]['sensor'] != new_channels[i]['sensor']:
                     values['main.sensor_type' + str(i) + '.val'] = new_channels[i]['sensor']
                 if channels[i]['name'] != new_channels[i]['name']:
-                    values['main.name' + str(i) + '.txt'] = new_channels[i]['name']
+                    values['main.name' + str(i) + '.txt:10'] = new_channels[i]['name']
                     if new_temps[i]['value'] == '999.9':
-                        values['main.kanal' + str(i) + '.txt'] = new_channels[i]['name']
+                        values['main.kanal' + str(i) + '.txt:10'] = new_channels[i]['name']
             if not NX_sendvalues(values):
                 # Im Fehlerfall später wiederholen
                 channels_event.set()
