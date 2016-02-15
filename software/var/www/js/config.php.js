@@ -18,6 +18,7 @@
 		document.getElementById("pit_servo_max").disabled=true;
 		document.getElementById("pit_pwm_max").disabled=true;
 		document.getElementById("pit_pwm_min").disabled=true;
+		document.getElementById("pit_io_gpio").disabled=true;
 	}
 	
 	function pit_settings_enable() {
@@ -39,6 +40,7 @@
 		document.getElementById("pit_servo_max").disabled=false;
 		document.getElementById("pit_pwm_min").disabled=false;
 		document.getElementById("pit_pwm_max").disabled=false;
+		document.getElementById("pit_io_gpio").disabled=false;
 	}
 	
 	function pid_settings_disable() {
@@ -119,12 +121,18 @@
 			pit_settings_enable();
 			check_pid_present();
 			if($('select#pit_type').val() == "servo"){
-					document.getElementById("pit_pwm_min").disabled=true;
-					document.getElementById("pit_pwm_max").disabled=true;
+				document.getElementById("pit_pwm_min").disabled=true;
+				document.getElementById("pit_pwm_max").disabled=true;
+				document.getElementById("pit_io_gpio").disabled=true;
 			}
-			if(($('select#pit_type').val() == "fan") || ($('select#pit_type').val() == "fan_pwm") || ($('select#pit_type').val() == "io") || ($('select#pit_type').val() == "io_pwm") ){
-					document.getElementById("pit_servo_min").disabled=true;
-					document.getElementById("pit_servo_max").disabled=true;
+			if(($('select#pit_type').val() == "fan") || ($('select#pit_type').val() == "fan_pwm")){
+				document.getElementById("pit_servo_min").disabled=true;
+				document.getElementById("pit_servo_max").disabled=true;
+				document.getElementById("pit_io_gpio").disabled=true;
+			}
+			if(($('select#pit_type').val() == "io") || ($('select#pit_type').val() == "io_pwm")){
+				document.getElementById("pit_servo_min").disabled=true;
+				document.getElementById("pit_servo_max").disabled=true;
 			}
 
 		}else{
@@ -322,8 +330,7 @@
 	}
 	function enableallcheckbox(){
 		//$("input:checkbox").attr('disabled', 'disabled'); //disable
-		$("input:checkbox").removeAttr('disabled'); //enable		
-		
+		$("input").removeAttr('disabled'); //enable			
 	}
 	
 	check_pit_present();
