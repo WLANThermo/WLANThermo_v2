@@ -35,7 +35,7 @@ from struct import *
 NX_lf = '\xff\xff\xff'
 NX_channel = 0
 NX_page = 0
-version = '0.15'
+version = '0.16'
 
 temps = dict()
 channels = dict()
@@ -833,7 +833,7 @@ def NX_display():
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
     logger.info('Version auf dem Display: ' + str(display_version))
-    if not str(display_version) in ['v0.5', 'v0.6', 'v0.7']:
+    if not str(display_version) in ['v0.8']:
         logger.info('Update des Displays notwendig')
         NX_sendcmd('page update')
         stop_event.wait()
@@ -894,7 +894,7 @@ def NX_display():
         values['wlaninfo.' + interfaces[interface]['name'] + '.txt:20'] = interfaces[interface]['ip']
     values['main.pit_ch.val'] = int(pitconf['ch'])
     values['main.pit_power.val'] = int(round(pitmaster['new']))
-    values['main.pit_set.txt:10'] = int(round(pitconf['set']))
+    values['main.pit_set.txt:10'] = round(pitconf['set'],1)
     values['main.pit_lid.val'] = int(pitconf['open_lid_detection'])
     values['main.pit_on.val'] = int(pitconf['on'])
     values['main.pit_inverted.val'] = int(pitconf['inverted'])
@@ -1093,7 +1093,7 @@ def NX_display():
             new_pitconf = pitmaster_config_getvalues()
             
             if pitconf['set'] != new_pitconf['set']:
-                values['main.pit_set.txt:10'] = int(round(new_pitconf['set']))
+                values['main.pit_set.txt:10'] = round(new_pitconf['set'],1)
             if pitconf['ch'] != new_pitconf['ch']:
                 values['main.pit_ch.val'] = int(new_pitconf['ch'])
             if pitconf['open_lid_detection'] != new_pitconf['open_lid_detection']:

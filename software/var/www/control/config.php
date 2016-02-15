@@ -709,7 +709,7 @@ if(isset($_POST["save"])) {
                     <option <?php if($ini['Pitmaster']['pit_ch'] == "7")                {echo " selected";} ?> value="7" >Kanal7</option>
                 </select>
             </div>
-            <div class="config_text row_1 col_3"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit_set" id="pit_set" size="5" maxlength="3" value="<?php echo $ini['Pitmaster']['pit_set'];?>"></div>
+            <div class="config_text row_1 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="pit_set" id="pit_set" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_set'];?>"></div>
             <div class="config_text row_1 col_4">Pause: </div>
             <div class="config_text row_1 col_5"><input type="text" onkeyup="this.value=this.value.replace(/[^\d\.]/g, '');" name="pit_pause" id="pit_pause" size="5" maxlength="4" value="<?php echo $ini['Pitmaster']['pit_pause'];?>"></div>
             <div class="config_text row_3 col_2"></div>
