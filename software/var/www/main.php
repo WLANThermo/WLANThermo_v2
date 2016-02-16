@@ -141,6 +141,10 @@ if (isset($_SESSION["to_update"])){
 			}
 		}
 	}	
+	function get_cputemp(){
+		exec("sudo /opt/vc/bin/vcgencmd measure_temp | tr -d \"temp=\" | tr -d \"'C\"",$output);
+		return $output[0];
+	}
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	// Temperaturwerte einlesen ###########################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
@@ -170,32 +174,6 @@ if (isset($_SESSION["to_update"])){
 			$pit_val = $pits[3];
 		}
 
-	//-------------------------------------------------------------------------------------------------------------------------------------	
-	// Temperaturwerte fuer iPhone App bereitstellen ############################################################################################
-	//-------------------------------------------------------------------------------------------------------------------------------------	
-
-	if(isset($_GET['getAll']) AND $_GET['getAll']=='getAll') {
-		$ini = readINIfile("./conf/WLANThermo.conf", ";");
-		// Array der Temperaturdaten erstellen
-		$arrT = array ('temp_0'=>$temp_0, 'temp_1'=>$temp_1, 'temp_2'=>$temp_2, 'temp_3'=>$temp_3, 'temp_4'=>$temp_4, 'temp_5'=>$temp_5, 'temp_6'=>$temp_6, 'temp_7'=>$temp_7, 'time_stamp'=>$time_stamp, 'currentlogfilename'=>$_SESSION["currentlogfilename"]);
-		// Array Erzeugung aller Configdaten die fÃŒr die App erforderlich sind
-		for ($i = 0; $i <= 7; $i++){
-			$temp_min[] = $ini['temp_min']['temp_min'.$i];  
-			$temp_max[] = $ini['temp_max']['temp_max'.$i];
-			$ch_name[] = $ini['ch_name']['ch_name'.$i];			
-			// Array erstellen incl. Kanal am ende
-			$arr = array ('temp_min'=>$temp_min[$i], 'temp_max'=>$temp_max[$i], 'ch_name'=>$ch_name[$i], 'ch'=>$i);
-			// Array beschreiben
-			$arrayGesamt[] = array ($arr);
-		} //Ende forschleife			
-		// Array der Temperaturdaten zusammenfassen
-		$arrayGesamt[] = array($arrT);
-		//JSon Encode des Arrays
-		echo json_encode($arrayGesamt);	
-		//Beenden des weiteren Codes
-		exit;	
-	}
-
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	// Anzeige Letzte Messung #############################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
@@ -209,7 +187,7 @@ if (isset($_SESSION["to_update"])){
 	$cpuload = new CPULoad();
 	$cpuload->get_load();
 	$CPULOAD = round($cpuload->load["cpu"],1);
-	echo "CPU Auslastung: <b>".$CPULOAD."%</b>";
+	echo "CPU Auslastung: <b>".$CPULOAD."% / ".get_cputemp()."&#176;C</b>";
 	}
 	?>
 	</div>						 
@@ -236,7 +214,7 @@ if (isset($_SESSION["to_update"])){
 	$plot = "plot ";
 	for ($i = 0; $i <= 7; $i++){
 		$a = $i + 2 ;
-		$chp[$i] = "'/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:$a with lines lw 2 lc rgb \\\"$color_ch[$i]\\\" t '$channel_name[$i]'  axes x1y1";
+		$chp[$i] = "'/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:$a with lines lw 2 lc rgb \\\"$color_ch[$i]\\\" t '$channel_name[$i]'  axes x1y2";
 	}	
 			
 	//-------------------------------------------------------------------------------------------------------------------------------------
@@ -401,22 +379,18 @@ if (isset($_SESSION["to_update"])){
 	// Alarmierung bei über/unterschreitung ###############################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
 
-	?>
-	<div id="sound">
-	<?php
 	if	($esound == "1")
 		{
 			if ($_SESSION["websoundalert"] == "True"){
-				echo    '<audio autoplay>';
-				echo		'<source src="buzzer.mp3" type="audio/mpeg" />';
-				echo		'<source src="buzzer.ogg" type="audio/ogg" />';
-				echo		'<source src="buzzer.m4a" type="audio/x-aac" />';
-				echo	'</audio>';
+				echo 	'<div id="sound">';
+				echo    	'<audio autoplay>';
+				echo			'<source src="buzzer.mp3" type="audio/mpeg" />';
+				echo			'<source src="buzzer.ogg" type="audio/ogg" />';
+				echo			'<source src="buzzer.m4a" type="audio/x-aac" />';
+				echo		'</audio>';
+				echo	'</div>';
 			}
 	}else{ $_SESSION["websoundalert"] = "True";}
-	?>
-	</div>
-<?php
 
 //-------------------------------------------------------------------------------------------------------------------------------------
 // Ausgabe diverser Variablen/SESSION - Nur für Debugzwecke ###########################################################################

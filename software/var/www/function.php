@@ -264,19 +264,19 @@ function getPlotConfig($plot){
 	$plot_setting .= "set timefmt \\\"%d.%m.%y %H:%M:%S\\\";";
 	$plot_setting .= "set format x \\\"%H:%M\\\";";
 	$plot_setting .= "set xlabel \\\"Uhrzeit\\\";";
-	$plot_setting .= "set ylabel \\\"Temperatur [°C]\\\";";
-	$plot_setting .= "set yrange [".$_SESSION["plotbereich_min"].":".$_SESSION["plotbereich_max"]."];";
+	$plot_setting .= "set y2label \\\"Temperatur [°C]\\\";";
+	$plot_setting .= "set y2range [".$_SESSION["plotbereich_min"].":".$_SESSION["plotbereich_max"]."];";
 	$plot_setting .= "set xtics nomirror;";
-	$plot_setting .= "set ytics nomirror;";
+	$plot_setting .= "set y2tics nomirror;";
 	if ($_SESSION["plot_pit"] == "True") {
-		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:10 with lines lw 2 lc rgbcolor '" . $_SESSION["color_pit"] ."' t 'Pitmaster %' axes x1y2";
-		$plot_setting .= "set y2label \\\"Pitmaster %\\\";";
-		$plot_setting .= 'set y2range ["0":"105"];';
-		$plot_setting .= "set y2tics nomirror;";
+		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:10 with lines lw 2 lc rgbcolor '" . $_SESSION["color_pit"] ."' t 'Pitmaster %' axes x1y1";
+		$plot_setting .= "set ylabel \\\"Pitmaster %\\\";";
+		$plot_setting .= 'set yrange ["0":"105"];';
+		$plot_setting .= "set ytics nomirror;";
 	}else{
-		$plot_setting .= "set y2label \\\"Temperatur [°C]\\\";";
-		$plot_setting .= "set y2range [".$_SESSION["plotbereich_min"].":".$_SESSION["plotbereich_max"]."];";
-		$plot_setting .= "set y2tics nomirror;";		
+		$plot_setting .= "set ylabel \\\"Temperatur [°C]\\\";";
+		$plot_setting .= "set yrange [".$_SESSION["plotbereich_min"].":".$_SESSION["plotbereich_max"]."];";
+		$plot_setting .= "set ytics nomirror;";		
 	}	
 	$plot_setting = "".$plot_setting."".$plot."";
 	return $plot_setting;
