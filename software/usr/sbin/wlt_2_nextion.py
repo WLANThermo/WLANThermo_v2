@@ -345,7 +345,7 @@ def NX_sendvalues(values):
         key = keys[0]
         if len(keys) == 2:
             length = int(keys[1])
-        else
+        else:
             length = None
         # Sendet die Daten zum Display und wartet auf eine Rückmeldung
         logger.debug("Sende " + key + ' zum Display: ' + str(value))
@@ -833,7 +833,7 @@ def NX_display():
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
     logger.info('Version auf dem Display: ' + str(display_version))
-    if not str(display_version) in ['v0.8']:
+    if not str(display_version) in ['v0.5', 'v0.6', 'v0.7', 'v0.8']:
         logger.info('Update des Displays notwendig')
         NX_sendcmd('page update')
         stop_event.wait()
