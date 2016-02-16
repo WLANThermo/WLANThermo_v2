@@ -142,9 +142,13 @@ if (isset($_SESSION["to_update"])){
 		}
 	}	
 	function get_cputemp(){
-		exec("sudo /opt/vc/bin/vcgencmd measure_temp | tr -d \"temp=\" | tr -d \"'C\"",$output);
-		return $output[0];
-	}
+		exec("sudo /opt/vc/bin/vcgencmd measure_temp | tr -d \"temp=\" | tr -d \"'C\"",$output, $return);
+		if((!$return) AND (isset($output[0]))){
+			return $output[0];
+		}else{
+			return "n/a";
+		}
+	} 
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	// Temperaturwerte einlesen ###########################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
