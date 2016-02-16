@@ -345,7 +345,7 @@ def NX_sendvalues(values):
         key = keys[0]
         if len(keys) == 2:
             length = int(keys[1])
-        else
+        else:
             length = None
         # Sendet die Daten zum Display und wartet auf eine Rückmeldung
         logger.debug("Sende " + key + ' zum Display: ' + str(value))
@@ -777,6 +777,7 @@ def wlan_setpassphrase(ssid, psk):
     fw = file('/etc/wpa_supplicant/wpa_supplicant.conf').readlines()
     ssids = list()
     psks = list()
+    ssid_found = False
     
     for line in fw:
         if re.search(r'SSID',line,re.IGNORECASE):
@@ -786,6 +787,7 @@ def wlan_setpassphrase(ssid, psk):
     wpa_file = open('/etc/wpa_supplicant/wpa_supplicant.conf' + '_tmp', 'w')
     wpa_file.write('ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\n')
     wpa_file.write('update_config=1\n')
+    
     if ssids:
         for i in range(len(ssids)):
             logger.debug('Schreibe wpa_supplicant.conf für: ' + ssids[i])
@@ -793,18 +795,19 @@ def wlan_setpassphrase(ssid, psk):
                 # Wert verändert
                 logger.debug('SSID bereits in Config, PSK ändern')
                 wpa_passphrase = os.popen("/usr/bin/wpa_passphrase " + str(ssid) + ' ' + str(psk)).readlines()
+                ssid_found = True
             else:
                 # neue SSID
-                logger.debug('SSID noch nicht in Config')
+                logger.debug('SSID und PSK aus alter Datei übernommen')
                 wpa_passphrase = os.popen("/usr/bin/wpa_passphrase " + str(ssids[i]) + ' ' + str(psks[i])).readlines()
             if wpa_passphrase[0] != "Passphrase must be 8..63 characters":
                 for line in wpa_passphrase:
                     wpa_file.write(line)
             else:
                 logger.warning('Neuer PSK zu kurz für SSID: ' + ssid)
-    else:
-        # Keine konfigurierten WLANs, nur das neue hinzufügen
-        logger.debug('Schreibe wpa_supplicant.conf nur für: ' + ssid)
+    if not ssid_found:
+        # SSID nicht in konfigurierten WLANs, das neue hinzufügen
+        logger.debug('Schreibe wpa_supplicant.conf für: ' + ssid)
         wpa_passphrase = os.popen("/usr/bin/wpa_passphrase " + str(ssid) + ' ' + str(psk)).readlines()
         if wpa_passphrase[0] != "Passphrase must be 8..63 characters":
             for line in wpa_passphrase:
@@ -833,7 +836,7 @@ def NX_display():
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
     logger.info('Version auf dem Display: ' + str(display_version))
-    if not str(display_version) in ['v0.8']:
+    if not str(display_version) in ['v0.5', 'v0.6', 'v0.7', 'v0.8']:
         logger.info('Update des Displays notwendig')
         NX_sendcmd('page update')
         stop_event.wait()
