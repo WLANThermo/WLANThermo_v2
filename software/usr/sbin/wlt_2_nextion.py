@@ -842,6 +842,8 @@ def NX_display():
         stop_event.wait()
         return False
     NX_sendvalues({'boot.text.txt:35':'Temperaturen werden geladen'})
+    NX_switchpage('boot')
+    
     # Werte initialisieren
     temps_event.clear()
     channels_event.clear()
