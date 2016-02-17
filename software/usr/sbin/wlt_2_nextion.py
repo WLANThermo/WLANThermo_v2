@@ -35,7 +35,7 @@ from struct import *
 NX_lf = '\xff\xff\xff'
 NX_channel = 0
 NX_page = 0
-version = '0.16'
+version = '0.17'
 
 temps = dict()
 channels = dict()
@@ -836,7 +836,7 @@ def NX_display():
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
     logger.info('Version auf dem Display: ' + str(display_version))
-    if not str(display_version) in ['v0.5', 'v0.6', 'v0.7', 'v0.8']:
+    if not str(display_version) in ['v0.9']:
         logger.info('Update des Displays notwendig')
         NX_sendcmd('page update')
         stop_event.wait()
