@@ -1255,8 +1255,10 @@ if NX_init(display['serialdevice'], display['serialspeed']):
                 break
             time.sleep(0.5)
     except KeyboardInterrupt:
-        pass
-        
+        if NX_wake_event.is_set():
+            NX_sendvalues(['boot.nextion_down.val': 1])
+            NX_switchpage('boot')
+    
     logger.debug('Sende Stopsignal an alle Threads')
     notifier.stop()
     # Signal zum stoppen geben
