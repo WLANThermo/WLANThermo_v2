@@ -1177,6 +1177,10 @@ def config_write(configfile, config):
         os.rename(configfile + '_tmp', configfile)
 
 
+def raise_keyboard(signum, frame):
+    raise KeyboardInterrupt('Received SIGTERM')
+
+
 def check_pid(pid):
     try:
         os.kill(pid, 0)
@@ -1224,28 +1228,32 @@ logger.debug('Öffne seriellen Port: ' + display['serialdevice'])
 ser = serial.Serial()
 
 logger.debug('Initialisiere Display,  Baudrate: ' + str(display['serialspeed']))
+
 if NX_init(display['serialdevice'], display['serialspeed']):
     logger.debug('Initialisierung OK')
+    
+    signal.signal(15, raise_keyboard)
+    
     logger.debug('Starte Reader-Thread')
     NX_reader_thread = threading.Thread(target=NX_reader)
     NX_reader_thread.daemon = True
     NX_reader_thread.start()
-
+    
     logger.debug('Starte Display-Thread')
     NX_display_thread = threading.Thread(target=NX_display)
     NX_display_thread.daemon = True
     NX_display_thread.start()
-
+    
     logger.debug('Starte Dateiüberwachung')
     wm = pyinotify.WatchManager()
     mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
     notifier = pyinotify.ThreadedNotifier(wm, FileEvent())
     notifier.start()
-
+    
     wdd = wm.add_watch(curPath, mask)
     wdd2 = wm.add_watch(pitPath, mask)
     wdd3 = wm.add_watch(confPath, mask)
-
+    
     try:
         while True:
             # Hauptschleife
@@ -1267,7 +1275,7 @@ if NX_init(display['serialdevice'], display['serialspeed']):
     # Auf Threads warten
     NX_display_thread.join()
     NX_reader_thread.join()
-
+    
 else:
     logger.error('Keine Verbindung zum Nextion Display')
     
