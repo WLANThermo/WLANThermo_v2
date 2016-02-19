@@ -35,7 +35,7 @@ from struct import *
 NX_lf = '\xff\xff\xff'
 NX_channel = 0
 NX_page = 0
-version = '0.16'
+version = '0.17'
 
 temps = dict()
 channels = dict()
@@ -836,12 +836,14 @@ def NX_display():
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
     logger.info('Version auf dem Display: ' + str(display_version))
-    if not str(display_version) in ['v0.5', 'v0.6', 'v0.7', 'v0.8']:
+    if not str(display_version) in ['v0.9']:
         logger.info('Update des Displays notwendig')
         NX_sendcmd('page update')
         stop_event.wait()
         return False
     NX_sendvalues({'boot.text.txt:35':'Temperaturen werden geladen'})
+    NX_switchpage('boot')
+    
     # Werte initialisieren
     temps_event.clear()
     channels_event.clear()
@@ -1177,6 +1179,10 @@ def config_write(configfile, config):
         os.rename(configfile + '_tmp', configfile)
 
 
+def raise_keyboard(signum, frame):
+    raise KeyboardInterrupt('Received SIGTERM')
+
+
 def check_pid(pid):
     try:
         os.kill(pid, 0)
@@ -1224,28 +1230,32 @@ logger.debug('Öffne seriellen Port: ' + display['serialdevice'])
 ser = serial.Serial()
 
 logger.debug('Initialisiere Display,  Baudrate: ' + str(display['serialspeed']))
+
 if NX_init(display['serialdevice'], display['serialspeed']):
     logger.debug('Initialisierung OK')
+    
+    signal.signal(15, raise_keyboard)
+    
     logger.debug('Starte Reader-Thread')
     NX_reader_thread = threading.Thread(target=NX_reader)
     NX_reader_thread.daemon = True
     NX_reader_thread.start()
-
+    
     logger.debug('Starte Display-Thread')
     NX_display_thread = threading.Thread(target=NX_display)
     NX_display_thread.daemon = True
     NX_display_thread.start()
-
+    
     logger.debug('Starte Dateiüberwachung')
     wm = pyinotify.WatchManager()
     mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
     notifier = pyinotify.ThreadedNotifier(wm, FileEvent())
     notifier.start()
-
+    
     wdd = wm.add_watch(curPath, mask)
     wdd2 = wm.add_watch(pitPath, mask)
     wdd3 = wm.add_watch(confPath, mask)
-
+    
     try:
         while True:
             # Hauptschleife
@@ -1255,8 +1265,10 @@ if NX_init(display['serialdevice'], display['serialspeed']):
                 break
             time.sleep(0.5)
     except KeyboardInterrupt:
-        pass
-        
+        if NX_wake_event.is_set():
+            NX_sendvalues({'boot.nextion_down.val': 1})
+            NX_switchpage('boot')
+    
     logger.debug('Sende Stopsignal an alle Threads')
     notifier.stop()
     # Signal zum stoppen geben
@@ -1265,7 +1277,7 @@ if NX_init(display['serialdevice'], display['serialspeed']):
     # Auf Threads warten
     NX_display_thread.join()
     NX_reader_thread.join()
-
+    
 else:
     logger.error('Keine Verbindung zum Nextion Display')
     
