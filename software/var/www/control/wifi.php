@@ -1,4 +1,5 @@
 <?php
+// based on the original scripts from SirLagz(http://sirlagz.net/2013/02/06/script-web-configuration-page-for-raspberry-pi/)
 session_start();
 include('../header.php');
 include('../function.php');

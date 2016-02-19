@@ -1,3 +1,4 @@
+// based on the original scripts from SirLagz(http://sirlagz.net/2013/02/06/script-web-configuration-page-for-raspberry-pi/)
 function WiFiDown() {
         var down = confirm("Take down wlan0 ?");
         if(down) {
