@@ -9,13 +9,13 @@
 		$message .= "Variable - Config neu einlesen\n";
 		session("../conf/WLANThermo.conf");
 	}
-	if(file_exists('../tmp/update')){
+	if((file_exists('../tmp/update')) OR (file_exists('../tmp/nextionupdatelog'))){
 		echo '<div id="info_site">';
 		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Das Update wurde bereits gestartet...</h2></body>";
 		echo '</div>';
 		exit;
 	}
-	if (!isset($_SESSION["newversion"])){
+	if ((!isset($_SESSION["newversion"])) or (!isset($_SESSION["nextionupdate"]))){
 		echo '<div id="info_site">';
 		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>keine neuen Updates vorhanden...</h2></body>";
 		echo '</div>';
@@ -219,9 +219,42 @@ if(isset($_POST["back"])) {
 	<br>	
 	<?php
 	
+}elseif(isset($_POST["update_nextion"])){
+	?>
+	<div id="info_site">
+		<h1>Update Installieren</h1>
+		<p> f&uuml;r das NEXTION Display wurde ein neues Update gefunden</p>
+		<br>
+		<br>
+		<br>
+		<p>Wollen Sie das Update installieren?</p>	
+		<form action="./update.php" method="POST" >							
+				<table align="center" width="80%">
+					<tr>
+						<td width="20%"></td>
+						<td align="center"> 
+							<input type="submit" class=button_yes name="nextion_update_confirm"  value="">
+							<input type="submit" class=button_back name="back"  value=""> 
+						</td>
+						<td width="20%"></td>
+					</tr>
+				</table>
+		</form>			
+	</div>
+	<?php
+}elseif(isset($_POST["nextion_update_confirm"])){
+?>
+		<div id="info_site">
+			<h1>Update Installieren</h1>
+			<br>
+			<?php
+				exec("/usr/sbin/wlt_2_updatenextion.sh /usr/share/WLANThermo/nextion/NX3224T028.tft > /var/www/tmp/error.txt &",$output);
+				echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Das Update wird nun Installiert...</h2></body>";
+			?>
+		</div>
+		<?php
+
 }else{
-
-
 // ####################################################################################################################################
 ?>
 </div>

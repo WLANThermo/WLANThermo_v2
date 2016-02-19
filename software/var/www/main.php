@@ -56,6 +56,23 @@ if (file_exists(dirname(__FILE__).'/tmp/reboot')) {
 	echo '<script>$(function() { showLoading();});</script>';
 	exit;
 }
+if (file_exists(dirname(__FILE__).'/tmp/nextionupdate')) { 
+	$message .= "Nextion - Update verfügbar\n";
+	$nextionupdate = "NX3224T028.tft";
+	$_SESSION["nextionupdate"] = $nextionupdate;
+	if (file_exists(dirname(__FILE__).'/tmp/nextionupdatelog')) {
+		$message .= "Nextion - Update wird gestartet\n";
+		$lines = file('tmp/nextionupdatelog');
+		$last_line = $lines[count($lines)-1];
+		echo '<script>$(function() { showLoading();});</script>';
+		echo '<div id="info_site"><p><b>NEXTION Display update:</b> '.$last_line.'</p></div>';
+		exit;
+	}
+}else{
+	if (isset($_SESSION["nextionupdate"])){
+		unset($_SESSION["nextionupdate"]);
+	}
+}
 if (isset($_SESSION["to_update"])){
 	if ($_SESSION["to_update"] == "True"){
 		if (file_exists(dirname(__FILE__).'/conf/WLANThermo.conf') AND file_exists(dirname(__FILE__).'/conf/WLANThermo.conf.old')) {

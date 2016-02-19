@@ -34,18 +34,19 @@
 	</div>
 	<div id="info_site_right">
 		<h1>Information</h1>
-		<p>&nbsp;</p>
+		<p>Diese Software steht unter der <b><a href="LICENSE.txt" target="_blank">GPL</a></b> Lizenz</p>
 		<br>
 		<p>Software Version: <b><?php if (isset($_SESSION["webGUIversion"])) {echo $_SESSION["webGUIversion"];}?></b></p>
-		<p>Diese Software steht unter der <b><a href="LICENSE.txt" target="_blank">GPL</a></b> Lizenz</p>
+		<p>&nbsp;</p>
 		<hr class="linie">
 		<?php
-		if ($_SESSION["checkUpdate"] == "True"){
-			echo "<p>&#10026; <b>Update:</b> &#10026;</p>";	
+		if ($_SESSION["checkUpdate"] == "True"){	
 			if ($_SESSION["updateAvailable"] == "False"){
+				echo "<p>&#10026; <b>WLANThermo Update:</b> &#10026;</p>";
 				echo "<p>keine neuen Updates vorhanden</p>";
 				echo '<hr class="linie">';
 			}elseif	($_SESSION["updateAvailable"] == "True"){
+				echo "<p>&#10026; <b>WLANThermo Update:</b> &#10026;</p>";
 				echo "<p>neues Update verf&uuml;gbar</p>";
 				echo '<hr class="linie">';
 				echo '<p>Installierte Version: <b>';
@@ -61,8 +62,18 @@
 				echo '<hr class="linie">';
 				echo '<form action="./control/update.php">';
 				echo '<p><input class="button" type="submit" value="Aktualisieren"/></p>';
-				echo '</form>';				
+				echo '</form>';			
 			}
+		}
+		if	(isset($_SESSION["nextionupdate"])){
+				
+				echo "<p>&#10026; <b>Nextion Update:</b> &#10026;</p>";
+				echo "<p>neues Update verf&uuml;gbar</p>";
+				echo '</b></p>';
+				echo '<hr class="linie">';
+				echo '<form action="./control/update.php" method="post">';
+				echo '<p><input class="button" type="submit" name="update_nextion" value="Aktualisieren"/></p>';
+				echo '</form>';				
 		}
 		?>
 		<div id="info_site_gutglut"></div>	
