@@ -842,6 +842,9 @@ def NX_display():
         open('/var/www/tmp/nextionupdate', 'w').close()
         stop_event.wait()
         return False
+    if os.path.isfile('/var/www/tmp/nextionupdate'):
+        # Update-Flag löschen wenn Version i.O.
+        os.unlink('/var/www/tmp/nextionupdate')
     NX_sendvalues({'boot.text.txt:35':'Temperaturen werden geladen'})
     NX_switchpage('boot')
     
