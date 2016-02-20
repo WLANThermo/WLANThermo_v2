@@ -4,23 +4,26 @@
 	$document_root = getenv('DOCUMENT_ROOT');
 	include("../function.php");
 	include("../header.php");
+	//echo nl2br(print_r($_POST,true));
 	$inipath = '../conf/WLANThermo.conf';	
 	if (!isset($_SESSION["current_temp"])) {
 		$message .= "Variable - Config neu einlesen\n";
 		session("../conf/WLANThermo.conf");
 	}
-	if((file_exists('../tmp/update')) OR (file_exists('../tmp/nextionupdatelog'))){
+	if(file_exists('../tmp/update')	OR file_exists('../tmp/nextionupdatelog')){
 		echo '<div id="info_site">';
 		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Das Update wurde bereits gestartet...</h2></body>";
 		echo '</div>';
 		exit;
 	}
-	if ((!isset($_SESSION["newversion"])) or (!isset($_SESSION["nextionupdate"]))){
+	
+	if(!isset($_SESSION["nextionupdate"]) OR !isset($_SESSION["newversion"])){
 		echo '<div id="info_site">';
 		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>keine neuen Updates vorhanden...</h2></body>";
 		echo '</div>';
-		exit;
+		exit;		
 	}
+		
 ?>
 		<script>
 		$(function() {	
@@ -219,7 +222,7 @@ if(isset($_POST["back"])) {
 	<br>	
 	<?php
 	
-}elseif(isset($_POST["update_nextion"])){
+}elseif(isset($_POST['update_nextion'])){
 	?>
 	<div id="info_site">
 		<h1>Update Installieren</h1>
@@ -284,6 +287,6 @@ if(isset($_POST["back"])) {
 <div class="clear"></div>
 </div>
 <?php
-include("".$document_root."/footer.php");
 }
+include("".$document_root."/footer.php");
 ?>
