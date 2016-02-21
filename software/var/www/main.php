@@ -60,6 +60,7 @@ if (file_exists(dirname(__FILE__).'/tmp/nextionupdate')) {
 	$message .= "Nextion - Update verfügbar\n";
 	$nextionupdate = "NX3224T028.tft";
 	$_SESSION["nextionupdate"] = $nextionupdate;
+	echo '<script>$(function() { showUpdate();});</script>';
 	if (file_exists(dirname(__FILE__).'/tmp/nextionupdatelog')) {
 		$message .= "Nextion - Update wird gestartet\n";
 		$lines = file('tmp/nextionupdatelog');
@@ -71,6 +72,7 @@ if (file_exists(dirname(__FILE__).'/tmp/nextionupdate')) {
 }else{
 	if (isset($_SESSION["nextionupdate"])){
 		unset($_SESSION["nextionupdate"]);
+		echo '<script>$(function() { hideUpdate();});</script>';
 	}
 }
 if (isset($_SESSION["to_update"])){
