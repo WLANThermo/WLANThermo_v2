@@ -39,16 +39,15 @@ BAUDUPLOAD = 115200
 CHECK_MODEL = 'NX3224T028'
 
 if len(sys.argv) != 2:
-	print 'usage: python %s file_to_upload.tft' % sys.argv[0]
-	exit(-2)
+    sys.exit('usage: python %s file_to_upload.tft' % sys.argv[0])
 
 file_path = sys.argv[1]
 
 if os.path.isfile(file_path):
-	print 'uploading %s (%i bytes)...' % (file_path, os.path.getsize(file_path))
+    print 'uploading %s (%i bytes)...' % (file_path, os.path.getsize(file_path))
 else:
-	print 'file not found'
-	exit(-1)
+    sys.exit('file not found')
+
 
 fsize = os.path.getsize(file_path)
 print('Filesize: ' + str(fsize))
@@ -97,7 +96,10 @@ def upload():
             #print 'writing %i...' % len(data)
             ser.write(data)
             acked.clear()
-            sys.stdout.write('\rDownloading, %3.1f%%...' % (dcount/ float(fsize)*100.0))
+            if sys.stdout.isatty():
+                sys.stdout.write('\rUploading, %3.1f%%...' % (dcount/ float(fsize)*100.0))
+            else:
+                print('Uploading, %3.1f%%...' % (dcount/ float(fsize)*100.0))
             sys.stdout.flush()
             #print 'waiting for hmi...'
             acked.wait()
@@ -114,6 +116,14 @@ for baudrate in (2400, 4800, 9600, 19200, 38400, 57600, 115200):
     ser.baudrate = baudrate
     ser.timeout = 3000/baudrate + 0.2
     print('Trying with ' + str(baudrate) + '...')
+    # Clear Buffers and Wake-Up
+    ser.write("\xff\xff\xff")
+    ser.write('sleep=0')
+    ser.write("\xff\xff\xff")
+    ser.flush()
+    time.sleep(0.2)
+    ser.flushInput()
+    # Connect to Display
     ser.write("\xff\xff\xff")
     ser.write('connect')
     ser.write("\xff\xff\xff")
@@ -128,18 +138,14 @@ for baudrate in (2400, 4800, 9600, 19200, 38400, 57600, 115200):
         print('Serial: ' + serial)
         print('Flash size: ' + flash_size)
         if fsize > flash_size:
-            print('File too big!')
-            break
+            sys.exit('File too big!')
         if not CHECK_MODEL in model:
-            print('Wrong Display!')
-            break
+            sys.exit('Wrong Display!')
         upload()
         break
 
 if no_connect:
-    print('No connection!')
+    sys.exit('No connection!')
 else:
-    print('File written to Display!')
-
-ser.close()
+    print('File uploaded to Display!')
 

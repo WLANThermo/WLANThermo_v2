@@ -35,7 +35,7 @@ from struct import *
 NX_lf = '\xff\xff\xff'
 NX_channel = 0
 NX_page = 0
-version = '0.17'
+version = '0.18'
 
 temps = dict()
 channels = dict()
@@ -839,8 +839,12 @@ def NX_display():
     if not str(display_version) in ['v0.9']:
         logger.info('Update des Displays notwendig')
         NX_sendcmd('page update')
+        open('/var/www/tmp/nextionupdate', 'w').close()
         stop_event.wait()
         return False
+    if os.path.isfile('/var/www/tmp/nextionupdate'):
+        # Update-Flag löschen wenn Version i.O.
+        os.unlink('/var/www/tmp/nextionupdate')
     NX_sendvalues({'boot.text.txt:35':'Temperaturen werden geladen'})
     NX_switchpage('boot')
     
@@ -1280,7 +1284,8 @@ if NX_init(display['serialdevice'], display['serialspeed']):
     
 else:
     logger.error('Keine Verbindung zum Nextion Display')
-    
+    # Vielleicht ist die Software noch nicht auf dem Display installiert
+    open('/var/www/tmp/nextionupdate', 'w').close()
 
 logger.info('Display stopped!')
 logging.shutdown()

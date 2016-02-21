@@ -16,8 +16,12 @@
 		echo '</div>';
 		exit;
 	}
+<<<<<<< HEAD
 	
 	if(!isset($_SESSION["nextionupdate"]) OR !isset($_SESSION["newversion"])){
+=======
+	if ((!isset($_SESSION["newversion"])) and (!isset($_SESSION["nextionupdate"]))){
+>>>>>>> origin/Nextion-GUI-Update
 		echo '<div id="info_site">';
 		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>keine neuen Updates vorhanden...</h2></body>";
 		echo '</div>';
@@ -251,7 +255,7 @@ if(isset($_POST["back"])) {
 			<h1>Update Installieren</h1>
 			<br>
 			<?php
-				exec("/usr/sbin/wlt_2_updatenextion.sh /usr/share/WLANThermo/nextion/NX3224T028.tft > /var/www/tmp/error.txt &",$output);
+				exec("sudo /usr/sbin/wlt_2_updatenextion.sh /usr/share/WLANThermo/nextion/NX3224T028.tft > /var/www/tmp/error.txt &",$output);
 				echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Das Update wird nun Installiert...</h2></body>";
 			?>
 		</div>
