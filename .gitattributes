@@ -5,6 +5,8 @@
 *.php eol=lf
 *.js eol=lf
 *.conf eol=lf
+*.sh eol=lf
+*.css eol=lf
 
 # Denote all files that are truly binary and should not be modified.
 *.png binary
