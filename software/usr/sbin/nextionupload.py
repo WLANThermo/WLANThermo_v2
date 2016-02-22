@@ -112,7 +112,7 @@ threader = threading.Thread(target = reader)
 threader.daemon = True
 
 no_connect = True
-for baudrate in (2400, 4800, 9600, 19200, 38400, 57600, 115200):
+for baudrate in (9600, 115200, 2400, 4800, 19200, 38400, 57600):
     ser.baudrate = baudrate
     ser.timeout = 3000/baudrate + 0.2
     print('Trying with ' + str(baudrate) + '...')
@@ -121,10 +121,9 @@ for baudrate in (2400, 4800, 9600, 19200, 38400, 57600, 115200):
     ser.write('sleep=0')
     ser.write("\xff\xff\xff")
     ser.flush()
-    time.sleep(0.2)
+    time.sleep(0.3)
     ser.flushInput()
     # Connect to Display
-    ser.write("\xff\xff\xff")
     ser.write('connect')
     ser.write("\xff\xff\xff")
     r = ser.read(128)
