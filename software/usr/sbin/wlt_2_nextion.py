@@ -794,12 +794,12 @@ def wlan_setpassphrase(ssid, psk):
             if ssid == ssids[i]:
                 # Wert verändert
                 logger.debug('SSID bereits in Config, PSK ändern')
-                wpa_passphrase = subprocess.Popen(("/usr/bin/wpa_passphrase", str(ssid), str(psk))).readlines()
+                wpa_passphrase = subprocess.Popen(("/usr/bin/wpa_passphrase", str(ssid), str(psk)), stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.readlines()
                 ssid_found = True
             else:
                 # neue SSID
                 logger.debug('SSID und PSK aus alter Datei übernommen')
-                wpa_passphrase = subprocess.Popen(("/usr/bin/wpa_passphrase", str(ssids[i]), str(psks[i]))).readlines()
+                wpa_passphrase = subprocess.Popen(("/usr/bin/wpa_passphrase", str(ssids[i]), str(psks[i])), stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.readlines()
             if wpa_passphrase[0] != "Passphrase must be 8..63 characters":
                 for line in wpa_passphrase:
                     wpa_file.write(line)
@@ -808,7 +808,7 @@ def wlan_setpassphrase(ssid, psk):
     if not ssid_found:
         # SSID nicht in konfigurierten WLANs, das neue hinzufügen
         logger.debug('Schreibe wpa_supplicant.conf für: ' + ssid)
-        wpa_passphrase = subprocess.Popen(("/usr/bin/wpa_passphrase", str(ssid), str(psk))).readlines()
+        wpa_passphrase = subprocess.Popen(("/usr/bin/wpa_passphrase", str(ssid), str(psk)), stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.readlines()
         if wpa_passphrase[0] != "Passphrase must be 8..63 characters":
             for line in wpa_passphrase:
                 wpa_file.write(line)
