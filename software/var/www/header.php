@@ -31,7 +31,7 @@ $document_root = getenv('DOCUMENT_ROOT');
 	$webcam_start = 'style="display:none"';
 	$raspicam_start = 'style="display:none"';
 	if (isset($_SESSION["updateAvailable"])) {
-		if (($_SESSION["updateAvailable"] == "True") AND ($_SESSION['checkUpdate'] == "True")){
+		if ((($_SESSION["updateAvailable"] == "True") AND ($_SESSION['checkUpdate'] == "True")) OR (isset($_SESSION["nextionupdate"]))){
 			echo '<script>$(function() { showUpdate();});</script>';
 		}else{		
 			echo '<script>$(function() { hideUpdate();});</script>';

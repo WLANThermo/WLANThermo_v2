@@ -235,12 +235,9 @@ function restoreConfig($newconfig,$oldconfig) {
 	$oldconfigfile = getConfig("".$oldconfig."", ";");  // dabei ist ; das zeichen für einen kommentar. kann geändert werden.
 
 	foreach($oldconfigfile as $key => $value) {
-    $newconfigfile[$key] = $value;
+		$newconfigfile[$key] = $value;
 	}	 
-	
-	$inipath = $newconfig;
-	$ini = $newconfigfile;
-	write_ini($inipath, $ini);
+	write_ini($newconfig, $newconfigfile);
 }
 
 function getPlotConfig($plot){
