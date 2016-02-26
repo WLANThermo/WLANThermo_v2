@@ -23,7 +23,8 @@ fi
 cat /tmp/wgetOut >/var/log/WLAN_Thermo/update.log
 
 chmod +x /tmp/WLANThermo_install.run >>/var/log/WLAN_Thermo/update.log
-sudo /tmp/WLANThermo_install.run >>/var/log/WLAN_Thermo/update.log
+sudo /tmp/WLANThermo_install.run >>/var/www/tmp/update.log
+mv /var/www/tmp/update.log /var/log/WLAN_Thermo/update.log
 
 
 

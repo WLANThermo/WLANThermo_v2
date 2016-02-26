@@ -45,8 +45,14 @@ if (file_exists(dirname(__FILE__).'/tmp/flag')) {
 if (file_exists(dirname(__FILE__).'/tmp/update')) {
 	$message .= "Update - update läuft gerade\n";
 	session("./conf/WLANThermo.conf");
-	$_SESSION["to_update"] = 'True';
-	echo '<div id="info_site"><b>Das Update wird gerade Installiert...</b></div>';
+	if (file_exists(dirname(__FILE__).'/tmp/update.log')) {
+		$lines = file('tmp/update.log');
+		$last_line = $lines[count($lines)-1];
+		echo '<div id="info_site"><p><b>WLANThermo update:</b> '.$last_line.'</p></div>';
+	}else{
+		$_SESSION["to_update"] = 'True';
+		echo '<div id="info_site"><b>Das Update wird gerade Installiert...</b></div>';
+	}
 	echo '<script>$(function() { showLoading();});</script>';
 	exit;
 } 
