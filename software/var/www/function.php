@@ -234,9 +234,13 @@ function restoreConfig($newconfig,$oldconfig) {
 	$newconfigfile = getConfig("".$newconfig."", ";");  // dabei ist ; das zeichen für einen kommentar. kann geändert werden.	
 	$oldconfigfile = getConfig("".$oldconfig."", ";");  // dabei ist ; das zeichen für einen kommentar. kann geändert werden.
 
-	foreach($oldconfigfile as $key => $value) {
-		$newconfigfile[$key] = $value;
-	}	 
+	foreach($newconfigfile as $key => $value) {
+		foreach($value as $key1 => $value1) {
+			if (isset($oldconfigfile[$key][$key1])){
+				$newconfigfile[$key][$key1] = $oldconfigfile[$key][$key1];
+			}
+		}
+	} 
 	write_ini($newconfig, $newconfigfile);
 }
 

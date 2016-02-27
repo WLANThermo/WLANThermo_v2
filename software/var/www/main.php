@@ -50,9 +50,9 @@ if (file_exists(dirname(__FILE__).'/tmp/update')) {
 		$last_line = $lines[count($lines)-1];
 		echo '<div id="info_site"><p><b>WLANThermo update:</b> '.$last_line.'</p></div>';
 	}else{
-		$_SESSION["to_update"] = 'True';
 		echo '<div id="info_site"><b>Das Update wird gerade Installiert...</b></div>';
 	}
+	$_SESSION["to_update"] = 'True';
 	echo '<script>$(function() { showLoading();});</script>';
 	exit;
 } 
