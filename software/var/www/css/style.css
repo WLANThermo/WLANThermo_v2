@@ -264,7 +264,7 @@ border-image:url(../images/border.png) 26 26 27 fill round;
 background:url("../images/grau5x5cm.jpg");
 }
 
-#info_site a:link, #info_site a:visited, #info_site a:hover, #info_site a:active {
+#info_site b a:link, #info_site b a:visited, #info_site b a:hover, #info_site b a:active {
     color: #ffc000;
 }
 
