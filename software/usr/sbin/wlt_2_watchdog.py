@@ -231,6 +231,11 @@ def halt_v3_pi():
         logger.info('Child returned' + str(retcode))
 
 
+def shutdown_button(gpio):
+    logger.info('Shutting down! (Button pressed)')
+    halt_pi()
+
+
 def read_config():
     global cf
     logger.debug('Read Config..')
@@ -509,7 +514,7 @@ wdd = wm.add_watch('/var/www/conf', mask) #, rec=True)
 #input_thread = threading.Thread(target = wait_input)
 #input_thread.start()
 
-GPIO.add_event_detect(27, GPIO.RISING, callback=halt_pi, bouncetime=1000)
+GPIO.add_event_detect(27, GPIO.RISING, callback=shutdown_button, bouncetime=1000)
 
 
 Config.read(cf)
