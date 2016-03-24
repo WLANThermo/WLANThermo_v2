@@ -583,7 +583,7 @@ def main():
                             break
                         count = 1
                 else:
-                    setPWM(pit_man)
+                    bbqpit.set_pit(pit_man)
             if len(msg) > 0:
                 logger.debug(msg)
             time.sleep(pit_pause)
