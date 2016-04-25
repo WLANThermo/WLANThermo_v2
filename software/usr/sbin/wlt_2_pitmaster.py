@@ -349,7 +349,9 @@ def main():
     count = 0
     
     #PID Begin Variablen fuer PID Regelung
+    dif = 0
     dif_sum = 0
+    dif_last = 0
     pit_temp_last = 0
     pit_pid_max = 100
     pit_pid_min = 0
@@ -522,6 +524,7 @@ def main():
                                 pit_new = 0
                         #PID Begin Block PID Regler Ausgang kann Werte zwischen 0 und 100% annehmen
                         elif (controller_type == "PID") and (not pit_open_lid_detected): #Bedingung fuer PID
+                            dif_last = dif
                             dif = pit_set - pit_now
                             #Parameter in Abhaengigkeit der Temp setzen
                             if pit_now > (pit_switch_a / 100 * pit_set):
@@ -533,16 +536,16 @@ def main():
                                 ki = pit_Ki_a
                                 kd = pit_Kd_a
                             #I-Anteil berechnen
-                            dif_sum = dif_sum + float(dif)
+                            dif_sum = dif_sum + float(dif) * pit_pause
                             #Anti-Windup I-Anteil
                             if dif_sum * ki > pit_iterm_max:
                                 dif_sum = pit_iterm_max
                             elif dif_sum * ki < pit_iterm_min:
                                 dif_sum = pit_iterm_min
                             #D-Anteil berechnen
-                            dInput = pit_now - pit_temp_last
+                            dInput = dif - dif_last
                             #PID Berechnung durchfuehren
-                            pit_new  = kp * dif + ki* dif_sum - kd * dInput
+                            pit_new  = (kp * dif) + (ki * dif_sum) + (kd * dInput / pit_pause)
                             msg = msg + "|PID Values P" + str(kp*dif) + " Iterm " + str(ki * dif_sum) + " dInput " + str(dInput)
                             #Stellwert begrenzen
                             if pit_new  > pit_pid_max:
