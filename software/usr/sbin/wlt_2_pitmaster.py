@@ -4,8 +4,8 @@
 # WLANThermo
 # wlt_2_pitmaster.py - Sets pit temperature by controlling a fan, servo, heater or likely devices.
 #
-# Copyright (c) 2013, Joe16
-# Copyright (c) 2015, Björn Schrader
+# Copyright (c) 2013 Joe16
+# Copyright (c) 2015, 2016 Björn Schrader
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -349,7 +349,7 @@ def main():
     count = 0
     
     #PID Begin Variablen fuer PID Regelung
-    Iterm = 0
+    dif_sum = 0
     pit_temp_last = 0
     pit_pid_max = 100
     pit_pid_min = 0
@@ -533,17 +533,17 @@ def main():
                                 ki = pit_Ki_a
                                 kd = pit_Kd_a
                             #I-Anteil berechnen
-                            Iterm = Iterm + (ki * float(dif))
+                            dif_sum = dif_sum + float(dif)
                             #Anti-Windup I-Anteil
-                            if Iterm > pit_iterm_max:
-                                Iterm = pit_iterm_max
-                            elif Iterm < pit_iterm_min:
-                                Iterm = pit_iterm_min
+                            if dif_sum * ki > pit_iterm_max:
+                                dif_sum = pit_iterm_max
+                            elif dif_sum * ki < pit_iterm_min:
+                                dif_sum = pit_iterm_min
                             #D-Anteil berechnen
                             dInput = pit_now - pit_temp_last
                             #PID Berechnung durchfuehren
-                            pit_new  = kp * dif + Iterm - kd * dInput
-                            msg = msg + "|PID Values P" + str(kp*dif) + " Iterm " + str(Iterm) + " dInput " + str(dInput)
+                            pit_new  = kp * dif + ki* dif_sum - kd * dInput
+                            msg = msg + "|PID Values P" + str(kp*dif) + " Iterm " + str(ki * dif_sum) + " dInput " + str(dInput)
                             #Stellwert begrenzen
                             if pit_new  > pit_pid_max:
                                 pit_new  = pit_pid_max
