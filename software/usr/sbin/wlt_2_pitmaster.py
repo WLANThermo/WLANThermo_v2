@@ -539,9 +539,9 @@ def main():
                             dif_sum = dif_sum + float(dif) * pit_pause
                             #Anti-Windup I-Anteil
                             if dif_sum * ki > pit_iterm_max:
-                                dif_sum = pit_iterm_max
+                                dif_sum = pit_iterm_max / ki
                             elif dif_sum * ki < pit_iterm_min:
-                                dif_sum = pit_iterm_min
+                                dif_sum = pit_iterm_min / ki
                             #D-Anteil berechnen
                             dInput = dif - dif_last
                             #PID Berechnung durchfuehren
