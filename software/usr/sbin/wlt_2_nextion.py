@@ -1090,10 +1090,13 @@ def NX_display():
                     
                     if temps[i]['alert'] != new_temps[i]['alert']:
                         values['main.alert' + str(i) + '.txt:10'] = new_temps[i]['alert']
-                if not NX_sendvalues(values):
+                
+                if NX_sendvalues(values):
+                    temps = new_temps
+                else:
                     # Im Fehlerfall später wiederholen
                     temps_event.set()
-                temps = new_temps
+        
         elif pitconf_event.is_set():
             logger.debug('Pitmasterkonfiguration Event')
             values = dict()
@@ -1117,10 +1120,13 @@ def NX_display():
                 values['main.pit_pid.val'] = {'False': 0, 'PID': 1}[new_pitconf['controller_type']]
             if pitconf['type'] != new_pitconf['type']:
                 values['main.pit_type.val'] = pit_types[new_pitconf['type']]
-            if not NX_sendvalues(values):
+            
+            if NX_sendvalues(values):
+                pitconf = new_pitconf
+            else:
                 # Im Fehlerfall später wiederholen
                 pitconf_event.set()
-            pitconf = new_pitconf
+        
         elif pitmaster_event.is_set():
             logger.debug('Pitmaster Event')
             values = dict()
@@ -1135,10 +1141,13 @@ def NX_display():
                         values['main.pit_power.val'] = int(round(float(new_pitmaster['new'])))
                     else:
                         values['main.pit_power.val'] = 0
-                    if not NX_sendvalues(values):
+                    
+                    if NX_sendvalues(values):
+                        pitmaster = new_pitmaster
+                    else:
                         # Im Fehlerfall später wiederholen
                         pitmaster_event.set()
-                    pitmaster = new_pitmaster
+        
         elif channels_event.is_set():
             logger.debug('Channels Event')
             values = dict()
@@ -1157,10 +1166,12 @@ def NX_display():
                     values['main.name' + str(i) + '.txt:10'] = new_channels[i]['name']
                     if new_temps[i]['value'] == '999.9':
                         values['main.kanal' + str(i) + '.txt:10'] = new_channels[i]['name']
-            if not NX_sendvalues(values):
+            
+            if NX_sendvalues(values):
+                channels = new_channels
+            else:
                 # Im Fehlerfall später wiederholen
                 channels_event.set()
-            channels = new_channels
         
         else:
             time.sleep(0.01)
