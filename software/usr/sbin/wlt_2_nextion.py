@@ -1,4 +1,4 @@
-#!/usr/bin/python
+﻿#!/usr/bin/python
 # coding=utf-8
 
 # Copyright (c) 2015, 2016 Björn Schrader
@@ -836,7 +836,7 @@ def NX_display():
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
     logger.info('Version auf dem Display: ' + str(display_version))
-    if not str(display_version) in ['v1.2']:
+    if not str(display_version) in ['v1.3']:
         logger.info('Update des Displays notwendig')
         NX_sendcmd('page update')
         open('/var/www/tmp/nextionupdate', 'w').close()
@@ -1032,6 +1032,8 @@ def NX_display():
                         signal = wlan_getsignal('wlan0')
                         values['main.signal.val'] = signal
                         NX_sendvalues(values)
+                    elif event['data']['id'] == 6:
+                        wlan_reconnect()
             elif event['type'] == 'custom_cmd':
                 if event['data']['area'] == 5:
                     if event['data']['id'] == 0:
