@@ -1,0 +1,11 @@
+Package: wlanthermo
+Section: misc
+Priority: extra
+Architecture: all
+Depends:
+Installed-Size: 32
+Maintainer: Armin Thinnes <wlanthermo@a-thinnes.de>
+Homepage: http://www.wlanthermo.com
+Description: Ein 8-kanaliges WLAN-Thermometer
+ Ein 8-kanaliges WLAN-Thermometer auf Basis Raspberry Pi. Laueft auf allen 
+ Raspberry Versionen

@@ -1,0 +1,260 @@
+wlanthermo (2.4.0-0) stable; urgency=medium
+
+  * FIX: GPL-Info in info.php
+  * FIX: Neue configeinträge wurden nicht uebernommen
+  * FIX: Shutdown der V3 über Button funktioniert nicht
+  * FIX: Display - Sleepmodus bei Shutdown über Web-GUI
+  * FIX: pit_man wurde nicht ausgewertet
+  * FIX: HMI Version 1.3
+  * ADD: WLAN Reconnect über HMI
+  * FIX: Datenübertragung Display nach Wakeup korrigiert
+  * FIX: PID Regelalgorithmus verbessert
+
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Sat, 28 May 2016 01:03:00 +0200
+
+wlanthermo (2.3.1-1) stable; urgency=medium
+
+  * FIX: GUI-Update gibt Informationen ueber den laufenden Installationsstatus aus
+  * FIX: Fehler in der function.php - Neue configeinträge wurden nicht uebernommen
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>  Sat, 27 Feb 2016 22:42:00 +0100
+
+wlanthermo (2.3.1-0) stable; urgency=medium
+
+  * ADD: Alarm quittieren ueber das Display
+  * ADD: Nextion Display ueber Terminal flashen moeglich
+  * ADD: Ordner /var/www/conf ist jetzt im geschuetzten Bereich
+  * ADD: Softwarelizenz GPL
+  * ADD: Pitmaster Solltemperatureingabe jetzt mit einer Nachkommastelle (Armin's Onseneifunktion)
+  * ADD: GPIO fuer IO und IOPWM waehlbar zwischen GPIO4 (12V Signal) und GPIO2 (3,3V Signal)
+  * ADD: GUI-Update gibt Informationen ueber den laufenden Installationsstatus aus
+  * ADD: Zero Cut Funktion fuer Luefter
+  * FIX: IP Adresse wird in der wifi.php nicht angezeigt
+  * FIX: index.php Webcambilder werden nicht angezeigt/ imagemagick wird Installiert (Fehlt unter Jessie)
+  * FIX: Display-Update V1.0, Neue Tastaturen, Sonderzeichen, Alarmquittierung, Fehlerbereinigung,
+         Speicheroptimierung
+  * FIX: Herunterfahren und Neustart mittels Display funktioniert
+  * FIX: Es lassen sich jetzt mehrere WLANS ueber das Display konfigurieren
+  * FIX: WIFI Script language.d Problem geloest.
+  * FIX: Info Seite angepasst
+  * FIX: Pitmaster beim Neustart
+  * FIX: Herunterfahren ueber Display
+  * FIX: Duty Cycle min bei IOPWM
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>  Sat, 27 Feb 2016 14:42:00 +0100
+
+wlanthermo (2.3.0-1) stable; urgency=medium
+
+  * FIX: Fehler im Update Script behoben (GUI)
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.3.0-0) stable; urgency=medium
+
+  * ADD : Nextion Display
+  * FIX: Pitmaster
+  * FIX: Diverse GUI Teile
+  * ADD: Jessie kompatibel
+  * ADD: Pitmaster IO mit PWM
+  * ADD: Pitmaster 25kHz PWM-Lüfter
+  * ADD: Pitmaster Plot
+  * ADD: pigpiod zum Paket hinzugefügt
+  * CHANGE: Pitmaster IO-Ansteuerung auf pigpiod geändert
+  * CHANGE: Austauschdateien werden nicht mehr direkt geschrieben
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.1.0-6) stable; urgency=medium
+
+  * FIX: compy startet nicht bei Neuinstallation, Display bleibt bei IP-Adresse hängen
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.1.0-5) stable; urgency=medium
+
+  * FIX: Generiere Versionsnummer im Display aus header.php und nicht aus conf.
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.1.0-4) stable; urgency=medium
+
+  * FIX: Erzeuge temperaturen.csv fuer Alarme aus der conf beim Start.
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.1.0-3) stable; urgency=medium
+
+  * FIX: Nach Softwareupdate Alarm, obwohl keine Warntemperatur ueber/unterschritten
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.1.0-2) stable; urgency=medium
+
+  * FIX: Zeitweise Anzeige 0,1 bei unbelegtem Kanal
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.1.0-1) stable; urgency=medium
+
+  * FIX: Timimgkorrektur fuer LCD zur Beseitigung sporadisch auftauchender kryptischer
+         Zeichen in der ersten Zeile
+  * FIX: Fuenffach Logs behoben
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.1.0-0) stable; urgency=medium
+
+  * ADD: Echter PID-Regler eingebaut. Danke an Haeuslebauer und a.schaefer85!
+  * FIX: Messwertschwankungen aufgrund von Timimgproblemen insbesondere beim Pi 2
+         behoben. Danke an Pest für die Änderung!
+  * FIX: Zwei Fehler in wlt_2_lcd_204.py behoben.
+         IP-Adresse wurde nicht angezeigt bei deutscher Lokalisierung
+  * FIX: In der wlanthermo.conf war Kanal 8 nicht mit 47k-Widerstand konfiguriert
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.0.2-8) stable; urgency=medium
+
+  * FIX: Fehler im Update-Script beseitigt
+  * FIX: K-Type wird wieder unterstuetzt
+  * ADD: PT-100 und PT1000 wird unterstuetzt
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.0.2-7) stable; urgency=medium
+
+  * FIX: Fehler beim ersten Aufruf GUI
+  * FIX: Fehler im Updatescript
+  * ADD: Update-URL konfigurierbar
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.0.2-6) stable; urgency=medium
+
+  * FIX: Pitmasterfunktion bring Raspberry Pi2 zum Absturz. Neue servod.
+  * FIX: Kleiner Fehler im GUI
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.0.2-5) stable; urgency=medium
+
+  * ADD: Thermologs in MB
+  * FIX: Updatebenachrichtigungen
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.0.2-3) stable; urgency=medium
+
+  * FIX: Synchronisierung der Versionen Paket - Backend - Frontend
+  * ADD: Alle Funktionen der Beta
+  * ADD: GUI 2.0.2-3
+  * FIX: Lüfter läuft nach boot durch bei V3
+  * FIX: Fehlerbehandlung bei misslungenem Update-Download
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.0.0-2 Update Beta) stable; urgency=medium
+
+  * Backend: 2.0.0-2 Frontend 2.0.2-0
+  * ADD: Anzeige der IP-Adresse im LCD beim Starten
+  * ADD: Neuer Sensor FANTAST_NEU
+  * ADD: Unterstuetzung Hardware V3 - unterschiedliche servod fuer Luefter und Servo
+  * ADD: Update Funktion Beta mit Paket von a-thinnes.de
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.0.0-1) stable; urgency=medium
+
+  * Backend: 2.0.0-1 Frontend: 1.1.3-0
+  * FIX: Behebung der 5-fachen Temperaturlogs
+  * FIX: Überflüssige Dateizugriffe beseitigt
+  * ADD: Ergänze Kanalnamen in den Alarmmeldungen
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (2.0.0-0) stable; urgency=medium
+
+  * Backend: 2.0.0-0 Frontend: 1.1.3-0
+  * Add: Hardware Version 2, Shutdown/Reboot, Plotfunktion erweitert, RaspiCam Funtionalitaet
+  * Add: WhatsApp Unterstuetzung
+  * Change: Viele Verbesserungen
+  * Add: Doku ausgelagert auf wlanthermo.com.
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (1.0.0-0) stable; urgency=medium
+
+  * Add: Komplett neue Engine, Neues UI, LCD-Modul ausgelagert, Pitmaster-Funktion, WLAN-Konfiguration
+  * Add: Webcam Funktionalitaet
+  * Change: Plott wird nur erzeugt, wenn UI aufgeschaltet,
+  * Add: Doku angepasst.
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (0.1.1-0beta) stable; urgency=medium
+
+  * Add: Komplett überarbeitetes UI, Shutdown möglich, mehr Konfigurationsmöglichkeiten Plot,
+  * Add:Watchdog stark erweitert (Shutdown, Plotterdienst, NewLog, LCD-Schnittstelle uvm.)
+  * Bugfix: Inkonsistenz bei Alarmwerten intern/Webinterface behoben.
+  * Add: Doku angepasst.
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (0.1.0-3a) stable; urgency=medium
+
+  * Bugfix: Erzeugung falscher Kopfzeile in der csv behoben. index.html entfernt.
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (0.1.0-3) stable; urgency=medium
+
+  * Aufnahme des Watchdog von Joe16
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (0.1.0-2) stable; urgency=medium
+
+  * Bugfix bei der Anzeige der Backendversion
+  * Verlagerung der Konfiguration nach /var/www/conf
+  * Erweiterung der Konfigurationsdatei um einen neuen Boolean-Parameter 'write_new_log_on_restart'
+  * Lege Backup der alten Konfiguration bei der Installation an
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (0.1.0-1) stable; urgency=medium
+
+  * Neue GUI von Florian Riedel, Neuer Service plot
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (0.0.4-0) stable; urgency=medium
+  * Add: KTYPE-Sensor
+  * Add: LCD-Support 20x4
+  * Fix: Fehler Doku behoben
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (0.0.3-1) stable; urgency=medium
+
+  * Add: Bei Alarm kommt jetzt im Browser ein Alarmton
+    - HTML5 Support erforderlich
+    - (funzt nicht mit Google Chrome auf dem Handy)
+    - getestet mit Firefox 19.0, IE10, Safari
+  * Add: Auth_Modul aktiviert bei lighttpd für  Verzeichnis ./control
+    - Passwort für Benutzer wlanthermo wird bei der Installation erzeugt.
+  * Verlagerung der Alarmeinstellungen in den geschützen Bereich ./control
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (0.0.3-0) stable; urgency=medium
+
+  * Add: Alarme für Minimaltemperatur
+  * Add: Email bei Alarm
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
+
+wlanthermo (0.0.2-0) stable; urgency=medium
+
+  * Jetzt mit Alarmfunktion über PHP-Script einstellbar.
+
+ -- Armin Thinnes <wlanthermo@a-thinnes.de>
