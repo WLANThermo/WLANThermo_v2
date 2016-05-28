@@ -1,6 +1,6 @@
 nppBackup
 
-/build/build/
-/build/installer/
-/build/package/
+/build/build/*
+/build/run/*
+/build/package/*
 
