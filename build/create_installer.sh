@@ -18,6 +18,7 @@ dpkg -b ./build ./package/wlanthermo-$VERSION.deb
 
 echo Baue Installer...
 cat ./installer/installer.sh ./package/wlanthermo-$VERSION.deb > ./run/WLANThermo_install-$VERSION.run
+chmod +x ./run/WLANThermo_install-$VERSION.run
 
 echo Lösche Buildverzeichniss...
 rm -r ./build/*
