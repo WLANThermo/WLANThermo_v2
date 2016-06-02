@@ -38,7 +38,7 @@ fi
 
 echo "Install depencies:"
 sudo apt-get update
-aptitude install gnuplot-nox lighttpd apache2-utils python-dev python-serial php5-cgi php5-gd python-pyinotify sudo python-psutil vim htop php5-curl iftop iotop python-urllib3 fswebcam imagemagick -y
+aptitude --safe-resolver install gnuplot-nox lighttpd apache2-utils python-dev python-serial php5-cgi php5-gd python-pyinotify sudo python-psutil vim htop php5-curl iftop iotop python-urllib3 fswebcam imagemagick -y
 echo "Install PIGPIO"
 wget -N --directory-prefix=/tmp abyz.co.uk/rpi/pigpio/pigpio.zip && unzip -o /tmp/pigpio.zip -d /tmp/  && make -C /tmp/PIGPIO/ && make install -C /tmp/PIGPIO/
 echo "add / modify sudoers entrys"
