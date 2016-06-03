@@ -678,14 +678,16 @@ try:
               schreiben = schreiben + separator + str(Temperatur[i])
         
         if log_pitmaster:
-            schreiben += separator
             if pit_on:
                 try:
                     with open(pit_tempfile,'r') as pitfile:
-                        pit_new = pitfile.readline().split(';')[3].rstrip('%')
-                        schreiben += pit_new
+                        pit_values = pitfile.readline().split(';')
+                        pit_new = pit_values[3].rstrip('%')
+                        pit_set = pit_values[1]
+                        schreiben += separator + pit_new + separator + pit_set
                 except IOError:
-                    pass
+                    # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
+                    schreiben += separator + separator
         
         while True:
             try:

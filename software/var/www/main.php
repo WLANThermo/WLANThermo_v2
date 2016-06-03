@@ -274,7 +274,7 @@ if (isset($_SESSION["to_update"])){
 					$plot .= "$chp[$i]";
 				?>
 					<div class="channel_view">
-						<div class="channel_name"><?php echo htmlentities($channel_name[$i], ENT_QUOTES, "iso-8859-1"); ?></div>
+						<div class="channel_name"><?php echo htmlentities($channel_name[$i], ENT_QUOTES, "UTF-8"); ?></div>
 						<div class="<?php echo $temperature_indicator_color;?>"><?php echo ${"temp_$i"};?>&#176;C</div>
 						<div class="tempmm">Temp min <b><?php echo $temp_min[$i];?>&#176;C</b> / max <b><?php echo $temp_max[$i];?>&#176;C</b></div>
 						<div class="headicon"><font color="<?php echo $color_ch[$i];?>">#<?php echo $i;?></font></div>
@@ -431,7 +431,7 @@ if (isset($_SESSION["to_update"])){
 	//echo "".$keyboxframe_value."";
 	//print_r($message);
 	//echo "<pre>" . var_export($message,true) . "</pre>";  
-	//echo "".$plot_setting."".$plot."";
+	echo "".$plot_setting."".$plot."";
 	//$dauer = microtime(true) - $beginn; 
 	//echo "Verarbeitung des Skripts: $dauer Sek.";
 
