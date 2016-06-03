@@ -893,7 +893,7 @@ def NX_display():
         if temps[i]['value'] == '999.9':
             values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name']
         else:
-            values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value'] + '°C'
+            values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value']
         values['main.alert' + str(i) + '.txt:10'] = temps[i]['alert']
         values['main.al' + str(i) + 'minist.txt:10'] = int(round(channels[i]['temp_min']))
         values['main.al' + str(i) + 'maxist.txt:10'] = int(round(channels[i]['temp_max']))
