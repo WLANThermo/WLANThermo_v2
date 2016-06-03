@@ -1,0 +1,41 @@
+#! /bin/sh
+# postinst script for wlanthermo
+
+# Trage alle Dienste im Autostart ein
+insserv WLANThermo
+insserv pigpiod
+insserv WLANThermoWD
+# update-rc.d WLANThermoSERVO defaults
+# update-rc.d WLANThermoSERVO defaults
+
+lighty-enable-mod auth
+
+if [ -f /etc/lighttpd/lighttpd.conf ]
+then
+    echo Backing up old lighttpd.conf
+    mv /etc/lighttpd/lighttpd.conf /etc/lighttpd/lighttpd.conf.bak
+fi
+
+mv /var/www/conf/lighttpd.conf /etc/lighttpd/lighttpd.conf
+
+if [ -f /var/www/tmp/update ] #Pruefen, ob ueber das GUI ein Passwort gesetzt wurde
+then
+    echo 'Passwort gefunden!'
+    passwort=`cat /var/www/tmp/update`
+    echo "$passwort"
+    htpasswd -c -b /etc/lighttpd/htpasswd wlanthermo $passwort
+    rm /var/www/tmp/update # Updateflag zuruecksetzen
+else
+    echo 'Kein Passwort gefunden!'
+    echo 'Jetzt das Passwort für den Benutzer >wlanthermo< des geschützten Bereichs eingeben!'
+    htpasswd -c /etc/lighttpd/htpasswd wlanthermo
+fi
+systemctl daemon-reload
+ln -s /var/log/WLAN_Thermo /var/www/thermolog
+sudo chown -Rv www-data:www-data /var/www 1>/dev/null
+
+sudo service lighttpd restart
+sudo service WLANThermo start
+sudo service pigpiod start
+sudo service WLANThermoWD start
+

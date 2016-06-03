@@ -1,7 +1,7 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
-$_SESSION["webGUIversion"] = "V2.3.1-1";
+$_SESSION["webGUIversion"] = "V2.4.0-0";
 $title = "WLAN Thermometer";
 $document_root = getenv('DOCUMENT_ROOT');
 ?>
