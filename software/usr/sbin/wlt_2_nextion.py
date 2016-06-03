@@ -836,7 +836,7 @@ def NX_display():
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
     logger.info('Version auf dem Display: ' + str(display_version))
-    if not str(display_version) in ['v1.3']:
+    if not str(display_version) in ['v1.4']:
         logger.info('Update des Displays notwendig')
         NX_sendcmd('page update')
         open('/var/www/tmp/nextionupdate', 'w').close()
@@ -893,7 +893,7 @@ def NX_display():
         if temps[i]['value'] == '999.9':
             values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name']
         else:
-            values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value']
+            values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value'] + '°C'
         values['main.alert' + str(i) + '.txt:10'] = temps[i]['alert']
         values['main.al' + str(i) + 'minist.txt:10'] = int(round(channels[i]['temp_min']))
         values['main.al' + str(i) + 'maxist.txt:10'] = int(round(channels[i]['temp_max']))
