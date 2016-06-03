@@ -505,7 +505,7 @@ if(isset($_POST["save"])) {
 
 		for ($i = 0; $i <= 7; $i++){ ?>
 			<div id="ch<?php echo $i; ?>" class="config small">
-				<div class="headline"><?php echo htmlentities($ini['ch_name']['ch_name'.$i], ENT_QUOTES, "iso-8859-1"); ?></div>
+				<div class="headline"><?php echo htmlentities($ini['ch_name']['ch_name'.$i], ENT_QUOTES, "UTF-8"); ?></div>
 				<div class="headicon"><font color="<?php echo $ini['plotter']['color_ch'.$i];?>">#<?php echo $i?></font></div>
 				<div class="config_text row_1 col_1">Name:</div>
 				<div class="config_text row_1 col_6">F&uuml;hler:</div>
