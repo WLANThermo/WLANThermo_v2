@@ -10,7 +10,10 @@ include("../function.php");
 session("../conf/WLANThermo.conf");
 $tmpFile = '../temperaturen.csv';
 $inipath = '../conf/WLANThermo.conf';
-	
+
+
+$plotcolors = array('green', 'red', 'blue', 'olive', 'magenta', 'yellow', 'violet', 'orange', 'lime',
+	'mediumpurple3', 'aquamarine', 'brown', 'dark-goldenrod', 'skyblue', 'pink', 'navyblue', 'orange-red', 'salmon');
 // ##################################################################################
 // Config-Files einlesen ------------------------------------------------------------
 // ##################################################################################
@@ -87,6 +90,12 @@ if(isset($_POST["save"])) {
 			if (isset($_POST['color_pit'])) {
 				$ini['plotter']['color_pit'] = $_POST['color_pit'];
 			}
+			
+			// Farben für den Plotter ändern 
+			if (isset($_POST['color_pitsoll'])) {
+				$ini['plotter']['color_pitsoll'] = $_POST['color_pitsoll'];
+			}
+			
 			// Plot-Dienst keyboxframe 
 			if(isset ($_POST['keyboxframe'])) { $ini['plotter']['keyboxframe'] = "True"; } else { $ini['plotter']['keyboxframe'] = "False";}
 			
@@ -496,7 +505,7 @@ if(isset($_POST["save"])) {
 
 		for ($i = 0; $i <= 7; $i++){ ?>
 			<div id="ch<?php echo $i; ?>" class="config small">
-				<div class="headline"><?php echo htmlentities($ini['ch_name']['ch_name'.$i], ENT_QUOTES, "iso-8859-1"); ?></div>
+				<div class="headline"><?php echo htmlentities($ini['ch_name']['ch_name'.$i], ENT_QUOTES, "UTF-8"); ?></div>
 				<div class="headicon"><font color="<?php echo $ini['plotter']['color_ch'.$i];?>">#<?php echo $i?></font></div>
 				<div class="config_text row_1 col_1">Name:</div>
 				<div class="config_text row_1 col_6">F&uuml;hler:</div>
@@ -521,15 +530,15 @@ if(isset($_POST["save"])) {
 				</div>
 				<div class="config_text row_2 col_7">
 					<select name="plot_color<?php echo $i?>" size="1">
-						<option <?php if($ini['plotter']['color_ch'.$i] == "green")	{echo " selected";} ?> >green</option>
-						<option <?php if($ini['plotter']['color_ch'.$i] == "red")	{echo " selected";} ?> >red</option>
-						<option <?php if($ini['plotter']['color_ch'.$i] == "blue")	{echo " selected";} ?> >blue</option>
-						<option <?php if($ini['plotter']['color_ch'.$i] == "olive")	{echo " selected";} ?> >olive</option>
-						<option <?php if($ini['plotter']['color_ch'.$i] == "magenta"){echo " selected";} ?> >magenta</option>
-						<option <?php if($ini['plotter']['color_ch'.$i] == "yellow")	{echo " selected";} ?> >yellow</option>
-						<option <?php if($ini['plotter']['color_ch'.$i] == "violet")	{echo " selected";} ?> >violet</option>
-						<option <?php if($ini['plotter']['color_ch'.$i] == "orange")	{echo " selected";} ?> >orange</option>
-					</select>
+					<?php
+					foreach($plotcolors AS $color)
+					{
+					?>
+						<option <?php if($ini['plotter']['color_ch'.$i] == $color)	{echo " selected";} ?> ><?php echo $color ?></option>
+					<?php
+					}
+					?>
+					</select>				
 				</div>
 				<div class="config_text row_3 col_7"><input type="checkbox" name="alert<?php echo $i;?>" value="salarm<?php echo $i?>" <?php if($ini['web_alert']['ch'.$i] == "True") {echo "checked=\"checked\"";}?> ></div>
 				<div class="config_text row_3 col_6">WebSound Alarm:</div>
@@ -579,19 +588,19 @@ if(isset($_POST["save"])) {
 // ##################################################################################
 
 ?>
-		<div class="config middle">
+		<div class="config big">
 			<div class="headline">Plotter Einstellungen</div>			
 			<div class="headicon"><img src="../images/icons16x16/chart.png" alt=""></div>
-			<div class="config_text row_1 col_6">Plotdienst Start:</div>
-			<div class="config_text row_1 col_7"><input type="checkbox" name="plot_start" id="plot_start" value="True" <?php if($ini['ToDo']['plot_start'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_1 col_1">Plotbereich</div>
-			<div class="config_text row_2 col_1">Plotsize:</div>
-			<div class="config_text row_3 col_1">Plotter Titel:</div>
-			<div class="config_text row_3 col_3"><input type="text" name="plotname" id="plot_name" size="18" maxlength="25" value="<?php echo $ini['plotter']['plotname'];?>"></div>
-			<div class="config_text row_1 col_2">von:</div>
-			<div class="config_text row_1 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9-]/g,'');" name="plotbereich_min" id="plotbereich_min" size="6" maxlength="3" value="<?php echo $ini['plotter']['plotbereich_min'];?>"></div>
-			<div class="config_text row_1 col_4">bis:</div>
-			<div class="config_text row_1 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="plotbereich_max" id="plotbereich_max" size="6" maxlength="3" value="<?php echo $ini['plotter']['plotbereich_max'];?>"></div>
+			<div class="config_text row_1 col_1">Plotdienst Start:</div>
+			<div class="config_text row_1 col_3"><input type="checkbox" name="plot_start" id="plot_start" value="True" <?php if($ini['ToDo']['plot_start'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_2 col_1">Plotbereich</div>
+			<div class="config_text row_3 col_1">Plotsize:</div>
+			<div class="config_text row_4 col_1">Plotter Titel:</div>
+			<div class="config_text row_4 col_3"><input type="text" name="plotname" id="plot_name" size="18" maxlength="25" value="<?php echo $ini['plotter']['plotname'];?>"></div>
+			<div class="config_text row_2 col_2">von:</div>
+			<div class="config_text row_2 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9-]/g,'');" name="plotbereich_min" id="plotbereich_min" size="6" maxlength="3" value="<?php echo $ini['plotter']['plotbereich_min'];?>"></div>
+			<div class="config_text row_2 col_4">bis:</div>
+			<div class="config_text row_2 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="plotbereich_max" id="plotbereich_max" size="6" maxlength="3" value="<?php echo $ini['plotter']['plotbereich_max'];?>"></div>
 			<div class="config_text row_2 col_6">Key Box:</div>
 			<div class="config_text row_2 col_7">
 				<select name="keybox" id="plot_keybox" size="1">
@@ -605,7 +614,7 @@ if(isset($_POST["save"])) {
 			</div>
 			<div class="config_text row_3 col_6">Rahmen Legende:</div>
 			<div class="config_text row_3 col_7"><input type="checkbox" name="keyboxframe" id="plot_keyboxframe" value="True" <?php if($ini['plotter']['keyboxframe'] == "True") {echo "checked=\"checked\"";}?> ></div>	
-			<div class="config_text row_2 col_3">
+			<div class="config_text row_3 col_3">
 				<select name="plotsize" id="plot_size" size="1">						
 					<option <?php if($ini['plotter']['plotsize'] == "700x350")				{echo " selected";} ?> value="700x350" >700x350</option>
 					<option <?php if($ini['plotter']['plotsize'] == "800x500")				{echo " selected";} ?> value="800x500" >800x500</option>
@@ -613,19 +622,32 @@ if(isset($_POST["save"])) {
 					<option <?php if($ini['plotter']['plotsize'] == "1000x700")				{echo " selected";} ?> value="1000x700" >1000x700</option>
 				</select>
 			</div>
-			<div class="config_text row_4 col_6">Pitmaster plotten:</div>
-			<div class="config_text row_4 col_7"><input type="checkbox" name="plot_pit" id="plot_pit" value="True" <?php if($ini['plotter']['plot_pit'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_4 col_1">Pitmaster Farbe:</div>
-			<div class="config_text row_4 col_3">
-				<select name="color_pit" id="plot_color_pit" size="1">					
-					<option <?php if($ini['plotter']['color_pit'] == "green")				{echo " selected";} ?> >green</option>
-					<option <?php if($ini['plotter']['color_pit'] == "red")					{echo " selected";} ?> >red</option>
-					<option <?php if($ini['plotter']['color_pit'] == "blue")				{echo " selected";} ?> >blue</option>
-					<option <?php if($ini['plotter']['color_pit'] == "olive")				{echo " selected";} ?> >olive</option>
-					<option <?php if($ini['plotter']['color_pit'] == "magenta")				{echo " selected";} ?> >magenta</option>
-					<option <?php if($ini['plotter']['color_pit'] == "yellow")				{echo " selected";} ?> >yellow</option>
-					<option <?php if($ini['plotter']['color_pit'] == "violet")				{echo " selected";} ?> >violet</option>
-					<option <?php if($ini['plotter']['color_pit'] == "orange")				{echo " selected";} ?> >orange</option>
+			<div class="config_text row_5 col_1">Pitmaster plotten:</div>
+			<div class="config_text row_5 col_3"><input type="checkbox" name="plot_pit" id="plot_pit" value="True" <?php if($ini['plotter']['plot_pit'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_6 col_1">Pitmaster Ausgang:</div>
+			<div class="config_text row_6 col_4">
+				<select name="color_pit" id="plot_color_pit" size="1">
+				<?php
+				foreach($plotcolors AS $color)
+				{
+				?>
+					<option <?php if($ini['plotter']['color_pit'] == $color)	{echo " selected";} ?> ><?php echo $color ?></option>
+				<?php
+				}
+				?>
+				</select>
+			</div>
+			<div class="config_text row_7 col_1">Pitmaster Sollwert:</div>
+			<div class="config_text row_7 col_4">
+				<select name="color_pitsoll" id="plot_color_pitsoll" size="1">
+				<?php
+				foreach($plotcolors AS $color)
+				{
+				?>
+					<option <?php if($ini['plotter']['color_pitsoll'] == $color) {echo " selected";} ?>><?php echo $color ?></option>
+				<?php
+				}
+				?>
 				</select>
 			</div>
 		</div>		

@@ -156,6 +156,7 @@ function session($configfile) {
 		$_SESSION["ch_show".$i] = $ini['ch_show']['ch'.$i];
 	}
 	$_SESSION["color_pit"] = $ini['plotter']['color_pit'];
+	$_SESSION["color_pitsoll"] = $ini['plotter']['color_pitsoll'];
 	$_SESSION["plot_start"] = $ini['ToDo']['plot_start'];
 	$_SESSION["plotname"] = $ini['plotter']['plotname'];
 	$_SESSION["plotsize"] = $ini['plotter']['plotsize'];
@@ -270,10 +271,11 @@ function getPlotConfig($plot){
 	$plot_setting .= "set xtics nomirror;";
 	$plot_setting .= "set y2tics nomirror;";
 	if ($_SESSION["plot_pit"] == "True") {
-		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:10 with lines lw 2 lc rgbcolor '" . $_SESSION["color_pit"] ."' t 'Pitmaster %' axes x1y1";
 		$plot_setting .= "set ylabel \\\"Pitmaster %\\\";";
 		$plot_setting .= 'set yrange ["0":"105"];';
-		$plot_setting .= "set ytics nomirror;";
+		$plot_setting .= "set ytics nomirror;";	
+		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:11 with lines lw 2 lc rgbcolor '".$_SESSION["color_pitsoll"]."' t 'Pitmaster Sollwert'  axes x1y2";
+		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:10 with lines lw 2 lc rgbcolor '".$_SESSION["color_pit"]."' t 'Pitmaster %' axes x1y1";
 	}else{
 		$plot_setting .= "set ylabel \\\"Temperatur [°C]\\\";";
 		$plot_setting .= "set yrange [".$_SESSION["plotbereich_min"].":".$_SESSION["plotbereich_max"]."];";

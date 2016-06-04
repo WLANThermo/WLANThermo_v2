@@ -836,7 +836,7 @@ def NX_display():
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
     logger.info('Version auf dem Display: ' + str(display_version))
-    if not str(display_version) in ['v1.0']:
+    if not str(display_version) in ['v1.4']:
         logger.info('Update des Displays notwendig')
         NX_sendcmd('page update')
         open('/var/www/tmp/nextionupdate', 'w').close()
@@ -1032,6 +1032,8 @@ def NX_display():
                         signal = wlan_getsignal('wlan0')
                         values['main.signal.val'] = signal
                         NX_sendvalues(values)
+                    elif event['data']['id'] == 6:
+                        wlan_reconnect()
             elif event['type'] == 'custom_cmd':
                 if event['data']['area'] == 5:
                     if event['data']['id'] == 0:
@@ -1090,10 +1092,13 @@ def NX_display():
                     
                     if temps[i]['alert'] != new_temps[i]['alert']:
                         values['main.alert' + str(i) + '.txt:10'] = new_temps[i]['alert']
-                if not NX_sendvalues(values):
+                
+                if NX_sendvalues(values):
+                    temps = new_temps
+                else:
                     # Im Fehlerfall später wiederholen
                     temps_event.set()
-                temps = new_temps
+        
         elif pitconf_event.is_set():
             logger.debug('Pitmasterkonfiguration Event')
             values = dict()
@@ -1117,10 +1122,13 @@ def NX_display():
                 values['main.pit_pid.val'] = {'False': 0, 'PID': 1}[new_pitconf['controller_type']]
             if pitconf['type'] != new_pitconf['type']:
                 values['main.pit_type.val'] = pit_types[new_pitconf['type']]
-            if not NX_sendvalues(values):
+            
+            if NX_sendvalues(values):
+                pitconf = new_pitconf
+            else:
                 # Im Fehlerfall später wiederholen
                 pitconf_event.set()
-            pitconf = new_pitconf
+        
         elif pitmaster_event.is_set():
             logger.debug('Pitmaster Event')
             values = dict()
@@ -1135,10 +1143,13 @@ def NX_display():
                         values['main.pit_power.val'] = int(round(float(new_pitmaster['new'])))
                     else:
                         values['main.pit_power.val'] = 0
-                    if not NX_sendvalues(values):
+                    
+                    if NX_sendvalues(values):
+                        pitmaster = new_pitmaster
+                    else:
                         # Im Fehlerfall später wiederholen
                         pitmaster_event.set()
-                    pitmaster = new_pitmaster
+        
         elif channels_event.is_set():
             logger.debug('Channels Event')
             values = dict()
@@ -1157,10 +1168,12 @@ def NX_display():
                     values['main.name' + str(i) + '.txt:10'] = new_channels[i]['name']
                     if new_temps[i]['value'] == '999.9':
                         values['main.kanal' + str(i) + '.txt:10'] = new_channels[i]['name']
-            if not NX_sendvalues(values):
+            
+            if NX_sendvalues(values):
+                channels = new_channels
+            else:
                 # Im Fehlerfall später wiederholen
                 channels_event.set()
-            channels = new_channels
         
         else:
             time.sleep(0.01)
@@ -1269,9 +1282,11 @@ if NX_init(display['serialdevice'], display['serialspeed']):
                 break
             time.sleep(0.5)
     except KeyboardInterrupt:
-        if NX_wake_event.is_set():
-            NX_sendvalues({'boot.nextion_down.val': 1})
-            NX_switchpage('boot')
+        if not NX_wake_event.is_set():
+            NX_sendcmd('sleep=0')
+            time.sleep(0.2)
+        NX_sendvalues({'boot.nextion_down.val': 1})
+        NX_switchpage('boot')
     
     logger.debug('Sende Stopsignal an alle Threads')
     notifier.stop()

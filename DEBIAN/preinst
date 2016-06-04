@@ -1,0 +1,20 @@
+#! /bin/sh
+# preinst script for wlanthermo
+
+if [ -f /usr/sbin/wlt_2_comp.py ]
+then
+  sudo service WLANThermo stop
+  sudo service WLANThermoWD stop
+  sudo service pigpiod stop
+fi
+
+killall python
+
+if [ -f /var/www/conf/WLANThermo.conf ]
+then
+    echo Sichere alte Konfiguration
+    cp /var/www/conf/WLANThermo.conf /var/www/conf/WLANThermo.conf.old
+    cp /var/www/conf/sensor.conf /var/www/conf/sensor.conf.old
+else
+    echo Noch keine Konfiguration vorhanden!
+fi
