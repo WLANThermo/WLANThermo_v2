@@ -112,6 +112,8 @@ else:
     open(pidfilename, 'w').write(pid)
 
 
+separator = Config.get('Logging','Separator')
+
 # Funktionsdefinition
 def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
     logger.info('Send mail!')
@@ -222,6 +224,38 @@ def dateiname(): #Zeitstring fuer eindeutige Dateinamen erzeugen
     return fn
 
 
+def create_logfile(name):
+    # Falls der Symlink noch da ist, loeschen
+    try:
+        os.remove('/var/log/WLAN_Thermo/TEMPLOG.csv')
+    except:
+        pass
+    
+    os.symlink(name, '/var/log/WLAN_Thermo/TEMPLOG.csv') #Symlink TEMPLOG.csv auf die gerade benutzte eindeutige Log-Datei legen.
+    
+    kopfzeile = []
+    kopfzeile.append('Datum_Uhrzeit')
+    for kanal in range(8):
+        if (Logkanalnummer[kanal]):
+            kopfzeile.append('Kanal ' + str(kanal))
+            
+    kopfzeile.append('Regler Ausgang')
+    kopfzeile.append('Regler Sollwert')
+    
+    kopfzeile = kopfzeile +'\n'
+    
+    while True:
+        try:
+            fw = open(name,'w') #Datei anlegen
+            fw.write(separator.join(kopfzeile)) # Kopfzeile der CSV-Datei schreiben
+            fw.flush()
+            os.fsync(fw.fileno())
+            fw.close()
+        except IndexError:
+            time.sleep(1)
+            continue
+        break
+
 # Variablendefinition und GPIO Pin-Definition
 ADC_Channel = 0  # Analog/Digital-Channel
 #GPIO START
@@ -305,8 +339,6 @@ Logkanalnummer[6] =  Config.getboolean('Logging','CH6')
 Logkanalnummer[7] =  Config.getboolean('Logging','CH7')
 
 log_pitmaster =  Config.getboolean('Logging','pit_control_out')
-
-separator = Config.get('Logging','Separator')
 
 pit_tempfile = Config.get('filepath','pitmaster')
 
@@ -394,77 +426,14 @@ except:
 
 name = "/var/log/WLAN_Thermo/"  + dateiname() +'_TEMPLOG.csv' #eindeutigen Namen generieren 
 if (newfile):# neues File beim Start anlegen
-    
-    # Falls der Symlink noch da ist, loeschen
-    try:
-        os.remove('/var/log/WLAN_Thermo/TEMPLOG.csv')
-    except:
-        pass
-
-    os.symlink(name, '/var/log/WLAN_Thermo/TEMPLOG.csv') #Symlink TEMPLOG.csv auf die gerade zu benutzte eindeutige Log-Datei legen.
-    kopfzeile='Datum_Uhrzeit' 
-    for kanal in range(8):
-        if (Logkanalnummer[kanal]):
-            kopfzeile = kopfzeile + separator +  'Kanal ' + str(kanal)
-            
-    if log_pitmaster:
-        kopfzeile + separator +  'Reglerausgang'
-    
-    kopfzeile = kopfzeile +'\n'
-    
-    while True:
-        try:
-            fw = open(name,'w') #Datei anlegen
-            fw.write(kopfzeile) # Kopfzeile der CSV-Datei schreiben
-            fw.flush()
-            os.fsync(fw.fileno())
-            fw.close()
-        except IndexError:
-            time.sleep(1)
-            continue
-        break
-
+    create_logfile(name)
 else:
     #Kein neues File anlegen
     if os.path.exists('/var/log/WLAN_Thermo/TEMPLOG.csv'):
         # pruefen, ob die Datei schon da ist zum anhaengen, auch False bei Broken Link!
         name = '/var/log/WLAN_Thermo/TEMPLOG.csv'
     else:
-        # Falls der Symlink noch da ist, loeschen
-        try:
-            os.remove('/var/log/WLAN_Thermo/TEMPLOG.csv')
-        except:
-            pass
-         
-        os.symlink(name, '/var/log/WLAN_Thermo/TEMPLOG.csv')
-        kopfzeile='Datum_Uhrzeit'
-        
-        for kanal in range(8):
-            if (Logkanalnummer[kanal]):
-                kopfzeile = kopfzeile + separator +  'Kanal ' + str(kanal)
-        
-        if log_pitmaster:
-            kopfzeile + separator +  'Reglerausgang'
-        
-        kopfzeile = kopfzeile +'\n'
-        # Datei noch nicht vorhanden, doch neu anlegen!
-        while True:
-            try:
-                fw = open(name,'w')
-                fw.write(kopfzeile) # Kopfzeile der CSV-Datei schreiben
-                fw.flush()
-                os.fsync(fw.fileno())
-                fw.close()
-            except IndexError:
-                time.sleep(1)
-                continue
-            break
-        
-
-
-#Alarmstatusspeicher loeschen
-Alarm_state_high_previous = 0
-Alarm_state_low_previous = 0
+        create_logfile(name)
 
 Temperatur = [0.10,0.10,0.10,0.10,0.10,0.10,0.10,0.10]
 
@@ -532,11 +501,6 @@ try:
                     if Tempvar <> 999.9: #normale Messung, keine Sensorprobleme
                         gute = gute + 1
                         WerteArray.append(Tempvar)
-                   #     Temp = Temp + Tempvar
-                   #     Temperatur[kanal] = round(Temp/gute,2)
-                   # else:
-                   #     if (gute==0):
-                   #         Temperatur[kanal]  = 999.9 # Problem waehrend des Messzyklus aufgetreten, Errorwert setzen
                 else:
                     if sensorname=='KTYPE':
                         # AD595 = 10mV/°C
@@ -641,26 +605,26 @@ try:
         
         pit_on = new_config.getboolean('ToDo','pit_on')
         
+        
         # Log datei erzeugen
-        lt = time.localtime()#  Uhrzeit des Messzyklus
-        jahr, monat, tag, stunde, minute, sekunde = lt[0:6]
-        Uhrzeit = string.zfill(stunde,2) + ':' + string.zfill(minute,2)+ ':' + string.zfill(sekunde,2)
-        Uhrzeit_lang = string.zfill(tag,2) + '.' + string.zfill(monat,2) + '.' + string.zfill((jahr-2000),2) + ' ' + Uhrzeit
+        lcsv = []
+        Uhrzeit_lang = time.strftime('%d.%m.%y %H:%M:%S')
         logdatei = os.readlink('/var/log/WLAN_Thermo/TEMPLOG.csv')
         logdatei = logdatei[21:-4]
-        lcsv = Uhrzeit_lang 
+        lcsv.append(Uhrzeit_lang)
         t = ""
         for kanal in range(8):# eine Zeile mit allen Temperaturen
-            lcsv = lcsv + ";" + str(Temperatur_string[kanal])
+            lcsv.append(str(Temperatur_string[kanal]))
         for kanal in range(8):# eine Zeile mit allen alarm Temperaturen
-            lcsv = lcsv + ";" + Temperatur_alarm[kanal]
-        lcsv = lcsv + ";" + build + ";" + logdatei
+            lcsv.append(Temperatur_alarm[kanal])
+        lcsv.append(build)
+        lcsv.append(logdatei)
         
         
         while True:
             try:
                 fcsv = open(current_temp  + '_tmp', 'w')
-                fcsv.write(lcsv)
+                fcsv.write(';'.join(lcsv))
                 fcsv.flush()
                 os.fsync(fcsv.fileno())
                 fcsv.close()
@@ -672,28 +636,31 @@ try:
             break
             
         #Messzyklus protokollieren und nur die Kanaele loggen, die in der Konfigurationsdatei angegeben sind
-        schreiben = Uhrzeit_lang
-        for i in range(8):
-           if (Logkanalnummer[i]):
-              schreiben = schreiben + separator + str(Temperatur[i])
+        log_line = []
+        log_line.append(Uhrzeit_lang)
         
-        if log_pitmaster:
-            if pit_on:
-                try:
-                    with open(pit_tempfile,'r') as pitfile:
-                        pit_values = pitfile.readline().split(';')
-                        pit_new = pit_values[3].rstrip('%')
-                        pit_set = pit_values[1]
-                        schreiben += separator + pit_new + separator + pit_set
-                except IOError:
-                    # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
-                    schreiben += separator + separator
+        for i in range(8):
+            if (Logkanalnummer[i]):
+                log_line.append(str(Temperatur[i]))
+        
+        if pit_on:
+            try:
+                with open(pit_tempfile,'r') as pitfile:
+                    pit_values = pitfile.readline().split(';')
+                    pit_new = pit_values[3].rstrip('%')
+                    pit_set = pit_values[1]
+                    log_line.append(pit_new)
+                    log_line.append(pit_set)
+            except IOError:
+                # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
+                log_line.append('')
+                log_line.append('')
         
         while True:
             try:
                 # Generierung des Logfiles
                 logfile = open(name,'a')#logfile oeffnen
-                logfile.write(schreiben + '\n')
+                logfile.write(separator.join(log_line) + '\n')
                 logfile.flush()
                 os.fsync(logfile.fileno())
                 logfile.close()
@@ -701,7 +668,7 @@ try:
                 time.sleep(1)
                 continue
             break
-        logger.debug(schreiben) # nur relevant wenn nicht als Dienst gestartet. Man sieht die aktuelle Logzeile
+        logger.debug(separator.join(log_line)) # nur relevant wenn nicht als Dienst gestartet. Man sieht die aktuelle Logzeile
         
         time.sleep(delay)
 
@@ -709,3 +676,4 @@ except KeyboardInterrupt:
     logger.info('WLANThermo stopped!')
     logging.shutdown()
     os.unlink(pidfilename)
+
