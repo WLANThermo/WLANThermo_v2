@@ -6,14 +6,15 @@ if [ `whoami` != root ]; then
     exit
 fi
 
-grep 'VERSION_ID="8"' os-release &> /dev/null
+grep 'VERSION_ID="8"' /etc/os-release &> /dev/null
 if [ $? -ne 0 ]; then
   echo "This installer need Raspbian Jessie!"
   exit
 fi
 
-lines=`grep --max-count 1 --line-regexp --line-number '# ---- END OF SCRIPT - DONT´T CHANGE THIS LINE ----' $0 | cut -d: -f 1`
-startline=`expr $lines + 1`
+lines=`grep --max-count 1 --line-regexp --line-number --text '# ---- END OF SCRIPT - DON´T CHANGE THIS LINE ----' $0 | cut -d: -f 1`
+startline=$((lines + 1))
+
 
 if command -v systemctl > /dev/null && systemctl | grep -q '\-\.mount'; then
   SYSTEMD=1
@@ -71,4 +72,4 @@ echo "========***********WLANThermo installed completely open http://$url in a b
 echo " "
 
 exit 0
-# ---- END OF SCRIPT - DONT´T CHANGE THIS LINE ----
+# ---- END OF SCRIPT - DON´T CHANGE THIS LINE ----
