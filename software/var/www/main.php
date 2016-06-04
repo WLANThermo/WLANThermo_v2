@@ -431,7 +431,7 @@ if (isset($_SESSION["to_update"])){
 	//echo "".$keyboxframe_value."";
 	//print_r($message);
 	//echo "<pre>" . var_export($message,true) . "</pre>";  
-	echo "".$plot_setting."".$plot."";
+	//echo "".$plot_setting."".$plot."";
 	//$dauer = microtime(true) - $beginn; 
 	//echo "Verarbeitung des Skripts: $dauer Sek.";
 
