@@ -473,7 +473,7 @@ alarm_state = [None, None, None, None, None, None, None, None]
 try:
     while True: #Messchleife
         CPU_usage = psutil.cpu_percent(interval=1, percpu=True)
-        ram = psutil.phymem_usage()
+        ram = psutil.virtual_memory()
         ram_free = ram.free / 2**20
         logger.debug('CPU: ' + str(CPU_usage) + ' RAM free: ' + str(ram_free))
         alarm_irgendwo = False
