@@ -5,6 +5,17 @@ if [ `whoami` != root ]; then
     echo "Please run this script as root or using sudo!"
     exit
 fi
+
+grep 'VERSION_ID="8"' /etc/os-release &> /dev/null
+if [ $? -ne 0 ]; then
+  echo "This installer need Raspbian Jessie!"
+  exit
+fi
+
+lines=`grep --max-count 1 --line-regexp --line-number --text '# ---- END OF SCRIPT - DON´T CHANGE THIS LINE ----' $0 | cut -d: -f 1`
+startline=$((lines + 1))
+
+
 if command -v systemctl > /dev/null && systemctl | grep -q '\-\.mount'; then
   SYSTEMD=1
 elif [ -f /etc/init.d/cron ] && [ ! -h /etc/init.d/cron ]; then
@@ -20,7 +31,6 @@ if [ $SYSTEMD -eq 0 ]; then
 fi
 sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
 
-lines=65
 program=wlanthermo
 
 echo "Check Ramdrive and create it if it doesn't exist"
@@ -51,7 +61,7 @@ else
 fi
 service sudo restart
 echo "Extract the package"
-tail -n +$lines $0 > /tmp/${program}.deb
+tail -n +$startline $0 > /tmp/${program}.deb
 sleep 2
 echo 'install /tmp/${programm}.deb'
 dpkg -i /tmp/${program}.deb
@@ -62,3 +72,4 @@ echo "========***********WLANThermo installed completely open http://$url in a b
 echo " "
 
 exit 0
+# ---- END OF SCRIPT - DON´T CHANGE THIS LINE ----
