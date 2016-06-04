@@ -12,7 +12,8 @@ if [ $? -ne 0 ]; then
   exit
 fi
 
-lines = `grep --max-count 1 --line-regexp --line-number '# ---- END OF SCRIPT - DONT´T CHANGE THIS LINE ----' $0 | cut -d: -f 1`
+lines=`grep --max-count 1 --line-regexp --line-number '# ---- END OF SCRIPT - DONT´T CHANGE THIS LINE ----' $0 | cut -d: -f 1`
+startline=`expr $lines + 1`
 
 if command -v systemctl > /dev/null && systemctl | grep -q '\-\.mount'; then
   SYSTEMD=1
@@ -59,7 +60,7 @@ else
 fi
 service sudo restart
 echo "Extract the package"
-tail -n +$lines $0 > /tmp/${program}.deb
+tail -n +$startline $0 > /tmp/${program}.deb
 sleep 2
 echo 'install /tmp/${programm}.deb'
 dpkg -i /tmp/${program}.deb
