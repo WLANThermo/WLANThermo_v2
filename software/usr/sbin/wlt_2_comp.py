@@ -655,6 +655,9 @@ try:
                 # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
                 log_line.append('')
                 log_line.append('')
+        else:
+                log_line.append('')
+                log_line.append('')
         
         while True:
             try:
