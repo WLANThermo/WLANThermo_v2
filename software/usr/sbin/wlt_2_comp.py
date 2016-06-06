@@ -489,11 +489,10 @@ try:
             WerteArray = []
             for i in range (iterations): #Anzahl iterations Werte messen und Durchschnitt bilden
                 ADC_Channel = kanal
-                if (version=='v1'):
+                if version == 'v1' or sensorname == 'KTYPE':
                     Wert = readAnalogData(ADC_Channel, SCLK, MOSI, MISO, CS)
-                    
                 else:
-                    Wert = 4096 - readAnalogData(ADC_Channel, SCLK, MOSI, MISO, CS)
+                    Wert = 4095 - readAnalogData(ADC_Channel, SCLK, MOSI, MISO, CS)
                     
                 if (Wert > 60) and (sensorname != 'KTYPE'): #sinnvoller Wertebereich
                     Rtheta = messwiderstand[kanal]*((4096.0/Wert) - 1)
