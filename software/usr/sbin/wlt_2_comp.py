@@ -160,7 +160,7 @@ def readAnalogData(adcChannel, SCLKPin, MOSIPin, MISOPin, CSPin):
     sendcmd |= 0b00011000 # Entspricht 0x18 (1:Startbit, 1:Single/ended)
     
     # Senden der Bitkombination (Es finden nur 5 Bits Beruecksichtigung)
-    for i in range(5):
+    for i in xrange(5):
         if (sendcmd & 0x10): # (Bit an Position 4 pruefen. Zaehlung beginnt bei 0)
             GPIO.output(MOSIPin, HIGH)
         else:
@@ -170,11 +170,11 @@ def readAnalogData(adcChannel, SCLKPin, MOSIPin, MISOPin, CSPin):
         GPIO.output(SCLKPin, LOW)
         sendcmd <<= 1 # Bitfolge eine Position nach links schieben
     time.sleep(0.0001)    # 0.00001 erzeugte bei mir Raspi 2 Pest 90us
-    #for p in range(19):
-    #    GPIO.output(SCLKPin,LOW)            
+    
     # Empfangen der Daten des ADC
     adcvalue = 0 # Ruecksetzen des gelesenen Wertes
-    for i in range(13):
+        
+    for i in xrange(13):
         GPIO.output(SCLKPin, HIGH)
         GPIO.output(SCLKPin, LOW)
         # print GPIO.input(MISOPin)
@@ -188,7 +188,7 @@ def readAnalogData(adcChannel, SCLKPin, MOSIPin, MISOPin, CSPin):
 def temperatur_sensor (Rt, typ): #Ermittelt die Temperatur
     name = Config_Sensor.get(typ,'name')
     
-    if (name != 'PT100') and (name != 'PT1000'):
+    if not name in ('PT100', 'PT1000'):
         a = Config_Sensor.getfloat(typ,'a')
         b = Config_Sensor.getfloat(typ,'b')
         c = Config_Sensor.getfloat(typ,'c')
@@ -210,17 +210,13 @@ def temperatur_sensor (Rt, typ): #Ermittelt die Temperatur
             T = (-1)*math.sqrt( Rt/(Rpt*-0.0000005775) + (0.0039083**2)/(4*((-0.0000005775)**2)) - 1/(-0.0000005775)) - 0.0039083/(2*-0.0000005775)
         except:
             T = 999.9
-    
-
-
 
     return T
 
-def dateiname(): #Zeitstring fuer eindeutige Dateinamen erzeugen
-
-    zeit = time.localtime()
-    # fn = string.zfill(zeit[2],2)+string.zfill(zeit[1],2)+str(zeit[0])+string.zfill(zeit[3],2)+string.zfill(zeit[4],2)+string.zfill(zeit[5],2)
-    fn = str(zeit[0]) + string.zfill(zeit[1],2) + string.zfill(zeit[2],2) + "_" + string.zfill(zeit[3],2)+string.zfill(zeit[4],2)+string.zfill(zeit[5],2)
+def dateiname():
+    # Zeitstring fuer eindeutige Dateinamen erzeugen
+    # fn = YYYYMMDD_HHMMSS
+    fn = time.strftime('%Y%m%d_%H%M%S)
     return fn
 
 
@@ -231,11 +227,12 @@ def create_logfile(name):
     except:
         pass
     
-    os.symlink(name, '/var/log/WLAN_Thermo/TEMPLOG.csv') #Symlink TEMPLOG.csv auf die gerade benutzte eindeutige Log-Datei legen.
+    # Symlink TEMPLOG.csv auf die gerade benutzte eindeutige Log-Datei legen.
+    os.symlink(name, '/var/log/WLAN_Thermo/TEMPLOG.csv')
     
     kopfzeile = []
     kopfzeile.append('Datum_Uhrzeit')
-    for kanal in range(8):
+    for kanal in xrange(8):
         if (Logkanalnummer[kanal]):
             kopfzeile.append('Kanal ' + str(kanal))
             
@@ -268,54 +265,35 @@ PWM         = 4
 IO          = 2
 #GPIO END
 
-
-# Kanalvariablen-Initialisierung
-Sensornummer_typ = ['ACURITE','ACURITE','ACURITE','ACURITE','ACURITE','ACURITE','ACURITE','ACURITE']
-Logkanalnummer = [True,True,True,True,True,True,True,True]
-temp_min =['0','0','0','0','0','0','0','0']
-temp_max =['0','0','0','0','0','0','0','0']
 #Hardwareversion einlesen
 version = Config.get('Hardware','version')
 
 #Log Dateinamen aus der config lesen
 current_temp = Config.get('filepath','current_temp')
 
-#Sensortypen einlesen pro Kanal
-Sensornummer_typ[0] =  Config.get('Sensoren','CH0')
-Sensornummer_typ[1] =  Config.get('Sensoren','CH1')
-Sensornummer_typ[2] =  Config.get('Sensoren','CH2')
-Sensornummer_typ[3] =  Config.get('Sensoren','CH3')
-Sensornummer_typ[4] =  Config.get('Sensoren','CH4')
-Sensornummer_typ[5] =  Config.get('Sensoren','CH5')
-Sensornummer_typ[6] =  Config.get('Sensoren','CH6')
-Sensornummer_typ[7] =  Config.get('Sensoren','CH7')
-#Alarmwerte aus der conf lesen und temperaturen.csv erzeugen
+# Kanalvariablen-Initialisierung
+Sensornummer_typ = []
+Logkanalnummer = []
+temp_min =[]
+temp_max =[]
+messwiderstand = []
 
-temp_min[0] = Config.get('temp_min','temp_min0')
-temp_min[1] = Config.get('temp_min','temp_min1')
-temp_min[2] = Config.get('temp_min','temp_min2')
-temp_min[3] = Config.get('temp_min','temp_min3')
-temp_min[4] = Config.get('temp_min','temp_min4')
-temp_min[5] = Config.get('temp_min','temp_min5')
-temp_min[6] = Config.get('temp_min','temp_min6')
-temp_min[7] = Config.get('temp_min','temp_min7')
+for kanal in xrange(8):
+    Sensornummer_typ[kanal] =  Config.get('Sensoren','CH' + str(kanal))
+    Logkanalnummer[kanal] =  Config.getboolean('Logging','CH' + str(kanal))
+    temp_min[kanal] = Config.get('temp_min','temp_min' + str(kanal))
+    temp_max[kanal] = Config.get('temp_max','temp_max' + str(kanal))
+    messwiderstand[kanal] = Config.getfloat('Messen','Messwiderstand' + str(kanal))
 
-temp_max[0] = Config.get('temp_max','temp_max0')
-temp_max[1] = Config.get('temp_max','temp_max1')
-temp_max[2] = Config.get('temp_max','temp_max2')
-temp_max[3] = Config.get('temp_max','temp_max3')
-temp_max[4] = Config.get('temp_max','temp_max4')
-temp_max[5] = Config.get('temp_max','temp_max5')
-temp_max[6] = Config.get('temp_max','temp_max6')
-temp_max[7] = Config.get('temp_max','temp_max7')
+# temperaturen.csv erzeugen
 
 name ='/var/www/temperaturen.csv'
 while True:
     try:
         fw = open(name + '_tmp','w') #Datei anlegen
-        for i in range(8):
+        for i in xrange(8):
             fw.write(temp_max[i] + '\n') # Alarm-Max-Werte schreiben
-        for i in range(8):
+        for i in xrange(8):
             fw.write(temp_min[i] + '\n') # Alarm-Min-Werte schreiben
         fw.flush()
         os.fsync(fw.fileno())
@@ -325,18 +303,6 @@ while True:
         time.sleep(1)
         continue
     break
-
-
-
-#Loggingoptionen einlesen
-Logkanalnummer[0] =  Config.getboolean('Logging','CH0')
-Logkanalnummer[1] =  Config.getboolean('Logging','CH1')
-Logkanalnummer[2] =  Config.getboolean('Logging','CH2')
-Logkanalnummer[3] =  Config.getboolean('Logging','CH3')
-Logkanalnummer[4] =  Config.getboolean('Logging','CH4')
-Logkanalnummer[5] =  Config.getboolean('Logging','CH5')
-Logkanalnummer[6] =  Config.getboolean('Logging','CH6')
-Logkanalnummer[7] =  Config.getboolean('Logging','CH7')
 
 log_pitmaster =  Config.getboolean('Logging','pit_control_out')
 
@@ -350,18 +316,6 @@ iterations = Config.getint('Messen','Iterations')
 
 #delay zwischen jeweils 8 Messungen einlesen 
 delay = Config.getfloat('Messen','Delay')
-
-#Einlesen des Reihenwiderstandes zum Fuehler (Hardwareabhaengig!!) 
-messwiderstand = [47.00, 47.00, 47.00, 47.00, 47.00, 47.00, 47.00, 47.00]
-
-messwiderstand[0] = Config.getfloat('Messen','Messwiderstand0')
-messwiderstand[1] = Config.getfloat('Messen','Messwiderstand1')
-messwiderstand[2] = Config.getfloat('Messen','Messwiderstand2')
-messwiderstand[3] = Config.getfloat('Messen','Messwiderstand3')
-messwiderstand[4] = Config.getfloat('Messen','Messwiderstand4')
-messwiderstand[5] = Config.getfloat('Messen','Messwiderstand5')
-messwiderstand[6] = Config.getfloat('Messen','Messwiderstand6')
-messwiderstand[7] = Config.getfloat('Messen','Messwiderstand7')
 
 #Einlesen Email-Parameter fuer Alarmmeldung
 Email_alert = Config.getboolean('Email','email_alert')
@@ -393,7 +347,6 @@ PUSH_URL = Config.get('Push', 'push_url')
 
 #Einlesen der Logging-Option
 newfile = Config.getboolean('Logging','write_new_log_on_restart')
-
 
 # Pin-Programmierung
 GPIO.setup(SCLK, GPIO.OUT)
@@ -463,9 +416,9 @@ try:
                 continue
             break
         
-        for i in range (8):
+        for i in xrange (8):
             Alarm_high[i] = int(af.readline())
-        for i in range (8):
+        for i in xrange (8):
             Alarm_low[i] = int(af.readline())
         af.close()
         
@@ -481,13 +434,13 @@ try:
             os.unlink('/var/www/alert.ack')
         
         guteArray = []
-        for kanal in range (8): #Maximal 8 Kanaele abfragen
+        for kanal in xrange(8): #Maximal 8 Kanaele abfragen
             sensortyp = Sensornummer_typ[kanal]
             sensorname = Config_Sensor.get(sensortyp,'Name')
             Temp = 0.0
             gute = 0
             WerteArray = []
-            for i in range (iterations): #Anzahl iterations Werte messen und Durchschnitt bilden
+            for i in xrange(iterations): #Anzahl iterations Werte messen und Durchschnitt bilden
                 ADC_Channel = kanal
                 if version == 'v1' or sensorname == 'KTYPE':
                     Wert = readAnalogData(ADC_Channel, SCLK, MOSI, MISO, CS)
@@ -513,7 +466,7 @@ try:
                     index = int(round(gute * 0.4))          # ca Mitte des sortierten Arrays.( 40% weil es mehr
                                                             # Ausrutscher nach oben gibt )
                     Count = 1 + int(round(math.log(gute) )) # Count = 1 + ln(gute)   Basis 2.7
-                    for m in range(Count):                  # mehrere Werte aus der Mitte
+                    for m in xrange(Count):                  # mehrere Werte aus der Mitte
                         Temp += sortiertWerte[index-m] + sortiertWerte[index+m]
                     Temperatur[kanal]=round(Temp/(Count * 2.0) , 2)    # arithmetisches Mittel
                     sortiertWerte = []
@@ -587,12 +540,7 @@ try:
                 push_cmd = 'wget -q -O - ' + push_cmd
                 logger.debug(push_cmd)
                 os.popen(push_cmd)
-        
-        #Temperaturen fuer Display anzeige aufbereiten
-        if LCD:
-            for kanal in range(8):
-                Displaytemp[kanal] = Temperatur_string[kanal]
-                
+                     
         new_config = ConfigParser.SafeConfigParser()
         while True:
             try:
@@ -612,9 +560,11 @@ try:
         logdatei = logdatei[21:-4]
         lcsv.append(Uhrzeit_lang)
         t = ""
-        for kanal in range(8):# eine Zeile mit allen Temperaturen
+        for kanal in xrange(8):
+            # 8 Felder mit allen Temperaturen
             lcsv.append(str(Temperatur_string[kanal]))
-        for kanal in range(8):# eine Zeile mit allen alarm Temperaturen
+        for kanal in xrange(8):
+            # 8 Felder mit allen Alarmzuständen
             lcsv.append(Temperatur_alarm[kanal])
         lcsv.append(build)
         lcsv.append(logdatei)
@@ -638,7 +588,7 @@ try:
         log_line = []
         log_line.append(Uhrzeit_lang)
         
-        for i in range(8):
+        for i in xrange(8):
             if (Logkanalnummer[i]):
                 log_line.append(str(Temperatur[i]))
         
@@ -661,7 +611,7 @@ try:
         while True:
             try:
                 # Generierung des Logfiles
-                logfile = open(name,'a')#logfile oeffnen
+                logfile = open(name,'a')
                 logfile.write(separator.join(log_line) + '\n')
                 logfile.flush()
                 os.fsync(logfile.fileno())
@@ -670,7 +620,8 @@ try:
                 time.sleep(1)
                 continue
             break
-        logger.debug(separator.join(log_line)) # nur relevant wenn nicht als Dienst gestartet. Man sieht die aktuelle Logzeile
+        # Werte loggen
+        logger.debug(separator.join(log_line))
         
         time.sleep(delay)
 
@@ -678,4 +629,3 @@ except KeyboardInterrupt:
     logger.info('WLANThermo stopped!')
     logging.shutdown()
     os.unlink(pidfilename)
-
