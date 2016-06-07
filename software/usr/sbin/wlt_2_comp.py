@@ -279,11 +279,11 @@ temp_max =[]
 messwiderstand = []
 
 for kanal in xrange(8):
-    Sensornummer_typ[kanal] =  Config.get('Sensoren','CH' + str(kanal))
-    Logkanalnummer[kanal] =  Config.getboolean('Logging','CH' + str(kanal))
-    temp_min[kanal] = Config.get('temp_min','temp_min' + str(kanal))
-    temp_max[kanal] = Config.get('temp_max','temp_max' + str(kanal))
-    messwiderstand[kanal] = Config.getfloat('Messen','Messwiderstand' + str(kanal))
+    Sensornummer_typ.append(Config.get('Sensoren','CH' + str(kanal)))
+    Logkanalnummer.append(Config.getboolean('Logging','CH' + str(kanal)))
+    temp_min.append(Config.get('temp_min','temp_min' + str(kanal)))
+    temp_max.append(Config.get('temp_max','temp_max' + str(kanal)))
+    messwiderstand.append(Config.getfloat('Messen','Messwiderstand' + str(kanal)))
 
 # temperaturen.csv erzeugen
 
