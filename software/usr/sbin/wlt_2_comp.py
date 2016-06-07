@@ -216,7 +216,7 @@ def temperatur_sensor (Rt, typ): #Ermittelt die Temperatur
 def dateiname():
     # Zeitstring fuer eindeutige Dateinamen erzeugen
     # fn = YYYYMMDD_HHMMSS
-    fn = time.strftime('%Y%m%d_%H%M%S)
+    fn = time.strftime('%Y%m%d_%H%M%S')
     return fn
 
 
