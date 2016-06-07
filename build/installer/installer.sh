@@ -48,9 +48,14 @@ fi
 
 echo "Install depencies:"
 sudo apt-get update
-aptitude --safe-resolver install gnuplot-nox lighttpd apache2-utils python-dev python-serial php5-cgi php5-gd python-pyinotify sudo python-psutil vim htop php5-curl iftop iotop python-urllib3 fswebcam imagemagick -y
-echo "Install PIGPIO"
-wget -N --directory-prefix=/tmp abyz.co.uk/rpi/pigpio/pigpio.zip && unzip -o /tmp/pigpio.zip -d /tmp/  && make -C /tmp/PIGPIO/ && make install -C /tmp/PIGPIO/
+aptitude --safe-resolver install gnuplot-nox lighttpd apache2-utils python-dev python-serial php5-cgi php5-gd python-pyinotify sudo python-psutil vim htop php5-curl iftop iotop python-urllib3 fswebcam imagemagick python-pigpio -y
+
+echo "Enabling pigpiod.service"
+systemctl enable pigpiod.service
+
+#echo "Install PIGPIO"
+#wget -N --directory-prefix=/tmp abyz.co.uk/rpi/pigpio/pigpio.zip && unzip -o /tmp/pigpio.zip -d /tmp/  && make -C /tmp/PIGPIO/ && make install -C /tmp/PIGPIO/
+
 echo "add / modify sudoers entrys"
 SU=$(cat /etc/sudoers|grep 'www-data ALL='|wc -l)
 sud="www-data ALL=(ALL) NOPASSWD:/sbin/ifdown wlan0,/sbin/ifup wlan0,/bin/cat /etc/wpa_supplicant/wpa_supplicant.conf,/bin/cp /tmp/wifidata /etc/wpa_supplicant/wpa_supplicant.conf,/sbin/wpa_cli scan_results,/sbin/wpa_cli scan,/bin/cp,/bin/sleep,/bin/ps,/usr/bin/fswebcam,/usr/bin/raspi_webcam.sh,/tmp/WLANThermo_install.run,/opt/vc/bin/vcgencmd measure_temp,/usr/sbin/wlt_2_updatenextion.sh"
@@ -59,7 +64,9 @@ if [ $SU == 0 ];then
 else
     sed -i -e "s|www-data ALL=.*|${sud}|g" /etc/sudoers
 fi
+
 service sudo restart
+
 echo "Extract the package"
 tail -n +$startline $0 > /tmp/${program}.deb
 sleep 2

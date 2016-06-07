@@ -3,8 +3,8 @@
 
 # Trage alle Dienste im Autostart ein
 insserv WLANThermo
-insserv pigpiod
 insserv WLANThermoWD
+systemctl enable pigpiod.service
 # update-rc.d WLANThermoSERVO defaults
 # update-rc.d WLANThermoSERVO defaults
 
@@ -36,6 +36,5 @@ sudo chown -Rv www-data:www-data /var/www 1>/dev/null
 
 sudo service lighttpd restart
 sudo service WLANThermo start
-sudo service pigpiod start
 sudo service WLANThermoWD start
-
+sudo systemctl start pigpiod.service

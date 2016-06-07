@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "${BASH_SOURCE%/*}" || exit
+
 echo Kopiere Software in das Buildverzeichniss...
 cp -r ../software/* ./build/
 echo Kopiere Paketdaten in das Buildverzeichniss...
