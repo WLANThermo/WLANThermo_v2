@@ -33,6 +33,7 @@ fi
 systemctl daemon-reload
 ln -s /var/log/WLAN_Thermo /var/www/thermolog
 sudo chown -Rv www-data:www-data /var/www 1>/dev/null
+sudo chown -Rv www-data:www-data /var/log/WLAN_Thermo 1>/dev/null
 
 sudo service lighttpd restart
 sudo service WLANThermo start
