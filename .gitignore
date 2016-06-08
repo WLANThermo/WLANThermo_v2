@@ -4,3 +4,6 @@ nppBackup
 /build/run/*
 /build/package/*
 
+.project
+.pydevproject
+.settings
