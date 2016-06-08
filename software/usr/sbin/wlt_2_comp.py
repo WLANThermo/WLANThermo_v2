@@ -26,6 +26,7 @@ import string
 import logging
 import RPi.GPIO as GPIO
 import urllib
+import urllib2
 import psutil
 import signal
 
@@ -339,8 +340,17 @@ build = os.popen(command).read()
 LCD = Config.getboolean('Display','lcd_present')
 
 #Einlesen der Push Nachrichten Einstellungen
-PUSH = Config.getboolean('Push', 'push_on')
-PUSH_URL = Config.get('Push', 'push_url')
+Push_alert = Config.getboolean('Push', 'push_on')
+Push_URL = Config.get('Push', 'push_url')
+Push_Body = Config.get('Push', 'push_body')
+Push_inst_id = Config.get('Push', 'push_inst_id')
+Push_device = Config.get('Push', 'push_device')
+Push_inst_id2 = Config.get('Push', 'push_inst_id2')
+Push_device2 = Config.get('Push', 'push_device2')
+Push_inst_id3 = Config.get('Push', 'push_inst_id3')
+Push_device3 = Config.get('Push', 'push_device3')
+Push_chat_id = Config.get('Push', 'push_chat_id')
+Push_token = Config.get('Push', 'push_token')
 #
 
 #Einlesen der Logging-Option
@@ -528,16 +538,29 @@ try:
             logger.debug('Neuer Alarm, versende Nachrichten')
             if Email_alert: #wenn konfiguriert, email schicken
                 alarm_email(Email_server,Email_user,Email_password, Email_STARTTLS, Email_from, Email_to, Email_subject, Alarm_message)
-            
             if WhatsApp_alert: #wenn konfiguriert, Alarm per WhatsApp schicken
                 cmd="/usr/sbin/sende_whatsapp.sh " + WhatsApp_number + " '" + Alarm_message + "'"
                 os.system(cmd)
-            if PUSH:
+            if Push_alert:
                 Alarm_message2 = urllib.quote(Alarm_message)
-                push_cmd =  PUSH_URL.replace('messagetext', Alarm_message2.replace('\n', '<br/>'))
-                push_cmd = 'wget -q -O - ' + push_cmd
-                logger.debug(push_cmd)
-                os.popen(push_cmd)
+                url = Push_URL.format(messagetext=urllib.quote(Alarm_message).replace('\n', '<br/>'), inst_id=Push_inst_id, device=Push_device, inst_id2=Push_inst_id2, device2=Push_device2, inst_id3=Push_inst_id3, device3=Push_device3, chat_id=Push_chat_id, token=Push_token)
+                body = Push_Body.format(messagetext=urllib.quote(Alarm_message).replace('\n', '<br/>'), inst_id=Push_inst_id, device=Push_device, inst_id2=Push_inst_id2, device2=Push_device2, inst_id3=Push_inst_id3, device3=Push_device3, chat_id=Push_chat_id, token=Push_token)
+                try: 
+                    if Push_Body == '':
+                        logger.debug('Push GET-Request, URL: ' + url)
+                        response = urllib2.urlopen(url)
+                    else:
+                        logger.debug('Push POST-Request, URL: ' + url + '\nBody: ' + body)
+                        response = urllib2.urlopen(url, body)
+                    
+                    logger.info('Push HTTP-Returncode: ' + str(response.getcode()))
+                    logger.debug('Push URL: ' + response.geturl())
+                    logger.debug('Push Ergebniss: ' + response.read(500))
+
+                except urllib2.HTTPError, e:
+                    logger.error('HTTP Fehler: ' + str(e.code) + ' - ' + e.read(500))
+                except urllib2.URLError, e:
+                    logger.error('URLError: ' + str(e.reason))
                      
         new_config = ConfigParser.SafeConfigParser()
         while True:

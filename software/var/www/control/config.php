@@ -203,6 +203,80 @@ if(isset($_POST["save"])) {
 			}
 			
 			// ######################################################################
+			// Push Einstellungen --------------------------------------------------
+			// ######################################################################
+			
+			// Pushbenachrichtigung Aktivieren/Deaktivieren
+			if(isset ($_POST['push_on'])) {$_POST['push_on'] = "True"; }else{ $_POST['push_on'] = "False";}
+			if($ini['Push']['push_on'] !== $_POST['push_on']){
+				$ini['Push']['push_on'] = $_POST['push_on'];
+				$restart = "1";
+			}
+			// Push Body
+			if (isset($_POST['push_body'])) {
+				if($ini['Push']['push_body'] !== $_POST['push_body']){
+					$ini['Push']['push_body'] = $_POST['push_body'];
+					$restart = "1";
+				}
+			}
+			// Push push_inst_id
+			if (isset($_POST['push_inst_id'])) {
+				if($ini['Push']['push_inst_id'] !== $_POST['push_inst_id']){
+					$ini['Push']['push_inst_id'] = $_POST['push_inst_id'];
+					$restart = "1";
+				}
+			}
+			// Push push_device
+			if (isset($_POST['push_device'])) {
+				if($ini['Push']['push_device'] !== $_POST['push_device']){
+					$ini['Push']['push_device'] = $_POST['push_device'];
+					$restart = "1";
+				}			
+			}
+			// Push push_inst_id2
+			if (isset($_POST['push_inst_id2'])) {
+				if($ini['Push']['push_inst_id2'] !== $_POST['push_inst_id2']){
+					$ini['Push']['push_inst_id2'] = $_POST['push_inst_id2'];
+					$restart = "1";
+				}			
+			}
+			// Push push_device2
+			if (isset($_POST['push_device2'])) {
+				if($ini['Push']['push_device2'] !== $_POST['push_device2']){
+					$ini['Push']['push_device2'] = $_POST['push_device2'];
+					$restart = "1";
+				}			
+			}
+			// Push push_inst_id3
+			if (isset($_POST['push_inst_id3'])) {
+				if($ini['Push']['push_inst_id3'] !== $_POST['push_inst_id3']){
+					$ini['Push']['push_inst_id3'] = $_POST['push_inst_id3'];
+					$restart = "1";
+				}			
+			}
+			// Push push_device3
+			if (isset($_POST['push_device3'])) {
+				if($ini['Push']['push_device3'] !== $_POST['push_device3']){
+					$ini['Push']['push_device3'] = $_POST['push_device3'];
+					$restart = "1";
+				}			
+			}
+			// Push push_chat_id
+			if (isset($_POST['push_chat_id'])) {
+				if($ini['Push']['push_chat_id'] !== $_POST['push_chat_id']){
+					$ini['Push']['push_chat_id'] = $_POST['push_chat_id'];
+					$restart = "1";
+				}			
+			}
+			// Push push_token
+			if (isset($_POST['push_token'])) {
+				if($ini['Push']['push_token'] !== $_POST['push_token']){
+					$ini['Push']['push_token'] = $_POST['push_token'];
+					$restart = "1";
+				}			
+			}
+
+			// ######################################################################
 			// LCD Einstellungen ----------------------------------------------------
 			// ######################################################################
 			
@@ -568,6 +642,38 @@ if(isset($_POST["save"])) {
 			<div class="config_text row_4 col_7"><input type="password" name="email_password" id="email_password" size="18" maxlength="50" value="<?php echo $ini['Email']['password'];?>"></div>
 			<div class="config_text row_4 col_1">Benutzername:</div>
 			<div class="config_text row_4 col_3"><input type="text" name="email_username" id="email_username" size="15" maxlength="50" value="<?php echo $ini['Email']['username'];?>"></div>
+		</div>
+<?php
+// ##################################################################################
+// Formular Push Einstellungen -----------------------------------------------------
+// ##################################################################################	
+?>
+		<div class="config middle">
+			<div class="headline">Pushdienst Einstellungen</div>
+			<div class="config_text row_1 col_6">Pushnachricht versenden:</div>			
+			<div class="config_text row_1 col_7"><input type="checkbox" name="push_on" id="email" value="True" <?php if($ini['Push']['push_on'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="headicon">&nbsp;</div>
+			<div class="config_text row_1 col_1">URL:</div>
+			<div class="config_text row_2 col_1">Body:</div>
+			<div class="config_text row_3 col_1">chat_id:</div>
+			<div class="config_text row_4 col_1">token:</div>
+			<div class="config_text row_1 col_3"><input type="text" name="push_url" id="push_url" size="25" maxlength="50" value="<?php echo $ini['Push']['push_url'];?>"></div>
+			<div class="config_text row_2 col_3"><input type="text" name="push_body" id="push_body" size="25" maxlength="50" value="<?php echo $ini['Push']['push_body'];?>"></div>
+			<div class="config_text row_3 col_3"><input type="text" name="push_chat_id" id="push_chat_id" size="25" maxlength="50" value="<?php echo $ini['Push']['push_chat_id'];?>"></div>
+			<div class="config_text row_4 col_3"><input type="text" name="push_token" id="email_username" size="25" maxlength="50" value="<?php echo $ini['Push']['push_token'];?>"></div>
+			<div class="config_text row_2 col_4">device:&nbsp;&nbsp; <input type="text" name="push_device" id="push_device" size="20" maxlength="50" value="<?php echo $ini['Push']['push_device'];?>"></div>
+			<div class="config_text row_3 col_4">device2: <input type="text" name="push_device2" id="push_device2" size="20" maxlength="50" value="<?php echo $ini['Push']['push_device2'];?>"></div>
+			<div class="config_text row_4 col_4">device3: <input type="text" name="push_device3" id="push_device3" size="20" maxlength="50" value="<?php echo $ini['Push']['push_device3'];?>"></div>
+			<div class="config_text row_2 col_5"></div>
+			<div class="config_text row_3 col_5"></div>
+			<div class="config_text row_4 col_5"></div>
+			<div class="config_text row_2 col_6">inst_id:</div>
+			<div class="config_text row_3 col_6">inst_id2:</div>
+			<div class="config_text row_4 col_6">inst_id3:</div>
+			<div class="config_text row_2 col_7"><input type="text" name="push_inst_id" id="push_inst_id" size="20" maxlength="50" value="<?php echo $ini['Push']['push_inst_id'];?>"></div>
+			<div class="config_text row_3 col_7"><input type="text" name="push_inst_id2" id="push_inst_id2" size="20" maxlength="50" value="<?php echo $ini['Push']['push_inst_id2'];?>"></div>
+			<div class="config_text row_4 col_7"><input type="text" name="push_inst_id3" id="push_inst_id3" size="20" maxlength="50" value="<?php echo $ini['Push']['push_inst_id3'];?>"></div>
+
 		</div>
 <?php
 // ##################################################################################
