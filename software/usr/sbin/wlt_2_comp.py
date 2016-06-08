@@ -239,12 +239,10 @@ def create_logfile(name):
     kopfzeile.append('Regler Ausgang')
     kopfzeile.append('Regler Sollwert')
     
-    kopfzeile = kopfzeile +'\n'
-    
     while True:
         try:
             fw = open(name,'w') #Datei anlegen
-            fw.write(separator.join(kopfzeile)) # Kopfzeile der CSV-Datei schreiben
+            fw.write(separator.join(kopfzeile) + '\n') # Kopfzeile der CSV-Datei schreiben
             fw.flush()
             os.fsync(fw.fileno())
             fw.close()
