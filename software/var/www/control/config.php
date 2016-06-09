@@ -353,90 +353,90 @@ if(isset($_POST["save"])) {
 			
 			// Pitmaster EIN/AUS
 			if(isset ($_POST['pit_on'])) {$_POST['pit_on'] = "True"; }else{ $_POST['pit_on'] = "False";}
-				if($ini['ToDo']['pit_on'] !== $_POST['pit_on']){
-					$ini['ToDo']['pit_on'] = $_POST['pit_on'];
-			}
+			//if($ini['ToDo']['pit_on'] !== $_POST['pit_on']){
+			//	$ini['ToDo']['pit_on'] = $_POST['pit_on'];
+			//}
 			// Pit invertierung EIN/AUS
 			if(isset ($_POST['pit_inverted'])) {$_POST['pit_inverted'] = "True"; }else{ $_POST['pit_inverted'] = "False";}
-				if($ini['Pitmaster']['pit_inverted'] !== $_POST['pit_inverted']){
-					$ini['Pitmaster']['pit_inverted'] = $_POST['pit_inverted'];
-			}
+			//if($ini['Pitmaster']['pit_inverted'] !== $_POST['pit_inverted']){
+			//	$ini['Pitmaster']['pit_inverted'] = $_POST['pit_inverted'];
+			//}
 			// Pitmaster PID EIN/AUS
 			if(isset ($_POST['pit_controller_type'])) {$_POST['pit_controller_type'] = "PID"; }else{ $_POST['pit_controller_type'] = "False";}
-				if($ini['Pitmaster']['pit_controller_type'] !== $_POST['pit_controller_type']){
-					$ini['Pitmaster']['pit_controller_type'] = $_POST['pit_controller_type'];
-			}
+			//if($ini['Pitmaster']['pit_controller_type'] !== $_POST['pit_controller_type']){
+			//	$ini['Pitmaster']['pit_controller_type'] = $_POST['pit_controller_type'];
+			//}
 			// Open Lid detection EIN/AUS
 			if(isset ($_POST['pit_open_lid_detection'])) {$_POST['pit_open_lid_detection'] = "True"; }else{ $_POST['pit_open_lid_detection'] = "False";}
-				if($ini['Pitmaster']['pit_open_lid_detection'] !== $_POST['pit_open_lid_detection']){
-					$ini['Pitmaster']['pit_open_lid_detection'] = $_POST['pit_open_lid_detection'];
-					$ini['ToDo']['restart_pitmaster'] = "True";
+			if($ini['Pitmaster']['pit_open_lid_detection'] !== $_POST['pit_open_lid_detection']){
+				$ini['Pitmaster']['pit_open_lid_detection'] = $_POST['pit_open_lid_detection'];
+				//$ini['ToDo']['restart_pitmaster'] = "True";
 			}
 			// Pitmaster bei Änderung neu starten
 			if (isset($_POST['pit_curve'])) {
-				if($ini['Pitmaster']['pit_curve'] !== $_POST['pit_curve']){
-					$ini['ToDo']['restart_pitmaster'] = "True";
-				}
+				//if($ini['Pitmaster']['pit_curve'] !== $_POST['pit_curve']){
+				//	$ini['ToDo']['restart_pitmaster'] = "True";
+				//}
 				$ini['Pitmaster']['pit_curve'] = $_POST['pit_curve'];
 			}
 			if (isset($_POST['pit_type'])) {
-				if($ini['Pitmaster']['pit_type'] !== $_POST['pit_type']){
-					$ini['ToDo']['restart_pitmaster'] = "True";
-				}
+				//if($ini['Pitmaster']['pit_type'] !== $_POST['pit_type']){
+				//	$ini['ToDo']['restart_pitmaster'] = "True";
+				//}
 				$ini['Pitmaster']['pit_type'] = $_POST['pit_type'];
 			}
-			if (isset($_POST['pit_controller_type'])) {
-				if($ini['Pitmaster']['pit_controller_type'] !== $_POST['pit_controller_type']){
-					$ini['ToDo']['restart_pitmaster'] = "True";
-				}			
-			}
+			//if (isset($_POST['pit_controller_type'])) {
+			//	if($ini['Pitmaster']['pit_controller_type'] !== $_POST['pit_controller_type']){
+			//		$ini['ToDo']['restart_pitmaster'] = "True";
+			//	}			
+			//}
 			//Pitmaster PID kp
 			if (isset($_POST['pit_kp'])) {
-				if($ini['Pitmaster']['pit_kp'] !== $_POST['pit_kp']){
-					$ini['ToDo']['restart_pitmaster'] = "True";
-				}
+				//if($ini['Pitmaster']['pit_kp'] !== $_POST['pit_kp']){
+				//	$ini['ToDo']['restart_pitmaster'] = "True";
+				//}
 				$ini['Pitmaster']['pit_kp'] = $_POST['pit_kp'];
 			}
 			//Pitmaster PID ki
 			if (isset($_POST['pit_ki'])) {
-				if($ini['Pitmaster']['pit_ki'] !== $_POST['pit_ki']){
-					$ini['ToDo']['restart_pitmaster'] = "True";
-				}
+				//if($ini['Pitmaster']['pit_ki'] !== $_POST['pit_ki']){
+				//	$ini['ToDo']['restart_pitmaster'] = "True";
+				//}
 				$ini['Pitmaster']['pit_ki'] = $_POST['pit_ki'];
 			}
 			//Pitmaster PID kd
 			if (isset($_POST['pit_kd'])) {
-				if($ini['Pitmaster']['pit_kd'] !== $_POST['pit_kd']){
-					$ini['ToDo']['restart_pitmaster'] = "True";
-				}
+				//if($ini['Pitmaster']['pit_kd'] !== $_POST['pit_kd']){
+				//	$ini['ToDo']['restart_pitmaster'] = "True";
+				//}
 				$ini['Pitmaster']['pit_kd'] = $_POST['pit_kd'];
 			}
 			//Pitmaster PID kp_a
 			if (isset($_POST['pit_kp_a'])) {
-				if($ini['Pitmaster']['pit_kp_a'] !== $_POST['pit_kp_a']){
-					$ini['ToDo']['restart_pitmaster'] = "True";
-				}
+				//if($ini['Pitmaster']['pit_kp_a'] !== $_POST['pit_kp_a']){
+				//	$ini['ToDo']['restart_pitmaster'] = "True";
+				//}
 				$ini['Pitmaster']['pit_kp_a'] = $_POST['pit_kp_a'];
 			}
 			//Pitmaster PID ki_a
 			if (isset($_POST['pit_ki_a'])) {
-				if($ini['Pitmaster']['pit_ki_a'] !== $_POST['pit_ki_a']){
-					$ini['ToDo']['restart_pitmaster'] = "True";
-				}
+				//if($ini['Pitmaster']['pit_ki_a'] !== $_POST['pit_ki_a']){
+				//	$ini['ToDo']['restart_pitmaster'] = "True";
+				//}
 				$ini['Pitmaster']['pit_ki_a'] = $_POST['pit_ki_a'];
 			}
 			//Pitmaster PID kd_a
 			if (isset($_POST['pit_kd_a'])) {
-				if($ini['Pitmaster']['pit_kd_a'] !== $_POST['pit_kd_a']){
-					$ini['ToDo']['restart_pitmaster'] = "True";
-				}
+				//if($ini['Pitmaster']['pit_kd_a'] !== $_POST['pit_kd_a']){
+				//	$ini['ToDo']['restart_pitmaster'] = "True";
+				//}
 				$ini['Pitmaster']['pit_kd_a'] = $_POST['pit_kd_a'];
 			}
 			//Pitmaster IO GPIO
 			if (isset($_POST['pit_io_gpio'])) {
-				if($ini['Pitmaster']['pit_io_gpio'] !== $_POST['pit_io_gpio']){
-					$ini['ToDo']['restart_pitmaster'] = "True";
-				}
+				//if($ini['Pitmaster']['pit_io_gpio'] !== $_POST['pit_io_gpio']){
+				//	$ini['ToDo']['restart_pitmaster'] = "True";
+				//}
 				$ini['Pitmaster']['pit_io_gpio'] = $_POST['pit_io_gpio'];
 			}						
 			// Pitmaster Kanal
