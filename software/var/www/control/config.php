@@ -353,19 +353,19 @@ if(isset($_POST["save"])) {
 			
 			// Pitmaster EIN/AUS
 			if(isset ($_POST['pit_on'])) {$_POST['pit_on'] = "True"; }else{ $_POST['pit_on'] = "False";}
-			//if($ini['ToDo']['pit_on'] !== $_POST['pit_on']){
-			//	$ini['ToDo']['pit_on'] = $_POST['pit_on'];
-			//}
+			if($ini['ToDo']['pit_on'] !== $_POST['pit_on']){
+				$ini['ToDo']['pit_on'] = $_POST['pit_on'];
+			}
 			// Pit invertierung EIN/AUS
 			if(isset ($_POST['pit_inverted'])) {$_POST['pit_inverted'] = "True"; }else{ $_POST['pit_inverted'] = "False";}
-			//if($ini['Pitmaster']['pit_inverted'] !== $_POST['pit_inverted']){
-			//	$ini['Pitmaster']['pit_inverted'] = $_POST['pit_inverted'];
-			//}
+			if($ini['Pitmaster']['pit_inverted'] !== $_POST['pit_inverted']){
+				$ini['Pitmaster']['pit_inverted'] = $_POST['pit_inverted'];
+			}
 			// Pitmaster PID EIN/AUS
 			if(isset ($_POST['pit_controller_type'])) {$_POST['pit_controller_type'] = "PID"; }else{ $_POST['pit_controller_type'] = "False";}
-			//if($ini['Pitmaster']['pit_controller_type'] !== $_POST['pit_controller_type']){
-			//	$ini['Pitmaster']['pit_controller_type'] = $_POST['pit_controller_type'];
-			//}
+			if($ini['Pitmaster']['pit_controller_type'] !== $_POST['pit_controller_type']){
+				$ini['Pitmaster']['pit_controller_type'] = $_POST['pit_controller_type'];
+			}
 			// Open Lid detection EIN/AUS
 			if(isset ($_POST['pit_open_lid_detection'])) {$_POST['pit_open_lid_detection'] = "True"; }else{ $_POST['pit_open_lid_detection'] = "False";}
 			if($ini['Pitmaster']['pit_open_lid_detection'] !== $_POST['pit_open_lid_detection']){
