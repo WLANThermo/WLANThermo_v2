@@ -252,6 +252,21 @@ def create_logfile(filename, log_kanal):
             continue
         break
 
+def median_filter(input):
+    # Kombinierter Median und Mittelwertfilter
+    laenge = len(input)
+    sortiert = sorted(input)
+    # Mitte des Arrays finden
+    index = int(round(laenge * 0.4))
+    # Bereich für Mittelwertbildung festlegen area = 1 + ln(laenge)   Basis 2.7
+    area_groesse = 1 + int(round(math.log(laenge) ))
+    area = sortiert[index-area_groesse:index+area_groesse+1]
+    summe = sum(area)
+    anzahl = len(area)
+    # arithmetisches Mittel
+    wert = round(summe/anzahl , 2)
+    return wert
+
 # Variablendefinition und GPIO Pin-Definition
 ADC_Channel = 0  # Analog/Digital-Channel
 #GPIO START
@@ -439,19 +454,14 @@ try:
                         
             if (sensorname != 'KTYPE'):
                 gute = len(WerteArray)
-                if (gute > (iterations * 0.6)):             # Messwerte nur gültig wenn x% OK sind
-                    sortiertWerte = sorted(WerteArray)      # sortiert Werte der Größe nach
-                    index = int(round(gute * 0.4))          # ca Mitte des sortierten Arrays.( 40% weil es mehr
-                                                            # Ausrutscher nach oben gibt )
-                    Count = 1 + int(round(math.log(gute) )) # Count = 1 + ln(gute)   Basis 2.7
-                    for m in xrange(Count):                 # mehrere Werte aus der Mitte
-                        Temp += sortiertWerte[index-m] + sortiertWerte[index+m]
-                    Temperatur[kanal]=round(Temp/(Count * 2.0) , 2)    # arithmetisches Mittel
-                    sortiertWerte = []
+                if (gute > (iterations * 0.6)):
+                    # Messwerte nur gültig wenn x% OK sind
+                    # Medianfilter anwenden
+                    Temperatur[kanal] = median_filter(WerteArray)
                     #else:
                     #    # Behalte alten Wert 
                     #    Temperatur[kanal] = Temperatur[kanal] 
-                if (gute <= 0):
+                elif (gute <= 0):
                     Temperatur[kanal] = 999.9               # kein sinnvoller Messwert, Errorwert setzen
             if (gute <> iterations) and (gute > 0):
                 warnung = 'Kanal: ' + str(kanal) + ' konnte nur ' + str(gute) + ' von ' +  str(iterations) + ' messen!!'
@@ -642,9 +652,9 @@ try:
         
         time_remaining = time_start + delay - time.time()
         if time_remaining < 0:
-            logger.warning('Messchleife lief länger als {delay}s, Restzeit {time_remaining}s'.format(delay=delay, time_remaining=time_remaining)
+            logger.warning('Messchleife lief länger als {delay}s, Restzeit {time_remaining}s'.format(delay=delay, time_remaining=time_remaining))
         else:
-            logger.debug('Messchleife Restzeit {time_remaining}s von {delay}s'.format(delay=delay, time_remaining=time_remaining)
+            logger.debug('Messchleife Restzeit {time_remaining}s von {delay}s'.format(delay=delay, time_remaining=time_remaining))
             time.sleep(time_remaining)
 
 except KeyboardInterrupt:
