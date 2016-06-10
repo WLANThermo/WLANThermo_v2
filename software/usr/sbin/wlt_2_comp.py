@@ -298,6 +298,11 @@ for kanal in xrange(8):
     temp_min.append(Config.get('temp_min','temp_min' + str(kanal)))
     temp_max.append(Config.get('temp_max','temp_max' + str(kanal)))
     messwiderstand.append(Config.getfloat('Messen','Messwiderstand' + str(kanal)))
+    sensortyp[kanal] = Config.get('Sensoren','CH' + str(kanal))
+    log_kanal[kanal] = Config.getboolean('Logging','CH' + str(kanal))
+    temp_min[kanal] = Config.get('temp_min','temp_min' + str(kanal))
+    temp_max[kanal] = Config.get('temp_max','temp_max' + str(kanal))
+    messwiderstand[kanal] = Config.getfloat('Messen','Messwiderstand' + str(kanal))
 
 log_pitmaster =  Config.getboolean('Logging','pit_control_out')
 
@@ -390,24 +395,24 @@ try:
         pit_on = new_config.getboolean('ToDo','pit_on')
         
         for kanal in xrange (8):
-            temp_max[kanal] = Config.getfloat('temp_max','temp_max' + str(kanal))
-            temp_min[kanal] = Config.getfloat('temp_min','temp_min' + str(kanal))
-            messwiderstand[kanal] = Config.getfloat('Messen','Messwiderstand' + str(kanal))
-            sensortyp[kanal] = Config.get('Sensoren','CH' + str(kanal))
+            temp_max[kanal] = new_config.getfloat('temp_max','temp_max' + str(kanal))
+            temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
+            messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
+            sensortyp[kanal] = new_config.get('Sensoren','CH' + str(kanal))
             
         #Soundoption einlesen
-        sound_on = Config.getboolean('Sound','Beeper_enabled')
+        sound_on = new_config.getboolean('Sound','Beeper_enabled')
 
         #Einlesen, ueber wieviele Messungen integriert wird 
-        iterations = Config.getint('Messen','Iterations')
+        iterations = new_config.getint('Messen','Iterations')
 
         #delay zwischen jeweils 8 Messungen einlesen 
-        delay = Config.getfloat('Messen','Delay')
+        delay = new_config.getfloat('Messen','Delay')
 
         # Einlesen welche Alarmierungsart aktiv ist
-        Email_alert = Config.getboolean('Email','email_alert')
-        WhatsApp_alert = Config.getboolean('WhatsApp','whatsapp_alert')
-        Push_alert = Config.getboolean('Push', 'push_on')
+        Email_alert = new_config.getboolean('Email','email_alert')
+        WhatsApp_alert = new_config.getboolean('WhatsApp','whatsapp_alert')
+        Push_alert = new_config.getboolean('Push', 'push_on')
         
         if os.path.isfile('/var/www/alert.ack'):
             logger.info('alert.ack vorhanden')
@@ -531,34 +536,34 @@ try:
                 
             if Email_alert:
                 # Wenn konfiguriert, Email schicken
-                Email_server  = Config.get('Email','server')
-                Email_auth = Config.getboolean('Email','auth')
-                Email_user = Config.get('Email','username')
-                Email_password = Config.get('Email','password')
-                Email_from = Config.get('Email','email_from')
-                Email_to = Config.get('Email','email_to')
-                Email_subject = Config.get('Email','email_subject')
-                Email_STARTTLS = Config.getboolean ('Email','starttls')
+                Email_server  = new_config.get('Email','server')
+                Email_auth = new_config.getboolean('Email','auth')
+                Email_user = new_config.get('Email','username')
+                Email_password = new_config.get('Email','password')
+                Email_from = new_config.get('Email','email_from')
+                Email_to = new_config.get('Email','email_to')
+                Email_subject = new_config.get('Email','email_subject')
+                Email_STARTTLS = new_config.getboolean ('Email','starttls')
                 
                 alarm_email(Email_server,Email_user,Email_password, Email_STARTTLS, Email_from, Email_to, Email_subject, alarm_message)
             if WhatsApp_alert:
                 # Wenn konfiguriert, Alarm per WhatsApp schicken
-                WhatsApp_number = Config.get('WhatsApp','whatsapp_number')
+                WhatsApp_number = new_config.get('WhatsApp','whatsapp_number')
                         
                 cmd="/usr/sbin/sende_whatsapp.sh " + WhatsApp_number + " '" + alarm_message + "'"
                 os.system(cmd)
             if Push_alert:
                 # Wenn konfiguriert, Alarm per Pushnachricht schicken
-                Push_URL = Config.get('Push', 'push_url')
-                Push_Body = Config.get('Push', 'push_body')
-                Push_inst_id = Config.get('Push', 'push_inst_id')
-                Push_device = Config.get('Push', 'push_device')
-                Push_inst_id2 = Config.get('Push', 'push_inst_id2')
-                Push_device2 = Config.get('Push', 'push_device2')
-                Push_inst_id3 = Config.get('Push', 'push_inst_id3')
-                Push_device3 = Config.get('Push', 'push_device3')
-                Push_chat_id = Config.get('Push', 'push_chat_id')
-                Push_token = Config.get('Push', 'push_token')
+                Push_URL = new_config.get('Push', 'push_url')
+                Push_Body = new_config.get('Push', 'push_body')
+                Push_inst_id = new_config.get('Push', 'push_inst_id')
+                Push_device = new_config.get('Push', 'push_device')
+                Push_inst_id2 = new_config.get('Push', 'push_inst_id2')
+                Push_device2 = new_config.get('Push', 'push_device2')
+                Push_inst_id3 = new_config.get('Push', 'push_inst_id3')
+                Push_device3 = new_config.get('Push', 'push_device3')
+                Push_chat_id = new_config.get('Push', 'push_chat_id')
+                Push_token = new_config.get('Push', 'push_token')
         
                 alarm_message2 = urllib.quote(alarm_message)
                 url = Push_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), inst_id=Push_inst_id, device=Push_device, inst_id2=Push_inst_id2, device2=Push_device2, inst_id3=Push_inst_id3, device3=Push_device3, chat_id=Push_chat_id, token=Push_token)
