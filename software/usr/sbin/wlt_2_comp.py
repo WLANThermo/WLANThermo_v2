@@ -134,7 +134,7 @@ def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
         s.login(USER,PASSWORT)
         
 
-        m = text(MESSAGE)
+        m = text(MESSAGE, 'plain', 'UTF-8')
 
         m['Subject'] = SUBJECT
         m['From'] = FROM
@@ -291,18 +291,15 @@ log_kanal = [0 for _ in xrange(8)]
 temp_min = [0 for _ in xrange(8)]
 temp_max = [0 for _ in xrange(8)]
 messwiderstand = [0 for _ in xrange(8)]
+kanal_name = [0 for _ in xrange(8)]
 
 for kanal in xrange(8):
-    sensortyp.append(Config.get('Sensoren','CH' + str(kanal)))
-    log_kanal.append(Config.getboolean('Logging','CH' + str(kanal)))
-    temp_min.append(Config.get('temp_min','temp_min' + str(kanal)))
-    temp_max.append(Config.get('temp_max','temp_max' + str(kanal)))
-    messwiderstand.append(Config.getfloat('Messen','Messwiderstand' + str(kanal)))
     sensortyp[kanal] = Config.get('Sensoren','CH' + str(kanal))
     log_kanal[kanal] = Config.getboolean('Logging','CH' + str(kanal))
     temp_min[kanal] = Config.get('temp_min','temp_min' + str(kanal))
     temp_max[kanal] = Config.get('temp_max','temp_max' + str(kanal))
     messwiderstand[kanal] = Config.getfloat('Messen','Messwiderstand' + str(kanal))
+    kanal_name[kanal] = Config.get('ch_name','ch_name' + str(kanal))
 
 log_pitmaster =  Config.getboolean('Logging','pit_control_out')
 
@@ -365,7 +362,19 @@ Temperatur = [0.10,0.10,0.10,0.10,0.10,0.10,0.10,0.10]
 alarm_state = [None, None, None, None, None, None, None, None]
 test_alarm = False
 config_mtime = 0
+alarm_time = 0
 
+## Könnte man durch den User anpassbar machen!
+##
+alarm_high_template = 'Kanal {kanal} hat Übertemperatur!\n{temperatur} Grad Celsius !!!\n'
+alarm_low_template = 'Kanal {kanal} hat Untertemperatur!\n{temperatur} Grad Celsius !!!\n'
+status_template = 'Kanal {kanal} hat aktuell {temperatur} Grad Celsius !!!\n'
+message_template = 'Achtung!\n{alarme}'
+
+status_interval = 0
+alarm_interval = 0
+##
+##
 try:
     while True:
         time_start = time.time()
@@ -375,7 +384,10 @@ try:
         logger.debug('CPU: ' + str(CPU_usage) + ' RAM free: ' + str(ram_free))
         alarm_irgendwo = False
         alarm_neu = False
-        alarm_message = 'Achtung!\n'
+        alarm_repeat = False
+        alarme = []
+        statusse = []
+        
         Temperatur_string = ['999.9','999.9','999.9','999.9','999.9','999.9','999.9','999.9']
         Temperatur_alarm = ['er','er','er','er','er','er','er','er']
         Displaytemp = ['999.9','999.9','999.9','999.9','999.9','999.9','999.9','999.9']
@@ -399,6 +411,7 @@ try:
             temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
             messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
             sensortyp[kanal] = new_config.get('Sensoren','CH' + str(kanal))
+            kanal_name[kanal] = new_config.get('ch_name','ch_name' + str(kanal))
             
         #Soundoption einlesen
         sound_on = new_config.getboolean('Sound','Beeper_enabled')
@@ -488,7 +501,7 @@ try:
                         alarm_irgendwo = True
                         alarm_neu = True
                         alarm_state[kanal] = 'hi'
-                    alarm_message += 'Kanal ' + str(kanal) + ' hat Uebertemperatur!\n' + str(Temperatur[kanal]) + ' Grad Celsius !!! \n'
+                    alarme.append(alarm_high_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal]))
                     Temperatur_alarm[kanal] = 'hi'
                 elif Temperatur[kanal] <= temp_min[kanal]:
                     # Temperatur unter Grenzwert
@@ -503,12 +516,15 @@ try:
                         alarm_irgendwo = True
                         alarm_neu = True
                         alarm_state[kanal] = 'lo'
-                    alarm_message += 'Kanal ' + str(kanal) + ' hat Untertemperatur!\n' + str(Temperatur[kanal]) + ' Grad Celsius !!! \n'
+                    alarme.append(alarm_low_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal]))
                     Temperatur_alarm[kanal] = 'lo'
                 else:
-                    # Temperatur onnerhalb der Grenzwerte
+                    # Temperatur innerhalb der Grenzwerte
+                    statusse.append(status_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal]))
                     alarm_state[kanal] = 'ok'
-                    
+        
+        alarm_message = message_template.format(alarme=''.join(alarme), statusse=''.join(statusse))
+        
         # Beeper bei jedem unquittiertem Alarm
         if alarm_irgendwo:
             if sound_on:
@@ -524,15 +540,26 @@ try:
                 GPIO.output (BEEPER, HIGH)
                 time.sleep(0.2)
                 GPIO.output (BEEPER, LOW)
-                
-        # Nachrichten bei neuem Alarm senden
-        if alarm_neu or test_alarm:
+            if alarm_interval > 0 and alarm_time + alarm_interval < time.time():
+                # Alarm erneut senden
+                alarm_repeat = True
+                alarm_time = time.time()
+        
+        if status_interval > 0 and alarm_time + status_interval < time.time():
+            # Periodisch den Status senden, wenn gewünscht
+            alarm_repeat = True
+            alarm_time = time.time()
+
+        # Nachrichten senden
+        if alarm_neu or test_alarm or alarm_repeat:
             if alarm_neu:
                 logger.debug('Neuer Alarm, versende Nachrichten')
             if test_alarm:
                 logger.debug('Testalarm, versende Nachrichten')
                 test_alarm = False
                 alarm_message = 'Testnachricht\n' + alarm_message
+            if alarm_repeat:
+                logger.info('Wiederholter Alarm, versende Nachrichten')
                 
             if Email_alert:
                 # Wenn konfiguriert, Email schicken
