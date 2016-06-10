@@ -344,6 +344,7 @@ Temperatur = [0.10,0.10,0.10,0.10,0.10,0.10,0.10,0.10]
 
 alarm_state = [None, None, None, None, None, None, None, None]
 test_alarm = False
+config_mtime = 0
 
 try:
     while True:
@@ -358,13 +359,17 @@ try:
         Temperatur_alarm = ['er','er','er','er','er','er','er','er']
         Displaytemp = ['999.9','999.9','999.9','999.9','999.9','999.9','999.9','999.9']
 
-        while True:
-            try:
-                new_config.read('/var/www/conf/WLANThermo.conf')
-            except IndexError:
-                time.sleep(1)
-                continue
-            break
+        new_config_mtime = os.path.getmtime('/var/www/conf/WLANThermo.conf')
+        if new_config_mtime > config_mtime:
+            logger.debug('lese Konfiguration neu...')
+            while True:
+                try:
+                    new_config.read('/var/www/conf/WLANThermo.conf')
+                except IndexError:
+                    time.sleep(1)
+                    continue
+                break
+            config_mtime = new_config_mtime
         
         pit_on = new_config.getboolean('ToDo','pit_on')
         
