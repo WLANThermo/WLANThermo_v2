@@ -348,6 +348,7 @@ config_mtime = 0
 
 try:
     while True:
+        time_start = time.time()
         CPU_usage = psutil.cpu_percent(interval=1, percpu=True)
         ram = psutil.virtual_memory()
         ram_free = ram.free / 2**20
@@ -639,7 +640,12 @@ try:
         # Werte loggen
         logger.debug(separator.join(log_line))
         
-        time.sleep(delay)
+        time_remaining = time_start + delay - time.time()
+        if time_remaining < 0:
+            logger.warning('Messchleife lief länger als {delay}s, Restzeit {time_remaining}s'.format(delay=delay, time_remaining=time_remaining)
+        else:
+            logger.debug('Messchleife Restzeit {time_remaining}s von {delay}s'.format(delay=delay, time_remaining=time_remaining)
+            time.sleep(time_remaining)
 
 except KeyboardInterrupt:
     logger.info('WLANThermo stopped!')
