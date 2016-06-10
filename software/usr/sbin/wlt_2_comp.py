@@ -273,8 +273,8 @@ current_temp = Config.get('filepath','current_temp')
 # Kanalvariablen-Initialisierung
 sensortyp = [0 for _ in xrange(8)]
 log_kanal = [0 for _ in xrange(8)]
-temp_min =[0 for _ in xrange(8)]
-temp_max =[0 for _ in xrange(8)]
+temp_min = [0 for _ in xrange(8)]
+temp_max = [0 for _ in xrange(8)]
 messwiderstand = [0 for _ in xrange(8)]
 
 for kanal in xrange(8):
@@ -343,6 +343,7 @@ new_config = ConfigParser.SafeConfigParser()
 Temperatur = [0.10,0.10,0.10,0.10,0.10,0.10,0.10,0.10]
 
 alarm_state = [None, None, None, None, None, None, None, None]
+test_alarm = False
 
 try:
     while True:
@@ -397,6 +398,12 @@ try:
                     logger.debug('Bestätige Untertemperatur für Kanal ' + str(kanal))
                     alarm_state[kanal] = 'lo_ack'
             os.unlink('/var/www/alert.ack')
+        
+        if os.path.isfile('/var/www/alert.test'):
+            logger.info('alert.test vorhanden')
+            test_alarm = True
+            os.unlink('/var/www/alert.test')
+        
         
         for kanal in xrange(8):
             sensorname = Config_Sensor.get(sensortyp[kanal],'Name')
@@ -498,8 +505,14 @@ try:
                 GPIO.output (BEEPER, LOW)
                 
         # Nachrichten bei neuem Alarm senden
-        if alarm_neu:
-            logger.debug('Neuer Alarm, versende Nachrichten')
+        if alarm_neu or test_alarm:
+            if alarm_neu:
+                logger.debug('Neuer Alarm, versende Nachrichten')
+            if test_alarm:
+                logger.debug('Testalarm, versende Nachrichten')
+                test_alarm = False
+                alarm_message = 'Testnachricht\n' + alarm_message
+                
             if Email_alert:
                 # Wenn konfiguriert, Email schicken
                 Email_server  = Config.get('Email','server')
