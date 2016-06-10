@@ -221,7 +221,7 @@ def dateiname():
     return fn
 
 
-def create_logfile(name):
+def create_logfile(filename, log_kanal):
     # Falls der Symlink noch da ist, loeschen
     try:
         os.remove('/var/log/WLAN_Thermo/TEMPLOG.csv')
@@ -229,12 +229,12 @@ def create_logfile(name):
         pass
     
     # Symlink TEMPLOG.csv auf die gerade benutzte eindeutige Log-Datei legen.
-    os.symlink(name, '/var/log/WLAN_Thermo/TEMPLOG.csv')
+    os.symlink(filename, '/var/log/WLAN_Thermo/TEMPLOG.csv')
     
     kopfzeile = []
     kopfzeile.append('Datum_Uhrzeit')
     for kanal in xrange(8):
-        if (Logkanalnummer[kanal]):
+        if (log_kanal[kanal]):
             kopfzeile.append('Kanal ' + str(kanal))
             
     kopfzeile.append('Regler Ausgang')
@@ -242,7 +242,7 @@ def create_logfile(name):
     
     while True:
         try:
-            fw = open(name,'w') #Datei anlegen
+            fw = open(filename,'w') #Datei anlegen
             fw.write(separator.join(kopfzeile) + '\n') # Kopfzeile der CSV-Datei schreiben
             fw.flush()
             os.fsync(fw.fileno())
@@ -271,37 +271,18 @@ version = Config.get('Hardware','version')
 current_temp = Config.get('filepath','current_temp')
 
 # Kanalvariablen-Initialisierung
-Sensornummer_typ = []
-Logkanalnummer = []
-temp_min =[]
-temp_max =[]
-messwiderstand = []
+sensortyp = [0 for _ in xrange(8)]
+log_kanal = [0 for _ in xrange(8)]
+temp_min =[0 for _ in xrange(8)]
+temp_max =[0 for _ in xrange(8)]
+messwiderstand = [0 for _ in xrange(8)]
 
 for kanal in xrange(8):
-    Sensornummer_typ.append(Config.get('Sensoren','CH' + str(kanal)))
-    Logkanalnummer.append(Config.getboolean('Logging','CH' + str(kanal)))
+    sensortyp.append(Config.get('Sensoren','CH' + str(kanal)))
+    log_kanal.append(Config.getboolean('Logging','CH' + str(kanal)))
     temp_min.append(Config.get('temp_min','temp_min' + str(kanal)))
     temp_max.append(Config.get('temp_max','temp_max' + str(kanal)))
     messwiderstand.append(Config.getfloat('Messen','Messwiderstand' + str(kanal)))
-
-# temperaturen.csv erzeugen
-
-name ='/var/www/temperaturen.csv'
-while True:
-    try:
-        fw = open(name + '_tmp','w') #Datei anlegen
-        for i in xrange(8):
-            fw.write(temp_max[i] + '\n') # Alarm-Max-Werte schreiben
-        for i in xrange(8):
-            fw.write(temp_min[i] + '\n') # Alarm-Min-Werte schreiben
-        fw.flush()
-        os.fsync(fw.fileno())
-        fw.close()
-        os.rename(name + '_tmp', name)
-    except IndexError:
-        time.sleep(1)
-        continue
-    break
 
 log_pitmaster =  Config.getboolean('Logging','pit_control_out')
 
@@ -310,48 +291,10 @@ pit_tempfile = Config.get('filepath','pitmaster')
 #Soundoption einlesen
 sound_on = Config.getboolean('Sound','Beeper_enabled')
 
-#Einlesen, ueber wieviele Messungen integriert wird 
-iterations = Config.getint('Messen','Iterations')
-
-#delay zwischen jeweils 8 Messungen einlesen 
-delay = Config.getfloat('Messen','Delay')
-
-#Einlesen Email-Parameter fuer Alarmmeldung
-Email_alert = Config.getboolean('Email','email_alert')
-Email_server  = Config.get('Email','server')
-Email_auth = Config.getboolean('Email','auth')
-Email_user = Config.get('Email','username')
-Email_password = Config.get('Email','password')
-Email_from = Config.get('Email','email_from')
-Email_to = Config.get('Email','email_to')
-Email_subject = Config.get('Email','email_subject')
-Email_STARTTLS = Config.getboolean ('Email','starttls')
-
-#Einlesen WhatsApp-Parameter fuer Alarmmeldung
-WhatsApp_alert = Config.getboolean('WhatsApp','whatsapp_alert')
-WhatsApp_number = Config.get('WhatsApp','whatsapp_number')
-
 #Einlesen der Software-Version
 command = 'cat /var/www/header.php | grep \'] = "V\' | cut -c31-38'
 
 build = os.popen(command).read()
-
-#Einlesen Displayeinstellungen
-LCD = Config.getboolean('Display','lcd_present')
-
-#Einlesen der Push Nachrichten Einstellungen
-Push_alert = Config.getboolean('Push', 'push_on')
-Push_URL = Config.get('Push', 'push_url')
-Push_Body = Config.get('Push', 'push_body')
-Push_inst_id = Config.get('Push', 'push_inst_id')
-Push_device = Config.get('Push', 'push_device')
-Push_inst_id2 = Config.get('Push', 'push_inst_id2')
-Push_device2 = Config.get('Push', 'push_device2')
-Push_inst_id3 = Config.get('Push', 'push_inst_id3')
-Push_device3 = Config.get('Push', 'push_device3')
-Push_chat_id = Config.get('Push', 'push_chat_id')
-Push_token = Config.get('Push', 'push_token')
-#
 
 #Einlesen der Logging-Option
 newfile = Config.getboolean('Logging','write_new_log_on_restart')
@@ -387,48 +330,62 @@ except:
 
 name = "/var/log/WLAN_Thermo/"  + dateiname() +'_TEMPLOG.csv' #eindeutigen Namen generieren 
 if (newfile):# neues File beim Start anlegen
-    create_logfile(name)
+    create_logfile(name, log_kanal)
 else:
     #Kein neues File anlegen
     if os.path.exists('/var/log/WLAN_Thermo/TEMPLOG.csv'):
         # pruefen, ob die Datei schon da ist zum anhaengen, auch False bei Broken Link!
         name = '/var/log/WLAN_Thermo/TEMPLOG.csv'
     else:
-        create_logfile(name)
+        create_logfile(name, log_kanal)
 
+new_config = ConfigParser.SafeConfigParser()
 Temperatur = [0.10,0.10,0.10,0.10,0.10,0.10,0.10,0.10]
 
 alarm_state = [None, None, None, None, None, None, None, None]
 
 try:
-    while True: #Messchleife
+    while True:
         CPU_usage = psutil.cpu_percent(interval=1, percpu=True)
         ram = psutil.virtual_memory()
         ram_free = ram.free / 2**20
         logger.debug('CPU: ' + str(CPU_usage) + ' RAM free: ' + str(ram_free))
         alarm_irgendwo = False
         alarm_neu = False
-        Alarm_message = 'Achtung!\n'
-        Alarm_high = [999,999,999,999,999,999,999,999]
-        Alarm_low = [0,0,0,0,0,0,0,0]
-        # Temperatur = [0.10,0.10,0.10,0.10,0.10,0.10,0.10,0.10] ausserhalb der Schleife um im Fehlerfall den Vorgängerwert zu nehmen
+        alarm_message = 'Achtung!\n'
         Temperatur_string = ['999.9','999.9','999.9','999.9','999.9','999.9','999.9','999.9']
         Temperatur_alarm = ['er','er','er','er','er','er','er','er']
         Displaytemp = ['999.9','999.9','999.9','999.9','999.9','999.9','999.9','999.9']
 
         while True:
             try:
-                af = open("/var/www/temperaturen.csv") #Datei mit den Alarmwerten einlesen
+                new_config.read('/var/www/conf/WLANThermo.conf')
             except IndexError:
                 time.sleep(1)
                 continue
             break
         
-        for i in xrange (8):
-            Alarm_high[i] = int(af.readline())
-        for i in xrange (8):
-            Alarm_low[i] = int(af.readline())
-        af.close()
+        pit_on = new_config.getboolean('ToDo','pit_on')
+        
+        for kanal in xrange (8):
+            temp_max[kanal] = Config.getfloat('temp_max','temp_max' + str(kanal))
+            temp_min[kanal] = Config.getfloat('temp_min','temp_min' + str(kanal))
+            messwiderstand[kanal] = Config.getfloat('Messen','Messwiderstand' + str(kanal))
+            sensortyp[kanal] = Config.get('Sensoren','CH' + str(kanal))
+            
+        #Soundoption einlesen
+        sound_on = Config.getboolean('Sound','Beeper_enabled')
+
+        #Einlesen, ueber wieviele Messungen integriert wird 
+        iterations = Config.getint('Messen','Iterations')
+
+        #delay zwischen jeweils 8 Messungen einlesen 
+        delay = Config.getfloat('Messen','Delay')
+
+        # Einlesen welche Alarmierungsart aktiv ist
+        Email_alert = Config.getboolean('Email','email_alert')
+        WhatsApp_alert = Config.getboolean('WhatsApp','whatsapp_alert')
+        Push_alert = Config.getboolean('Push', 'push_on')
         
         if os.path.isfile('/var/www/alert.ack'):
             logger.info('alert.ack vorhanden')
@@ -441,40 +398,40 @@ try:
                     alarm_state[kanal] = 'lo_ack'
             os.unlink('/var/www/alert.ack')
         
-        guteArray = []
-        for kanal in xrange(8): #Maximal 8 Kanaele abfragen
-            sensortyp = Sensornummer_typ[kanal]
-            sensorname = Config_Sensor.get(sensortyp,'Name')
+        for kanal in xrange(8):
+            sensorname = Config_Sensor.get(sensortyp[kanal],'Name')
             Temp = 0.0
-            gute = 0
             WerteArray = []
-            for i in xrange(iterations): #Anzahl iterations Werte messen und Durchschnitt bilden
-                ADC_Channel = kanal
+            for i in xrange(iterations):
+                # Anzahl iterations Werte messen und Durchschnitt bilden
                 if version == 'v1' or sensorname == 'KTYPE':
-                    Wert = readAnalogData(ADC_Channel, SCLK, MOSI, MISO, CS)
+                    # Nicht invertiert messen
+                    Wert = readAnalogData(kanal, SCLK, MOSI, MISO, CS)
                 else:
-                    Wert = 4095 - readAnalogData(ADC_Channel, SCLK, MOSI, MISO, CS)
+                    # Spannungsteiler ist nach v1 anders herum aufgebaut
+                    Wert = 4095 - readAnalogData(kanal, SCLK, MOSI, MISO, CS)
                     
-                if (Wert > 60) and (sensorname != 'KTYPE'): #sinnvoller Wertebereich
+                if (Wert > 60) and (sensorname != 'KTYPE'):
+                    # sinnvoller Wertebereich
                     Rtheta = messwiderstand[kanal]*((4096.0/Wert) - 1)
-                    Tempvar = temperatur_sensor(Rtheta,sensortyp)
-                    if Tempvar <> 999.9: #normale Messung, keine Sensorprobleme
-                        gute = gute + 1
+                    Tempvar = temperatur_sensor(Rtheta,sensortyp[kanal])
+                    if Tempvar <> 999.9:
+                        # normale Messung, keine Sensorprobleme
                         WerteArray.append(Tempvar)
+                elif sensorname == 'KTYPE':
+                    # AD595 = 10mV/°C
+                    Temperatur[kanal] = Wert * 330/4096
                 else:
-                    if sensorname=='KTYPE':
-                        # AD595 = 10mV/°C
-                        Temperatur[kanal] = Wert * 330/4096
-                    else:
-                        Temperatur[kanal] = 999.9 # kein sinnvoller Messwert, Errorwert setzen
+                    Temperatur[kanal] = 999.9
+                        
             if (sensorname != 'KTYPE'):
-                guteArray.append(gute)
-                if (gute > (iterations *0.6)):              # Messwerte nur gültig wenn x% OK sind
+                gute = len(WerteArray)
+                if (gute > (iterations * 0.6)):             # Messwerte nur gültig wenn x% OK sind
                     sortiertWerte = sorted(WerteArray)      # sortiert Werte der Größe nach
                     index = int(round(gute * 0.4))          # ca Mitte des sortierten Arrays.( 40% weil es mehr
                                                             # Ausrutscher nach oben gibt )
                     Count = 1 + int(round(math.log(gute) )) # Count = 1 + ln(gute)   Basis 2.7
-                    for m in xrange(Count):                  # mehrere Werte aus der Mitte
+                    for m in xrange(Count):                 # mehrere Werte aus der Mitte
                         Temp += sortiertWerte[index-m] + sortiertWerte[index+m]
                     Temperatur[kanal]=round(Temp/(Count * 2.0) , 2)    # arithmetisches Mittel
                     sortiertWerte = []
@@ -483,38 +440,45 @@ try:
                     #    Temperatur[kanal] = Temperatur[kanal] 
                 if (gute <= 0):
                     Temperatur[kanal] = 999.9               # kein sinnvoller Messwert, Errorwert setzen
-            WerteArray = []
             if (gute <> iterations) and (gute > 0):
                 warnung = 'Kanal: ' + str(kanal) + ' konnte nur ' + str(gute) + ' von ' +  str(iterations) + ' messen!!'
                 logger.warning(warnung) 
             if Temperatur[kanal] <> 999.9:    
                 Temperatur_string[kanal] = "%.1f" % Temperatur[kanal]
                 Temperatur_alarm[kanal] = 'ok'
-                if Temperatur[kanal] >= Alarm_high[kanal]:
+                
+                if Temperatur[kanal] >= temp_max[kanal]:
+                    # Temperatur über Grenzwert
                     if alarm_state[kanal] == 'hi':
+                        # Nicht quittierter Alarm
                         alarm_irgendwo = True
                     elif alarm_state[kanal] == 'hi_ack':
+                        # Alarm bereits quittiert
                         pass
                     else:
+                        # Neuer Alarm
                         alarm_irgendwo = True
                         alarm_neu = True
                         alarm_state[kanal] = 'hi'
-                    Alarm_message = Alarm_message + 'Kanal ' + str(kanal) + ' hat Uebertemperatur!\n' + str(Temperatur[kanal]) + ' Grad Celsius !!! \n'
+                    alarm_message += 'Kanal ' + str(kanal) + ' hat Uebertemperatur!\n' + str(Temperatur[kanal]) + ' Grad Celsius !!! \n'
                     Temperatur_alarm[kanal] = 'hi'
-                    #Temperatur_string[kanal] = chr(1) + "%.1f" % Temperatur[kanal]
-                elif Temperatur[kanal] <= Alarm_low[kanal]:
+                elif Temperatur[kanal] <= temp_min[kanal]:
+                    # Temperatur unter Grenzwert
                     if alarm_state[kanal] == 'lo':
+                        # Nicht quittierter Alarm
                         alarm_irgendwo = True
                     elif alarm_state[kanal] == 'lo_ack':
+                        # Alarm bereits quittiert
                         pass
                     else:
+                        # Neuer Alarm
                         alarm_irgendwo = True
                         alarm_neu = True
                         alarm_state[kanal] = 'lo'
-                    Alarm_message = Alarm_message + 'Kanal ' + str(kanal) + ' hat Untertemperatur!\n' + str(Temperatur[kanal]) + ' Grad Celsius !!! \n'
+                    alarm_message += 'Kanal ' + str(kanal) + ' hat Untertemperatur!\n' + str(Temperatur[kanal]) + ' Grad Celsius !!! \n'
                     Temperatur_alarm[kanal] = 'lo'
-                    #Temperatur_string[kanal] = chr(0) + "%.1f" % Temperatur[kanal]
                 else:
+                    # Temperatur onnerhalb der Grenzwerte
                     alarm_state[kanal] = 'ok'
                     
         # Beeper bei jedem unquittiertem Alarm
@@ -536,15 +500,40 @@ try:
         # Nachrichten bei neuem Alarm senden
         if alarm_neu:
             logger.debug('Neuer Alarm, versende Nachrichten')
-            if Email_alert: #wenn konfiguriert, email schicken
-                alarm_email(Email_server,Email_user,Email_password, Email_STARTTLS, Email_from, Email_to, Email_subject, Alarm_message)
-            if WhatsApp_alert: #wenn konfiguriert, Alarm per WhatsApp schicken
-                cmd="/usr/sbin/sende_whatsapp.sh " + WhatsApp_number + " '" + Alarm_message + "'"
+            if Email_alert:
+                # Wenn konfiguriert, Email schicken
+                Email_server  = Config.get('Email','server')
+                Email_auth = Config.getboolean('Email','auth')
+                Email_user = Config.get('Email','username')
+                Email_password = Config.get('Email','password')
+                Email_from = Config.get('Email','email_from')
+                Email_to = Config.get('Email','email_to')
+                Email_subject = Config.get('Email','email_subject')
+                Email_STARTTLS = Config.getboolean ('Email','starttls')
+                
+                alarm_email(Email_server,Email_user,Email_password, Email_STARTTLS, Email_from, Email_to, Email_subject, alarm_message)
+            if WhatsApp_alert:
+                # Wenn konfiguriert, Alarm per WhatsApp schicken
+                WhatsApp_number = Config.get('WhatsApp','whatsapp_number')
+                        
+                cmd="/usr/sbin/sende_whatsapp.sh " + WhatsApp_number + " '" + alarm_message + "'"
                 os.system(cmd)
             if Push_alert:
-                Alarm_message2 = urllib.quote(Alarm_message)
-                url = Push_URL.format(messagetext=urllib.quote(Alarm_message).replace('\n', '<br/>'), inst_id=Push_inst_id, device=Push_device, inst_id2=Push_inst_id2, device2=Push_device2, inst_id3=Push_inst_id3, device3=Push_device3, chat_id=Push_chat_id, token=Push_token)
-                body = Push_Body.format(messagetext=urllib.quote(Alarm_message).replace('\n', '<br/>'), inst_id=Push_inst_id, device=Push_device, inst_id2=Push_inst_id2, device2=Push_device2, inst_id3=Push_inst_id3, device3=Push_device3, chat_id=Push_chat_id, token=Push_token)
+                # Wenn konfiguriert, Alarm per Pushnachricht schicken
+                Push_URL = Config.get('Push', 'push_url')
+                Push_Body = Config.get('Push', 'push_body')
+                Push_inst_id = Config.get('Push', 'push_inst_id')
+                Push_device = Config.get('Push', 'push_device')
+                Push_inst_id2 = Config.get('Push', 'push_inst_id2')
+                Push_device2 = Config.get('Push', 'push_device2')
+                Push_inst_id3 = Config.get('Push', 'push_inst_id3')
+                Push_device3 = Config.get('Push', 'push_device3')
+                Push_chat_id = Config.get('Push', 'push_chat_id')
+                Push_token = Config.get('Push', 'push_token')
+        
+                alarm_message2 = urllib.quote(alarm_message)
+                url = Push_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), inst_id=Push_inst_id, device=Push_device, inst_id2=Push_inst_id2, device2=Push_device2, inst_id3=Push_inst_id3, device3=Push_device3, chat_id=Push_chat_id, token=Push_token)
+                body = Push_Body.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), inst_id=Push_inst_id, device=Push_device, inst_id2=Push_inst_id2, device2=Push_device2, inst_id3=Push_inst_id3, device3=Push_device3, chat_id=Push_chat_id, token=Push_token)
                 try: 
                     if Push_Body == '':
                         logger.debug('Push GET-Request, URL: ' + url)
@@ -560,19 +549,7 @@ try:
                 except urllib2.HTTPError, e:
                     logger.error('HTTP Fehler: ' + str(e.code) + ' - ' + e.read(500))
                 except urllib2.URLError, e:
-                    logger.error('URLError: ' + str(e.reason))
-                     
-        new_config = ConfigParser.SafeConfigParser()
-        while True:
-            try:
-                new_config.read('/var/www/conf/WLANThermo.conf')
-            except IndexError:
-                time.sleep(1)
-                continue
-            break
-        
-        pit_on = new_config.getboolean('ToDo','pit_on')
-        
+                    logger.error('URLError: ' + str(e.reason))  
         
         # Log datei erzeugen
         lcsv = []
@@ -610,7 +587,7 @@ try:
         log_line.append(Uhrzeit_lang)
         
         for i in xrange(8):
-            if (Logkanalnummer[i]):
+            if (log_kanal[i]):
                 log_line.append(str(Temperatur[i]))
         
         if pit_on:
