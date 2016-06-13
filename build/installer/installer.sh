@@ -48,7 +48,7 @@ fi
 
 echo "Install depencies:"
 sudo apt-get update
-aptitude --safe-resolver install gnuplot-nox lighttpd apache2-utils python-dev python-serial php5-cgi php5-gd python-pyinotify sudo python-psutil vim htop php5-curl iftop iotop python-urllib3 fswebcam imagemagick python-pigpio -y
+aptitude --safe-resolver install gnuplot-nox lighttpd apache2-utils python-dev python-serial php5-cgi php5-gd python-pyinotify sudo python-psutil vim htop php5-curl iftop iotop python-urllib3 fswebcam imagemagick pigpio python-pigpio -y
 
 echo "Enabling pigpiod.service"
 systemctl enable pigpiod.service
