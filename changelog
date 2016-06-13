@@ -1,14 +1,25 @@
 wlanthermo (2.4.0-0) stable; urgency=medium
 
+  * ADD: WLAN Reconnect über HMI
+  * ADD: °C hinter den Temperaturen auf dem Display
+  * ADD: Senden einer Testnachricht
+  * ADD: Senden einer Pushnachricht
+  * ADD: Solltemperatur mitloggen
+  * ADD: ZeroConf Dienstekonfiguration
   * FIX: GPL-Info in info.php
   * FIX: Neue configeinträge wurden nicht uebernommen
   * FIX: Shutdown der V3 über Button funktioniert nicht
   * FIX: Display - Sleepmodus bei Shutdown über Web-GUI
   * FIX: pit_man wurde nicht ausgewertet
   * FIX: HMI Version 1.3
-  * ADD: WLAN Reconnect über HMI
   * FIX: Datenübertragung Display nach Wakeup korrigiert
   * FIX: PID Regelalgorithmus verbessert
+  * FIX: Fehler bei KTYPE an Hardware > v1 behoben
+  * FIX: Umlaute im Kanalnamen werden angezeigt
+  * FIX: Neue Sensorparameter
+  * CHANGE: Medianfilter angepasst
+  * CHANGE: Schleifenzeit der Messchleife korrigiert
+  * CHANGE: Auslesen der Konfiguration in der Messchleife
 
  -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Sat, 28 May 2016 01:03:00 +0200
 
