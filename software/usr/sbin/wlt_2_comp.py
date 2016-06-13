@@ -505,7 +505,7 @@ try:
                         alarm_irgendwo = True
                         alarm_neu = True
                         alarm_state[kanal] = 'hi'
-                    alarme.append(alarm_high_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal]))
+                    alarme.append(alarm_high_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal], lf='\n'))
                     Temperatur_alarm[kanal] = 'hi'
                 elif Temperatur[kanal] <= temp_min[kanal]:
                     # Temperatur unter Grenzwert
