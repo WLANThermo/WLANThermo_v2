@@ -642,11 +642,11 @@ if(isset($_POST["save"])) {
 			<div class="config_text row_4 col_1">token:</div>
 			<div class="config_text row_1 col_3"><input type="text" name="push_url" id="push_url" size="25" maxlength="250" value="<?php echo $ini['Push']['push_url'];?>"></div>
 			<div class="config_text row_2 col_3"><input type="text" name="push_body" id="push_body" size="25" maxlength="250" value="<?php echo $ini['Push']['push_body'];?>"></div>
-			<div class="config_text row_3 col_3"><input type="text" name="push_chat_id" id="push_chat_id" size="25" maxlength="50" value="<?php echo $ini['Push']['push_chat_id'];?>"></div>
-			<div class="config_text row_4 col_3"><input type="text" name="push_token" id="push_token" size="25" maxlength="50" value="<?php echo $ini['Push']['push_token'];?>"></div>
-			<div class="config_text row_2 col_4">device:&nbsp;&nbsp; <input type="text" name="push_device" id="push_device" size="20" maxlength="50" value="<?php echo $ini['Push']['push_device'];?>"></div>
-			<div class="config_text row_3 col_4">device2: <input type="text" name="push_device2" id="push_device2" size="20" maxlength="50" value="<?php echo $ini['Push']['push_device2'];?>"></div>
-			<div class="config_text row_4 col_4">device3: <input type="text" name="push_device3" id="push_device3" size="20" maxlength="50" value="<?php echo $ini['Push']['push_device3'];?>"></div>
+			<div class="config_text row_3 col_3"><input type="text" name="push_chat_id" id="push_chat_id" size="25" maxlength="200" value="<?php echo $ini['Push']['push_chat_id'];?>"></div>
+			<div class="config_text row_4 col_3"><input type="text" name="push_token" id="push_token" size="25" maxlength="200" value="<?php echo $ini['Push']['push_token'];?>"></div>
+			<div class="config_text row_2 col_4">device:&nbsp;&nbsp; <input type="text" name="push_device" id="push_device" size="20" maxlength="200" value="<?php echo $ini['Push']['push_device'];?>"></div>
+			<div class="config_text row_3 col_4">device2: <input type="text" name="push_device2" id="push_device2" size="20" maxlength="200" value="<?php echo $ini['Push']['push_device2'];?>"></div>
+			<div class="config_text row_4 col_4">device3: <input type="text" name="push_device3" id="push_device3" size="20" maxlength="200" value="<?php echo $ini['Push']['push_device3'];?>"></div>
 			<div class="config_text row_2 col_5"></div>
 			<div class="config_text row_3 col_5"></div>
 			<div class="config_text row_4 col_5"></div>
