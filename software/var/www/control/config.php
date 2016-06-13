@@ -592,6 +592,12 @@ if(isset($_POST["save"])) {
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Verlassen der Seite ohne Speichern!...</h2></body>";
 	echo "</div>";
+}elseif(isset($_GET["alert-test"]) && $_GET["alert-test"] == "true") {
+	touch( __DIR__ . '/../alert.test' );
+	echo "<div class=\"infofield\">";
+	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
+			<body> <h2>Testalarm wird gesendet...</h2></body>";
+	echo "</div>";
 }else{
 
 // ##################################################################################
@@ -666,7 +672,7 @@ if(isset($_POST["save"])) {
 			<div class="config_text row_2 col_5"><input type="text" name="alarm_low_template" id="alarm_low_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['alarm_low_template'];?>"></div>
 			<div class="config_text row_3 col_5"><input type="text" name="status_template" id="status_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['status_template'];?>"></div>
 			<div class="config_text row_4 col_5"><input type="text" name="message_template" id="message_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['message_template'];?>"></div>
-
+			<div class="config_text row_4 col_7"><button onclick="$.get('config.php?alert-test=true')">Test senden!</button></div>
 
 		</div>
 <?php
