@@ -178,6 +178,7 @@ function session($configfile) {
 	$_SESSION["pitmaster"] = $ini['filepath']['pitmaster'];
 	$_SESSION["showcpulast"] = $ini['Hardware']['showcpulast'];
 	$_SESSION["checkUpdate"] = $ini['update']['checkupdate'];
+	$_SESSION["check_update_url"] = $ini['update']['check_update_url'];
 	if (isset($_SESSION["webGUIversion"])){
 		if ($_SESSION["checkUpdate"] == "True"){
 			$check_update = updateCheck("".$_SESSION["webGUIversion"]."");
@@ -303,13 +304,13 @@ function download($url) {
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 function updateCheck($version) {
-	$update_url = "http://www.wlanthermo.com/update/version.php"; //Update Server
-	$file_headers = @get_headers($update_url);
+	$check_update_url = $_SESSION["check_update_url"]; //Update Server
+	$file_headers = @get_headers($updatecheck_url);
 	if($file_headers[0] == 'HTTP/1.1 404 Not Found') {
 		//echo "Server nicht erreichbar";
 	}else{
 		//echo "File existiert";
-		$check_update_string = download("".$update_url."");
+		$check_update_string = download("".$check_update_url."");
 		$check_update_array = parse_ini_string($check_update_string);
 		if (isset($check_update_array['version'])) {
 			$webGUIversion = $check_update_array['version'];

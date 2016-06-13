@@ -5,7 +5,7 @@ if [ -f /var/www/tmp/error_wget ]
         rm /var/www/tmp/error_wget
 fi
 
-url_conf=`cat /var/www/conf/WLANThermo.conf | awk '/url = h/'`
+url_conf=`cat /var/www/conf/WLANThermo.conf | awk '/^url = h/'`
 url=${url_conf:5}
 LANG=C wget -O  /tmp/WLANThermo_install.run $url -o /tmp/wgetOut
 # sleep 3
