@@ -30,6 +30,7 @@ import string
 import pigpio
 import threading
 import signal
+import traceback
 
 #GPIO START
 PIT_PWM  = 4 # Pitmaster PWM
@@ -289,15 +290,18 @@ def get_steps(steps_str):
         retval.append((step_fields[0], step_fields[1]))
     return retval
 
+def log_uncaught_exceptions(ex_cls, ex, tb):
+    global logger
+    logger.critical(''.join(traceback.format_tb(tb)))
+    logger.critical('{0}: {1}'.format(ex_cls, ex))
+
 
 def main():
-    
-    last_pit = 0
     
     # Konfigurationsdatei einlesen
     defaults = {'pit_startup_min': '25', 'pit_startup_threshold': '0', 'pit_startup_time':'0.5', 'pit_io_gpio':'2'}
     Config = ConfigParser.SafeConfigParser(defaults)
-    for i in range(0,5):
+    for _ in range(0,5):
         while True:
             try:
                 Config.read('/var/www/conf/WLANThermo.conf')
@@ -307,7 +311,6 @@ def main():
             break
     
     LOGFILE = Config.get('daemon_logging', 'log_file')
-    HW = Config.get('Hardware', 'version')
     logger = logging.getLogger('WLANthermoPIT')
     #Define Logging Level by changing >logger.setLevel(logging.LEVEL_YOU_WANT)< available: DEBUG, INFO, WARNING, ERROR, CRITICAL
     log_level = Config.get('daemon_logging', 'level_PIT')
@@ -323,6 +326,9 @@ def main():
         logger.setLevel(logging.CRITICAL)
     handler = logging.FileHandler(LOGFILE)
     handler.setLevel(logging.DEBUG)
+    
+    sys.excepthook = log_uncaught_exceptions
+    
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
@@ -340,7 +346,6 @@ def main():
     pitPath,pitFile = os.path.split(pitmaster_log)
     
     pit_new = 0
-    pit_val = 0
     #Wenn das display Verzeichniss im Ram Drive nicht exisitiert erstelle es
     
     if not os.path.exists(pitPath):
@@ -352,7 +357,6 @@ def main():
     dif = 0
     dif_sum = 0
     dif_last = 0
-    pit_temp_last = 0
     pit_pid_max = 100
     pit_pid_min = 0
     pit_open_lid_detected = False
@@ -364,7 +368,6 @@ def main():
     restart_pit = False
     pit_type = None
     pit_io_gpio = None
-    pit_inverted = False
     
     bbqpit = BBQpit(logger)
     
@@ -460,133 +463,141 @@ def main():
                 pit_open_lid_rising_border = Config.getfloat('Pitmaster','pit_open_lid_rising_border')
                 #PID End Paramter fuer PID einlesen
                 
-                if pit_man == 0:
-                    temps = tline.split(";")
+                temps = tline.split(";")
+                # Keine Deckelerkennung und kein Fühler für manuelle Einstellung notwendig
+                if pit_man > 0:
+                    logger.info('Setze Ausgang manuell auf {pit_man}%'.format(pit_man=str(pit_man)))
                     if temps[(pit_ch + 1)] == "Error":
-                        logger.info('Kein Messwert auf Kanal ' + pit_ch)
-                        msg = msg + '|Kein Temperaturfuehler an Kanal ' + pit_ch + ' angeschlossen!'
+                        pit_now = 0.0
                     else:
                         pit_now = float(checkTemp(temps[(pit_ch + 1)]))
-                        #start open lid detection
-                        if pit_open_lid_detection:
-                            pit_open_lid_ref_temp[0] = pit_open_lid_ref_temp[1]
-                            pit_open_lid_ref_temp[1] = pit_open_lid_ref_temp[2]
-                            pit_open_lid_ref_temp[2] = pit_open_lid_ref_temp[3]
-                            pit_open_lid_ref_temp[3] = pit_open_lid_ref_temp[4]
-                            pit_open_lid_ref_temp[4] = pit_now
-                            temp_ref = (pit_open_lid_ref_temp[0]+pit_open_lid_ref_temp[1]+pit_open_lid_ref_temp[2]) / 3
-                            
-                            #erkennen ob Temperatur wieder eingependelt oder Timeout
-                            if pit_open_lid_detected:
-                                logger.info('Offener Deckel erkannt!')
-                                pit_open_lid_count = pit_open_lid_count - 1  
-                                if pit_open_lid_count <= 0:
-                                    logger.info('Deckelöffnung: Timeout!')
-                                    pit_open_lid_detected = False 
-                                    msg = msg + '|Timeout open Lid detection '
-                                elif pit_now > (pit_open_lid_temp * (pit_open_lid_rising_border / 100)):
-                                    logger.info('Deckelöffnung: Deckel wieder geschlossen!')
-                                    pit_open_lid_detected = False
-                                    msg = msg + '|Lid closed '
-                            elif pit_now < (temp_ref * (pit_open_lid_falling_border / 100)):
-                                #Wenn Temp innerhalb der letzten beiden Messzyklen den falling Wert unterschreitet
-                                logger.info('Deckelöffnung erkannt!')
-                                pit_open_lid_detected = True
-                                pit_new = 0
-                                pit_open_lid_temp = pit_open_lid_ref_temp[0] #war bsiher pit_now, das ist aber schon zu niedrig
-                                msg = msg + '|open Lid detected '
-                                pit_open_lid_count = pit_open_lid_pause / pit_pause
-                        else:
-                            # Deckelerkennung nicht aktiv, Status zurücksetzen
-                            pit_open_lid_detected = False
-                        #end open lid detection
-                        msg = msg + "|Ist: " + str(pit_now) + " Soll: " + str(pit_set)
-                        calc = 0
-                        s = 0
-                        #Suchen und setzen des neuen Reglerwerts Wertekurve
-                        if (controller_type == "False") and (not pit_open_lid_detected): #Bedingung fuer Wertekurve
-                            for step, val in pit_steps:
-                                if calc == 0:
-                                    dif = pit_now - pit_set
-                                    msg = msg + "|Dif: " + str(dif)
-                                    if (dif <= float(step)):
-                                        calc = 1
-                                        msg = msg + "|Step: " + step
-                                        pit_new = float(val)
-                                        msg = msg + "|New: " + val
-                                    if (pit_now >= pit_set):
-                                        calc = 1
-                                        pit_new = 0
-                                        msg = msg +  "|New-overshoot: " + str(pit_new)
-                                s = s + 1
-                            if calc == 0:
-                                msg = msg + "|Keine Regel zutreffend, Ausschalten!"
-                                pit_new = 0
-                        #PID Begin Block PID Regler Ausgang kann Werte zwischen 0 und 100% annehmen
-                        elif (controller_type == "PID") and (not pit_open_lid_detected): #Bedingung fuer PID
-                            dif_last = dif
-                            dif = pit_set - pit_now
-                            #Parameter in Abhaengigkeit der Temp setzen
-                            if pit_now > (pit_switch_a / 100 * pit_set):
-                                kp = pit_Kp
-                                ki = pit_Ki
-                                kd = pit_Kd
-                            else:
-                                kp = pit_Kp_a
-                                ki = pit_Ki_a
-                                kd = pit_Kd_a
-                            #I-Anteil berechnen
-                            dif_sum = dif_sum + float(dif) * pit_pause
-                            #Anti-Windup I-Anteil
-                            if dif_sum * ki > pit_iterm_max:
-                                dif_sum = pit_iterm_max / ki
-                            elif dif_sum * ki < pit_iterm_min:
-                                dif_sum = pit_iterm_min / ki
-                            #D-Anteil berechnen
-                            dInput = dif - dif_last
-                            #PID Berechnung durchfuehren
-                            pit_new  = (kp * dif) + (ki * dif_sum) + (kd * dInput / pit_pause)
-                            msg = msg + "|PID Values P" + str(kp*dif) + " Iterm " + str(ki * dif_sum) + " dInput " + str(dInput)
-                            #Stellwert begrenzen
-                            if pit_new  > pit_pid_max:
-                                pit_new  = pit_pid_max
-                            elif pit_new  < pit_pid_min:
-                                pit_new  = pit_pid_min
-                            #Messwert Temperatur merken
-                            pit_temp_last = pit_now
-                            #PID End Block PID Regler
-                            
+                    pit_open_lid_detected = False
                     
-                    bbqpit.set_pit(pit_new)
-                    msg += 'Neuer Wert: ' + str(pit_new)
-                    
-                    # Export das aktuellen Werte in eine Text datei
-                    lt = time.localtime()#  Uhrzeit des Messzyklus
-                    jahr, monat, tag, stunde, minute, sekunde = lt[0:6]
-                    Uhrzeit = string.zfill(stunde,2) + ':' + string.zfill(minute,2)+ ':' + string.zfill(sekunde,2)
-                    Uhrzeit_lang = string.zfill(tag,2) + '.' + string.zfill(monat,2) + '.' + string.zfill((jahr-2000),2) + ' ' + Uhrzeit
-                    
-                    while True:
-                        try:          
-                            fp = open(pitPath + '/' + pitFile + '_tmp', 'w')
-                            # Schreibe mit Trennzeichen ; 
-                            # Zeit;Soll;Ist;%;msg + pitFile,
-                            fp.write(str(Uhrzeit_lang) + ';'+ str(pit_set) + ';' + str(pit_now) + ';' + str(pit_new) + '%;' + msg)
-                            fp.flush()
-                            os.fsync(fp.fileno())
-                            fp.close()
-                            os.rename(pitPath + '/' + pitFile + '_tmp', pitPath + '/' + pitFile)
-                        except IndexError:
-                            time.sleep(1)
-                            continue
-                        break
-                    
-                    if (Config.getboolean('ToDo', 'pit_on') == False):
-                        if (count > 0):
-                            break
-                        count = 1
+                elif temps[(pit_ch + 1)] == "Error":
+                    logger.info('Kein Messwert auf Kanal ' + pit_ch)
+                    msg = msg + '|Kein Temperaturfuehler an Kanal ' + pit_ch + ' angeschlossen!'
                 else:
-                    bbqpit.set_pit(pit_man)
+                    pit_now = float(checkTemp(temps[(pit_ch + 1)]))
+                    #start open lid detection
+                    if pit_open_lid_detection:
+                        pit_open_lid_ref_temp[0] = pit_open_lid_ref_temp[1]
+                        pit_open_lid_ref_temp[1] = pit_open_lid_ref_temp[2]
+                        pit_open_lid_ref_temp[2] = pit_open_lid_ref_temp[3]
+                        pit_open_lid_ref_temp[3] = pit_open_lid_ref_temp[4]
+                        pit_open_lid_ref_temp[4] = pit_now
+                        temp_ref = (pit_open_lid_ref_temp[0]+pit_open_lid_ref_temp[1]+pit_open_lid_ref_temp[2]) / 3
+                        
+                        #erkennen ob Temperatur wieder eingependelt oder Timeout
+                        if pit_open_lid_detected:
+                            logger.info('Offener Deckel erkannt!')
+                            pit_open_lid_count = pit_open_lid_count - 1  
+                            if pit_open_lid_count <= 0:
+                                logger.info('Deckelöffnung: Timeout!')
+                                pit_open_lid_detected = False 
+                                msg = msg + '|Timeout open Lid detection '
+                            elif pit_now > (pit_open_lid_temp * (pit_open_lid_rising_border / 100)):
+                                logger.info('Deckelöffnung: Deckel wieder geschlossen!')
+                                pit_open_lid_detected = False
+                                msg = msg + '|Lid closed '
+                        elif pit_now < (temp_ref * (pit_open_lid_falling_border / 100)):
+                            #Wenn Temp innerhalb der letzten beiden Messzyklen den falling Wert unterschreitet
+                            logger.info('Deckelöffnung erkannt!')
+                            pit_open_lid_detected = True
+                            pit_new = 0
+                            pit_open_lid_temp = pit_open_lid_ref_temp[0] #war bsiher pit_now, das ist aber schon zu niedrig
+                            msg = msg + '|open Lid detected '
+                            pit_open_lid_count = pit_open_lid_pause / pit_pause
+                    else:
+                        # Deckelerkennung nicht aktiv, Status zurücksetzen
+                        pit_open_lid_detected = False
+                    #end open lid detection
+                    msg = msg + "|Ist: " + str(pit_now) + " Soll: " + str(pit_set)
+                    calc = 0
+                    s = 0
+                # Manueller Vorgabe des Ausgangswertes
+                if pit_man > 0:
+                    pit_new = pit_man
+                #Suchen und setzen des neuen Reglerwerts Wertekurve
+                elif (controller_type == "False") and (not pit_open_lid_detected): #Bedingung fuer Wertekurve
+                    for step, val in pit_steps:
+                        if calc == 0:
+                            dif = pit_now - pit_set
+                            msg = msg + "|Dif: " + str(dif)
+                            if (dif <= float(step)):
+                                calc = 1
+                                msg = msg + "|Step: " + step
+                                pit_new = float(val)
+                                msg = msg + "|New: " + val
+                            if (pit_now >= pit_set):
+                                calc = 1
+                                pit_new = 0
+                                msg = msg +  "|New-overshoot: " + str(pit_new)
+                        s = s + 1
+                    if calc == 0:
+                        msg = msg + "|Keine Regel zutreffend, Ausschalten!"
+                        pit_new = 0
+                #PID Begin Block PID Regler Ausgang kann Werte zwischen 0 und 100% annehmen
+                elif (controller_type == "PID") and (not pit_open_lid_detected): #Bedingung fuer PID
+                    dif_last = dif
+                    dif = pit_set - pit_now
+                    #Parameter in Abhaengigkeit der Temp setzen
+                    if pit_now > (pit_switch_a / 100 * pit_set):
+                        kp = pit_Kp
+                        ki = pit_Ki
+                        kd = pit_Kd
+                    else:
+                        kp = pit_Kp_a
+                        ki = pit_Ki_a
+                        kd = pit_Kd_a
+                    #I-Anteil berechnen
+                    dif_sum = dif_sum + float(dif) * pit_pause
+                    #Anti-Windup I-Anteil
+                    if dif_sum * ki > pit_iterm_max:
+                        dif_sum = pit_iterm_max / ki
+                    elif dif_sum * ki < pit_iterm_min:
+                        dif_sum = pit_iterm_min / ki
+                    #D-Anteil berechnen
+                    dInput = dif - dif_last
+                    #PID Berechnung durchfuehren
+                    pit_new  = (kp * dif) + (ki * dif_sum) + (kd * dInput / pit_pause)
+                    msg = msg + "|PID Values P" + str(kp*dif) + " Iterm " + str(ki * dif_sum) + " dInput " + str(dInput)
+                    #Stellwert begrenzen
+                    if pit_new  > pit_pid_max:
+                        pit_new  = pit_pid_max
+                    elif pit_new  < pit_pid_min:
+                        pit_new  = pit_pid_min
+                    #PID End Block PID Regler
+                   
+                    
+                bbqpit.set_pit(pit_new)
+                msg += 'Neuer Wert: ' + str(pit_new)
+                
+                # Export das aktuellen Werte in eine Text datei
+                lt = time.localtime()#  Uhrzeit des Messzyklus
+                jahr, monat, tag, stunde, minute, sekunde = lt[0:6]
+                Uhrzeit = string.zfill(stunde,2) + ':' + string.zfill(minute,2)+ ':' + string.zfill(sekunde,2)
+                Uhrzeit_lang = string.zfill(tag,2) + '.' + string.zfill(monat,2) + '.' + string.zfill((jahr-2000),2) + ' ' + Uhrzeit
+                
+                while True:
+                    try:          
+                        fp = open(pitPath + '/' + pitFile + '_tmp', 'w')
+                        # Schreibe mit Trennzeichen ; 
+                        # Zeit;Soll;Ist;%;msg + pitFile,
+                        fp.write(str(Uhrzeit_lang) + ';'+ str(pit_set) + ';' + str(pit_now) + ';' + str(pit_new) + '%;' + msg)
+                        fp.flush()
+                        os.fsync(fp.fileno())
+                        fp.close()
+                        os.rename(pitPath + '/' + pitFile + '_tmp', pitPath + '/' + pitFile)
+                    except IndexError:
+                        time.sleep(1)
+                        continue
+                    break
+                
+                if (Config.getboolean('ToDo', 'pit_on') == False):
+                    if (count > 0):
+                        break
+                    count = 1
+
             if len(msg) > 0:
                 logger.debug(msg)
             time.sleep(pit_pause)
