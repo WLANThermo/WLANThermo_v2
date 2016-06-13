@@ -371,17 +371,6 @@ test_alarm = False
 config_mtime = 0
 alarm_time = 0
 
-## Könnte man durch den User anpassbar machen!
-##
-alarm_high_template = 'Kanal {kanal} hat Übertemperatur!\n{temperatur} Grad Celsius !!!\n'
-alarm_low_template = 'Kanal {kanal} hat Untertemperatur!\n{temperatur} Grad Celsius !!!\n'
-status_template = 'Kanal {kanal} hat aktuell {temperatur} Grad Celsius !!!\n'
-message_template = 'Achtung!\n{alarme}'
-
-status_interval = 0
-alarm_interval = 0
-##
-##
 try:
     while True:
         time_start = time.time()
@@ -428,6 +417,14 @@ try:
 
         #delay zwischen jeweils 8 Messungen einlesen 
         delay = new_config.getfloat('Messen','Delay')
+        
+        # Allgemeine Alarmeinstellungen
+        alarm_high_template = new_config.get('Alert', 'alarm_high_template')
+        alarm_low_template = new_config.get('Alert', 'alarm_low_template')
+        status_template = new_config.get('Alert', 'status_template')
+        message_template = new_config.get('Alert', 'message_template')
+        status_interval = new_config.getint('Alert', 'status_interval')
+        alarm_interval = new_config.getint('Alert', 'alarm_interval')
 
         # Einlesen welche Alarmierungsart aktiv ist
         Email_alert = new_config.getboolean('Email','email_alert')
@@ -523,14 +520,14 @@ try:
                         alarm_irgendwo = True
                         alarm_neu = True
                         alarm_state[kanal] = 'lo'
-                    alarme.append(alarm_low_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal]))
+                    alarme.append(alarm_low_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal], lf='\n'))
                     Temperatur_alarm[kanal] = 'lo'
                 else:
                     # Temperatur innerhalb der Grenzwerte
-                    statusse.append(status_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal]))
+                    statusse.append(status_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal], lf='\n'))
                     alarm_state[kanal] = 'ok'
         
-        alarm_message = message_template.format(alarme=''.join(alarme), statusse=''.join(statusse))
+        alarm_message = message_template.format(alarme=''.join(alarme), statusse=''.join(statusse), lf='\n')
         
         # Beeper bei jedem unquittiertem Alarm
         if alarm_irgendwo:
@@ -555,10 +552,11 @@ try:
         if status_interval > 0 and alarm_time + status_interval < time.time():
             # Periodisch den Status senden, wenn gewünscht
             alarm_repeat = True
-            alarm_time = time.time()
 
         # Nachrichten senden
         if alarm_neu or test_alarm or alarm_repeat:
+            alarm_time = time.time()
+            
             if alarm_neu:
                 logger.debug('Neuer Alarm, versende Nachrichten')
             if test_alarm:

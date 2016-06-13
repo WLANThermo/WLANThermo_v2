@@ -119,6 +119,46 @@ if(isset($_POST["save"])) {
 				$ini['plotter']['keybox'] = $_POST['keybox'];
 			}		
 			// ######################################################################
+			// Alarm Einstellungen --------------------------------------------------
+			// ######################################################################
+			
+			// Template für Temperaturüberschreitung
+			if (isset($_POST['alarm_high_template'])) {
+				if($ini['Alert']['alarm_high_template'] !== $_POST['alarm_high_template']){
+					$ini['Alert']['alarm_high_template'] = $_POST['alarm_high_template'];
+				}
+			}
+			// Template für Temperaturunterschreitung
+			if (isset($_POST['alarm_low_template'])) {
+				if($ini['Alert']['alarm_low_template'] !== $_POST['alarm_low_template']){
+					$ini['Alert']['alarm_low_template'] = $_POST['alarm_low_template'];
+				}
+			}
+			// Template für Statusmeldungen
+			if (isset($_POST['status_template'])) {
+				if($ini['Alert']['status_template'] !== $_POST['status_template']){
+					$ini['Alert']['status_template'] = $_POST['status_template'];
+				}
+			}
+			// Template für die Nachricht
+			if (isset($_POST['message_template'])) {
+				if($ini['Alert']['message_template'] !== $_POST['message_template']){
+					$ini['Alert']['message_template'] = $_POST['message_template'];
+				}
+			}
+			// Intervall für Statusmeldungen
+			if (isset($_POST['status_interval'])) {
+				if($ini['Alert']['status_interval'] !== $_POST['status_interval']){
+					$ini['Alert']['status_interval'] = $_POST['status_interval'];
+				}
+			}
+			// Intervall für Alarmmeldungen
+			if (isset($_POST['alarm_interval'])) {
+				if($ini['Alert']['alarm_interval'] !== $_POST['alarm_interval']){
+					$ini['Alert']['alarm_interval'] = $_POST['alarm_interval'];
+				}
+			}
+			// ######################################################################
 			// WhatsApp Einstellungen -----------------------------------------------
 			// ######################################################################
 			
@@ -608,6 +648,28 @@ if(isset($_POST["save"])) {
 				<div class="config_text row_3 col_6">WebSound Alarm:</div>
 			</div>
 <?php 	}
+// ##################################################################################
+// Formular Alarmierungseinstellungen -----------------------------------------------------
+// ##################################################################################	
+?>
+		<div class="config middle">
+			<div class="headline">Alarmierungseinstellungen</div>
+			<div class="config_text row_1 col_6">Alarmintervall:</div>
+			<div class="config_text row_1 col_7"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="alarm_interval" size="6" maxlength="6" value="<?php echo $ini['Alert']['alarm_interval'];?>"></div>
+			<div class="config_text row_2 col_6">Statusintervall:</div>
+			<div class="config_text row_2 col_7"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name=status_interval size="6" maxlength="6" value="<?php echo $ini['Alert']['status_interval'];?>"></div>
+			<div class="config_text row_1 col_1">Über:</div>
+			<div class="config_text row_2 col_1">Unter:</div>
+			<div class="config_text row_3 col_1">Status:</div>
+			<div class="config_text row_4 col_1">Nachricht:</div>
+			<div class="config_text row_1 col_5"><input type="text" name="alarm_high_template" id="alarm_high_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['alarm_high_template'];?>"></div>
+			<div class="config_text row_2 col_5"><input type="text" name="alarm_low_template" id="alarm_low_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['alarm_low_template'];?>"></div>
+			<div class="config_text row_3 col_5"><input type="text" name="status_template" id="status_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['status_template'];?>"></div>
+			<div class="config_text row_4 col_5"><input type="text" name="message_template" id="message_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['message_template'];?>"></div>
+
+
+		</div>
+<?php
 // ##################################################################################
 // Formular EMail Einstellungen -----------------------------------------------------
 // ##################################################################################	
