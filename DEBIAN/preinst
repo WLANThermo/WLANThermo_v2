@@ -8,6 +8,7 @@ then
   # Vor 2.4.0-0
   sudo service pigpiod stop
   # danach
+  sudo systemctl stop pigpiod.service
 fi
 
 killall python
