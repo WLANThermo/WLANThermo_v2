@@ -12,8 +12,9 @@ $tmpFile = '../temperaturen.csv';
 $inipath = '../conf/WLANThermo.conf';
 
 
-$plotcolors = array('green', 'red', 'blue', 'olive', 'magenta', 'yellow', 'violet', 'orange', 'lime',
-	'mediumpurple3', 'aquamarine', 'brown', 'dark-goldenrod', 'skyblue', 'pink', 'navyblue', 'orange-red', 'salmon');
+$plotcolors = array('green', 'red', 'blue', 'olive', 'magenta', 'yellow', 'violet', 'orange',
+	'mediumpurple3', 'aquamarine', 'brown', 'plum', 'skyblue', 'orange-red', 'salmon',
+		'black', 'dark-grey', 'purple', 'turqoise', 'khaki', 'dark-violet', 'seagreen');
 // ##################################################################################
 // Config-Files einlesen ------------------------------------------------------------
 // ##################################################################################
