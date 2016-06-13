@@ -38,12 +38,10 @@ if(isset($_POST["save"])) {
 					// Überprüfen ob sich die Sensorenauswahl geändert hat (Restart)
 					if($ini['Sensoren']['ch'.$i] !== $_POST['fuehler'.$i]){ 
 						$ini['Sensoren']['ch'.$i] = $_POST['fuehler'.$i];
-						$restart = "1";
 					}
 					// Überprüfen ob sich der Messwiderstand geändert hat (Restart)
 					if($ini['Messen']['messwiderstand'.$i] !== $_POST['measuring_resistance'.$i]){ 
 						$ini['Messen']['messwiderstand'.$i] = $_POST['measuring_resistance'.$i];
-						$restart = "1";
 					}
 					// Farben für den Plotter ändern --------------------------------
 					$ini['plotter']['color_ch'.$i] = $_POST['plot_color'.$i];
@@ -127,14 +125,12 @@ if(isset($_POST["save"])) {
 			if (isset($_POST['whatsapp_number'])) {
 				if($ini['WhatsApp']['whatsapp_number'] !== $_POST['whatsapp_number']){
 					$ini['WhatsApp']['whatsapp_number'] = $_POST['whatsapp_number'];
-					$restart = "1";
 				}
 			}
 			// WhatsApp Benachrichtigung Aktivieren/Deaktivieren
 			if(isset ($_POST['whatsapp_alert'])) {$_POST['whatsapp_alert'] = "True"; }else{ $_POST['whatsapp_alert'] = "False";}
 			if($ini['WhatsApp']['whatsapp_alert'] !== $_POST['whatsapp_alert']){
 				$ini['WhatsApp']['whatsapp_alert'] = $_POST['whatsapp_alert'];
-				$restart = "1";
 			}
 			
 			// ######################################################################
@@ -145,60 +141,51 @@ if(isset($_POST["save"])) {
 			if(isset ($_POST['email'])) {$_POST['email'] = "True"; }else{ $_POST['email'] = "False";}
 			if($ini['Email']['email_alert'] !== $_POST['email']){
 				$ini['Email']['email_alert'] = $_POST['email'];
-				$restart = "1";
 			}
 			// Emailtls Aktivieren/Deaktivieren 
 			if(isset ($_POST['starttls'])) {$_POST['starttls'] = "True"; }else{ $_POST['starttls'] = "False";}
 			if($ini['Email']['starttls'] !== $_POST['starttls']){
 				$ini['Email']['starttls'] = $_POST['starttls'];
-				$restart = "1";
 			}
 			// Email Authentifizierung Aktivieren/Deaktivieren
 			if(isset ($_POST['auth_check'])) {$_POST['auth_check'] = "True"; }else{ $_POST['auth_check'] = "False";}
 			if($ini['Email']['auth'] !== $_POST['auth_check']){
 				$ini['Email']['auth'] = $_POST['auth_check'];
-				$restart = "1";
 			}
 			// Email Empfänger
 			if (isset($_POST['email_to'])) {
 				if($ini['Email']['email_to'] !== $_POST['email_to']){
 					$ini['Email']['email_to'] = $_POST['email_to'];
-					$restart = "1";
 				}
 			}
 			// Email Absender
 			if (isset($_POST['email_from'])) {
 				if($ini['Email']['email_from'] !== $_POST['email_from']){
 					$ini['Email']['email_from'] = $_POST['email_from'];
-					$restart = "1";
 				}
 			}	
 			// Email Betreff 
 			if (isset($_POST['email_subject'])) {
 				if($ini['Email']['email_subject'] !== $_POST['email_subject']){
 					$ini['Email']['email_subject'] = $_POST['email_subject'];
-					$restart = "1";
 				}
 			}
 			// Email Server
 			if (isset($_POST['email_smtp'])) {
 				if($ini['Email']['server'] !== $_POST['email_smtp']){
 					$ini['Email']['server'] = $_POST['email_smtp'];
-					$restart = "1";
 				}
 			}
 			// Email Passwort
 			if (isset($_POST['email_password'])) {
 				if($ini['Email']['password'] !== $_POST['email_password']){
 					$ini['Email']['password'] = $_POST['email_password'];
-					$restart = "1";
 				}
 			}
 			// Email Benutzername
 			if (isset($_POST['email_username'])) {
 				if($ini['Email']['username'] !== $_POST['email_username']){
 					$ini['Email']['username'] = $_POST['email_username'];
-					$restart = "1";
 				}			
 			}
 			
@@ -210,69 +197,65 @@ if(isset($_POST["save"])) {
 			if(isset ($_POST['push_on'])) {$_POST['push_on'] = "True"; }else{ $_POST['push_on'] = "False";}
 			if($ini['Push']['push_on'] !== $_POST['push_on']){
 				$ini['Push']['push_on'] = $_POST['push_on'];
-				$restart = "1";
+			}
+			// Push URL
+			if (isset($_POST['push_url'])) {
+				if($ini['Push']['push_url'] !== $_POST['push_url']){
+					$ini['Push']['push_url'] = $_POST['push_url'];
+				}
 			}
 			// Push Body
 			if (isset($_POST['push_body'])) {
 				if($ini['Push']['push_body'] !== $_POST['push_body']){
 					$ini['Push']['push_body'] = $_POST['push_body'];
-					$restart = "1";
 				}
 			}
 			// Push push_inst_id
 			if (isset($_POST['push_inst_id'])) {
 				if($ini['Push']['push_inst_id'] !== $_POST['push_inst_id']){
 					$ini['Push']['push_inst_id'] = $_POST['push_inst_id'];
-					$restart = "1";
 				}
 			}
 			// Push push_device
 			if (isset($_POST['push_device'])) {
 				if($ini['Push']['push_device'] !== $_POST['push_device']){
 					$ini['Push']['push_device'] = $_POST['push_device'];
-					$restart = "1";
 				}			
 			}
 			// Push push_inst_id2
 			if (isset($_POST['push_inst_id2'])) {
 				if($ini['Push']['push_inst_id2'] !== $_POST['push_inst_id2']){
 					$ini['Push']['push_inst_id2'] = $_POST['push_inst_id2'];
-					$restart = "1";
 				}			
 			}
 			// Push push_device2
 			if (isset($_POST['push_device2'])) {
 				if($ini['Push']['push_device2'] !== $_POST['push_device2']){
 					$ini['Push']['push_device2'] = $_POST['push_device2'];
-					$restart = "1";
 				}			
 			}
 			// Push push_inst_id3
 			if (isset($_POST['push_inst_id3'])) {
 				if($ini['Push']['push_inst_id3'] !== $_POST['push_inst_id3']){
 					$ini['Push']['push_inst_id3'] = $_POST['push_inst_id3'];
-					$restart = "1";
 				}			
 			}
 			// Push push_device3
 			if (isset($_POST['push_device3'])) {
 				if($ini['Push']['push_device3'] !== $_POST['push_device3']){
 					$ini['Push']['push_device3'] = $_POST['push_device3'];
-					$restart = "1";
 				}			
 			}
 			// Push push_chat_id
 			if (isset($_POST['push_chat_id'])) {
 				if($ini['Push']['push_chat_id'] !== $_POST['push_chat_id']){
 					$ini['Push']['push_chat_id'] = $_POST['push_chat_id'];
-					$restart = "1";
 				}			
 			}
 			// Push push_token
 			if (isset($_POST['push_token'])) {
 				if($ini['Push']['push_token'] !== $_POST['push_token']){
 					$ini['Push']['push_token'] = $_POST['push_token'];
-					$restart = "1";
 				}			
 			}
 
@@ -372,7 +355,7 @@ if(isset($_POST["save"])) {
 				$ini['Pitmaster']['pit_open_lid_detection'] = $_POST['pit_open_lid_detection'];
 				//$ini['ToDo']['restart_pitmaster'] = "True";
 			}
-			// Pitmaster bei Änderung neu starten
+			// Pitmaster bei Ã„nderung neu starten
 			if (isset($_POST['pit_curve'])) {
 				//if($ini['Pitmaster']['pit_curve'] !== $_POST['pit_curve']){
 				//	$ini['ToDo']['restart_pitmaster'] = "True";
@@ -657,8 +640,8 @@ if(isset($_POST["save"])) {
 			<div class="config_text row_2 col_1">Body:</div>
 			<div class="config_text row_3 col_1">chat_id:</div>
 			<div class="config_text row_4 col_1">token:</div>
-			<div class="config_text row_1 col_3"><input type="text" name="push_url" id="push_url" size="25" maxlength="50" value="<?php echo $ini['Push']['push_url'];?>"></div>
-			<div class="config_text row_2 col_3"><input type="text" name="push_body" id="push_body" size="25" maxlength="50" value="<?php echo $ini['Push']['push_body'];?>"></div>
+			<div class="config_text row_1 col_3"><input type="text" name="push_url" id="push_url" size="25" maxlength="250" value="<?php echo $ini['Push']['push_url'];?>"></div>
+			<div class="config_text row_2 col_3"><input type="text" name="push_body" id="push_body" size="25" maxlength="250" value="<?php echo $ini['Push']['push_body'];?>"></div>
 			<div class="config_text row_3 col_3"><input type="text" name="push_chat_id" id="push_chat_id" size="25" maxlength="50" value="<?php echo $ini['Push']['push_chat_id'];?>"></div>
 			<div class="config_text row_4 col_3"><input type="text" name="push_token" id="push_token" size="25" maxlength="50" value="<?php echo $ini['Push']['push_token'];?>"></div>
 			<div class="config_text row_2 col_4">device:&nbsp;&nbsp; <input type="text" name="push_device" id="push_device" size="20" maxlength="50" value="<?php echo $ini['Push']['push_device'];?>"></div>
@@ -726,6 +709,7 @@ if(isset($_POST["save"])) {
 					<option <?php if($ini['plotter']['plotsize'] == "800x500")				{echo " selected";} ?> value="800x500" >800x500</option>
 					<option <?php if($ini['plotter']['plotsize'] == "900x600")				{echo " selected";} ?> value="900x600" >900x600</option>
 					<option <?php if($ini['plotter']['plotsize'] == "1000x700")				{echo " selected";} ?> value="1000x700" >1000x700</option>
+					<option <?php if($ini['plotter']['plotsize'] == "1600x1200")			{echo " selected";} ?> value="1600x1200" >1600x1200</option>
 				</select>
 			</div>
 			<div class="config_text row_5 col_1">Pitmaster plotten:</div>

@@ -161,7 +161,7 @@ def readAnalogData(adcChannel, SCLKPin, MOSIPin, MISOPin, CSPin):
     sendcmd |= 0b00011000 # Entspricht 0x18 (1:Startbit, 1:Single/ended)
     
     # Senden der Bitkombination (Es finden nur 5 Bits Beruecksichtigung)
-    for i in xrange(5):
+    for _ in xrange(5):
         if (sendcmd & 0x10): # (Bit an Position 4 pruefen. Zaehlung beginnt bei 0)
             GPIO.output(MOSIPin, HIGH)
         else:
@@ -175,7 +175,7 @@ def readAnalogData(adcChannel, SCLKPin, MOSIPin, MISOPin, CSPin):
     # Empfangen der Daten des ADC
     adcvalue = 0 # Ruecksetzen des gelesenen Wertes
         
-    for i in xrange(13):
+    for _ in xrange(13):
         GPIO.output(SCLKPin, HIGH)
         GPIO.output(SCLKPin, LOW)
         # print GPIO.input(MISOPin)
@@ -252,10 +252,10 @@ def create_logfile(filename, log_kanal):
             continue
         break
 
-def median_filter(input):
+def median_filter(raw):
     # Kombinierter Median und Mittelwertfilter
-    laenge = len(input)
-    sortiert = sorted(input)
+    laenge = len(raw)
+    sortiert = sorted(raw)
     # Mitte des Arrays finden
     index = int(round(laenge * 0.4))
     # Bereich für Mittelwertbildung festlegen area = 1 + ln(laenge)   Basis 2.7
