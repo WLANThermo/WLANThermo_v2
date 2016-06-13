@@ -29,6 +29,7 @@ import urllib
 import urllib2
 import psutil
 import signal
+import traceback
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -266,6 +267,12 @@ def median_filter(raw):
     # arithmetisches Mittel
     wert = round(summe/anzahl , 2)
     return wert
+
+def log_uncaught_exceptions(ex_cls, ex, tb):
+    logger.critical(''.join(traceback.format_tb(tb)))
+    logger.critical('{0}: {1}'.format(ex_cls, ex))
+
+sys.excepthook = log_uncaught_exceptions
 
 # Variablendefinition und GPIO Pin-Definition
 ADC_Channel = 0  # Analog/Digital-Channel
