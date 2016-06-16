@@ -117,6 +117,20 @@ else:
 separator = Config.get('Logging','Separator')
 
 # Funktionsdefinition
+
+##
+## Formatierung von Strings auch wenn ein key nicht existiert.
+##
+def safe_format(template, args):
+    for _ in xrange(100):
+        try:
+            message = template.format(**args)
+            break
+        except KeyError as e:
+            key = str(e).strip('\'')
+            template = template.replace('{' + key + '}', '!!!' + key + '!!!')
+    return message
+
 def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
     logger.info('Send mail!')
     
@@ -487,7 +501,16 @@ try:
                     Temperatur[kanal] = 999.9               # kein sinnvoller Messwert, Errorwert setzen
             if (gute <> iterations) and (gute > 0):
                 warnung = 'Kanal: ' + str(kanal) + ' konnte nur ' + str(gute) + ' von ' +  str(iterations) + ' messen!!'
-                logger.warning(warnung) 
+                logger.warning(warnung)
+                
+            alarm_values = defaultdict(str)
+            alarm_values['kanal'] = kanal
+            alarm_values['name'] = kanal_name[kanal]
+            alarm_values['temperatur'] = Temperatur[kanal]
+            alarm_values['temp_max'] = temp_max[kanal]
+            alarm_values['temp_min'] = temp_min[kanal]
+            alarm_values['lf'] = '\n'
+            
             if Temperatur[kanal] <> 999.9:    
                 Temperatur_string[kanal] = "%.1f" % Temperatur[kanal]
                 Temperatur_alarm[kanal] = 'ok'
@@ -505,7 +528,7 @@ try:
                         alarm_irgendwo = True
                         alarm_neu = True
                         alarm_state[kanal] = 'hi'
-                    alarme.append(alarm_high_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal], lf='\n'))
+                    alarme.append(safe_format(alarm_high_template, alarm_values))
                     Temperatur_alarm[kanal] = 'hi'
                 elif Temperatur[kanal] <= temp_min[kanal]:
                     # Temperatur unter Grenzwert
@@ -520,14 +543,20 @@ try:
                         alarm_irgendwo = True
                         alarm_neu = True
                         alarm_state[kanal] = 'lo'
-                    alarme.append(alarm_low_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal], lf='\n'))
+                    alarme.append(safe_format(alarm_low_template, alarm_values))
                     Temperatur_alarm[kanal] = 'lo'
                 else:
                     # Temperatur innerhalb der Grenzwerte
-                    statusse.append(status_template.format(kanal=kanal, name=kanal_name[kanal], temperatur=Temperatur[kanal], temp_max=temp_max[kanal], temp_min=temp_min[kanal], lf='\n'))
+                    statusse.append(safe_format(status_template, alarm_values))
                     alarm_state[kanal] = 'ok'
         
-        alarm_message = message_template.format(alarme=''.join(alarme), statusse=''.join(statusse), lf='\n')
+        message_values = defaultdict(str)
+        message_values['alarme'] = ''.join(alarme)
+        message_values['statusse'] = ''.join(statusse)
+        message_values['lf'] = '\n'
+        
+        alarm_message = safe_format(message_template, message_values)
+            
         
         # Beeper bei jedem unquittiertem Alarm
         if alarm_irgendwo:
