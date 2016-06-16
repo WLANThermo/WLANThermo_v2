@@ -530,7 +530,7 @@ def temp_getvalues():
         temps = dict()
         temps['timestamp'] = timestamp = time.mktime(time.strptime(temps_raw[0],'%d.%m.%y %H:%M:%S'))
         for count in range(8):
-            temps[count] = {'value': temps_raw[count+1] + ' \xb0C', 'alert': temps_raw[count+9]}
+            temps[count] = {'value': str(round(float(temps_raw[count+1]),1)) + '\xb0C', 'alert': temps_raw[count+9]}
     else:
         return None
     
@@ -890,7 +890,7 @@ def NX_display():
     for i in range(1, 11):
         values['main.sensor_name' + str(i) + '.txt:10'] = sensors[i]['name'].decode('utf-8').encode('latin-1')
     for i in range(8):
-        if temps[i]['value'] == '999.9 \xb0C':
+        if temps[i]['value'] == '999.9\xb0C':
             values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].decode('utf-8').encode('latin-1')
         else:
             values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value']
@@ -1085,7 +1085,7 @@ def NX_display():
                 temps_event.clear()
                 for i in range(8):
                     if temps[i]['value'] != new_temps[i]['value']:
-                        if new_temps[i]['value'] == '999.9 \xb0C':
+                        if new_temps[i]['value'] == '999.9\xb0C':
                             values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].decode('utf-8').encode('latin-1')
                         else:
                             values['main.kanal' + str(i) + '.txt:10'] = new_temps[i]['value']
@@ -1166,7 +1166,7 @@ def NX_display():
                     values['main.sensor_type' + str(i) + '.val'] = new_channels[i]['sensor']
                 if channels[i]['name'] != new_channels[i]['name']:
                     values['main.name' + str(i) + '.txt:10'] = new_channels[i]['name'].decode('utf-8').encode('latin-1')
-                    if new_temps[i]['value'] == '999.9 \xb0C':
+                    if new_temps[i]['value'] == '999.9\xb0C':
                         values['main.kanal' + str(i) + '.txt:10'] = new_channels[i]['name'].decode('utf-8').encode('latin-1')
             
             if NX_sendvalues(values):

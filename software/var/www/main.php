@@ -184,14 +184,14 @@ if (isset($_SESSION["to_update"])){
 		}
 		$temp = explode(";",$currenttemp);
 		$time_stamp = $temp[0];
-		$temp_0 = $temp[1];
-		$temp_1 = $temp[2];
-		$temp_2 = $temp[3];
-		$temp_3 = $temp[4];
-		$temp_4 = $temp[5];
-		$temp_5 = $temp[6];
-		$temp_6 = $temp[7];
-		$temp_7 = $temp[8];
+		$temp_0 = floatval($temp[1]);
+		$temp_1 = floatval($temp[2]);
+		$temp_2 = floatval($temp[3]);
+		$temp_3 = floatval($temp[4]);
+		$temp_4 = floatval($temp[5]);
+		$temp_5 = floatval($temp[6]);
+		$temp_6 = floatval($temp[7]);
+		$temp_7 = floatval($temp[8]);
 		$_SESSION["currentlogfilename"] = $temp[18];
 		
 		$pit_file = $_SESSION["pitmaster"].'';
@@ -199,8 +199,8 @@ if (isset($_SESSION["to_update"])){
 			$currentpit = file_get_contents($_SESSION["pitmaster"]);
 			$pits = explode(";",$currentpit);
 			$pit_time_stamp = $pits[0];
-			$pit_set = $pits[1];
-			$pit_val = $pits[3];
+			$pit_set = floatval($pits[1]);
+			$pit_val = floatval($pits[3]);
 		}
 
 	//-------------------------------------------------------------------------------------------------------------------------------------
@@ -253,19 +253,19 @@ if (isset($_SESSION["to_update"])){
 		for ($i = 0; $i <= 7; $i++){
 			
 			if((${"temp_$i"} != "999.9") AND ($ch_show[$i] == "True")){
-				if((${"temp_$i"} < $temp_min[$i]) AND (${"temp_$i"} > "-20" && ${"temp_$i"} < "280")){
+				if (${"temp_$i"} <= $temp_min[$i]) {
 					$temperature_indicator_color = "temperature_indicator_blue";
 					if($alert[$i] == "True") { 
 						$esound = "1"; 
 						$esound_ = "1";
 					}
-				}elseif((${"temp_$i"} > $temp_max[$i]) AND (${"temp_$i"} > "-20" && ${"temp_$i"} < "280")){
+				} elseif(${"temp_$i"} >= $temp_max[$i]) {
 					$temperature_indicator_color = "temperature_indicator_red";
 					if($alert[$i] == "True") { 
 						$esound = "1"; 
 						$esound_ = "1";
 					}
-				}else{
+				} else {
 					$temperature_indicator_color = "temperature_indicator"; 
 					$esound_ = "0";
 				}
@@ -275,7 +275,7 @@ if (isset($_SESSION["to_update"])){
 				?>
 					<div class="channel_view">
 						<div class="channel_name"><?php echo htmlentities($channel_name[$i], ENT_QUOTES, "UTF-8"); ?></div>
-						<div class="<?php echo $temperature_indicator_color;?>"><?php echo ${"temp_$i"};?>&#176;C</div>
+						<div class="<?php echo $temperature_indicator_color;?>"><?php printf('%.1f&#176;C', ${"temp_$i"});?></div>
 						<div class="tempmm">Temp min <b><?php echo $temp_min[$i];?>&#176;C</b> / max <b><?php echo $temp_max[$i];?>&#176;C</b></div>
 						<div class="headicon"><font color="<?php echo $color_ch[$i];?>">#<?php echo $i;?></font></div>
 						<div class="webalert"><?php 
@@ -289,7 +289,7 @@ if (isset($_SESSION["to_update"])){
 						if (($_SESSION["pit_ch"] == "$i") && ($_SESSION["pit_on"] == "True")){
 						?>
 							<div class="headicon_left"><img src="../images/icons16x16/pitmaster.png" alt=""></div>
-							<div class="pitmaster_left"> <?php echo $pit_val; ?> / <?php echo $pit_set; ?>&#176;C</div>
+							<div class="pitmaster_left"> <?php printf('%.1f%%',$pit_val); ?> / <?php printf('%.1f&#176;C',$pit_set); ?></div>
 						<?php 
 						}
 						?>

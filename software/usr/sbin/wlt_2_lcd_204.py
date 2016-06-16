@@ -72,7 +72,7 @@ for i in range(0,5):
             continue
         break
 
-# Wir laufen als root, auch andere müssen die Config schreiben!
+# Wir laufen als root, auch andere mï¿½ssen die Config schreiben!
 os.umask (0)
 
 LOGFILE = Config.get('daemon_logging', 'log_file')
@@ -115,11 +115,11 @@ if os.access(pidfilename, os.F_OK):
     pidfile.seek(0)
     old_pid = int(pidfile.readline())
     if check_pid(old_pid):
-        print("%s existiert, Prozess läuft bereits, beende Skript" % pidfilename)
-        logger.error("%s existiert, Prozess läuft bereits, beende Skript" % pidfilename)
+        print("%s existiert, Prozess lÃ¤uft bereits, beende Skript" % pidfilename)
+        logger.error("%s existiert, Prozess lÃ¤uft bereits, beende Skript" % pidfilename)
         sys.exit()
     else:
-        logger.info("%s existiert, Prozess läuft nicht, setze Ausführung fort" % pidfilename)
+        logger.info("%s existiert, Prozess lÃ¤uft nicht, setze AusfÃ¼hrung fort" % pidfilename)
         pidfile.seek(0)
         open(pidfilename, 'w').write(pid)
     
@@ -143,102 +143,102 @@ class PTmp(pyinotify.ProcessEvent):
 
 
 def lcd_init():  # Initialisierung Display und Definition Sonderzeichen Pfeil runter ASCII 0 und Pfeil hoch ASCII 1
-  lcd_byte(0x33,LCD_CMD) # Noch im 8 Bit Modus also 30 30 
-  lcd_byte(0x32,LCD_CMD) # 30 20 (30 = 8 Bit, 20 =4-Bit Modus)
-  lcd_byte(0x28,LCD_CMD) # 4-Bit, 2-Zeilig, 5x8 Font
-  lcd_byte(0x0C,LCD_CMD) # Display ein 
-  
-  lcd_byte(0x40,LCD_CMD) # Sonderzeichen 0 definieren
-  lcd_byte(0x04,LCD_CHR) # Sonderzeichen 0 definieren
-  lcd_byte(0x04,LCD_CHR) # Sonderzeichen 0 definieren
-  lcd_byte(0x04,LCD_CHR) # Sonderzeichen 0 definieren
-  lcd_byte(0x04,LCD_CHR) # Sonderzeichen 0 definieren
-  lcd_byte(0x15,LCD_CHR) # Sonderzeichen 0 definieren
-  lcd_byte(0x0E,LCD_CHR) # Sonderzeichen 0 definieren
-  lcd_byte(0x04,LCD_CHR) # Sonderzeichen 0 definieren
-  lcd_byte(0x00,LCD_CHR) # Sonderzeichen 0 definieren
-
-  lcd_byte(0x48,LCD_CMD) # Sonderzeichen 1 definieren
-  lcd_byte(0x04,LCD_CHR) # Sonderzeichen 1 definieren
-  lcd_byte(0x0E,LCD_CHR) # Sonderzeichen 1 definieren
-  lcd_byte(0x15,LCD_CHR) # Sonderzeichen 1 definieren
-  lcd_byte(0x04,LCD_CHR) # Sonderzeichen 1 definieren
-  lcd_byte(0x04,LCD_CHR) # Sonderzeichen 1 definieren
-  lcd_byte(0x04,LCD_CHR) # Sonderzeichen 1 definieren
-  lcd_byte(0x04,LCD_CHR) # Sonderzeichen 1 definieren
-  lcd_byte(0x00,LCD_CHR) # Sonderzeichen 1 definieren
-
-
-  lcd_byte(0x06,LCD_CMD) # Cursor nach rechts wandernd, kein Displayshift
-  lcd_byte(0x01,LCD_CMD) # Display loeschen 
+    lcd_byte(0x33,LCD_CMD) # Noch im 8 Bit Modus also 30 30 
+    lcd_byte(0x32,LCD_CMD) # 30 20 (30 = 8 Bit, 20 =4-Bit Modus)
+    lcd_byte(0x28,LCD_CMD) # 4-Bit, 2-Zeilig, 5x8 Font
+    lcd_byte(0x0C,LCD_CMD) # Display ein 
+    
+    lcd_byte(0x40,LCD_CMD) # Sonderzeichen 0 definieren
+    lcd_byte(0x04,LCD_CHR) # Sonderzeichen 0 definieren
+    lcd_byte(0x04,LCD_CHR) # Sonderzeichen 0 definieren
+    lcd_byte(0x04,LCD_CHR) # Sonderzeichen 0 definieren
+    lcd_byte(0x04,LCD_CHR) # Sonderzeichen 0 definieren
+    lcd_byte(0x15,LCD_CHR) # Sonderzeichen 0 definieren
+    lcd_byte(0x0E,LCD_CHR) # Sonderzeichen 0 definieren
+    lcd_byte(0x04,LCD_CHR) # Sonderzeichen 0 definieren
+    lcd_byte(0x00,LCD_CHR) # Sonderzeichen 0 definieren
+    
+    lcd_byte(0x48,LCD_CMD) # Sonderzeichen 1 definieren
+    lcd_byte(0x04,LCD_CHR) # Sonderzeichen 1 definieren
+    lcd_byte(0x0E,LCD_CHR) # Sonderzeichen 1 definieren
+    lcd_byte(0x15,LCD_CHR) # Sonderzeichen 1 definieren
+    lcd_byte(0x04,LCD_CHR) # Sonderzeichen 1 definieren
+    lcd_byte(0x04,LCD_CHR) # Sonderzeichen 1 definieren
+    lcd_byte(0x04,LCD_CHR) # Sonderzeichen 1 definieren
+    lcd_byte(0x04,LCD_CHR) # Sonderzeichen 1 definieren
+    lcd_byte(0x00,LCD_CHR) # Sonderzeichen 1 definieren
+    
+    
+    lcd_byte(0x06,LCD_CMD) # Cursor nach rechts wandernd, kein Displayshift
+    lcd_byte(0x01,LCD_CMD) # Display loeschen 
  
   
 
 def lcd_string(message,style):
-  # Sende String zum  Display
-  # style=1 Linksbuendig
-  # style=2 Zentriert
-  # style=3 Rechtsbuendig
-
-  if style==1:
-    message = message.ljust(LCD_WIDTH," ")  
-  elif style==2:
-    message = message.center(LCD_WIDTH," ")
-  elif style==3:
-    message = message.rjust(LCD_WIDTH," ")
-
-  for i in range(LCD_WIDTH):
-    lcd_byte(ord(message[i]),LCD_CHR)
+    # Sende String zum  Display
+    # style=1 Linksbuendig
+    # style=2 Zentriert
+    # style=3 Rechtsbuendig
+    
+    if style==1:
+        message = message.ljust(LCD_WIDTH," ")  
+    elif style==2:
+        message = message.center(LCD_WIDTH," ")
+    elif style==3:
+        message = message.rjust(LCD_WIDTH," ")
+    
+    for i in range(LCD_WIDTH):
+        lcd_byte(ord(message[i]),LCD_CHR)
 
 def lcd_byte(bits, mode):
-  # Sende Byte an die Daten-Leitungen des Displays
-  # bits = data
-  # mode = True  fuer Zeichen
-  #        False fuer Kommando
-
-  GPIO.output(LCD_RS, mode) # RS
-
-  # High Nibble uebertragen
-  GPIO.output(LCD_D4, False)
-  GPIO.output(LCD_D5, False)
-  GPIO.output(LCD_D6, False)
-  GPIO.output(LCD_D7, False)
-  if bits&0x10==0x10:
-    GPIO.output(LCD_D4, True)
-  if bits&0x20==0x20:
-    GPIO.output(LCD_D5, True)
-  if bits&0x40==0x40:
-    GPIO.output(LCD_D6, True)
-  if bits&0x80==0x80:
-    GPIO.output(LCD_D7, True)
-
-  # Toggle 'Enable' pin
-  time.sleep(E_DELAY)
-  GPIO.output(LCD_E, True)  
-  time.sleep(E_PULSE)
-  GPIO.output(LCD_E, False)
-  time.sleep(E_DELAY)
-
-  # Low Nibble uebertragen
-  GPIO.output(LCD_D4, False)
-  GPIO.output(LCD_D5, False)
-  GPIO.output(LCD_D6, False)
-  GPIO.output(LCD_D7, False)
-  if bits&0x01==0x01:
-    GPIO.output(LCD_D4, True)
-  if bits&0x02==0x02:
-    GPIO.output(LCD_D5, True)
-  if bits&0x04==0x04:
-    GPIO.output(LCD_D6, True)
-  if bits&0x08==0x08:
-    GPIO.output(LCD_D7, True)
-
-  # Toggle 'Enable' pin
-  time.sleep(E_DELAY)    
-  GPIO.output(LCD_E, True)  
-  time.sleep(E_PULSE)
-  GPIO.output(LCD_E, False)  
-  time.sleep(E_DELAY)   
+    # Sende Byte an die Daten-Leitungen des Displays
+    # bits = data
+    # mode = True  fuer Zeichen
+    #        False fuer Kommando
+    
+    GPIO.output(LCD_RS, mode) # RS
+    
+    # High Nibble uebertragen
+    GPIO.output(LCD_D4, False)
+    GPIO.output(LCD_D5, False)
+    GPIO.output(LCD_D6, False)
+    GPIO.output(LCD_D7, False)
+    if bits&0x10==0x10:
+        GPIO.output(LCD_D4, True)
+    if bits&0x20==0x20:
+        GPIO.output(LCD_D5, True)
+    if bits&0x40==0x40:
+        GPIO.output(LCD_D6, True)
+    if bits&0x80==0x80:
+        GPIO.output(LCD_D7, True)
+    
+    # Toggle 'Enable' pin
+    time.sleep(E_DELAY)
+    GPIO.output(LCD_E, True)  
+    time.sleep(E_PULSE)
+    GPIO.output(LCD_E, False)
+    time.sleep(E_DELAY)
+    
+    # Low Nibble uebertragen
+    GPIO.output(LCD_D4, False)
+    GPIO.output(LCD_D5, False)
+    GPIO.output(LCD_D6, False)
+    GPIO.output(LCD_D7, False)
+    if bits&0x01==0x01:
+        GPIO.output(LCD_D4, True)
+    if bits&0x02==0x02:
+        GPIO.output(LCD_D5, True)
+    if bits&0x04==0x04:
+        GPIO.output(LCD_D6, True)
+    if bits&0x08==0x08:
+        GPIO.output(LCD_D7, True)
+    
+    # Toggle 'Enable' pin
+    time.sleep(E_DELAY)    
+    GPIO.output(LCD_E, True)  
+    time.sleep(E_PULSE)
+    GPIO.output(LCD_E, False)  
+    time.sleep(E_DELAY)   
 
 def str_len(v,l,s):
     global error_val, sLen
@@ -284,7 +284,7 @@ def show_values():
                 temps = []
                 temps_raw = ft.split(';')
                 for i in range (8):
-                    temps.append(temps_raw[i +1])
+                    temps.append('{:0.1f}'.format(float(temps_raw[i+1])))
                     if temps_raw[i + 9] == 'ok':
                         alarm.append('')    
                     if temps_raw[i + 9] == 'hi':

@@ -512,7 +512,7 @@ try:
             alarm_values['lf'] = '\n'
             
             if Temperatur[kanal] <> 999.9:    
-                Temperatur_string[kanal] = "%.1f" % Temperatur[kanal]
+                Temperatur_string[kanal] = "%.2f" % Temperatur[kanal]
                 Temperatur_alarm[kanal] = 'ok'
                 
                 if Temperatur[kanal] >= temp_max[kanal]:
