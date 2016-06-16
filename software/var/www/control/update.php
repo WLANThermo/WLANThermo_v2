@@ -248,7 +248,7 @@ if(isset($_POST["back"])) {
 			<h1>Update Installieren</h1>
 			<br>
 			<?php
-				exec("sudo /usr/sbin/wlt_2_updatenextion.sh /usr/share/WLANThermo/nextion/NX3224T028.tft > /var/www/tmp/error.txt &",$output);
+				exec("sudo /usr/sbin/wlt_2_updatenextion.sh /usr/share/WLANThermo/nextion/ > /var/www/tmp/error.txt &",$output);
 				echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Das Update wird nun Installiert...</h2></body>";
 			?>
 		</div>

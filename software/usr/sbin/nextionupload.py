@@ -32,25 +32,17 @@ import os
 import sys
 import serial
 
-
 PORT = '/dev/ttyAMA0'
 BAUDCOMM = 9600
 BAUDUPLOAD = 115200
-CHECK_MODEL = 'NX3224T028'
 
 if len(sys.argv) != 2:
-    sys.exit('usage: python %s file_to_upload.tft' % sys.argv[0])
+    sys.exit('usage: python %s directory' % sys.argv[0])
 
 file_path = sys.argv[1]
 
-if os.path.isfile(file_path):
-    print 'uploading %s (%i bytes)...' % (file_path, os.path.getsize(file_path))
-else:
-    sys.exit('file not found')
-
-
-fsize = os.path.getsize(file_path)
-print('Filesize: ' + str(fsize))
+if not os.path.exists(file_path):
+    sys.exit('directory "{}" not found'.format(file_path))
 
 ser = serial.Serial(PORT, BAUDCOMM, timeout=.1, )
 
@@ -72,7 +64,7 @@ def reader():
             continue
 
             
-def upload():
+def upload(file_name):
     global acked
     global ser
     global stop_thread
@@ -86,7 +78,7 @@ def upload():
     print 'Waiting for ACK...'
     acked.wait()
     print 'Uploading...'
-    with open(file_path, 'rb') as hmif:
+    with open(file_name, 'rb') as hmif:
         dcount = 0
         while True:
             #time.sleep(.1)
@@ -136,11 +128,20 @@ for baudrate in (9600, 115200, 2400, 4800, 19200, 38400, 57600):
         print('Version: ' + version)
         print('Serial: ' + serial)
         print('Flash size: ' + flash_size)
+        
+        file_name = file_path + model.split('_')[0] + '.tft'
+        if os.path.isfile(file_name):
+            print 'uploading %s (%i bytes)...' % (file_name, os.path.getsize(file_name))
+        else:
+            sys.exit('file {} not found'.format(file_name))
+
+        fsize = os.path.getsize(file_name)
+        print('Filesize: ' + str(fsize))
+
         if fsize > flash_size:
             sys.exit('File too big!')
-        if not CHECK_MODEL in model:
-            sys.exit('Wrong Display!')
-        upload()
+
+        upload(file_name)
         break
 
 if no_connect:
