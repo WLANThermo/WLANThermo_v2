@@ -503,7 +503,7 @@ try:
                 warnung = 'Kanal: ' + str(kanal) + ' konnte nur ' + str(gute) + ' von ' +  str(iterations) + ' messen!!'
                 logger.warning(warnung)
                 
-            alarm_values = defaultdict(str)
+            alarm_values = dict()
             alarm_values['kanal'] = kanal
             alarm_values['name'] = kanal_name[kanal]
             alarm_values['temperatur'] = Temperatur[kanal]
@@ -550,7 +550,7 @@ try:
                     statusse.append(safe_format(status_template, alarm_values))
                     alarm_state[kanal] = 'ok'
         
-        message_values = defaultdict(str)
+        message_values = dict()
         message_values['alarme'] = ''.join(alarme)
         message_values['statusse'] = ''.join(statusse)
         message_values['lf'] = '\n'
