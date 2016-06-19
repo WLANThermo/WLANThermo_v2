@@ -836,7 +836,7 @@ def NX_display():
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
     logger.info('Version auf dem Display: ' + str(display_version))
-    if not str(display_version) in ['v1.4']:
+    if not str(display_version) in ['v1.5']:
         logger.info('Update des Displays notwendig')
         NX_sendcmd('page update')
         open('/var/www/tmp/nextionupdate', 'w').close()
