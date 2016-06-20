@@ -549,18 +549,25 @@ def main():
                         kp = pit_Kp_a
                         ki = pit_Ki_a
                         kd = pit_Kd_a
-                    #I-Anteil berechnen
-                    dif_sum = dif_sum + float(dif) * pit_pause
-                    #Anti-Windup I-Anteil
+                    # P-Anteil berechnen
+                    p_out = kp * dif
+                    #D-Anteil berechnen
+                    dInput = dif - dif_last
+                    d_out = kd * dInput / pit_pause
+                    # I-Anteil berechnen
+                    # Anti-Windup I-Anteil
+                    # Keine Erhöhung I-Anteil wenn Regler bereits an der Grenze ist
+                    if not p_out + d_out >= pit_pid_max:
+                        dif_sum = dif_sum + float(dif) * pit_pause
+                    # Anti-Windup I-Anteil (Limits)
                     if dif_sum * ki > pit_iterm_max:
                         dif_sum = pit_iterm_max / ki
                     elif dif_sum * ki < pit_iterm_min:
                         dif_sum = pit_iterm_min / ki
-                    #D-Anteil berechnen
-                    dInput = dif - dif_last
+                    i_out = ki * dif_sum
                     #PID Berechnung durchfuehren
-                    pit_new  = (kp * dif) + (ki * dif_sum) + (kd * dInput / pit_pause)
-                    msg = msg + "|PID Values P" + str(kp*dif) + " Iterm " + str(ki * dif_sum) + " dInput " + str(dInput)
+                    pit_new  = p_out + i_out + d_out
+                    msg = msg + "|PID Values P" + str(p_out) + " Iterm " + str(i_out) + " dInput " + str(dInput)
                     #Stellwert begrenzen
                     if pit_new  > pit_pid_max:
                         pit_new  = pit_pid_max
