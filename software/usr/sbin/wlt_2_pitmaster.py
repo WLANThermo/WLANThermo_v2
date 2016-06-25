@@ -562,6 +562,7 @@ def main():
                         # Sprünge im Reglerausgangswert bei Anpassung von Ki vermeiden
                         if ki != ki_alt:
                             dif_sum = (dif_sum * ki_alt) / ki
+                            ki_alt = ki
                         # Anti-Windup I-Anteil
                         # Keine Erhöhung I-Anteil wenn Regler bereits an der Grenze ist
                         if not p_out + d_out >= pit_pid_max:
@@ -576,6 +577,7 @@ def main():
                         # Historie vergessen, da wir nach Ki = 0 von 0 aus anfangen
                         dif_sum = 0
                         i_out = 0
+                        ki_alt = 0
                     #PID Berechnung durchfuehren
                     pit_new  = p_out + i_out + d_out
                     msg = msg + "|PID Values P" + str(p_out) + " Iterm " + str(i_out) + " dInput " + str(dInput)
