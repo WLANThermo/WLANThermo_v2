@@ -357,6 +357,8 @@ def main():
     dif = 0
     dif_sum = 0
     dif_last = 0
+    ki_alt = 0
+    
     pit_pid_max = 100
     pit_pid_min = 0
     pit_open_lid_detected = False
@@ -555,16 +557,25 @@ def main():
                     dInput = dif - dif_last
                     d_out = kd * dInput / pit_pause
                     # I-Anteil berechnen
-                    # Anti-Windup I-Anteil
-                    # Keine Erhöhung I-Anteil wenn Regler bereits an der Grenze ist
-                    if not p_out + d_out >= pit_pid_max:
-                        dif_sum = dif_sum + float(dif) * pit_pause
-                    # Anti-Windup I-Anteil (Limits)
-                    if dif_sum * ki > pit_iterm_max:
-                        dif_sum = pit_iterm_max / ki
-                    elif dif_sum * ki < pit_iterm_min:
-                        dif_sum = pit_iterm_min / ki
-                    i_out = ki * dif_sum
+                    # Wenn Ki = 0 nicht berechnen (P/PD-Regler)
+                    if ki != 0:
+                        # Sprünge im Reglerausgangswert bei Anpassung von Ki vermeiden
+                        if ki != ki_alt:
+                            dif_sum = (dif_sum * ki_alt) / ki
+                        # Anti-Windup I-Anteil
+                        # Keine Erhöhung I-Anteil wenn Regler bereits an der Grenze ist
+                        if not p_out + d_out >= pit_pid_max:
+                            dif_sum = dif_sum + float(dif) * pit_pause
+                        # Anti-Windup I-Anteil (Limits)                        
+                        if dif_sum * ki > pit_iterm_max:
+                            dif_sum = pit_iterm_max / ki
+                        elif dif_sum * ki < pit_iterm_min:
+                            dif_sum = pit_iterm_min / ki
+                        i_out = ki * dif_sum
+                    else:
+                        # Historie vergessen, da wir nach Ki = 0 von 0 aus anfangen
+                        dif_sum = 0
+                        i_out = 0
                     #PID Berechnung durchfuehren
                     pit_new  = p_out + i_out + d_out
                     msg = msg + "|PID Values P" + str(p_out) + " Iterm " + str(i_out) + " dInput " + str(dInput)
