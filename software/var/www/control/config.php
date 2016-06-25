@@ -672,7 +672,7 @@ if(isset($_POST["save"])) {
 			<div class="config_text row_2 col_5"><input type="text" name="alarm_low_template" id="alarm_low_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['alarm_low_template'];?>"></div>
 			<div class="config_text row_3 col_5"><input type="text" name="status_template" id="status_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['status_template'];?>"></div>
 			<div class="config_text row_4 col_5"><input type="text" name="message_template" id="message_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['message_template'];?>"></div>
-			<div class="config_text row_4 col_7"><button onclick="$.get('config.php?alert-test=true')">Test senden!</button></div>
+			<div class="config_text row_4 col_7"><button type="button" onclick="$.get('config.php?alert-test=true')">Test senden!</button></div>
 
 		</div>
 <?php
@@ -1025,4 +1025,3 @@ if(isset($_POST["save"])) {
 
 include("../footer.php");
 ?>
-
