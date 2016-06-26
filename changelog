@@ -1,4 +1,4 @@
-wlanthermo (2.4.0-0~rc0) stable; urgency=medium
+wlanthermo (2.4.0-0rc1) stable; urgency=medium
 
   * ADD: WLAN Reconnect über HMI
   * ADD: °C hinter den Temperaturen auf dem Display
