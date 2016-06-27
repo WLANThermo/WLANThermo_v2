@@ -236,7 +236,7 @@ text-decoration:underline;
 
 /* CSS Regeln für Lederoptik (Naht,Rundung,Schatten ############################################################### */
 
-#header,#mainmenu, #wrapper, #info_site, #ThermoPlot, #new_log_file_site, #main, #thermolog, #shutdown,#webcam1,#raspicam1, .wifi_site, .infofield, .channel_view, .small, .middle, .little , .big{
+#header,#mainmenu, #wrapper, #info_site, #ThermoPlot, #new_log_file_site, #main, #thermolog, #shutdown,#webcam1,#raspicam1, .wifi_site, .infofield, .channel_view, .small, .middle, .little , .big , .five_lines{
 border-style:solid;
 border: 1px solid rgba(255, 0, 0, .0);
 border-width:26px 26px 27px;
@@ -246,14 +246,14 @@ border-image:url(../images/border.png) 26 26 27 fill round;
 -o-border-image:url(../images/border.png) 26 26 27 round;
 }
 
-#header, #wrapper, #info_site, #new_log_file_site, #ThermoPlot, #thermolog, #shutdown ,#webcam1,#raspicam1,.wifi_site, .infofield, .channel_view, .small, .middle, .little, .big{
+#header, #wrapper, #info_site, #new_log_file_site, #ThermoPlot, #thermolog, #shutdown ,#webcam1,#raspicam1,.wifi_site, .infofield, .channel_view, .small, .middle, .little, .big , .five_lines{
 /*border-radius*/
 -webkit-border-radius:15px;
    -moz-border-radius:15px;
         border-radius:15px; 
 }
 
-#header, #wrapper, #info_site, #new_log_file_site, #thermolog, #shutdown , .infofield, .channel_view, .small, .middle, .little, .big, .wifi_site{
+#header, #wrapper, #info_site, #new_log_file_site, #thermolog, #shutdown , .infofield, .channel_view, .small, .middle, .little, .big , .five_lines, .wifi_site{
 /*box-shadow*/
 -webkit-box-shadow:4px 4px 10px rgba(43, 50, 50, 1);
    -moz-box-shadow:4px 4px 10px rgba(43, 50, 50, 1);
@@ -619,6 +619,13 @@ height:50px;
 background:url("../images/grau5x5cm.jpg");
 margin-bottom: 12px;
 }
+
+.five_lines{
+height:150px;
+background:url("../images/grau5x5cm.jpg");
+margin-bottom: 12px;       
+}
+
 /* ################################################################################################################ */
 
 /* CSS Regeln für die Thermolog.php ############################################################################### */
