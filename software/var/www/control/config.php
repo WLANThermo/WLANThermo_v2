@@ -778,11 +778,13 @@ if(isset($_POST["save"])) {
             <div class="config_text row_3 col_1">Plotsize:</div>
             <div class="config_text row_3 col_3">
                 <select name="plotsize" id="plot_size" size="1">                       
-                    <option <?php if($ini['plotter']['plotsize'] == "700x350")                {echo " selected";} ?> value="700x350" >700x350</option>
-                    <option <?php if($ini['plotter']['plotsize'] == "800x500")                {echo " selected";} ?> value="800x500" >800x500</option>
-                    <option <?php if($ini['plotter']['plotsize'] == "900x600")                {echo " selected";} ?> value="900x600" >900x600</option>
-                    <option <?php if($ini['plotter']['plotsize'] == "1000x700")                {echo " selected";} ?> value="1000x700" >1000x700</option>
+                    <option <?php if($ini['plotter']['plotsize'] == "700x350")              {echo " selected";} ?> value="700x350" >700x350</option>
+                    <option <?php if($ini['plotter']['plotsize'] == "800x500")              {echo " selected";} ?> value="800x500" >800x500</option>
+                    <option <?php if($ini['plotter']['plotsize'] == "900x600")              {echo " selected";} ?> value="900x600" >900x600</option>
+                    <option <?php if($ini['plotter']['plotsize'] == "1000x700")             {echo " selected";} ?> value="1000x700" >1000x700</option>
+                    <option <?php if($ini['plotter']['plotsize'] == "1280x1024")            {echo " selected";} ?> value="1280x1024" >1280x1024</option>
                     <option <?php if($ini['plotter']['plotsize'] == "1600x1200")            {echo " selected";} ?> value="1600x1200" >1600x1200</option>
+                    <option <?php if($ini['plotter']['plotsize'] == "1920x1200")            {echo " selected";} ?> value="1920x1200" >1920x1200</option>
                 </select>
             </div>
             <div class="config_text row_3 col_6">Rahmen Legende:</div>
@@ -1012,8 +1014,9 @@ if(isset($_POST["save"])) {
 ?>
 		<br>
 			<table align="center" width="80%"><tr><td width="20%"></td>
-				<td align="center"> <input type="submit" class=button_save name="save"  value="" onclick="enableallcheckbox()">
-					<input type="submit" class=button_back name="back"  value=""> </td>
+				<td align="center">
+					<input type="submit" class=button_save name="save"  value="" onclick="enableallcheckbox()">
+					<input type="button" class=button_back name="back"  value=""> </td>
 				<td width="20%"></td></tr>
 			</table>
 		<br>		
