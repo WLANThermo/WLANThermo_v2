@@ -1,10 +1,11 @@
-wlanthermo (2.4.0-0rc2) stable; urgency=medium
+wlanthermo (2.4.0-0rc3) stable; urgency=medium
 
   * ADD: WLAN Reconnect über HMI
   * ADD: °C hinter den Temperaturen auf dem Display
   * ADD: Senden einer Testnachricht
   * ADD: Senden einer Pushnachricht
   * ADD: Solltemperatur mitloggen
+  * ADD: Größere Plotgrößen
   * ADD: ZeroConf Dienstekonfiguration
   * FIX: GPL-Info in info.php
   * FIX: Neue configeinträge wurden nicht uebernommen
@@ -23,7 +24,7 @@ wlanthermo (2.4.0-0rc2) stable; urgency=medium
   * CHANGE: Pitmaster: Anti-Windup II implementiert
   * CHANGE: Mehr Sonderzeichen und längere Passphraser für WLAN-Passphrase
 
- -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Thu, 27 June 2016 14:00:00 +0200
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Thu, 29 June 2016 12:40:00 +0200
 
 wlanthermo (2.3.1-1) stable; urgency=medium
 
