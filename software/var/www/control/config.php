@@ -1016,7 +1016,7 @@ if(isset($_POST["save"])) {
 			<table align="center" width="80%"><tr><td width="20%"></td>
 				<td align="center">
 					<input type="submit" class=button_save name="save"  value="" onclick="enableallcheckbox()">
-					<input type="button" class=button_back name="back"  value=""> </td>
+					<input type="submit" class=button_back name="back"  value=""> </td>
 				<td width="20%"></td></tr>
 			</table>
 		<br>		
