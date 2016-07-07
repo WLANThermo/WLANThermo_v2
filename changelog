@@ -1,4 +1,4 @@
-wlanthermo (2.4.0-0rc4) stable; urgency=medium
+wlanthermo (2.4.0-0rc5) stable; urgency=medium
 
   * ADD: WLAN Reconnect über HMI
   * ADD: °C hinter den Temperaturen auf dem Display
@@ -18,13 +18,14 @@ wlanthermo (2.4.0-0rc4) stable; urgency=medium
   * FIX: Fehler bei KTYPE an Hardware > v1 behoben
   * FIX: Umlaute im Kanalnamen werden angezeigt
   * FIX: Neue Sensorparameter
+  * FIX: Nextion-Display reagiert nicht korrekt auf Shutdown
   * CHANGE: Medianfilter angepasst
   * CHANGE: Schleifenzeit der Messchleife korrigiert
   * CHANGE: Auslesen der Konfiguration in der Messchleife
   * CHANGE: Pitmaster: Anti-Windup II implementiert
   * CHANGE: Mehr Sonderzeichen und längere Passphraser für WLAN-Passphrase
 
- -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Thu, 01 July 2016 14:15:00 +0200
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Thu, 07 July 2016 10:00:00 +0200
 
 wlanthermo (2.3.1-1) stable; urgency=medium
 
