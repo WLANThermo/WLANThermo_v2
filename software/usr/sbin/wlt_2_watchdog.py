@@ -21,11 +21,9 @@ import os
 import pyinotify
 import subprocess
 import ConfigParser
-import thread
 import time
 import sys
 import logging
-import threading
 import RPi.GPIO as GPIO
 import signal
 
@@ -142,6 +140,12 @@ def reboot_pi():
             continue
         break
     
+    # Setze Flag
+    try:
+        open('/var/www/tmp/reboot.flag', 'w').close()
+    except OSError:
+        pass
+    
     #Stoppe die Dienste
     handle_service('/etc/init.d/WLANThermo', 'stop')
     handle_service('/etc/init.d/WLANThermoPIT', 'stop')
@@ -158,7 +162,7 @@ def reboot_pi():
             time.sleep(0.1)
             continue
         break
-		
+        
     time.sleep(2)
     bashCommand = 'sudo reboot'
     retcode = subprocess.Popen(bashCommand.split())
@@ -506,20 +510,25 @@ def check_pitmaster():
         else:
             logger.info('Child returned' + str(retcodeO))
 
+def raise_keyboard(signum, frame):
+    raise KeyboardInterrupt('Received SIGTERM')
+
+signal.signal(15, raise_keyboard)
 notifier = pyinotify.Notifier(wm, fs_wd())
 
 wdd = wm.add_watch('/var/www/conf', mask) #, rec=True)
 
-#Start thread for shutdown pin
-#input_thread = threading.Thread(target = wait_input)
-#input_thread.start()
-
 GPIO.add_event_detect(27, GPIO.RISING, callback=shutdown_button, bouncetime=1000)
-
 
 Config.read(cf)
 check_display()
 check_pitmaster()
+
+# Lösche Rebootflag
+try:
+    os.unlink('/var/www/tmp/reboot.flag')
+except OSError:
+    pass
 
 while True:
     try:
@@ -530,8 +539,13 @@ while True:
             notifier.read_events()
     except KeyboardInterrupt:
         notifier.stop()
+        if (Config.getboolean('Display', 'lcd_present')):
+            if display_proc.poll() == None:
+                logger.info('Stopping Display')
+                display_proc.terminate()
+                display_proc.wait()
+                display_proc = None
         logger.info('WLANThermoWD stopped')
         logging.shutdown()
         os.unlink(pidfilename)
         break
-        

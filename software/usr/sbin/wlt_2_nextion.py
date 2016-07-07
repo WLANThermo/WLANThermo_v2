@@ -35,7 +35,7 @@ from struct import *
 NX_lf = '\xff\xff\xff'
 NX_channel = 0
 NX_page = 0
-version = '0.18'
+version = '0.19'
 
 temps = dict()
 channels = dict()
@@ -528,7 +528,7 @@ def temp_getvalues():
         ft = open(curPath + '/' + curFile).read()
         temps_raw = ft.split(';')
         temps = dict()
-        temps['timestamp'] = timestamp = time.mktime(time.strptime(temps_raw[0],'%d.%m.%y %H:%M:%S'))
+        temps['timestamp'] = time.mktime(time.strptime(temps_raw[0],'%d.%m.%y %H:%M:%S'))
         for count in range(8):
             temps[count] = {'value': str(round(float(temps_raw[count+1]),1)) + '\xb0C', 'alert': temps_raw[count+9]}
     else:
@@ -713,7 +713,6 @@ def pitmaster_config_getvalues():
 
 def pitmaster_getvalues():
     global logger, pitPath, pitFile
-    temps = dict()
     if os.path.isfile(pitPath + '/' + pitFile):
         logger.debug("Daten vom Pitmaster zum Anzeigen vorhanden")
         fp = open(pitPath + '/' + pitFile).read()
@@ -826,6 +825,17 @@ def alert_setack():
         os.mknod('/var/www/alert.ack')
     except OSError:
         pass
+
+
+def check_reboot():
+    logger.debug('Check for reboot:')
+    lines = subprocess.Popen(["/bin/systemctl", "list-jobs"], stdout=subprocess.PIPE).stdout.readlines()
+    for line in lines:
+        if re.search(r'reboot\.target.*start', line) is not None:
+            logger.debug('Reboot detected')
+            return True
+    logger.debug('Shutdown assumed')
+    return False
 
 def NX_display():
     logger.info('Display-Thread gestartet')
@@ -1285,7 +1295,10 @@ if NX_init(display['serialdevice'], display['serialspeed']):
         if not NX_wake_event.is_set():
             NX_sendcmd('sleep=0')
             time.sleep(0.2)
-        NX_sendvalues({'boot.nextion_down.val': 1})
+        if check_reboot():
+            NX_sendvalues({'boot.text.txt:35': 'System wird neu gestartet...'})
+        else:
+            NX_sendvalues({'boot.nextion_down.val': 1})
         NX_switchpage('boot')
     
     logger.debug('Sende Stopsignal an alle Threads')
