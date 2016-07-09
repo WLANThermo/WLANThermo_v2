@@ -26,9 +26,9 @@ import serial
 import subprocess
 import threading
 import re
-import string
 import signal
 import Queue
+import traceback
 from struct import *
 
 
@@ -287,12 +287,11 @@ def NX_reader():
 
 
 def NX_waitok():
-    global stop_event
     endcount = 0
     bytecount = 0
     ok = False
 
-    while (endcount != 3 or not stop_event.is_set()):
+    while endcount != 3:
         byte = ser.read()
         if byte == '':
             logger.info('Serial Communication Timeout!')
@@ -316,7 +315,7 @@ def NX_init(port, baudrate):
     global ser, NX_lf, NX_reader_thread
     ser.port = port
     ser.baudrate = baudrate
-    ser.timeout = 1
+    ser.timeout = 0.2
     ser.open()
     logger.debug('Leere seriellen Buffer')
     # Buffer des Displays leeren
@@ -829,7 +828,7 @@ def alert_setack():
 
 def check_reboot():
     logger.debug('Check for reboot:')
-    lines = subprocess.Popen(["/bin/systemctl", "list-jobs"], stdout=subprocess.PIPE).stdout.readlines()
+    lines = subprocess.Popen(["/bin/systemctl", "list-jobs"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, preexec_fn=preexec_function()).stdout.readlines()
     for line in lines:
         if re.search(r'reboot\.target.*start', line) is not None:
             logger.debug('Reboot detected')
@@ -843,18 +842,29 @@ def NX_display():
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
+    nextion_versions = ['v1.6']    
+    
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
     logger.info('Version auf dem Display: ' + str(display_version))
-    if not str(display_version) in ['v1.6']:
+    if str(display_version) == nextion_versions[0]:
+        # Version on the display is current version
+        logger.info('Displaysoftware auf aktuellem Stand')
+        if os.path.isfile('/var/www/tmp/nextionupdate'):
+            # Update-Flag löschen wenn Version i.O.
+            os.unlink('/var/www/tmp/nextionupdate')
+    elif str(display_version) in nextion_versions:
+        # Version is not current, but working
+        logger.info('Update des Displays empfohlen')
+        open('/var/www/tmp/nextionupdate', 'w').close()
+    else:
+        # Version is not suitable for this script version
         logger.info('Update des Displays notwendig')
         NX_sendcmd('page update')
         open('/var/www/tmp/nextionupdate', 'w').close()
         stop_event.wait()
         return False
-    if os.path.isfile('/var/www/tmp/nextionupdate'):
-        # Update-Flag löschen wenn Version i.O.
-        os.unlink('/var/www/tmp/nextionupdate')
+
     NX_sendvalues({'boot.text.txt:35':'Temperaturen werden geladen'})
     NX_switchpage('boot')
     
@@ -936,7 +946,7 @@ def NX_display():
     
     while not stop_event.is_set():
         # idR werden wir bei einem Sleep hier warten
-        while not stop_event.is_set() and not NX_wake_event.wait(timeout = 0.01):
+        while not stop_event.is_set() and not NX_wake_event.wait(timeout = 0.05):
             pass
         if not NX_eventq.empty():
             event = NX_eventq.get(False)
@@ -1206,8 +1216,14 @@ def config_write(configfile, config):
         os.rename(configfile + '_tmp', configfile)
 
 
-def raise_keyboard(signum, frame):
-    raise KeyboardInterrupt('Received SIGTERM')
+def stop_all(signum, frame):
+    logger.debug('Caught Signal: ' + str(signum))
+    logger.info('Sende Stopsignal an alle Threads')
+    stop_event.set()
+
+
+def preexec_function():
+    os.setpgrp()
 
 
 def check_pid(pid):
@@ -1217,10 +1233,20 @@ def check_pid(pid):
         return False
     else:
         return True
-        
+
+
+def log_uncaught_exceptions(ex_cls, ex, tb):
+    logger.critical(''.join(traceback.format_tb(tb)))
+    logger.critical('{0}: {1}'.format(ex_cls, ex))
+
+
+sys.excepthook = log_uncaught_exceptions
+
 # Auf geht es
-logger.info('Nextion Display gestartet!')
-logger.debug('Skriptversion: ' + version)
+logger.info('Nextion Display gestartet, Skriptversion: ' + version)
+
+signal.signal(15, stop_all)
+signal.signal(2, stop_all)
 
 #Einlesen der Software-Version
 for line in open('/var/www/header.php'):
@@ -1261,8 +1287,6 @@ logger.debug('Initialisiere Display,  Baudrate: ' + str(display['serialspeed']))
 if NX_init(display['serialdevice'], display['serialspeed']):
     logger.debug('Initialisierung OK')
     
-    signal.signal(15, raise_keyboard)
-    
     logger.debug('Starte Reader-Thread')
     NX_reader_thread = threading.Thread(target=NX_reader)
     NX_reader_thread.daemon = True
@@ -1283,28 +1307,26 @@ if NX_init(display['serialdevice'], display['serialspeed']):
     wdd2 = wm.add_watch(pitPath, mask)
     wdd3 = wm.add_watch(confPath, mask)
     
-    try:
-        while True:
-            # Hauptschleife
-            if not NX_display_thread.is_alive():
-                break
-            if not NX_reader_thread.is_alive():
-                break
-            time.sleep(0.5)
-    except KeyboardInterrupt:
-        if not NX_wake_event.is_set():
-            NX_sendcmd('sleep=0')
-            time.sleep(0.2)
-        if check_reboot():
-            NX_sendvalues({'boot.text.txt:35': 'System wird neu gestartet...'})
-        else:
-            NX_sendvalues({'boot.nextion_down.val': 1})
-        NX_switchpage('boot')
+    while not stop_event.is_set():
+        # Hauptschleife
+        if not NX_display_thread.is_alive():
+            break
+        if not NX_reader_thread.is_alive():
+            break
+        time.sleep(0.5)
     
-    logger.debug('Sende Stopsignal an alle Threads')
+    if not NX_wake_event.is_set():
+        NX_sendcmd('sleep=0')
+        time.sleep(0.2)
+    if check_reboot():
+        NX_sendvalues({'boot.text.txt:35': 'System wird neu gestartet...'})
+    else:
+        NX_sendvalues({'boot.nextion_down.val': 1})
+    NX_switchpage('boot')
+    
     notifier.stop()
     # Signal zum stoppen geben
-    stop_event.set()
+
     logger.debug('Warte auf Threads...')
     # Auf Threads warten
     NX_display_thread.join()

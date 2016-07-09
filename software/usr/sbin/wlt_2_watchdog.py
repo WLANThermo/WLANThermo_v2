@@ -26,6 +26,7 @@ import sys
 import logging
 import RPi.GPIO as GPIO
 import signal
+import traceback
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -461,7 +462,7 @@ def check_display():
             startproc = True
         
         if startproc:
-            display_proc = subprocess.Popen([sys.executable, '/usr/sbin/' + Config.get('Display', 'lcd_type')])
+            display_proc = subprocess.Popen([sys.executable, '/usr/sbin/' + Config.get('Display', 'lcd_type')], stdin=subprocess.PIPE, preexec_fn=preexec_function())
             
         if Config.getboolean('ToDo', 'restart_display'):
             logger.info('Ändere restart_display wieder auf False')
@@ -511,9 +512,24 @@ def check_pitmaster():
             logger.info('Child returned' + str(retcodeO))
 
 def raise_keyboard(signum, frame):
+    logger.debug('Caught Signal: ' + str(signum))
     raise KeyboardInterrupt('Received SIGTERM')
 
+
+def preexec_function():
+    os.setpgrp()
+
+
+def log_uncaught_exceptions(ex_cls, ex, tb):
+    logger.critical(''.join(traceback.format_tb(tb)))
+    logger.critical('{0}: {1}'.format(ex_cls, ex))
+
+
+sys.excepthook = log_uncaught_exceptions
+
+
 signal.signal(15, raise_keyboard)
+
 notifier = pyinotify.Notifier(wm, fs_wd())
 
 wdd = wm.add_watch('/var/www/conf', mask) #, rec=True)
