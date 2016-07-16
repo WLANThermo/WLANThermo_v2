@@ -1,0 +1,9 @@
+[Unit]
+Description=WLANThermo pitmaster service
+After=pigpiod.service
+
+[Service]
+ExecStart=/usr/sbin/wlt_2_pitmaster.py
+
+[Install]
+WantedBy=multi-user.target

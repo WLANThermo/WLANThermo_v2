@@ -1,0 +1,8 @@
+[Unit]
+Description=WLANThermo watchdog service
+
+[Service]
+ExecStart=/usr/sbin/wlt_2_watchdog.py
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,8 @@
+[Unit]
+Description=WLANThermo main service
+
+[Service]
+ExecStart=/usr/sbin/wlt_2_comp.py
+
+[Install]
+WantedBy=multi-user.target

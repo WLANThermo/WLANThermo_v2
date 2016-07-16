@@ -1,13 +1,15 @@
 #! /bin/sh
 # postinst script for wlanthermo
 
-# Trage alle Dienste im Autostart ein
-insserv WLANThermo
-insserv WLANThermoWD
+# enable all required services
+systemctl enable WLANThermo.service
+systemctl enable WLANThermoWD.service
 systemctl enable pigpiod.service
-# update-rc.d WLANThermoSERVO defaults
-# update-rc.d WLANThermoSERVO defaults
 
+# restart sudo service
+systemctl restart sudo 
+
+# enable lighttpd module
 lighty-enable-mod auth
 
 if [ -f /etc/lighttpd/lighttpd.conf ]
@@ -18,7 +20,8 @@ fi
 
 mv /var/www/conf/lighttpd.conf /etc/lighttpd/lighttpd.conf
 
-if [ -f /var/www/tmp/update ] #Pruefen, ob ueber das GUI ein Passwort gesetzt wurde
+# check if new web password has been set
+if [ -f /var/www/tmp/update ]
 then
     echo 'Passwort gefunden!'
     passwort=`cat /var/www/tmp/update`
@@ -30,12 +33,16 @@ else
     echo 'Jetzt das Passwort für den Benutzer >wlanthermo< des geschützten Bereichs eingeben!'
     htpasswd -c /etc/lighttpd/htpasswd wlanthermo
 fi
-systemctl daemon-reload
-ln -s /var/log/WLAN_Thermo /var/www/thermolog
-sudo chown -Rv www-data:www-data /var/www 1>/dev/null
-sudo chown -Rv www-data:www-data /var/log/WLAN_Thermo 1>/dev/null
 
-sudo service lighttpd restart
-sudo service WLANThermo start
-sudo service WLANThermoWD start
-sudo systemctl start pigpiod.service
+ln -s /var/log/WLAN_Thermo /var/www/thermolog
+chown -Rv www-data:www-data /var/www 1>/dev/null
+chown -Rv www-data:www-data /var/log/WLAN_Thermo 1>/dev/null
+
+# Reload new unit files
+systemctl daemon-reload
+
+# Restart services
+systemctl restart lighttpd
+systemctl restart WLANThermo
+systemctl restart WLANThermoWD
+systemctl start pigpiod.service

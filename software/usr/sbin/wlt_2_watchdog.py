@@ -148,8 +148,8 @@ def reboot_pi():
         pass
     
     #Stoppe die Dienste
-    handle_service('/etc/init.d/WLANThermo', 'stop')
-    handle_service('/etc/init.d/WLANThermoPIT', 'stop')
+    handle_service('WLANThermo', 'stop')
+    handle_service('WLANThermoPIT', 'stop')
     #Schreibe aufs LCD
     while True:
         try:
@@ -177,8 +177,8 @@ def reboot_pi():
 def halt_pi():
     logger.info('Shutting down the Raspberry')
     #Stoppe die Dienste
-    handle_service('/etc/init.d/WLANThermo', 'stop')
-    handle_service('/etc/init.d/WLANThermoPIT', 'stop')
+    handle_service('WLANThermo', 'stop')
+    handle_service('WLANThermoPIT', 'stop')
     #Schreibe aufs LCD
     while True:
         try:
@@ -204,8 +204,8 @@ def halt_pi():
 def halt_v3_pi():
     logger.info('Shutting down the Raspberry, Power Off (v3)')
     # Stoppe die Dienste
-    handle_service('/etc/init.d/WLANThermo', 'stop')
-    handle_service('/etc/init.d/WLANThermoPIT', 'stop')
+    handle_service('WLANThermo', 'stop')
+    handle_service('WLANThermoPIT', 'stop')
     # Schreibe aufs LCD
     while True:
         try:
@@ -412,7 +412,7 @@ def read_config():
         raise
 
 def handle_service(sService, sWhat):
-    bashCommand = 'sudo ' + sService + ' ' + sWhat #/etc/init.d/WLANThermo restart'
+    bashCommand = 'sudo systemctl ' + sWhat + ' ' + sService + 'service'
     logger.debug('handle_service: ' + bashCommand)
     retcode = subprocess.Popen(bashCommand.split())
     retcode.wait()
@@ -462,7 +462,7 @@ def check_display():
             startproc = True
         
         if startproc:
-            display_proc = subprocess.Popen([sys.executable, '/usr/sbin/' + Config.get('Display', 'lcd_type')], stdin=subprocess.PIPE, preexec_fn=preexec_function())
+            display_proc = subprocess.Popen([sys.executable, '/usr/sbin/' + Config.get('Display', 'lcd_type')], stdin=subprocess.PIPE)
             
         if Config.getboolean('ToDo', 'restart_display'):
             logger.info('Ändere restart_display wieder auf False')
@@ -494,7 +494,7 @@ def check_pitmaster():
     if (Config.getboolean('ToDo', 'pit_on')):
         if (len(pitmasterPID) < 1):
             logger.info('start pitmaster')
-            bashCommandPit = 'sudo service WLANThermoPIT restart'
+            bashCommandPit = 'sudo systemctl restart WLANThermoPIT.service'
         else:
             logger.info('pitmaster already running')
     else:
@@ -514,10 +514,6 @@ def check_pitmaster():
 def raise_keyboard(signum, frame):
     logger.debug('Caught Signal: ' + str(signum))
     raise KeyboardInterrupt('Received SIGTERM')
-
-
-def preexec_function():
-    os.setpgrp()
 
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
