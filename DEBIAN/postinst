@@ -38,6 +38,8 @@ ln -s /var/log/WLAN_Thermo /var/www/thermolog
 chown -Rv www-data:www-data /var/www 1>/dev/null
 chown -Rv www-data:www-data /var/log/WLAN_Thermo 1>/dev/null
 
+chmod 0440 /etc/sudoers.d/WLANThermo
+
 # Reload new unit files
 systemctl daemon-reload
 
