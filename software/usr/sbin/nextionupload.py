@@ -48,10 +48,13 @@ ser = serial.Serial(PORT, BAUDCOMM, timeout=.1, )
 
 acked = threading.Event()
 stop_thread = threading.Event()
+threader = False
 
 def reader():
     global acked
     global ser
+    global threader
+    
     while stop_thread.is_set() == False:
         r = ser.read(1)
         if r == '':
@@ -60,23 +63,53 @@ def reader():
             acked.set()
             continue
         else:
-            print '<%r>' % r
             continue
 
-            
-def upload(file_name):
-    global acked
-    global ser
-    global stop_thread
+def connect_old():
+    ser.baudrate = BAUDCOMM
     ser.write('tjchmi-wri %i,%i,0' % (fsize, BAUDUPLOAD))
     ser.write("\xff\xff\xff")
     ser.flush()
     acked.clear()
     ser.baudrate = BAUDUPLOAD
     ser.timeout = 0.1
-    threader.start()
     print 'Waiting for ACK...'
-    acked.wait()
+    if acked.wait(1):
+        return True
+    else:
+        return False
+
+def connect_new():
+    ser.baudrate = BAUDCOMM
+    ser.write('whmi-wri %i,%i,0' % (fsize, BAUDUPLOAD))
+    ser.write("\xff\xff\xff")
+    ser.flush()
+    acked.clear()
+    ser.baudrate = BAUDUPLOAD
+    ser.timeout = 0.1
+    print 'Waiting for ACK...'
+    if acked.wait(1):
+        return True
+    else:
+        return False 
+    
+def upload(file_name):
+    global acked
+    global ser
+    global stop_thread
+    global threader
+    
+    threader = threading.Thread(target = reader)
+    threader.daemon = True
+    threader.start()
+    
+    print 'Connecting...'
+    if not connect_new():
+        print 'No ACK. Maybe old Firmware?, trying old command...'
+        if not connect_old():
+            stop_thread.set()
+            threader.join(1)
+            sys.exit('No ACK. Can´t establish connection!')
     print 'Uploading...'
     with open(file_name, 'rb') as hmif:
         dcount = 0
@@ -99,15 +132,11 @@ def upload(file_name):
     stop_thread.set()
     threader.join(1)
 
-
-threader = threading.Thread(target = reader)
-threader.daemon = True
-
 no_connect = True
-for baudrate in (9600, 115200, 2400, 4800, 19200, 38400, 57600):
-    ser.baudrate = baudrate
-    ser.timeout = 3000/baudrate + 0.2
-    print('Trying with ' + str(baudrate) + '...')
+for BAUDCOMM in (9600, 115200, 2400, 4800, 19200, 38400, 57600):
+    ser.baudrate = BAUDCOMM
+    ser.timeout = 3000/BAUDCOMM + 0.2
+    print('Trying with ' + str(BAUDCOMM) + '...')
     # Clear Buffers and Wake-Up
     ser.write("\xff\xff\xff")
     ser.write('sleep=0')
@@ -120,12 +149,13 @@ for baudrate in (9600, 115200, 2400, 4800, 19200, 38400, 57600):
     ser.write("\xff\xff\xff")
     r = ser.read(128)
     if 'comok' in r:
-        print('Connected with ' + str(baudrate) + '!')
+        print('Connected with ' + str(BAUDCOMM) + '!')
         no_connect = False
-        status, unknown1, model, unknown2, version, serial, flash_size = r.strip("\xff\x00").split(',')
+        status, reserved, model, firmware, mcu_code, serial, flash_size = r.strip("\xff\x00").split(',')
         print('Status: ' + status)
         print('Model: ' + model)
-        print('Version: ' + version)
+        print('Firmware: ' + firmware)
+        print('MCU code: ' + mcu_code)
         print('Serial: ' + serial)
         print('Flash size: ' + flash_size)
         
