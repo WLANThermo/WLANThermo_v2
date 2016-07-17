@@ -61,7 +61,7 @@ if(isset($_POST['submit'])) {
 // Ausgabe der Tabellen (in einer Schleife): ##########################################################################################
 //-------------------------------------------------------------------------------------------------------------------------------------
 	
-	echo '<h1>Thermolog Ordner</h1>';
+	echo '<h1>'.gettext('Logfile Folder').'</h1>';
 	
 //-------------------------------------------------------------------------------------------------------------------------------------
 // Tabellenkopf und fuß ###############################################################################################################
@@ -71,12 +71,12 @@ if(isset($_POST['submit'])) {
 	<table>
 		<thead>
 			<tr>
-				<th>Dateiname</th>
-				<th>D/L</th>
-				<th>Plot</th>
-				<th>Dateigr&ouml;&szlig;e</th>
-				<th>letzte &Auml;nderung</th>
-				<th>L&ouml;schen</th>
+				<th><?php echo gettext("Filename");?></th>
+				<th><?php echo gettext("D/L");?></th>
+				<th><?php echo gettext("Plot");?></th>
+				<th><?php echo gettext("File Size");?></th>
+				<th><?php echo gettext("Last Updated");?></th>
+				<th><?php echo gettext("Delete");?></th>
 			</tr>
 		</thead>
 		<tfoot>
@@ -100,8 +100,8 @@ if(isset($_POST['submit'])) {
 		?>
 			<tr>		
 				<td><div class="<?php if ($readFiles[$key]["editable"] == "False"){ echo "no_edit";}else{ echo "edit";}?>" id="<?php echo $readFiles[$key]["name"]; ?>"><?php echo "".substr($readFiles[$key]["name"], 0, -4)."";?></div></td>
-				<td><a href="<?php echo $readFiles[$key]["logfile"]; ?>"><img src="../images/icons16x16/download.png" alt="Download" title="Download"></a></td>
-				<td><?php if(!empty($readFiles[$key]["plot"])){ echo '<a class="fancybox" href="'.$readFiles[$key]["plot"].'" data-fancybox-type="image"><img src="../images/icons16x16/chart.png" alt="Plot ansehen" title="Plot ansehen"></a> '; } ?></td>
+				<td><a href="<?php echo $readFiles[$key]["logfile"]; ?>"><img src="../images/icons16x16/download.png" alt="<?php echo gettext("download");?>" title="<?php echo gettext("download");?>"></a></td>
+				<td><?php if(!empty($readFiles[$key]["plot"])){ echo '<a class="fancybox" href="'.$readFiles[$key]["plot"].'" data-fancybox-type="image"><img src="../images/icons16x16/chart.png" alt="'.gettext('view plot').'" title="'.gettext('view plot').'"></a> '; } ?></td>
 				<td><?php echo $readFiles[$key]["filesize"]; ?></td>
 				<td><?php echo ''.date( 'd.m.Y H:i:s', $key ).''; ?></td>
 				<td><?php if ($readFiles[$key]["editable"] == "True"){ echo '<input type="checkbox" name="'.substr($readFiles[$key]["name"], 0, -4).'" value="True" >'; } ?> </td>

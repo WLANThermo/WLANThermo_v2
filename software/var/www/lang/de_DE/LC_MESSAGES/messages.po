@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2016-07-05 21:15+0200\n"
-"PO-Revision-Date: 2016-07-17 16:40+0200\n"
+"PO-Revision-Date: 2016-07-17 17:50+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -91,3 +91,41 @@ msgstr "Aktuelle Version"
 
 msgid "Update"
 msgstr "Aktualisieren"
+
+# main.php
+msgid "Last regulation on"
+msgstr "Letzte Regelung am"
+
+msgid "Last measurement on"
+msgstr "Letzte Messung am"
+
+msgid "CPU utilization"
+msgstr "CPU Auslastung"
+
+# thermolog.php
+msgid "Logfile Folder"
+msgstr "Thermolog Ordner"
+
+msgid "Filename"
+msgstr "Dateiname"
+
+msgid "D/L<"
+msgstr "D/L"
+
+msgid "Plot"
+msgstr "Plot"
+
+msgid "File Size"
+msgstr "Dateigröße"
+
+msgid "Last Updated"
+msgstr "letzte Änderung"
+
+msgid "Delete"
+msgstr "Löschen"
+
+msgid "download"
+msgstr "Herunterladen"
+
+msgid "view plot"
+msgstr "Plot anzeigen"

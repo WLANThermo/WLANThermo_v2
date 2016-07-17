@@ -12,6 +12,7 @@ if (!file_exists($tmp_dir)) {
 
 	$beginn = microtime(true);
 	include("function.php");
+	include("gettext.php");
 	$esound = "0"; // Variable für Soundalarmierung;
 	$esound_ = "0";
 	$message = "\n";
@@ -208,15 +209,15 @@ if (isset($_SESSION["to_update"])){
 	//-------------------------------------------------------------------------------------------------------------------------------------
 
 	if ($_SESSION["pit_on"] == "True"){?>
-		<div class="last_regulation_view">Letzte Regelung am <b><?php echo $pit_time_stamp; ?></b> Uhr</div><?php
+		<div class="last_regulation_view"><?php echo gettext("Last regulation on");?> <b><?php echo $pit_time_stamp; ?></b></div><?php
 	}?>
-	<div class="last_measure_view">Letzte Messung am <b><?php echo $time_stamp; ?></b> Uhr
+	<div class="last_measure_view"><?php echo gettext("Last measurement on");?> <b><?php echo $time_stamp; ?></b>
 	<?php if($_SESSION["showcpulast"] == "True"){
 	echo "<br>";
 	$cpuload = new CPULoad();
 	$cpuload->get_load();
 	$CPULOAD = round($cpuload->load["cpu"],1);
-	echo "CPU Auslastung: <b>".$CPULOAD."% / ".get_cputemp()."&#176;C</b>";
+	echo "".gettext("CPU utilization").": <b>".$CPULOAD."% / ".get_cputemp()."&#176;C</b>";
 	}
 	?>
 	</div>						 
