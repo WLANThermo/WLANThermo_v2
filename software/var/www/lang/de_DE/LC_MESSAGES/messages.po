@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2016-07-05 21:15+0200\n"
-"PO-Revision-Date: 2016-07-06 23:28+0200\n"
+"PO-Revision-Date: 2016-07-17 16:40+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -57,3 +57,37 @@ msgstr "M&ouml;chten Sie den RaspberryPi neu starten?"
 
 msgid "RASPBERRY&nbsp;PI&nbsp;&nbsp;REBOOT"
 msgstr "RASPBERRY&nbsp;PI&nbsp;&nbsp;NEU STARTEN"
+
+# info.php
+msgid "Information"
+msgstr "Information"
+
+msgid "This software is licensed under the"
+msgstr "Diese Software steht unter der"
+
+msgid "License"
+msgstr "Lizenz"
+
+msgid "Software version"
+msgstr "Software Version"
+
+msgid "a BBQ-Community project"
+msgstr "ein Projekt der BBQ-Community"
+
+msgid "WLANThermo update"
+msgstr "WLANThermo Update"
+
+msgid "no update available"
+msgstr "kein Update verfügbar"
+
+msgid "new update available"
+msgstr "neues Update verf&uuml;gbar"
+
+msgid "Installed version"
+msgstr "Installierte Version"
+
+msgid "Available version"
+msgstr "Aktuelle Version"
+
+msgid "Update"
+msgstr "Aktualisieren"

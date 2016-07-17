@@ -305,7 +305,7 @@ function download($url) {
 
 function updateCheck($version) {
 	$check_update_url = $_SESSION["check_update_url"]; //Update Server
-	$file_headers = @get_headers($updatecheck_url);
+	$file_headers = @get_headers($check_update_url);
 	if($file_headers[0] == 'HTTP/1.1 404 Not Found') {
 		//echo "Server nicht erreichbar";
 	}else{
