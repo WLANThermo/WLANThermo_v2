@@ -429,6 +429,7 @@ if (isset($_SESSION["to_update"])){
 	//echo nl2br(print_r($plot,true));
 	//echo $_SESSION["plot_start"];
 	//echo $_SESSION["keyboxframe"];
+	
 	//echo "".$keyboxframe_value."";
 	//print_r($message);
 	//echo "<pre>" . var_export($message,true) . "</pre>";  

@@ -357,6 +357,10 @@ if(isset($_POST["save"])) {
 				$ini['Hardware']['version'] = $_POST['hardware_version'];
 				$restart = "1";
 			}
+			// Allgemeine Einstellungen
+			if (isset($_POST['language'])) {
+				$ini['lang']['language'] = $_POST['language'];
+			}
 			// ######################################################################
 			// Dienste nach Änderung neu starten ------------------------------------
 			// ######################################################################
@@ -952,17 +956,29 @@ if(isset($_POST["save"])) {
 		<div class="config middle">
 			<div class="headline">Allgemeine Einstellungen</div>		
 			<div class="headicon"><img src="../images/icons16x16/settings.png" alt=""></div>
-			<div class="config_text row_2 col_1">Neues Logfile bei Neustart:</div>
-			<div class="config_text row_3 col_1">Nach Updates suchen:</div>
-			<div class="config_text row_3 col_4"><input type="checkbox" name="checkUpdate" value="True" <?php if($ini['update']['checkupdate'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_2 col_6">CPU Auslastung anzeigen:</div>
-			<div class="config_text row_2 col_7"><input type="checkbox" name="showcpulast" value="True" <?php if($ini['Hardware']['showcpulast'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_4 col_1">Kanal anzeigen:</div>
 			<div class="config_text row_1 col_1">Hardware Version:</div>
 			<div class="config_text row_1 col_4"><input type="radio" name="hardware_version" value="v1" <?php if($ini['Hardware']['version'] == "v1") {echo "checked=\"checked\"";}?> > v1 <input type="radio" name="hardware_version" value="v2" <?php if($ini['Hardware']['version'] == "v2") {echo "checked=\"checked\"";}?> > v2 <input type="radio" name="hardware_version" value="v3" <?php if($ini['Hardware']['version'] == "v3") {echo "checked=\"checked\"";}?> > v3</div>
-			<div class="config_text row_1 col_6">Beeper:</div>
-			<div class="config_text row_1 col_7"><input type="checkbox" name="beeper_enabled" value="True" <?php if($ini['Sound']['beeper_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_1 col_6">Sprache:</div>
+			<div class="config_text row_1 col_7">
+				<select name="language" id="language" size="1">
+					<?php
+					$language = get_available_languages();
+					foreach($language AS $lang){?>
+						<option <?php if($ini['lang']['language'] == $lang)	{echo " selected";} ?> ><?php echo $lang; ?></option>
+					<?php
+					}
+					?>
+                </select>
+			</div>
+			<div class="config_text row_2 col_1">Neues Logfile bei Neustart:</div>
 			<div class="config_text row_2 col_4"><input type="checkbox" name="new_logfile_restart" value="True" <?php if($ini['Logging']['write_new_log_on_restart'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_3 col_1">Nach Updates suchen:</div>
+			<div class="config_text row_3 col_4"><input type="checkbox" name="checkUpdate" value="True" <?php if($ini['update']['checkupdate'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_3 col_6">CPU Auslastung anzeigen:</div>
+			<div class="config_text row_3 col_7"><input type="checkbox" name="showcpulast" value="True" <?php if($ini['Hardware']['showcpulast'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_4 col_1">Kanal anzeigen:</div>
+			<div class="config_text row_2 col_6">Beeper:</div>
+			<div class="config_text row_2 col_7"><input type="checkbox" name="beeper_enabled" value="True" <?php if($ini['Sound']['beeper_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_4 col_7">
 				ch0&nbsp;<input type="checkbox" name="ch_show0" id="show_ch0" value="True" <?php if($ini['ch_show']['ch0'] == "True") {echo "checked=\"checked\"";}?> >&nbsp;&nbsp;
 				ch1&nbsp;<input type="checkbox" name="ch_show1" id="show_ch1" value="True" <?php if($ini['ch_show']['ch1'] == "True") {echo "checked=\"checked\"";}?> >&nbsp;&nbsp;
