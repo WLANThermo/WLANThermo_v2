@@ -256,7 +256,7 @@ def read_config():
             break
         if (Config.getboolean('ToDo', 'restart_thermo')):
             logger.info('Restart Thermo Process...')
-            handle_service('service WLANThermo', 'restart')
+            handle_service('WLANThermo', 'restart')
             time.sleep(3)
             logger.info('Aendere config wieder auf False')
             while True:
@@ -275,7 +275,7 @@ def read_config():
 
         if (Config.getboolean('ToDo', 'restart_pitmaster')):
             logger.info('Restart Pitmaster')
-            handle_service('service WLANThermoPIT', 'restart')
+            handle_service('WLANThermoPIT', 'restart')
             time.sleep(3)
             logger.info('Aendere config wieder auf False')
             while True:
@@ -387,7 +387,7 @@ def read_config():
                     continue
                 break
             time.sleep(2)
-            handle_service('service WLANThermo', 'restart')
+            handle_service('WLANThermo', 'restart')
             time.sleep(10)
             while True:
                 try:
@@ -412,7 +412,7 @@ def read_config():
         raise
 
 def handle_service(sService, sWhat):
-    bashCommand = 'sudo systemctl ' + sWhat + ' ' + sService + 'service'
+    bashCommand = 'sudo systemctl ' + sWhat + ' ' + sService + '.service'
     logger.debug('handle_service: ' + bashCommand)
     retcode = subprocess.Popen(bashCommand.split())
     retcode.wait()
