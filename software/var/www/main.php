@@ -96,7 +96,13 @@ if (isset($_SESSION["to_update"])){
 	}
 }
 	echo '<script>$(function() { hideLoading();});</script>';
-
+	
+	if ($_SESSION["temp_unit"] == 'celsius') {
+		$temp_unit_short = '&#176;C';
+	} elseif ($_SESSION["temp_unit"] == 'fahrenheit') {
+		$temp_unit_short = '&#176;F';
+	}
+	
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	// CPU Auslastung #####################################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
@@ -170,7 +176,12 @@ if (isset($_SESSION["to_update"])){
 	function get_cputemp(){
 		exec("sudo /opt/vc/bin/vcgencmd measure_temp | tr -d \"temp=\" | tr -d \"'C\"",$output, $return);
 		if((!$return) AND (isset($output[0]))){
-			return $output[0];
+			if ($_SESSION['temp_unit'] == 'celsius') {
+				$cpu_temp = $output[0];
+			} elseif ($_SESSION['temp_unit'] == 'fahrenheit') {
+				$cpu_temp = $output[0] * 1.8 + 32;
+			}
+			return $cpu_temp;
 		}else{
 			return "n/a";
 		}
@@ -217,7 +228,7 @@ if (isset($_SESSION["to_update"])){
 	$cpuload = new CPULoad();
 	$cpuload->get_load();
 	$CPULOAD = round($cpuload->load["cpu"],1);
-	echo "".gettext("CPU utilization").": <b>".$CPULOAD."% / ".get_cputemp()."&#176;C</b>";
+	echo gettext("CPU utilization").": <b>".$CPULOAD."% / ".get_cputemp(). $temp_unit_short;"</b>";
 	}
 	?>
 	</div>						 
@@ -276,8 +287,8 @@ if (isset($_SESSION["to_update"])){
 				?>
 					<div class="channel_view">
 						<div class="channel_name"><?php echo htmlentities($channel_name[$i], ENT_QUOTES, "UTF-8"); ?></div>
-						<div class="<?php echo $temperature_indicator_color;?>"><?php printf('%.1f&#176;C', ${"temp_$i"});?></div>
-						<div class="tempmm">Temp min <b><?php echo $temp_min[$i];?>&#176;C</b> / max <b><?php echo $temp_max[$i];?>&#176;C</b></div>
+						<div class="<?php echo $temperature_indicator_color;?>"><?php printf('%.1f%s', ${"temp_$i"}, $temp_unit_short);?></div>
+						<div class="tempmm">Temp min <b><?php echo $temp_min[$i]; echo $temp_unit_short;?></b> / max <b><?php echo $temp_max[$i]; echo $temp_unit_short;?></b></div>
 						<div class="headicon"><font color="<?php echo $color_ch[$i];?>">#<?php echo $i;?></font></div>
 						<div class="webalert"><?php 
 							if ($_SESSION["websoundalert"] == "True" && $esound_ == "1"){ 
@@ -290,7 +301,7 @@ if (isset($_SESSION["to_update"])){
 						if (($_SESSION["pit_ch"] == "$i") && ($_SESSION["pit_on"] == "True")){
 						?>
 							<div class="headicon_left"><img src="../images/icons16x16/pitmaster.png" alt=""></div>
-							<div class="pitmaster_left"> <?php printf('%.1f%%',$pit_val); ?> / <?php printf('%.1f&#176;C',$pit_set); ?></div>
+							<div class="pitmaster_left"> <?php printf('%.1f%%',$pit_val); ?> / <?php printf('%.1f%s',$pit_set, $temp_unit_short); ?></div>
 						<?php 
 						}
 						?>
