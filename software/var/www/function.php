@@ -155,7 +155,7 @@ function session($configfile) {
 		$_SESSION["alert".$i] = $ini['web_alert']['ch'.$i];
 		$_SESSION["ch_show".$i] = $ini['ch_show']['ch'.$i];
 	}
-	$_SESSION["language"] = $ini['lang']['language'];
+	$_SESSION["locale"] = $ini['locale']['locale'];
 	$_SESSION["temp_unit"] = $ini['locale']['temp_unit'];
 	$_SESSION["color_pit"] = $ini['plotter']['color_pit'];
 	$_SESSION["color_pitsoll"] = $ini['plotter']['color_pitsoll'];
@@ -228,7 +228,7 @@ function checkSession(){
 		$message .= "Variable - Config neu einlesen\n";
 		session("./conf/WLANThermo.conf");
 	}
-	if (!isset($_SESSION["language"]) OR !isset($_SESSION["temp_unit"])) {
+	if (!isset($_SESSION["locale"]) OR !isset($_SESSION["temp_unit"])) {
 		$message .= "Variable - Config neu einlesen\n";
 		session("./conf/WLANThermo.conf");
 	}	

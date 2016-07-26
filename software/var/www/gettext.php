@@ -1,8 +1,8 @@
 <?php
 //setlocale(LC_ALL, 'de_DE.utf8');
-//echo $_SESSION["language"];
-if (isset($_SESSION["language"])){
-	setlocale(LC_ALL, ''.$_SESSION["language"].'.utf8');		
+//echo $_SESSION["locale"];
+if (isset($_SESSION["locale"])){
+	setlocale(LC_ALL, ''.$_SESSION["locale"].'.utf8');		
 }else{
 	setlocale(LC_ALL, 'de_DE.utf8');
 }
