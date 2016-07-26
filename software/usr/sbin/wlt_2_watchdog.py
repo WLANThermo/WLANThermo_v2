@@ -29,9 +29,7 @@ import signal
 import traceback
 import gettext
 
-gettext.bindtextdomain('wlt_2_watchdog', '/usr/share/WLANThermo/locale/')
-gettext.textdomain('wlt_2_watchdog')
-_ = gettext.gettext
+gettext.install('wlt_2_watchdog', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -88,7 +86,7 @@ handler.setLevel(logging.DEBUG)
 handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
 
-logger.info(_('WLANThermoWD started'))
+logger.info(_(u'WLANThermoWD started'))
 
 #ueberpruefe ob der Dienst schon laeuft
 pid = str(os.getpid())
@@ -107,16 +105,16 @@ if os.access(pidfilename, os.F_OK):
     pidfile.seek(0)
     old_pid = int(pidfile.readline())
     if check_pid(old_pid):
-        print(_('%s already exists, Process is running, exiting') % pidfilename)
-        logger.error(_('%s already exists, Process is running, exiting') % pidfilename)
+        print(_(u'%s already exists, Process is running, exiting') % pidfilename)
+        logger.error(_(u'%s already exists, Process is running, exiting') % pidfilename)
         sys.exit()
     else:
-        logger.info(_('%s already exists, Process is NOT running, resuming operation') % pidfilename)
+        logger.info(_(u'%s already exists, Process is NOT running, resuming operation') % pidfilename)
         pidfile.seek(0)
         open(pidfilename, 'w').write(pid)
     
 else:
-    logger.debug(_('%s written') % pidfilename)
+    logger.debug(_(u'%s written') % pidfilename)
     open(pidfilename, 'w').write(pid)
 
 
@@ -131,7 +129,7 @@ class fs_wd(pyinotify.ProcessEvent):
             read_config()
 
 def reboot_pi():
-    logger.info(_('rebooting'))
+    logger.info(_(u'rebooting'))
     while True:
         try:
             cfgfile = open(cf + '_tmp','w')
@@ -159,7 +157,7 @@ def reboot_pi():
     while True:
         try:
             fw = open('/var/www/tmp/display/wd' + '_tmp','w')
-            fw.write(_('---- ATTENTION!  ----;---- WLANThermo ----;  is now rebooting  ;see you later...'))
+            fw.write(_(u'---- ATTENTION!  ----;---- WLANThermo ----;  is now rebooting  ;see you later...'))
             fw.flush()
             os.fsync(fw.fileno())
             fw.close()
@@ -174,13 +172,13 @@ def reboot_pi():
     retcode = subprocess.Popen(bashCommand.split())
     retcode.wait()
     if retcode < 0:
-        logger.info(_('Terminated by signal'))
+        logger.info(_(u'Terminated by signal'))
     else:
-        logger.info(_('Child returned: ') + str(retcode))
+        logger.info(_(u'Child returned: ') + str(retcode))
 
 
 def halt_pi():
-    logger.info(_('Shutting down the Raspberry'))
+    logger.info(_(u'Shutting down the Raspberry'))
     #Stoppe die Dienste
     handle_service('WLANThermo', 'stop')
     handle_service('WLANThermoPIT', 'stop')
@@ -188,7 +186,7 @@ def halt_pi():
     while True:
         try:
             fw = open('/var/www/tmp/display/wd' + '_tmp', 'w')
-            fw.write(_('---- ATTENTION!  ----;---- WLANThermo ----;is now shutting down;Bye-bye!'))
+            fw.write(_(u'---- ATTENTION!  ----;---- WLANThermo ----;is now shutting down;Bye-bye!'))
             fw.flush()
             os.fsync(fw.fileno())
             fw.close()
@@ -201,13 +199,13 @@ def halt_pi():
     retcode = subprocess.Popen(bashCommand.split())
     retcode.wait()
     if retcode < 0:
-        logger.info(_('Terminated by signal'))
+        logger.info(_(u'Terminated by signal'))
     else:
-        logger.info(_('Child returned: ') + str(retcode))
+        logger.info(_(u'Child returned: ') + str(retcode))
 
 
 def halt_v3_pi():
-    logger.info(_('Shutting down the Raspberry, Power Off (v3)'))
+    logger.info(_(u'Shutting down the Raspberry, Power Off (v3)'))
     # Stoppe die Dienste
     handle_service('WLANThermo', 'stop')
     handle_service('WLANThermoPIT', 'stop')
@@ -215,7 +213,7 @@ def halt_v3_pi():
     while True:
         try:
             fw = open('/var/www/tmp/display/wd' + '_tmp','w')
-            fw.write(_('---- ATTENTION!  ----;---- WLANThermo ----;is now shutting down;Bye-bye!'))
+            fw.write(_(u'---- ATTENTION!  ----;---- WLANThermo ----;is now shutting down;Bye-bye!'))
             fw.flush()
             os.fsync(fw.fileno())
             fw.close()
@@ -236,19 +234,19 @@ def halt_v3_pi():
     retcode = subprocess.Popen(bashCommand.split())
     retcode.wait()
     if retcode < 0:
-        logger.info(_('Terminated by signal'))
+        logger.info(_(u'Terminated by signal'))
     else:
-        logger.info(_('Child returned: ') + str(retcode))
+        logger.info(_(u'Child returned: ') + str(retcode))
 
 
 def shutdown_button(gpio):
-    logger.info(_('Shutting down! (Button pressed)'))
+    logger.info(_(u'Shutting down! (Button pressed)'))
     halt_pi()
 
 
 def read_config():
     global cf
-    logger.debug(_('Read Config...'))
+    logger.debug(_(u'Read Config...'))
     try:
         # Konfigurationsdatei einlesen
         #Config = ConfigParser.ConfigParser()
@@ -260,10 +258,10 @@ def read_config():
                 continue
             break
         if (Config.getboolean('ToDo', 'restart_thermo')):
-            logger.info(_('Restart WLANThermo process!'))
+            logger.info(_(u'Restart WLANThermo process!'))
             handle_service('WLANThermo', 'restart')
             time.sleep(3)
-            logger.info(_('Changing restart_thermo to False again!'))
+            logger.info(_(u'Changing restart_thermo to False again!'))
             while True:
                 try:
                     cfgfile = open(cf + '_tmp','w')
@@ -279,10 +277,10 @@ def read_config():
                 break
 
         if (Config.getboolean('ToDo', 'restart_pitmaster')):
-            logger.info(_('Restart pitmaster!'))
+            logger.info(_(u'Restart pitmaster!'))
             handle_service('WLANThermoPIT', 'restart')
             time.sleep(3)
-            logger.info(_('Changing restart_pitmaster to False again!'))
+            logger.info(_(u'Changing restart_pitmaster to False again!'))
             while True:
                 try:
                     cfgfile = open(cf + '_tmp','w')
@@ -322,7 +320,7 @@ def read_config():
             reboot_pi()
         
         if (Config.getboolean('ToDo', 'backup')):
-            logger.info(_('Create backup!'))
+            logger.info(_(u'Create backup!'))
             while True:
                 try:
                     cfgfile = open(cf + '_tmp','w')
@@ -339,7 +337,7 @@ def read_config():
             ret = os.popen("/usr/sbin/wlt_2_backup.sh").read()
             logger.debug(ret)
         if (Config.getboolean('ToDo', 'update_gui')):
-            logger.info(_('update_gui!'))
+            logger.info(_(u'update_gui!'))
             while True:
                 try:
                     cfgfile = open(cf + '_tmp','w')
@@ -357,7 +355,7 @@ def read_config():
             logger.debug(ret)
 
         if (Config.getboolean('ToDo', 'start_update')):
-            logger.info(_('Update software!'))
+            logger.info(_(u'Update software!'))
             while True:
                 try:
                     cfgfile = open(cf + '_tmp','w')
@@ -376,7 +374,7 @@ def read_config():
 
             
         if (Config.getboolean('ToDo', 'create_new_log')):
-            logger.info(_('Create new log!'))
+            logger.info(_(u'Create new log!'))
             while True:
                 try:
                     cfgfile = open(cf + '_tmp','w')
@@ -407,24 +405,24 @@ def read_config():
                     time.sleep(1)
                     continue
                 break
-            logger.info(_('Finished creation of new logfile'))
+            logger.info(_(u'Finished creation of new logfile'))
 
         if (Config.getboolean('ToDo', 'pit_on')):
             check_pitmaster() 
 
     except:
-        logger.info(_('Unexpected error: ') +str(sys.exc_info()[0]))
+        logger.info(_(u'Unexpected error: ') +str(sys.exc_info()[0]))
         raise
 
 def handle_service(sService, sWhat):
     bashCommand = 'sudo systemctl ' + sWhat + ' ' + sService + '.service'
-    logger.debug(_('Handle service: ') + bashCommand)
+    logger.debug(_(u'Handle service: ') + bashCommand)
     retcode = subprocess.Popen(bashCommand.split())
     retcode.wait()
     if retcode < 0:
-        logger.info(_('Terminated by signal'))
+        logger.info(_(u'Terminated by signal'))
     else:
-        logger.info(_('Child returned: ') + str(retcode))
+        logger.info(_(u'Child returned: ') + str(retcode))
 
 
 def check_file(f):
@@ -443,23 +441,23 @@ def check_file(f):
 
 
 def check_display():
-    logger.debug(_('Checking display...'))
+    logger.debug(_(u'Checking display...'))
     global display_proc, Config
     if (Config.getboolean('Display', 'lcd_present')):
         startproc = False
         # Display aktiviert
         if display_proc == None:
             # Display-Prozess starten bzw. restarten
-            logger.info(_('Starting display...'))
+            logger.info(_(u'Starting display...'))
             startproc = True
         elif display_proc.poll() != None:
             # Display-Prozess wieder starten
-            logger.info(_('Starting display again...'))
+            logger.info(_(u'Starting display again...'))
             startproc = True
         elif (Config.getboolean('ToDo', 'restart_display')):
             # Display soll restartet werden
             # Wenn es nicht lief landen wir in den vorherigen Bedingungen
-            logger.info(_('Stopping display for restart...'))
+            logger.info(_(u'Stopping display for restart...'))
             display_proc.terminate()
             display_proc.wait()
             display_proc = None
@@ -469,7 +467,7 @@ def check_display():
             display_proc = subprocess.Popen([sys.executable, '/usr/sbin/' + Config.get('Display', 'lcd_type')], stdin=subprocess.PIPE)
             
         if Config.getboolean('ToDo', 'restart_display'):
-            logger.info(_('Changing restart_display to False'))
+            logger.info(_(u'Changing restart_display to False'))
             for i in range(0,5):
                 try:
                     cfgfile = open(cf + '_tmp','w')
@@ -492,32 +490,32 @@ def check_display():
 
 
 def check_pitmaster():
-    logger.debug(_('Checking pitmaster'))
+    logger.debug(_(u'Checking pitmaster'))
     pitmasterPID = os.popen("ps aux|grep wlt_2_pitmaster.py|grep -v grep|awk '{print $2}'").read()
     bashCommandPit = ''
     if (Config.getboolean('ToDo', 'pit_on')):
         if (len(pitmasterPID) < 1):
-            logger.info(_('Start pitmaster'))
+            logger.info(_(u'Start pitmaster'))
             bashCommandPit = 'sudo systemctl restart WLANThermoPIT.service'
         else:
-            logger.info(_('Pitmaster already running'))
+            logger.info(_(u'Pitmaster already running'))
     else:
         if (len(pitmasterPID) > 0):
-            logger.info(_('Stopping pitmaster'))
+            logger.info(_(u'Stopping pitmaster'))
             #obsolet
         else:
-            logger.info(_('Pitmaster already stopped'))
+            logger.info(_(u'Pitmaster already stopped'))
     if (len(bashCommandPit) > 0):
         retcodeO = subprocess.Popen(bashCommandPit.split())
         retcodeO.wait()
         if retcodeO < 0:
-            logger.info(_('Terminated by signal'))
+            logger.info(_(u'Terminated by signal'))
         else:
-            logger.info(_('Child returned: ') + str(retcodeO))
+            logger.info(_(u'Child returned: ') + str(retcodeO))
 
 def raise_keyboard(signum, frame):
-    logger.debug(_('Caught signal: ') + str(signum))
-    raise KeyboardInterrupt(_('Received SIGTERM'))
+    logger.debug(_(u'Caught signal: ') + str(signum))
+    raise KeyboardInterrupt(_(u'Received SIGTERM'))
 
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
@@ -557,11 +555,11 @@ while True:
         notifier.stop()
         if (Config.getboolean('Display', 'lcd_present')):
             if display_proc.poll() == None:
-                logger.info(_('Stopping Display'))
+                logger.info(_(u'Stopping Display'))
                 display_proc.terminate()
                 display_proc.wait()
                 display_proc = None
-        logger.info(_('WLANThermoWD stopped'))
+        logger.info(_(u'WLANThermoWD stopped'))
         logging.shutdown()
         os.unlink(pidfilename)
         break

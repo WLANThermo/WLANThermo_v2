@@ -29,9 +29,7 @@ import pyinotify
 import signal
 import gettext
 
-gettext.bindtextdomain('wlt_2_lcd_204', '/usr/share/WLANThermo/locale/')
-gettext.textdomain('wlt_2_lcd_204')
-_ = gettext.gettext
+gettext.install('wlt_2_lcd_204', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -100,7 +98,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logging.captureWarnings(True)
 
-logger.info(_('Display started!'))
+logger.info(_(u'Display started!'))
 
 #ueberpruefe ob der Dienst schon laeuft
 pid = str(os.getpid())
@@ -119,16 +117,16 @@ if os.access(pidfilename, os.F_OK):
     pidfile.seek(0)
     old_pid = int(pidfile.readline())
     if check_pid(old_pid):
-        print(_('%s already exists, Process is running, exiting') % pidfilename)
-        logger.error(_('%s already exists, Process is running, exiting') % pidfilename)
+        print(_(u'%s already exists, Process is running, exiting') % pidfilename)
+        logger.error(_(u'%s already exists, Process is running, exiting') % pidfilename)
         sys.exit()
     else:
-        logger.info(_('%s already exists, Process is NOT running, resuming operation') % pidfilename)
+        logger.info(_(u'%s already exists, Process is NOT running, resuming operation') % pidfilename)
         pidfile.seek(0)
         open(pidfilename, 'w').write(pid)
     
 else:
-    logger.debug(_("%s written") % pidfilename)
+    logger.debug(_(u"%s written") % pidfilename)
     open(pidfilename, 'w').write(pid)
 
 
@@ -265,7 +263,7 @@ def show_values():
         counter=0
     try:
         if os.path.isfile(curPath + '/wd'):
-            logger.debug(_('Message from the watchdog available --> overriding the display!'))
+            logger.debug(_(u'Message from the watchdog available --> overriding the display!'))
             fwd = open(curPath + '/wd').read()
             wd = fwd.split(';')
             lcd_byte(LCD_LINE_1, LCD_CMD)
@@ -283,7 +281,7 @@ def show_values():
             alarm_values = [chr(1), chr(0), '', '']
             
             if os.path.isfile(curPath + '/' + curFile):
-                logger.debug(_('Data from WLANThermo is available to show on the display'))
+                logger.debug(_(u'Data from WLANThermo is available to show on the display'))
                 ft = open(curPath + '/' + curFile).read()
                 temps = []
                 temps_raw = ft.split(';')
@@ -309,7 +307,7 @@ def show_values():
                 lcd_byte(LCD_LINE_4, LCD_CMD)
                 if (Config.getboolean('ToDo', 'pit_on')):
                     if os.path.isfile(curPath + '/' + pitFile):
-                        logger.debug(_('Pitmaster is running, showing the values in the 4th line'))
+                        logger.debug(_(u'Pitmaster is running, showing the values in the 4th line'))
                         fp = open(curPath + '/' + pitFile).read()
                         pits = fp.split(';')
                         lcd_string('Pit: S:' + str("%.0f" % float(pits[1])) + ' I:' + str("%.0f" % float(pits[2])) + ' ' + pits[3],2)
@@ -340,7 +338,7 @@ if not os.path.exists(curPath):
     os.makedirs(curPath)
 
 # wd file beim Starten des Display Daemons loeschen!
-logger.debug(_('Check for watchdog file >{curPath}/wd<').format(curPath=curPath))
+logger.debug(_(u'Check for watchdog file >{curPath}/wd<').format(curPath=curPath))
 if os.path.isfile(curPath + '/wd'):
     os.remove(curPath + '/wd')
 
@@ -355,24 +353,24 @@ if LCD:
     #Display initialisieren und Begruessungstext ausgeben
     lcd_init()
     lcd_byte(LCD_LINE_1, LCD_CMD)
-    lcd_string(_('----- 8 Channel -----'),2) 
+    lcd_string(_(u'----- 8 Channel -----'),2) 
     lcd_byte(LCD_LINE_2, LCD_CMD)
-    lcd_string(_('----- WLANThermo ----'),2)
+    lcd_string(_(u'----- WLANThermo ----'),2)
     lcd_byte(LCD_LINE_3, LCD_CMD)
-    lcd_string(_('by Armin Thinnes'),2)
+    lcd_string(_(u'by Armin Thinnes'),2)
     lcd_byte(LCD_LINE_4, LCD_CMD)
     lcd_string(build,2)    
 
     time.sleep(3) # 3 second delay 
 
     lcd_byte(LCD_LINE_1, LCD_CMD)
-    lcd_string(_('Grillsportverein'),2)
+    lcd_string(_(u'Grillsportverein'),2)
     lcd_byte(LCD_LINE_2, LCD_CMD)
     lcd_string('',2)  
     lcd_byte(LCD_LINE_3, LCD_CMD)
-    lcd_string(_('  The reference at'),1) 
+    lcd_string(_(u'  The reference at'),1) 
     lcd_byte(LCD_LINE_4, LCD_CMD)
-    lcd_string(_('grilling + measuring!'),1)   
+    lcd_string(_(u'grilling + measuring!'),1)   
 
     time.sleep(3) # 3 second delay
 
@@ -406,7 +404,7 @@ if LCD:
     ETH0="ETH0: " + ETH0
     ETH1="ETH1: " + ETH1
     lcd_byte(LCD_LINE_1, LCD_CMD)
-    lcd_string(_('IP addresses:'),2)
+    lcd_string(_(u'IP addresses:'),2)
     lcd_byte(LCD_LINE_2, LCD_CMD)
     lcd_string(WLAN0,2)  
     lcd_byte(LCD_LINE_3, LCD_CMD)
@@ -433,5 +431,5 @@ if LCD:
             notifier.stop()
             os.unlink(pidfilename)
             break
-logger.info(_('Display stopped!'))
+logger.info(_(u'Display stopped!'))
         

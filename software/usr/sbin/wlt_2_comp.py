@@ -32,9 +32,7 @@ import signal
 import traceback
 import gettext
 
-gettext.bindtextdomain('wlt_2_comp', '/usr/share/WLANThermo/locale/')
-gettext.textdomain('wlt_2_comp')
-_ = gettext.gettext
+gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -87,7 +85,7 @@ handler.setLevel(logging.DEBUG)
 handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
 
-logger.info(_('WLANThermo started'))
+logger.info(_(u'WLANThermo started'))
 
 #ueberpruefe ob der Dienst schon laeuft
 pid = str(os.getpid())
@@ -106,16 +104,16 @@ if os.access(pidfilename, os.F_OK):
     pidfile.seek(0)
     old_pid = int(pidfile.readline())
     if check_pid(old_pid):
-        print(_('%s already exists, Process is running, exiting') % pidfilename)
-        logger.error(_('%s already exists, Process is running, exiting') % pidfilename)
+        print(_(u'%s already exists, Process is running, exiting') % pidfilename)
+        logger.error(_(u'%s already exists, Process is running, exiting') % pidfilename)
         sys.exit()
     else:
-        logger.info(_('%s already exists, Process is NOT running, resuming operation') % pidfilename)
+        logger.info(_(u'%s already exists, Process is NOT running, resuming operation') % pidfilename)
         pidfile.seek(0)
         open(pidfilename, 'w').write(pid)
     
 else:
-    logger.debug(_("%s written") % pidfilename)
+    logger.debug(_(u"%s written") % pidfilename)
     open(pidfilename, 'w').write(pid)
 
 
@@ -137,7 +135,7 @@ def safe_format(template, args):
     return message
 
 def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
-    logger.info(_('Send mail!'))
+    logger.info(_(u'Send mail!'))
     
     from smtplib import SMTP 
     from smtplib import SMTPException 
@@ -163,13 +161,13 @@ def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
 
         s.sendmail(FROM,TO, m.as_string())
         s.quit()
-        logger.debug(_('Alert Email has been sent!'))
+        logger.debug(_(u'Alert Email has been sent!'))
     except SMTPException as error:
-        sendefehler = _('Error: unable to send email: {err}').format(err=error)
+        sendefehler = _(u'Error: unable to send email: {err}').format(err=error)
         logger.error(sendefehler)
     except:
         #TODO err undefined!
-        sendefehler = _('Error: unable to resolve host (no internet connection?) :  {err}')
+        sendefehler = _(u'Error: unable to resolve host (no internet connection?) :  {err}')
         logger.error(sendefehler)
 
 def readAnalogData(adcChannel, SCLKPin, MOSIPin, MISOPin, CSPin):
@@ -257,13 +255,13 @@ def create_logfile(filename, log_kanal):
     os.symlink(filename, '/var/log/WLAN_Thermo/TEMPLOG.csv')
     
     kopfzeile = []
-    kopfzeile.append(_('Datum_Uhrzeit'))
+    kopfzeile.append(_(u'Datum_Uhrzeit'))
     for kanal in xrange(8):
         if (log_kanal[kanal]):
             kopfzeile.append('Kanal ' + str(kanal))
             
-    kopfzeile.append(_('Regulator output value'))
-    kopfzeile.append(_('Regler set value'))
+    kopfzeile.append(_(u'Regulator output value'))
+    kopfzeile.append(_(u'Regler set value'))
     
     while True:
         try:
@@ -401,7 +399,7 @@ try:
         CPU_usage = psutil.cpu_percent(interval=1, percpu=True)
         ram = psutil.virtual_memory()
         ram_free = ram.free / 2**20
-        logger.debug(_('CPU: ') + str(CPU_usage) + _(' RAM free: ') + str(ram_free))
+        logger.debug(_(u'CPU: ') + str(CPU_usage) + _(u' RAM free: ') + str(ram_free))
         alarm_irgendwo = False
         alarm_neu = False
         alarm_repeat = False
@@ -414,7 +412,7 @@ try:
 
         new_config_mtime = os.path.getmtime('/var/www/conf/WLANThermo.conf')
         if new_config_mtime > config_mtime:
-            logger.debug(_('reading configuration again...'))
+            logger.debug(_(u'reading configuration again...'))
             while True:
                 try:
                     new_config.read('/var/www/conf/WLANThermo.conf')
@@ -461,15 +459,15 @@ try:
             logger.info('alert.ack vorhanden')
             for kanal in range (8):
                 if alarm_state[kanal] == 'hi':
-                    logger.debug(_('Acknowledging temperature over upper limit on channel ') + str(kanal))
+                    logger.debug(_(u'Acknowledging temperature over upper limit on channel ') + str(kanal))
                     alarm_state[kanal] = 'hi_ack'
                 elif alarm_state[kanal] == 'lo':
-                    logger.debug(_('Acknowledging temperature under lower limit on channel ') + str(kanal))
+                    logger.debug(_(u'Acknowledging temperature under lower limit on channel ') + str(kanal))
                     alarm_state[kanal] = 'lo_ack'
             os.unlink('/var/www/alert.ack')
         
         if os.path.isfile('/var/www/alert.test'):
-            logger.info(_('alert.test exists'))
+            logger.info(_(u'alert.test exists'))
             test_alarm = True
             os.unlink('/var/www/alert.test')
         
@@ -521,10 +519,10 @@ try:
             alarm_values = dict()
             if temp_unit == 'celsius':
                 alarm_values['temp_unit'] = '°C'
-                alarm_values['temp_unit_long'] = _('degrees Celsius')
+                alarm_values['temp_unit_long'] = _(u'degrees Celsius')
             elif temp_unit == 'fahrenheit':
                 alarm_values['temp_unit'] = '°F'
-                alarm_values['temp_unit_long'] = _('degrees Fahrenheit')
+                alarm_values['temp_unit_long'] = _(u'degrees Fahrenheit')
             alarm_values['kanal'] = kanal
             alarm_values['name'] = kanal_name[kanal]
             alarm_values['temperatur'] = Temperatur[kanal]
@@ -608,13 +606,13 @@ try:
             alarm_time = time.time()
             
             if alarm_neu:
-                logger.debug(_('new alert, sending messages'))
+                logger.debug(_(u'new alert, sending messages'))
             if test_alarm:
-                logger.debug(_('test alert, sending messages'))
+                logger.debug(_(u'test alert, sending messages'))
                 test_alarm = False
-                alarm_message = _('test message\n') + alarm_message
+                alarm_message = _(u'test message\n') + alarm_message
             if alarm_repeat:
-                logger.info(_('repeated alert, sending messages'))
+                logger.info(_(u'repeated alert, sending messages'))
                 
             if Email_alert:
                 # Wenn konfiguriert, Email schicken
@@ -652,15 +650,15 @@ try:
                 body = Push_Body.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), inst_id=Push_inst_id, device=Push_device, inst_id2=Push_inst_id2, device2=Push_device2, inst_id3=Push_inst_id3, device3=Push_device3, chat_id=Push_chat_id, token=Push_token)
                 try: 
                     if Push_Body == '':
-                        logger.debug(_('push GET request, URL: ') + url)
+                        logger.debug(_(u'push GET request, URL: ') + url)
                         response = urllib2.urlopen(url)
                     else:
-                        logger.debug(_('push POST request, URL: ') + url + _('\nbody: ') + body)
+                        logger.debug(_(u'push POST request, URL: ') + url + _(u'\nbody: ') + body)
                         response = urllib2.urlopen(url, body)
                     
-                    logger.info(_('push HTTP return code: ') + str(response.getcode()))
-                    logger.debug(_('push URL: ') + response.geturl())
-                    logger.debug(_('push result: ') + response.read(500))
+                    logger.info(_(u'push HTTP return code: ') + str(response.getcode()))
+                    logger.debug(_(u'push URL: ') + response.geturl())
+                    logger.debug(_(u'push result: ') + response.read(500))
 
                 except urllib2.HTTPError, e:
                     logger.error('HTTP error: ' + str(e.code) + ' - ' + e.read(500))
@@ -694,7 +692,7 @@ try:
                 os.rename(current_temp + '_tmp', current_temp)
             except IndexError:
                 time.sleep(1)
-                logger.debug(_('Error: Could not write to file {file}!').format(file=current_temp))
+                logger.debug(_(u'Error: Could not write to file {file}!').format(file=current_temp))
                 continue
             break
             
@@ -739,12 +737,12 @@ try:
         
         time_remaining = time_start + delay - time.time()
         if time_remaining < 0:
-            logger.warning(_('measuring loop running longer than {delay}s, remaining time {time_remaining}s').format(delay=delay, time_remaining=time_remaining))
+            logger.warning(_(u'measuring loop running longer than {delay}s, remaining time {time_remaining}s').format(delay=delay, time_remaining=time_remaining))
         else:
-            logger.debug(_('measuring loop remaining time {time_remaining}s of {delay}s').format(delay=delay, time_remaining=time_remaining))
+            logger.debug(_(u'measuring loop remaining time {time_remaining}s of {delay}s').format(delay=delay, time_remaining=time_remaining))
             time.sleep(time_remaining)
 
 except KeyboardInterrupt:
-    logger.info(_('WLANThermo stopped!'))
+    logger.info(_(u'WLANThermo stopped!'))
     logging.shutdown()
     os.unlink(pidfilename)
