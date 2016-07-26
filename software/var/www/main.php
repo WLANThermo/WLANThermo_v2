@@ -20,6 +20,7 @@ if (!file_exists($tmp_dir)) {
 	$pit_time_stamp = "";
 	$pit_val = "";
 	$pit_set = "";
+	$log_dateformat = 'd.m.y H:i:s';
 
 //	$pit_file = '.'.$_SESSION["pitmaster"].'';
 //	if (file_exists($pit_file)) {
@@ -195,7 +196,7 @@ if (isset($_SESSION["to_update"])){
 			$currenttemp = file_get_contents($_SESSION["current_temp"]);
 		}
 		$temp = explode(";",$currenttemp);
-		$time_stamp = $temp[0];
+		$time_stamp = DateTime::createFromFormat($log_dateformat, $temp[0]);
 		$temp_0 = floatval($temp[1]);
 		$temp_1 = floatval($temp[2]);
 		$temp_2 = floatval($temp[3]);
@@ -210,7 +211,7 @@ if (isset($_SESSION["to_update"])){
 		if (file_exists($pit_file)) {
 			$currentpit = file_get_contents($_SESSION["pitmaster"]);
 			$pits = explode(";",$currentpit);
-			$pit_time_stamp = $pits[0];
+			$pit_time_stamp = DateTime::createFromFormat($log_dateformat, $pits[0]);
 			$pit_set = floatval($pits[1]);
 			$pit_val = floatval($pits[3]);
 		}
@@ -220,9 +221,9 @@ if (isset($_SESSION["to_update"])){
 	//-------------------------------------------------------------------------------------------------------------------------------------
 
 	if ($_SESSION["pit_on"] == "True"){?>
-		<div class="last_regulation_view"><?php echo gettext("Last regulation on");?> <b><?php echo $pit_time_stamp; ?></b></div><?php
+		<div class="last_regulation_view"><?php echo gettext("Last regulation on");?> <b><?php echo IntlDateFormatter::formatObject($pit_time_stamp, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ; ?></b></div><?php
 	}?>
-	<div class="last_measure_view"><?php echo gettext("Last measurement on");?> <b><?php echo $time_stamp; ?></b>
+	<div class="last_measure_view"><?php echo gettext("Last measurement on");?> <b><?php echo IntlDateFormatter::formatObject($time_stamp, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ?></b>
 	<?php if($_SESSION["showcpulast"] == "True"){
 	echo "<br>";
 	$cpuload = new CPULoad();
