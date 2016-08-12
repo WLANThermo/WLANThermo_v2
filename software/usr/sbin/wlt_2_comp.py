@@ -452,6 +452,8 @@ try:
         Email_alert = new_config.getboolean('Email','email_alert')
         WhatsApp_alert = new_config.getboolean('WhatsApp','whatsapp_alert')
         Push_alert = new_config.getboolean('Push', 'push_on')
+        Telegram_alert = new_config.getboolean('Telegram', 'telegram_alert')
+        App_alert = new_config.getboolean('App', 'app_alert')
         
         temp_unit = new_config.get('locale', 'temp_unit')
         
@@ -626,28 +628,76 @@ try:
                 Email_STARTTLS = new_config.getboolean ('Email','starttls')
                 
                 alarm_email(Email_server,Email_user,Email_password, Email_STARTTLS, Email_from, Email_to, Email_subject, alarm_message)
+                
             if WhatsApp_alert:
                 # Wenn konfiguriert, Alarm per WhatsApp schicken
                 WhatsApp_number = new_config.get('WhatsApp','whatsapp_number')
-                        
                 cmd="/usr/sbin/sende_whatsapp.sh " + WhatsApp_number + " '" + alarm_message + "'"
                 os.system(cmd)
+                
+            if Telegram_alert:
+                Telegram_URL = 'https://api.telegram.org/bot{token}/sendMessage'
+                Telegram_Body = 'text={messagetext}&chat_id={chat_id}'
+                Telegram_chat_id = new_config.get('Telegram', 'telegram_chat_id')
+                Telegram_token = new_config.get('Telegram', 'telegram_token')
+                
+                alarm_message2 = urllib.quote(alarm_message)
+                url = Telegram_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
+                body = Telegram_Body.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
+                try: 
+                    logger.debug(_(u'Telegram POST request, URL: ') + url + _(u'\nbody: ') + body)
+                    response = urllib2.urlopen(url, body)
+                    
+                    logger.info(_(u'Telegram HTTP return code: ') + str(response.getcode()))
+                    logger.debug(_(u'Telegram URL: ') + response.geturl())
+                    logger.debug(_(u'Telegram result: ') + response.read(500))
+
+                except urllib2.HTTPError, e:
+                    logger.error('Telegram HTTP error: ' + str(e.code) + ' - ' + e.read(500))
+                except urllib2.URLError, e:
+                    logger.error('Telegram URLError: ' + str(e.reason))  
+                    
+            if App_alert:
+                # Wenn konfiguriert, Alarm per Appnachricht schicken
+                App_inst_id = new_config.get('App', 'app_inst_id')
+                App_device = new_config.get('App', 'app_device')
+                App_inst_id2 = new_config.get('App', 'app_inst_id2')
+                App_device2 = new_config.get('App', 'app_device2')
+                App_inst_id3 = new_config.get('App', 'app_inst_id3')
+                App_device3 = new_config.get('App', 'app_device3')
+                App_sound = new_config.get('App', 'app_device3')
+                
+                if App_inst_id3 != '':
+                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?inst_id={inst_id}&device={device}&inst_id2={inst_id2}&device2={device2}&inst_id3={inst_id3}&device3={device3}&message={messagetext}'
+                elif App_inst_id2 != '':
+                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?inst_id={inst_id}&device={device}&inst_id2={inst_id2}&device2={device2}&message={messagetext}'
+                else:
+                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?inst_id={inst_id}&device={device}&message={messagetext}'
+
+                App_URL = new_config.get('App', 'app_url')
+                alarm_message2 = urllib.quote(alarm_message)
+                url = App_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), inst_id=App_inst_id, device=App_device, inst_id2=App_inst_id2, device2=App_device2, inst_id3=App_inst_id3, device3=App_device3)
+                try: 
+                    logger.debug(_(u'App GET request, URL: ') + url)
+                    response = urllib2.urlopen(url)
+                    
+                    logger.info(_(u'App HTTP return code: ') + str(response.getcode()))
+                    logger.debug(_(u'App URL: ') + response.geturl())
+                    logger.debug(_(u'App result: ') + response.read(500))
+
+                except urllib2.HTTPError, e:
+                    logger.error('App HTTP error: ' + str(e.code) + ' - ' + e.read(500))
+                except urllib2.URLError, e:
+                    logger.error('App URLError: ' + str(e.reason))
+                    
             if Push_alert:
                 # Wenn konfiguriert, Alarm per Pushnachricht schicken
                 Push_URL = new_config.get('Push', 'push_url')
                 Push_Body = new_config.get('Push', 'push_body')
-                Push_inst_id = new_config.get('Push', 'push_inst_id')
-                Push_device = new_config.get('Push', 'push_device')
-                Push_inst_id2 = new_config.get('Push', 'push_inst_id2')
-                Push_device2 = new_config.get('Push', 'push_device2')
-                Push_inst_id3 = new_config.get('Push', 'push_inst_id3')
-                Push_device3 = new_config.get('Push', 'push_device3')
-                Push_chat_id = new_config.get('Push', 'push_chat_id')
-                Push_token = new_config.get('Push', 'push_token')
         
                 alarm_message2 = urllib.quote(alarm_message)
-                url = Push_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), inst_id=Push_inst_id, device=Push_device, inst_id2=Push_inst_id2, device2=Push_device2, inst_id3=Push_inst_id3, device3=Push_device3, chat_id=Push_chat_id, token=Push_token)
-                body = Push_Body.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), inst_id=Push_inst_id, device=Push_device, inst_id2=Push_inst_id2, device2=Push_device2, inst_id3=Push_inst_id3, device3=Push_device3, chat_id=Push_chat_id, token=Push_token)
+                url = Push_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'))
+                body = Push_Body.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'))
                 try: 
                     if Push_Body == '':
                         logger.debug(_(u'push GET request, URL: ') + url)
@@ -661,9 +711,9 @@ try:
                     logger.debug(_(u'push result: ') + response.read(500))
 
                 except urllib2.HTTPError, e:
-                    logger.error('HTTP error: ' + str(e.code) + ' - ' + e.read(500))
+                    logger.error('Push HTTP error: ' + str(e.code) + ' - ' + e.read(500))
                 except urllib2.URLError, e:
-                    logger.error('URLError: ' + str(e.reason))  
+                    logger.error('Push URLError: ' + str(e.reason))
         
         # Log datei erzeugen
         lcsv = []
