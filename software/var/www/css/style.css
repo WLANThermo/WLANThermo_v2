@@ -709,16 +709,16 @@ cursor:pointer;
 }
 
 .button_yes{
-background-image:url(../images/button/button_yes.png);
+background-image:url(../templates/leather/button/ButtonJa.png);
 }
 .button_delete{
-background-image:url(../images/button/button_delete.png);
+background-image:url(../templates/leather/button/ButtonLoschen.png);
 }
 .button_save{
-background-image:url(../images/button/button_save.png);
+background-image:url(../templates/leather/button/ButtonSpeichern.png);
 }
 .button_back{
-background-image:url(../images/button/button_back.png);
+background-image:url(../templates/leather/button/ButtonZuruck.png);
 }
 
 /*################################################################################################################### */
