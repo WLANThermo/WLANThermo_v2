@@ -1,0 +1,178 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-07-23 22:09+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: wlt_2_watchdog.py:91
+msgid "WLANThermoWD started"
+msgstr ""
+
+#: wlt_2_watchdog.py:110 wlt_2_watchdog.py:111
+#, python-format
+msgid "%s already exists, Process is running, exiting"
+msgstr ""
+
+#: wlt_2_watchdog.py:114
+#, python-format
+msgid "%s already exists, Process is NOT running, resuming operation"
+msgstr ""
+
+#: wlt_2_watchdog.py:119
+#, python-format
+msgid "%s written"
+msgstr ""
+
+#: wlt_2_watchdog.py:134
+msgid "rebooting"
+msgstr ""
+
+#: wlt_2_watchdog.py:162
+msgid ""
+"---- ATTENTION!  ----;---- WLANThermo ----;  is now rebooting  ;see you "
+"later..."
+msgstr ""
+
+#: wlt_2_watchdog.py:177 wlt_2_watchdog.py:204 wlt_2_watchdog.py:239
+#: wlt_2_watchdog.py:425 wlt_2_watchdog.py:514
+msgid "Terminated by signal"
+msgstr ""
+
+#: wlt_2_watchdog.py:179 wlt_2_watchdog.py:206 wlt_2_watchdog.py:241
+#: wlt_2_watchdog.py:427 wlt_2_watchdog.py:516
+msgid "Child returned: "
+msgstr ""
+
+#: wlt_2_watchdog.py:183
+msgid "Shutting down the Raspberry"
+msgstr ""
+
+#: wlt_2_watchdog.py:191 wlt_2_watchdog.py:218
+msgid ""
+"---- ATTENTION!  ----;---- WLANThermo ----;is now shutting down;Bye-bye!"
+msgstr ""
+
+#: wlt_2_watchdog.py:210
+msgid "Shutting down the Raspberry, Power Off (v3)"
+msgstr ""
+
+#: wlt_2_watchdog.py:245
+msgid "Shutting down! (Button pressed)"
+msgstr ""
+
+#: wlt_2_watchdog.py:251
+msgid "Read Config..."
+msgstr ""
+
+#: wlt_2_watchdog.py:263
+msgid "Restart WLANThermo process!"
+msgstr ""
+
+#: wlt_2_watchdog.py:266
+msgid "Changing restart_thermo to False again!"
+msgstr ""
+
+#: wlt_2_watchdog.py:282
+msgid "Restart pitmaster!"
+msgstr ""
+
+#: wlt_2_watchdog.py:285
+msgid "Changing restart_pitmaster to False again!"
+msgstr ""
+
+#: wlt_2_watchdog.py:325
+msgid "Create backup!"
+msgstr ""
+
+#: wlt_2_watchdog.py:342
+msgid "update_gui!"
+msgstr ""
+
+#: wlt_2_watchdog.py:360
+msgid "Update software!"
+msgstr ""
+
+#: wlt_2_watchdog.py:379
+msgid "Create new log!"
+msgstr ""
+
+#: wlt_2_watchdog.py:410
+msgid "Finished creation of new logfile"
+msgstr ""
+
+#: wlt_2_watchdog.py:416
+msgid "Unexpected error: "
+msgstr ""
+
+#: wlt_2_watchdog.py:421
+msgid "Handle service: "
+msgstr ""
+
+#: wlt_2_watchdog.py:446
+msgid "Checking display..."
+msgstr ""
+
+#: wlt_2_watchdog.py:453
+msgid "Starting display..."
+msgstr ""
+
+#: wlt_2_watchdog.py:457
+msgid "Starting display again..."
+msgstr ""
+
+#: wlt_2_watchdog.py:462
+msgid "Stopping display for restart..."
+msgstr ""
+
+#: wlt_2_watchdog.py:472
+msgid "Changing restart_display to False"
+msgstr ""
+
+#: wlt_2_watchdog.py:495
+msgid "Checking pitmaster"
+msgstr ""
+
+#: wlt_2_watchdog.py:500
+msgid "Start pitmaster"
+msgstr ""
+
+#: wlt_2_watchdog.py:503
+msgid "Pitmaster already running"
+msgstr ""
+
+#: wlt_2_watchdog.py:506
+msgid "Stopping pitmaster"
+msgstr ""
+
+#: wlt_2_watchdog.py:509
+msgid "Pitmaster already stopped"
+msgstr ""
+
+#: wlt_2_watchdog.py:519
+msgid "Caught signal: "
+msgstr ""
+
+#: wlt_2_watchdog.py:520
+msgid "Received SIGTERM"
+msgstr ""
+
+#: wlt_2_watchdog.py:560
+msgid "Stopping Display"
+msgstr ""
+
+#: wlt_2_watchdog.py:564
+msgid "WLANThermoWD stopped"
+msgstr ""

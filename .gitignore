@@ -7,6 +7,3 @@ nppBackup
 .project
 .pydevproject
 .settings
-
-#PHPStorm
-/software/var/www/.idea/*
