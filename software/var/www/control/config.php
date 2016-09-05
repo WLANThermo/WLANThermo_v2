@@ -14,7 +14,10 @@ $inipath = '../conf/WLANThermo.conf';
 
 $plotcolors = array('green', 'red', 'blue', 'olive', 'magenta', 'yellow', 'violet', 'orange',
 	'mediumpurple3', 'aquamarine', 'brown', 'plum', 'skyblue', 'orange-red', 'salmon',
-		'black', 'dark-grey', 'purple', 'turquoise', 'khaki', 'dark-violet', 'seagreen');
+	'black', 'dark-grey', 'purple', 'turquoise', 'khaki', 'dark-violet', 'seagreen');
+$app_sounds=array('None', 'Standard', 'Bell', 'Firepager', 'Police_kurz', 'Police_lang',
+	 'Sirene', 'SmokeAlarm', 'TempleBell', 'Tornado_kurz', 'Tornado_lang');
+$app_devices=array('iOS' => '0', 'Android' => '1');
 // ##################################################################################
 // Config-Files einlesen ------------------------------------------------------------
 // ##################################################################################
@@ -251,52 +254,79 @@ if(isset($_POST["save"])) {
 					$ini['Push']['push_body'] = $_POST['push_body'];
 				}
 			}
-			// Push push_inst_id
-			if (isset($_POST['push_inst_id'])) {
-				if($ini['Push']['push_inst_id'] !== $_POST['push_inst_id']){
-					$ini['Push']['push_inst_id'] = $_POST['push_inst_id'];
+
+			// ######################################################################
+			// App Einstellungen ----------------------------------------------------
+			// ######################################################################
+			
+			// Pushbenachrichtigung Aktivieren/Deaktivieren
+			if(isset ($_POST['app_alert'])) {$_POST['app_alert'] = "True"; }else{ $_POST['app_alert'] = "False";}
+			if($ini['App']['app_alert'] !== $_POST['app_alert']){
+				$ini['App']['app_alert'] = $_POST['app_alert'];
+			}
+			
+			// App app_inst_id
+			if (isset($_POST['app_inst_id'])) {
+				if($ini['App']['app_inst_id'] !== $_POST['app_inst_id']){
+					$ini['App']['app_inst_id'] = $_POST['app_inst_id'];
 				}
 			}
-			// Push push_device
-			if (isset($_POST['push_device'])) {
-				if($ini['Push']['push_device'] !== $_POST['push_device']){
-					$ini['Push']['push_device'] = $_POST['push_device'];
+			// App app_device
+			if (isset($_POST['app_device'])) {
+				if($ini['App']['app_device'] !== $_POST['app_device']){
+					$ini['App']['app_device'] = $_POST['app_device'];
 				}			
 			}
-			// Push push_inst_id2
-			if (isset($_POST['push_inst_id2'])) {
-				if($ini['Push']['push_inst_id2'] !== $_POST['push_inst_id2']){
-					$ini['Push']['push_inst_id2'] = $_POST['push_inst_id2'];
+			// App app_inst_id2
+			if (isset($_POST['app_inst_id2'])) {
+				if($ini['App']['app_inst_id2'] !== $_POST['app_inst_id2']){
+					$ini['App']['app_inst_id2'] = $_POST['app_inst_id2'];
 				}			
 			}
-			// Push push_device2
-			if (isset($_POST['push_device2'])) {
-				if($ini['Push']['push_device2'] !== $_POST['push_device2']){
-					$ini['Push']['push_device2'] = $_POST['push_device2'];
+			// App app_device2
+			if (isset($_POST['app_device2'])) {
+				if($ini['App']['app_device2'] !== $_POST['app_device2']){
+					$ini['App']['app_device2'] = $_POST['app_device2'];
 				}			
 			}
-			// Push push_inst_id3
-			if (isset($_POST['push_inst_id3'])) {
-				if($ini['Push']['push_inst_id3'] !== $_POST['push_inst_id3']){
-					$ini['Push']['push_inst_id3'] = $_POST['push_inst_id3'];
+			// App app_inst_id3
+			if (isset($_POST['app_inst_id3'])) {
+				if($ini['App']['app_inst_id3'] !== $_POST['app_inst_id3']){
+					$ini['App']['app_inst_id3'] = $_POST['app_inst_id3'];
 				}			
 			}
-			// Push push_device3
-			if (isset($_POST['push_device3'])) {
-				if($ini['Push']['push_device3'] !== $_POST['push_device3']){
-					$ini['Push']['push_device3'] = $_POST['push_device3'];
+			// App app_device3
+			if (isset($_POST['app_device3'])) {
+				if($ini['App']['app_device3'] !== $_POST['app_device3']){
+					$ini['App']['app_device3'] = $_POST['app_device3'];
+				}
+			}
+			// App app_sound
+			if (isset($_POST['app_sound'])) {
+				if($ini['App']['app_sound'] !== $_POST['app_sound']){
+					$ini['App']['app_sound'] = $_POST['app_sound'];
 				}			
 			}
-			// Push push_chat_id
-			if (isset($_POST['push_chat_id'])) {
-				if($ini['Push']['push_chat_id'] !== $_POST['push_chat_id']){
-					$ini['Push']['push_chat_id'] = $_POST['push_chat_id'];
+			
+			// ######################################################################
+			// Telegram Einstellungen --------------------------------------------------
+			// ######################################################################
+				
+			// Telegrambenachrichtigung Aktivieren/Deaktivieren
+			if(isset ($_POST['telegram_alert'])) {$_POST['telegram_alert'] = "True"; }else{ $_POST['telegram_alert'] = "False";}
+			if($ini['Telegram']['telegram_alert'] !== $_POST['telegram_alert']){
+				$ini['Telegram']['telegram_alert'] = $_POST['telegram_alert'];
+			}
+			// Telegram telegram_chat_id
+			if (isset($_POST['telegram_chat_id'])) {
+				if($ini['Telegram']['telegram_chat_id'] !== $_POST['telegram_chat_id']){
+					$ini['Telegram']['telegram_chat_id'] = $_POST['telegram_chat_id'];
 				}			
 			}
-			// Push push_token
-			if (isset($_POST['push_token'])) {
-				if($ini['Push']['push_token'] !== $_POST['push_token']){
-					$ini['Push']['push_token'] = $_POST['push_token'];
+			// Telegram telegram_token
+			if (isset($_POST['telegram_token'])) {
+				if($ini['Telegram']['telegram_token'] !== $_POST['telegram_token']){
+					$ini['Telegram']['telegram_token'] = $_POST['telegram_token'];
 				}			
 			}
 
@@ -356,6 +386,10 @@ if(isset($_POST["save"])) {
 				}
 				$ini['Hardware']['version'] = $_POST['hardware_version'];
 				$restart = "1";
+			}
+			// Allgemeine Einstellungen
+			if (isset($_POST['language'])) {
+				$ini['lang']['language'] = $_POST['language'];
 			}
 			// ######################################################################
 			// Dienste nach Änderung neu starten ------------------------------------
@@ -635,7 +669,7 @@ if(isset($_POST["save"])) {
 						{
 							 $sensor_number = $sensor_name['number'];?> 
 							<option value="<?php echo $sensor_number ?>" <?php if ($ini['Sensoren']['ch'.$i] == $sensor_number){echo " selected";} ?> ><?php echo $sensor_name['name'] ?></option><?php
-						}?>			
+						}?>
 					</select>
 				</div>
 				<div class="config_text row_2 col_7">
@@ -660,9 +694,10 @@ if(isset($_POST["save"])) {
 ?>
 		<div class="config middle">
 			<div class="headline">Alarmierungseinstellungen</div>
-			<div class="config_text row_1 col_6">Alarmintervall:</div>
+			<div class="headicon"><img src="../images/icons16x16/speaker.png" alt=""></div>
+			<div class="config_text row_1 col_6">Alarmintervall (s):</div>
 			<div class="config_text row_1 col_7"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="alarm_interval" size="6" maxlength="6" value="<?php echo $ini['Alert']['alarm_interval'];?>"></div>
-			<div class="config_text row_2 col_6">Statusintervall:</div>
+			<div class="config_text row_2 col_6">Statusintervall (s):</div>
 			<div class="config_text row_2 col_7"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name=status_interval size="6" maxlength="6" value="<?php echo $ini['Alert']['status_interval'];?>"></div>
 			<div class="config_text row_1 col_1">Über:</div>
 			<div class="config_text row_2 col_1">Unter:</div>
@@ -703,35 +738,66 @@ if(isset($_POST["save"])) {
 		</div>
 <?php
 // ##################################################################################
-// Formular Push Einstellungen -----------------------------------------------------
-// ##################################################################################	
+// Formular App Einstellungen -----------------------------------------------------
+// ##################################################################################
 ?>
 		<div class="config middle">
-			<div class="headline">Pushdienst Einstellungen</div>
-			<div class="config_text row_1 col_6">Pushnachricht versenden:</div>			
-			<div class="config_text row_1 col_7"><input type="checkbox" name="push_on" id="push_on" value="True" <?php if($ini['Push']['push_on'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="headicon">&nbsp;</div>
-			<div class="config_text row_1 col_1">URL:</div>
-			<div class="config_text row_2 col_1">Body:</div>
-			<div class="config_text row_3 col_1">chat_id:</div>
-			<div class="config_text row_4 col_1">token:</div>
-			<div class="config_text row_1 col_3"><input type="text" name="push_url" id="push_url" size="25" maxlength="500" value="<?php echo $ini['Push']['push_url'];?>"></div>
-			<div class="config_text row_2 col_3"><input type="text" name="push_body" id="push_body" size="25" maxlength="500" value="<?php echo $ini['Push']['push_body'];?>"></div>
-			<div class="config_text row_3 col_3"><input type="text" name="push_chat_id" id="push_chat_id" size="25" maxlength="200" value="<?php echo $ini['Push']['push_chat_id'];?>"></div>
-			<div class="config_text row_4 col_3"><input type="text" name="push_token" id="push_token" size="25" maxlength="200" value="<?php echo $ini['Push']['push_token'];?>"></div>
-			<div class="config_text row_2 col_4">device:&nbsp;&nbsp; <input type="text" name="push_device" id="push_device" size="20" maxlength="200" value="<?php echo $ini['Push']['push_device'];?>"></div>
-			<div class="config_text row_3 col_4">device2: <input type="text" name="push_device2" id="push_device2" size="20" maxlength="200" value="<?php echo $ini['Push']['push_device2'];?>"></div>
-			<div class="config_text row_4 col_4">device3: <input type="text" name="push_device3" id="push_device3" size="20" maxlength="200" value="<?php echo $ini['Push']['push_device3'];?>"></div>
+			<div class="headline">App Einstellungen</div>
+			<div class="config_text row_1 col_6">An App versenden:</div>			
+			<div class="config_text row_1 col_7"><input type="checkbox" name="app_alert" id="app_alert" value="True" <?php if($ini['App']['app_alert'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="headicon"><img src="../images/icons16x16/app.png" alt=""></div>
+			<div class="config_text row_2 col_1">ID 1:</div>
+			<div class="config_text row_3 col_1">ID 2:</div>
+			<div class="config_text row_4 col_1">ID 3:</div>
+			<div class="config_text row_1 col_1">Sound:</div>
+			<div class="config_text row_2 col_3"><input type="text" name="app_inst_id" id="app_inst_id" size="25" maxlength="200" value="<?php echo $ini['App']['app_inst_id'];?>"></div>
+			<div class="config_text row_3 col_3"><input type="text" name="app_inst_id2" id="app_inst_id2" size="25" maxlength="200" value="<?php echo $ini['App']['app_inst_id2'];?>"></div>
+			<div class="config_text row_4 col_3"><input type="text" name="app_inst_id3" id="app_inst_id3" size="25" maxlength="200" value="<?php echo $ini['App']['app_inst_id3'];?>"></div>
+			<div class="config_text row_1 col_3">
+				<select name="app_sound" size="1">	
+					<?php
+					foreach($app_sounds AS $sound)
+					{?> 
+						<option value="<?php echo $sound ?>" <?php if ($ini['App']['app_sound'] == $sound){echo " selected";} ?> ><?php echo $sound ?></option><?php
+					}?>
+				</select>
+			</div>
+			<div class="config_text row_2 col_4"></div>
+			<div class="config_text row_3 col_4"></div>
+			<div class="config_text row_4 col_4"></div>
 			<div class="config_text row_2 col_5"></div>
 			<div class="config_text row_3 col_5"></div>
 			<div class="config_text row_4 col_5"></div>
-			<div class="config_text row_2 col_6">inst_id:</div>
-			<div class="config_text row_3 col_6">inst_id2:</div>
-			<div class="config_text row_4 col_6">inst_id3:</div>
-			<div class="config_text row_2 col_7"><input type="text" name="push_inst_id" id="push_inst_id" size="20" maxlength="200" value="<?php echo $ini['Push']['push_inst_id'];?>"></div>
-			<div class="config_text row_3 col_7"><input type="text" name="push_inst_id2" id="push_inst_id2" size="20" maxlength="200" value="<?php echo $ini['Push']['push_inst_id2'];?>"></div>
-			<div class="config_text row_4 col_7"><input type="text" name="push_inst_id3" id="push_inst_id3" size="20" maxlength="200" value="<?php echo $ini['Push']['push_inst_id3'];?>"></div>
-
+			<div class="config_text row_2 col_6">Gerätetyp 1:</div>
+			<div class="config_text row_3 col_6">Gerätetyp 2:</div>
+			<div class="config_text row_4 col_6">Gerätetyp 3:</div>
+			<div class="config_text row_2 col_7">
+				<select name="app_device" size="1">	
+					<?php
+					foreach($app_devices as $device_name => $device_id)
+					{?> 
+						<option value="<?php echo $device_id ?>" <?php if ($ini['App']['app_device'] == $device_id){echo " selected";} ?> ><?php echo $device_name ?></option><?php
+					}?>
+				</select>			
+			</div>
+			<div class="config_text row_3 col_7">
+				<select name="app_device2" size="1">	
+					<?php
+					foreach($app_devices as $device_name => $device_id)
+					{?> 
+						<option value="<?php echo $device_id ?>" <?php if ($ini['App']['app_device2'] == $device_id){echo " selected";} ?> ><?php echo $device_name ?></option><?php
+					}?>
+				</select>			
+			</div>
+			<div class="config_text row_4 col_7">
+				<select name="app_device3" size="1">	
+					<?php
+					foreach($app_devices as $device_name => $device_id)
+					{?> 
+						<option value="<?php echo $device_id ?>" <?php if ($ini['App']['app_device3'] == $device_id){echo " selected";} ?> ><?php echo $device_name ?></option><?php
+					}?>
+				</select>			
+			</div>
 		</div>
 <?php
 // ##################################################################################
@@ -742,9 +808,39 @@ if(isset($_POST["save"])) {
 			<div class="headline">WhatsApp Einstellungen</div>
 			<div class="headicon"><img src="../images/icons16x16/whatsapp.png" alt=""></div>
 			<div class="config_text row_1 col_1">An:</div>
-			<div class="config_text row_1 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9]/g,'');" name="whatsapp_number" id="whatsapp_number" size="27" maxlength="27" value="<?php echo $ini['WhatsApp']['whatsapp_number'];?>"></div>
+			<div class="config_text row_1 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9]/g,'');" name="whatsapp_number" id="whatsapp_number" size="25" maxlength="27" value="<?php echo $ini['WhatsApp']['whatsapp_number'];?>"></div>
 			<div class="config_text row_1 col_6">WhatsApp aktivieren:</div>			
 			<div class="config_text row_1 col_7"><input type="checkbox" name="whatsapp_alert" id="whatsapp_alert" value="True" <?php if($ini['WhatsApp']['whatsapp_alert'] == "True") {echo "checked=\"checked\"";}?> ></div>
+		</div>
+<?php
+// ##################################################################################
+// Formular Telegram Einstellungen --------------------------------------------------
+// ##################################################################################
+?>
+		<div class="config little">
+			<div class="headline">Telegram Einstellungen</div>
+			<div class="headicon"><img src="../images/icons16x16/telegram.png" alt=""></div>
+			<div class="config_text row_1 col_1">Token:</div>
+			<div class="config_text row_1 col_3"><input type="text" name="telegram_token" id="telegram_token" size="25" maxlength="50" value="<?php echo $ini['Telegram']['telegram_token'];?>"></div>
+			<div class="config_text row_1 col_4">Chat-ID: <input type="text" name="telegram_chat_id" id="telegram_chat_id" size="18" maxlength="20" value="<?php echo $ini['Telegram']['telegram_chat_id'];?>"></div>
+			<div class="config_text row_1 col_5"></div>
+			<div class="config_text row_1 col_6">Telegram aktivieren:</div>			
+			<div class="config_text row_1 col_7"><input type="checkbox" name="telegram_alert" id="telegram_alert" value="True" <?php if($ini['Telegram']['telegram_alert'] == "True") {echo "checked=\"checked\"";}?> ></div>
+		</div>
+<?php
+// ##################################################################################
+// Formular Push Einstellungen --------------------------------------------------
+// ##################################################################################
+?>
+		<div class="config little">
+			<div class="headline">Pushdienst Einstellungen</div>
+			<div class="config_text row_1 col_6">Pushnachricht versenden:</div>			
+			<div class="config_text row_1 col_7"><input type="checkbox" name="push_on" id="push_on" value="True" <?php if($ini['Push']['push_on'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="headicon">&nbsp;</div>
+			<div class="config_text row_1 col_1">URL:</div>
+			<div class="config_text row_1 col_4">Body: <input type="text" name="push_body" id="push_body" size="23" maxlength="500" value="<?php echo $ini['Push']['push_body'];?>"></div>
+			<div class="config_text row_1 col_3"><input type="text" name="push_url" id="push_url" size="25" maxlength="500" value="<?php echo $ini['Push']['push_url'];?>"></div>
+			<div class="config_text row_1 col_5"></div>
 		</div>
 <?php
 // ##################################################################################
@@ -952,17 +1048,29 @@ if(isset($_POST["save"])) {
 		<div class="config middle">
 			<div class="headline">Allgemeine Einstellungen</div>		
 			<div class="headicon"><img src="../images/icons16x16/settings.png" alt=""></div>
-			<div class="config_text row_2 col_1">Neues Logfile bei Neustart:</div>
-			<div class="config_text row_3 col_1">Nach Updates suchen:</div>
-			<div class="config_text row_3 col_4"><input type="checkbox" name="checkUpdate" value="True" <?php if($ini['update']['checkupdate'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_2 col_6">CPU Auslastung anzeigen:</div>
-			<div class="config_text row_2 col_7"><input type="checkbox" name="showcpulast" value="True" <?php if($ini['Hardware']['showcpulast'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_4 col_1">Kanal anzeigen:</div>
 			<div class="config_text row_1 col_1">Hardware Version:</div>
 			<div class="config_text row_1 col_4"><input type="radio" name="hardware_version" value="v1" <?php if($ini['Hardware']['version'] == "v1") {echo "checked=\"checked\"";}?> > v1 <input type="radio" name="hardware_version" value="v2" <?php if($ini['Hardware']['version'] == "v2") {echo "checked=\"checked\"";}?> > v2 <input type="radio" name="hardware_version" value="v3" <?php if($ini['Hardware']['version'] == "v3") {echo "checked=\"checked\"";}?> > v3</div>
-			<div class="config_text row_1 col_6">Beeper:</div>
-			<div class="config_text row_1 col_7"><input type="checkbox" name="beeper_enabled" value="True" <?php if($ini['Sound']['beeper_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_1 col_6">Sprache:</div>
+			<div class="config_text row_1 col_7">
+				<select name="language" id="language" size="1">
+					<?php
+					$language = get_available_languages();
+					foreach($language AS $lang){?>
+						<option <?php if($ini['lang']['language'] == $lang)	{echo " selected";} ?> ><?php echo $lang; ?></option>
+					<?php
+					}
+					?>
+                </select>
+			</div>
+			<div class="config_text row_2 col_1">Neues Logfile bei Neustart:</div>
 			<div class="config_text row_2 col_4"><input type="checkbox" name="new_logfile_restart" value="True" <?php if($ini['Logging']['write_new_log_on_restart'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_3 col_1">Nach Updates suchen:</div>
+			<div class="config_text row_3 col_4"><input type="checkbox" name="checkUpdate" value="True" <?php if($ini['update']['checkupdate'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_3 col_6">CPU Auslastung anzeigen:</div>
+			<div class="config_text row_3 col_7"><input type="checkbox" name="showcpulast" value="True" <?php if($ini['Hardware']['showcpulast'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_4 col_1">Kanal anzeigen:</div>
+			<div class="config_text row_2 col_6">Beeper:</div>
+			<div class="config_text row_2 col_7"><input type="checkbox" name="beeper_enabled" value="True" <?php if($ini['Sound']['beeper_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_4 col_7">
 				ch0&nbsp;<input type="checkbox" name="ch_show0" id="show_ch0" value="True" <?php if($ini['ch_show']['ch0'] == "True") {echo "checked=\"checked\"";}?> >&nbsp;&nbsp;
 				ch1&nbsp;<input type="checkbox" name="ch_show1" id="show_ch1" value="True" <?php if($ini['ch_show']['ch1'] == "True") {echo "checked=\"checked\"";}?> >&nbsp;&nbsp;

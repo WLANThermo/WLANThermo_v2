@@ -155,6 +155,8 @@ function session($configfile) {
 		$_SESSION["alert".$i] = $ini['web_alert']['ch'.$i];
 		$_SESSION["ch_show".$i] = $ini['ch_show']['ch'.$i];
 	}
+	$_SESSION["locale"] = $ini['locale']['locale'];
+	$_SESSION["temp_unit"] = $ini['locale']['temp_unit'];
 	$_SESSION["color_pit"] = $ini['plotter']['color_pit'];
 	$_SESSION["color_pitsoll"] = $ini['plotter']['color_pitsoll'];
 	$_SESSION["plot_start"] = $ini['ToDo']['plot_start'];
@@ -223,6 +225,10 @@ function checkSession(){
 		session("./conf/WLANThermo.conf");
 	}		
 	if (!isset($_SESSION["checkUpdate"])){
+		$message .= "Variable - Config neu einlesen\n";
+		session("./conf/WLANThermo.conf");
+	}
+	if (!isset($_SESSION["locale"]) OR !isset($_SESSION["temp_unit"])) {
 		$message .= "Variable - Config neu einlesen\n";
 		session("./conf/WLANThermo.conf");
 	}	
@@ -305,7 +311,7 @@ function download($url) {
 
 function updateCheck($version) {
 	$check_update_url = $_SESSION["check_update_url"]; //Update Server
-	$file_headers = @get_headers($updatecheck_url);
+	$file_headers = @get_headers($check_update_url);
 	if($file_headers[0] == 'HTTP/1.1 404 Not Found') {
 		//echo "Server nicht erreichbar";
 	}else{
@@ -388,5 +394,23 @@ function ConvertToSecurity($security) {
 			return "WEP";
 		break;
 	}
+}
+
+function get_available_languages() {
+	$directory = "../lang";
+	$dirHandle = dir($directory);
+	$language = array(); 
+	while (($f = $dirHandle->read()) != false) {
+		if ($f != "." && $f != ".."){
+			if (is_dir("".$directory."/".$f)){
+				if (file_exists("".$directory."/".$f."/LC_MESSAGES/messages.mo")) {
+					$language[] = $f;
+				}
+			}
+		}
+	}
+	$dirHandle->close();
+	//print_r ($language);
+	return $language;
 }
  ?>
