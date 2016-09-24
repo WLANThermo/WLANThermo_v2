@@ -316,7 +316,7 @@ if (isset($_SESSION["to_update"])){
 	//-------------------------------------------------------------------------------------------------------------------------------------	
 	
 	if ($_SESSION["plot_start"] == "True"){
-		$plot_setting = getPlotConfig($plot);
+		$plot_setting = getPlotConfig($plot,$_SESSION['temp_unit']);
 		if (is_dir("/var/www/tmp")){
 			$message .= "Verzeichnis 'tmp' vorhanden! \n";
 			$plotdateiname = '/var/www/tmp/temperaturkurve.png';

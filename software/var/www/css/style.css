@@ -698,7 +698,7 @@ color:#000000;
 
 /* CSS Regeln für die Buttons ##################################################################################### */
 
-.button_yes, .button_delete, .button_save, .button_back{
+.button_yes, .button_delete, .button_save, .button_back, .button_no{
 margin:10px;
 height:80px;
 width:80px;
@@ -714,8 +714,8 @@ background-image:url(../images/button/button_yes.png);
 .button_delete{
 background-image:url(../images/button/button_delete.png);
 }
-.button_save{
-background-image:url(../images/button/button_save.png);
+.button_no{
+background-image:url(../images/button/button_no.png);
 }
 .button_back{
 background-image:url(../images/button/button_back.png);

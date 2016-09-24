@@ -252,12 +252,17 @@ function restoreConfig($newconfig,$oldconfig) {
 	write_ini($newconfig, $newconfigfile);
 }
 
-function getPlotConfig($plot){
+function getPlotConfig($plot,$temp_unit){
 	if($_SESSION["keyboxframe"] == "True"){ 
 		$keyboxframe_value = "box lw 2";
 	}
 	if($_SESSION["keyboxframe"] == "False"){ 
 		$keyboxframe_value = "";
+	}
+	if ($temp_unit == 'celsius') {
+		$temp_unit = "[°C]";
+	} elseif ($temp_unit == 'fahrenheit') {
+		$temp_unit = "[°F]";
 	}
 	$plotsize = explode("x", $_SESSION["plotsize"]);
 	$plotsize = "".$plotsize[0].",".$plotsize[1]."";	
@@ -273,7 +278,7 @@ function getPlotConfig($plot){
 	$plot_setting .= "set timefmt \\\"%d.%m.%y %H:%M:%S\\\";";
 	$plot_setting .= "set format x \\\"%H:%M\\\";";
 	$plot_setting .= "set xlabel \\\"Uhrzeit\\\";";
-	$plot_setting .= "set y2label \\\"Temperatur [°C]\\\";";
+	$plot_setting .= "set y2label \\\"Temperatur ".$temp_unit."\\\";";
 	$plot_setting .= "set y2range [".$_SESSION["plotbereich_min"].":".$_SESSION["plotbereich_max"]."];";
 	$plot_setting .= "set xtics nomirror;";
 	$plot_setting .= "set y2tics nomirror;";
