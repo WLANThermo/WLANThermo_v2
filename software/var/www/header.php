@@ -5,6 +5,12 @@ $_SESSION["webGUIversion"] = "V2.5.0-alpha1";
 $title = "WLAN Thermometer";
 $document_root = getenv('DOCUMENT_ROOT');
 include("gettext.php");
+if (isset($_SESSION["locale"])){	
+	set_locale($_SESSION["locale"]);
+}else{
+	set_locale("de_DE.utf8");
+	setlocale(LC_ALL, 'de_DE.utf8');
+}
 
 ?>
 <!DOCTYPE html>

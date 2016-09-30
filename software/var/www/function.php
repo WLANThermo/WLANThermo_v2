@@ -400,22 +400,4 @@ function ConvertToSecurity($security) {
 		break;
 	}
 }
-
-function get_available_languages() {
-	$directory = "../lang";
-	$dirHandle = dir($directory);
-	$language = array(); 
-	while (($f = $dirHandle->read()) != false) {
-		if ($f != "." && $f != ".."){
-			if (is_dir("".$directory."/".$f)){
-				if (file_exists("".$directory."/".$f."/LC_MESSAGES/messages.mo")) {
-					$language[] = $f;
-				}
-			}
-		}
-	}
-	$dirHandle->close();
-	//print_r ($language);
-	return $language;
-}
  ?>

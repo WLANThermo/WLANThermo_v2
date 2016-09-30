@@ -389,7 +389,10 @@ if(isset($_POST["save"])) {
 			}
 			// Allgemeine Einstellungen
 			if (isset($_POST['language'])) {
-				$ini['lang']['language'] = $_POST['language'];
+				$ini['locale']['locale'] = $_POST['language'];
+			}
+			if (isset($_POST['temp_unit'])) {
+				$ini['locale']['temp_unit'] = $_POST['temp_unit'];
 			}
 			// ######################################################################
 			// Dienste nach Änderung neu starten ------------------------------------
@@ -1045,7 +1048,7 @@ if(isset($_POST["save"])) {
 // Formular Allgemeine Einstellungen ------------------------------------------------
 // ##################################################################################
 ?>
-		<div class="config middle">
+		<div class="config five_lines">
 			<div class="headline">Allgemeine Einstellungen</div>		
 			<div class="headicon"><img src="../images/icons16x16/settings.png" alt=""></div>
 			<div class="config_text row_1 col_1">Hardware Version:</div>
@@ -1056,22 +1059,29 @@ if(isset($_POST["save"])) {
 					<?php
 					$language = get_available_languages();
 					foreach($language AS $lang){?>
-						<option <?php if($ini['lang']['language'] == $lang)	{echo " selected";} ?> ><?php echo $lang; ?></option>
+						<option <?php if($ini['locale']['locale'] == $lang)	{echo " selected";} ?> ><?php echo $lang; ?></option>
 					<?php
 					}
 					?>
+                </select>
+			</div>
+			<div class="config_text row_2 col_6">Einheit:</div>
+			<div class="config_text row_2 col_7">
+				<select name="temp_unit" id="temp_unit" size="1">
+					<option <?php if($ini['locale']['temp_unit'] == "celsius") {echo " selected";} ?> value="celsius">Celsius</option>
+                    <option <?php if($ini['locale']['temp_unit'] == "fahrenheit") {echo " selected";} ?> value="fahrenheit">Fahrenheit</option>
                 </select>
 			</div>
 			<div class="config_text row_2 col_1">Neues Logfile bei Neustart:</div>
 			<div class="config_text row_2 col_4"><input type="checkbox" name="new_logfile_restart" value="True" <?php if($ini['Logging']['write_new_log_on_restart'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_3 col_1">Nach Updates suchen:</div>
 			<div class="config_text row_3 col_4"><input type="checkbox" name="checkUpdate" value="True" <?php if($ini['update']['checkupdate'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_3 col_6">CPU Auslastung anzeigen:</div>
-			<div class="config_text row_3 col_7"><input type="checkbox" name="showcpulast" value="True" <?php if($ini['Hardware']['showcpulast'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_4 col_1">Kanal anzeigen:</div>
-			<div class="config_text row_2 col_6">Beeper:</div>
-			<div class="config_text row_2 col_7"><input type="checkbox" name="beeper_enabled" value="True" <?php if($ini['Sound']['beeper_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_4 col_7">
+			<div class="config_text row_4 col_6">CPU Auslastung anzeigen:</div>
+			<div class="config_text row_4 col_7"><input type="checkbox" name="showcpulast" value="True" <?php if($ini['Hardware']['showcpulast'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_5 col_1">Kanal anzeigen:</div>
+			<div class="config_text row_3 col_6">Beeper:</div>
+			<div class="config_text row_3 col_7"><input type="checkbox" name="beeper_enabled" value="True" <?php if($ini['Sound']['beeper_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_5 col_7">
 				ch0&nbsp;<input type="checkbox" name="ch_show0" id="show_ch0" value="True" <?php if($ini['ch_show']['ch0'] == "True") {echo "checked=\"checked\"";}?> >&nbsp;&nbsp;
 				ch1&nbsp;<input type="checkbox" name="ch_show1" id="show_ch1" value="True" <?php if($ini['ch_show']['ch1'] == "True") {echo "checked=\"checked\"";}?> >&nbsp;&nbsp;
 				ch2&nbsp;<input type="checkbox" name="ch_show2" id="show_ch2" value="True" <?php if($ini['ch_show']['ch2'] == "True") {echo "checked=\"checked\"";}?> >&nbsp;&nbsp;
@@ -1123,8 +1133,8 @@ if(isset($_POST["save"])) {
 		<br>
 			<table align="center" width="80%"><tr><td width="20%"></td>
 				<td align="center">
-					<input type="submit" class=button_save name="save"  value="" onclick="enableallcheckbox()">
-					<input type="submit" class=button_back name="back"  value=""> </td>
+					<input type="submit" class=button_yes name="save"  value="" onclick="enableallcheckbox()">
+					<input type="submit" class=button_no name="back"  value=""> </td>
 				<td width="20%"></td></tr>
 			</table>
 		<br>		
