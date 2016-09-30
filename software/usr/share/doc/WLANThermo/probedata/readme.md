@@ -24,6 +24,12 @@ Used in these thermometers:
 * Maverick ET-73
 
 To be used as a meat probe as designed or as grill chamber probe.
+## ET-735
+Used in these thermometers:
+* Maverick ET-735
+
+*Waterproof*
+To be used as a combined meat and grill chamber probe.
 ## FANTAST
 Used in these thermometers:
 * IKEA Fantast (old Version)
@@ -44,21 +50,21 @@ To be used as a meat probe as designed or as grill chamber probe.
 Used in these thermometers:
 * Maverick ET-732
 * Maverick ET-733
-* Maverick ET-735
 
 To be used as a meat probe as designed or as grill chamber probe.
 ## ODC
 Used in these thermometers:
 * Outdoorchef Gourmet Check
+* TFA Dostmann Küchen-Chef 14.1503 (Replacement probe type TFA 30.3520)
 
 To be used as a combined meat and grill chamber probe.
 Connector is 2,5mm stereo:
-tip: ?
-sleeve: ?
-base: ?
+tip: meat probe
+sleeve: grill chamber probe
+base: common ground (connected to shield)
 ## PERFEKTION
 Used in these thermometers:
 * Perfection Meat Thermometer
  
-Was available as a cheap spare part at Amazon.
+Available as a cheap spare part at Amazon ("Ersatzsonde für Perfektion Fleisch Ofen BBQ Grill und Smoker Digital thermometer").
 To be used as am meat probe as designed or as smoker probe.
