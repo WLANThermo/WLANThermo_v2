@@ -1,6 +1,3 @@
-wlanthermo (2.5.0-0alpha) UNRELEASED; urgency=medium
- 
-  
 wlanthermo (2.4.1-0beta) UNRELEASED; urgency=medium
 
   * CHANGE: changed startup from SysV-init to systemd units

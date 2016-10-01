@@ -336,6 +336,7 @@ pit_tempfile = Config.get('filepath','pitmaster')
 
 #Soundoption einlesen
 sound_on = Config.getboolean('Sound','Beeper_enabled')
+sound_on_start = Config.getboolean('Sound','beeper_on_start')
 
 #Einlesen der Software-Version
 command = 'cat /var/www/header.php | grep \'] = "V\' | cut -c31-38'
@@ -355,7 +356,7 @@ GPIO.setup(IO, GPIO.OUT)
 GPIO.output(PWM, LOW)
 GPIO.output(IO, LOW)
 
-if sound_on:
+if sound_on_start:
     GPIO.setup(BEEPER,  GPIO.OUT)
     GPIO.output(BEEPER, HIGH)
     time.sleep(1)
