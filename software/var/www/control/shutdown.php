@@ -10,18 +10,16 @@ session_start(); //Session starten
 	$inipath = '../conf/WLANThermo.conf';
 	
 	
-if(isset($_POST["reboot"])) {		
+if(isset($_POST["shutdown"])) {		
 	// --------------------------------------------------------------------------------------------------------------------------------
 	// Schreiben der WLANThermo.conf ##################################################################################################
 	// --------------------------------------------------------------------------------------------------------------------------------
 	if(get_magic_quotes_runtime()) set_magic_quotes_runtime(0); 
 	$ini = getConfig("../conf/WLANThermo.conf", ";");  // dabei ist ; das zeichen für einen kommentar. kann geändert werden.
-	$ini['ToDo']['raspi_reboot'] = "True";
+	$ini['ToDo']['raspi_shutdown'] = "True";
 	write_ini($inipath, $ini);
-	exec("/usr/bin/touch /var/www/tmp/reboot",$output);
-	
 	echo "<div class=\"infofield\">";
-	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>".gettext("RaspberryPi is restarted...")."</h2></body>";	
+		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='about:blank'\"> </head> <body> <h2>".gettext("RaspberryPi will be shut downs")."...</h2></body>";	
 	echo "</div>";
 
 }elseif(isset($_POST["back"])) {
@@ -29,7 +27,7 @@ if(isset($_POST["reboot"])) {
 	// Zurück Button auswerten ########################################################################################################
 	//---------------------------------------------------------------------------------------------------------------------------------	
 	echo "<div class=\"infofield\">";
-	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>".gettext("Reboot cancelled...")."</h2></body>";
+	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>".gettext("Shutdown cancelled...")."</h2></body>";
 	echo "</div>";
 }else{
 	//---------------------------------------------------------------------------------------------------------------------------------
@@ -44,7 +42,7 @@ if(isset($_POST["reboot"])) {
 			<table align="center" width="80%">
 				<tr>
 					<td width="20%"></td>
-					<td align="center"> <input type="submit" class=button_yes name="shutdown"  value=""><input type="submit" class=button_back name="back"  value=""> </td>
+					<td align="center"> <input type="submit" class=button_yes name="shutdown"  value="shutdown"><input type="submit" class=button_back name="back"  value=""> </td>
 					<td width="20%"></td>
 				</tr>
 			</table>
