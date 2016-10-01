@@ -33,7 +33,7 @@ if(file_exists($inipath)){
 	if(get_magic_quotes_runtime()) set_magic_quotes_runtime(0); 
 	$ini = getConfig($inipath, ";");  // dabei ist ; das zeichen für einen kommentar. kann geändert werden.
 }else{
-	echo "<h2>Die Konfigurationsdatei (".$inipath.") existiert nicht!</h2>";
+	echo "<h2>".gettext("The configuration file")." (".$inipath.") ".gettext("does not exist")."!</h2>";
 	die();
 }
 	
@@ -42,16 +42,16 @@ if(isset($_POST["yes"])) {
 		if ($_SESSION["plot_start"] == "True"){ // Prüfen ob der Plotdienst eingeschaltet ist
 			if(file_exists("".$document_root."/tmp/temperaturkurve.png")){ //Überprüfen ob eine Plotgrafik existiert
 				copy("".$document_root."/tmp/temperaturkurve.png","".$document_root."/thermoplot/$currentlogfilename.png"); // Plotgrafik kopieren
-				echo "<h2>Aktuelle Plotgrafik wird gesichert...</h2>";
+				echo "<h2>".gettext("Current plot image is saved")."...</h2>";
 			}else{ 
-				echo "<h2>Plotgrafik nicht vorhanden...</h2>";
+				echo "<h2>".gettext("Plot image is unavilable")."...</h2>";
 			}
 		}
 		
 		$ini['ToDo']['create_new_log'] = "True"; // Parameter für neues Logfile setzen
 		write_ini($inipath, $ini);	// Schreiben der WLANThermo.conf
 
-		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Neues Logfile wird angelegt...</h2></body>";	
+		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>".gettext("New log file created")."...</h2></body>";	
 
 //-------------------------------------------------------------------------------------------------------------------------------------
 // Zurück Button auswerten ############################################################################################################
@@ -59,7 +59,7 @@ if(isset($_POST["yes"])) {
 
 }elseif(isset($_POST["back"])) {
 	echo "<div class=\"infofield\">";
-	 echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <p><h2>Verlassen der Seite ohne ein neues Logfile anzulegen!...</h2></p></body>";
+	 echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <p><h2>".gettext("No new log file created")."!...</h2></p></body>";
 	echo "</div>";
 }else{
 
@@ -68,10 +68,10 @@ if(isset($_POST["yes"])) {
 //-------------------------------------------------------------------------------------------------------------------------------------
 	?>
 <div id="new_log_file_site">
-	<h1>NEUES&nbsp;&nbsp;LOGFILE&nbsp;&nbsp;ERSTELLEN</h1>
+	<h1><?php echo gettext("Create New Log File");?></h1>
 	<form action="new_log_file.php" method="post" >
 		<br>
-		<p><b>M&ouml;chten Sie ein neues Logfile erstellen?</b></p>			
+		<p><b><?php echo gettext("Are you sure you want to create a new logfile?");?></b></p>			
 			<table align="center" width="80%"><tr><td width="20%"></td>
 				<td align="center"> <input type="submit" class=button_yes name="yes"  value="">
 					<input type="submit" class=button_back name="back"  value=""> </td>

@@ -60,9 +60,9 @@ if (file_exists(dirname(__FILE__).'/tmp/update')) {
 	if (file_exists(dirname(__FILE__).'/tmp/update.log')) {
 		$lines = file('tmp/update.log');
 		$last_line = $lines[count($lines)-1];
-		echo '<div id="info_site"><p><b>WLANThermo update:</b> '.$last_line.'</p></div>';
+		echo '<div id="info_site"><p><b>'.gettext('WLANThermo update').':</b> '.$last_line.'</p></div>';
 	}else{
-		echo '<div id="info_site"><b>Das Update wird gerade Installiert...</b></div>';
+		echo '<div id="info_site"><b>'.gettext('The update is currently being installed').'...</b></div>';
 	}
 	$_SESSION["to_update"] = 'True';
 	echo '<script>$(function() { showLoading();});</script>';
@@ -70,7 +70,7 @@ if (file_exists(dirname(__FILE__).'/tmp/update')) {
 } 
 if (file_exists(dirname(__FILE__).'/tmp/reboot')) { 
 	$message .= "Reboot - Raspberry wird neu gestartet\n";
-	echo '<div id="info_site"><b>Raspberry Pi wird gerade neu gestartet...</b></div>';
+	echo '<div id="info_site"><b>'.gettext('Raspberry Pi just restarted').'...</b></div>';
 	echo '<script>$(function() { showLoading();});</script>';
 	exit;
 }
@@ -84,7 +84,7 @@ if (file_exists(dirname(__FILE__).'/tmp/nextionupdate')) {
 		$lines = file('tmp/nextionupdatelog');
 		$last_line = $lines[count($lines)-1];
 		echo '<script>$(function() { showLoading();});</script>';
-		echo '<div id="info_site"><p><b>NEXTION Display update:</b> '.$last_line.'</p></div>';
+		echo '<div id="info_site"><p><b>'.gettext('NEXTION Display update').':</b> '.$last_line.'</p></div>';
 		exit;
 	}
 }else{

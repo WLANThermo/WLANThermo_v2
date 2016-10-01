@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2016-07-05 21:15+0200\n"
-"PO-Revision-Date: 2016-07-17 17:50+0200\n"
+"PO-Revision-Date: 2016-10-01 23:50+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -42,6 +42,12 @@ msgstr "RaspberryPi wird heruntergefahren..."
 
 msgid "Reboot cancelled..."
 msgstr "Verlassen der Seite ohne Neustart des RaspberryPi!..."
+
+msgid "Shutdown cancelled..."
+msgstr "Verlassen der Seite ohne Herunterfahren des RaspberryPi!..."
+
+msgid "RaspberryPi will be shut down"
+msgstr "RaspberryPi wird heruntergefahren"
 
 msgid "RaspberryPi is restarted..."
 msgstr "RaspberryPi wird neu gestartet..."
@@ -102,6 +108,15 @@ msgstr "Letzte Messung am"
 msgid "CPU utilization"
 msgstr "CPU Auslastung"
 
+msgid "The update is currently being installed"
+msgstr "Das Update wird gerade Installiert"
+
+msgid "Raspberry Pi just restarted"
+msgstr "Raspberry Pi wird gerade neu gestartet"
+
+msgid "NEXTION Display update"
+msgstr "NEXTION Display update"
+
 # thermolog.php
 msgid "Logfile Folder"
 msgstr "Thermolog Ordner"
@@ -129,3 +144,25 @@ msgstr "Herunterladen"
 
 msgid "view plot"
 msgstr "Plot anzeigen"
+
+# new_log_file.php
+msgid "The configuration file"
+msgstr "Die Konfigurationsdatei"
+
+msgid "does not exist"
+msgstr "existiert nicht"
+
+msgid "Current plot image is saved"
+msgstr "Aktuelle Plotgrafik wird gesichert"
+
+msgid "Plot image is unavilable"
+msgstr "Plotgrafik nicht vorhanden"
+
+msgid "New log file created"
+msgstr "Neues Logfile wird angelegt"
+
+msgid "No new log file created"
+msgstr "Verlassen der Seite ohne ein neues Logfile anzulegen"
+
+msgid "Are you sure you want to create a new logfile?"
+msgstr "Möchten Sie ein neues Logfile erstellen?"
