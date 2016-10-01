@@ -1083,11 +1083,11 @@ if(isset($_POST["save"])) {
 			<div class="config_text row_2 col_4"><input type="checkbox" name="new_logfile_restart" value="True" <?php if($ini['Logging']['write_new_log_on_restart'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_3 col_1">Nach Updates suchen:</div>
 			<div class="config_text row_3 col_4"><input type="checkbox" name="checkUpdate" value="True" <?php if($ini['update']['checkupdate'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_5 col_6">CPU Auslastung anzeigen:</div>
-			<div class="config_text row_5 col_7"><input type="checkbox" name="showcpulast" value="True" <?php if($ini['Hardware']['showcpulast'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_3 col_6">CPU Auslastung anzeigen:</div>
+			<div class="config_text row_3 col_7"><input type="checkbox" name="showcpulast" value="True" <?php if($ini['Hardware']['showcpulast'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_5 col_1">Kanal anzeigen:</div>
-			<div class="config_text row_3 col_6">Beeper:</div>
-			<div class="config_text row_3 col_7"><input type="checkbox" name="beeper_enabled" value="True" <?php if($ini['Sound']['beeper_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_4 col_1">Beeper:</div>
+			<div class="config_text row_4 col_4"><input type="checkbox" name="beeper_enabled" value="True" <?php if($ini['Sound']['beeper_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_4 col_6">Beeper bei Start:</div>
 			<div class="config_text row_4 col_7"><input type="checkbox" name="beeper_on_start" value="True" <?php if($ini['Sound']['beeper_on_start'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_5 col_7">
