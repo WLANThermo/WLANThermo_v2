@@ -33,6 +33,7 @@ Used in these thermometers:
 * Maverick ET-735
 
 * *Waterproof*
+
 To be used as a combined meat and grill chamber probe.
 ## FANTAST
 Used in these thermometers:
