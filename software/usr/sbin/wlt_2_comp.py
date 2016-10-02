@@ -346,18 +346,23 @@ build = os.popen(command).read()
 #Einlesen der Logging-Option
 newfile = Config.getboolean('Logging','write_new_log_on_restart')
 
-# Pin-Programmierung
+# Pin-Programmierung (SPI)
 GPIO.setup(SCLK, GPIO.OUT)
 GPIO.setup(MOSI, GPIO.OUT)
 GPIO.setup(MISO, GPIO.IN)
 GPIO.setup(CS,   GPIO.OUT)
+
+# Pin-Programmierung (Pitmaster)
 GPIO.setup(PWM, GPIO.OUT)
 GPIO.setup(IO, GPIO.OUT)
+
+# Pin-Programmierung (Beeper)
+GPIO.setup(BEEPER,  GPIO.OUT)
+
 GPIO.output(PWM, LOW)
 GPIO.output(IO, LOW)
 
 if sound_on_start:
-    GPIO.setup(BEEPER,  GPIO.OUT)
     GPIO.output(BEEPER, HIGH)
     time.sleep(1)
     GPIO.output(BEEPER, LOW)
