@@ -37,7 +37,7 @@ gettext.install('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/', unic
 NX_lf = '\xff\xff\xff'
 NX_channel = 0
 NX_page = 0
-version = '0.19'
+version = '0.20'
 
 temps = dict()
 channels = dict()
@@ -354,7 +354,7 @@ def NX_sendvalues(values):
         else:
             length = None
         # Sendet die Daten zum Display und wartet auf eine Rückmeldung
-        logger.debug(_(u'Sending {key} to the display: {value}').format(key=key, value=str(value)))
+        logger.debug(_(u'Sending {key} to the display: {value}').format(key=key, value=str(value).decode('iso-8859-1')))
         if key[-3:] == 'txt':
             ser.write(str(key) + '="' + str(value)[:length] + '"\xff\xff\xff')
         elif key[-3:]  == 'val':
@@ -406,7 +406,7 @@ def NX_getvalues(ids):
                     logger.debug(_(u'Received message {} from the display').format(ret['type']))
                     # OK, dann Daten abholen
                     if ret['type'] == 'data_string':
-                        logger.debug(_(u'Got string {} from the display').format(ret['data']))
+                        logger.debug(_(u'Got string {} from the display').format(ret['data']).decode('iso-8859-1'))
                     elif ret['type'] == 'data_int':
                         logger.debug(_(u'Got integer {} from the display').format(ret['data']))
                     else:
@@ -443,7 +443,7 @@ def NX_getvalue(value_id):
             else:
                 # OK, dann Daten abholen
                 if ret['type'] == 'data_string':
-                    logger.debug(_(u'Got string {} from the display').format(ret['data']))
+                    logger.debug(_(u'Got string {} from the display').format(ret['data']).decode('iso-8859-1'))
                 elif ret['type'] == 'data_int':
                     logger.debug(_(u'Got integer {} from the display').format(ret['data']))
                 else:
