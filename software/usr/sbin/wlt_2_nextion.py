@@ -86,7 +86,7 @@ for i in range(0,5):
         except IndexError:
             # Auf Event warten geht hier noch nicht, da wir die anderen Pfade aus der Config brauchen
             # Logging geht auch noch nicht, da wir das Logfile brauchen, als an StdErr
-            sys.stderr.write(_(uu'Waiting for configuration file'))
+            sys.stderr.write(_(u'Waiting for configuration file'))
             time.sleep(1)
             continue
         break
