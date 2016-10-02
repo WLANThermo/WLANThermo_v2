@@ -20,15 +20,19 @@ Used in these thermometers:
 To be used as a meat probe as designed or as grill chamber probe.
 ## ET-73
 Used in these thermometers:
-* Maverick ET-71
+* Maverick ET-7
+* Maverick ET-71c, ET-71d, ET-71os
+* Maverick ET-72
 * Maverick ET-73
+* Maverick ET-77
+* Maverick ET-901b
 
 To be used as a meat probe as designed or as grill chamber probe.
 ## ET-735
 Used in these thermometers:
 * Maverick ET-735
 
-*Waterproof*
+* *Waterproof*
 To be used as a combined meat and grill chamber probe.
 ## FANTAST
 Used in these thermometers:
