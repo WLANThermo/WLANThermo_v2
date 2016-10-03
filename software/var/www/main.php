@@ -70,7 +70,7 @@ if (file_exists(dirname(__FILE__).'/tmp/update')) {
 } 
 if (file_exists(dirname(__FILE__).'/tmp/reboot')) { 
 	$message .= "Reboot - Raspberry wird neu gestartet\n";
-	echo '<div id="info_site"><b>'.gettext('Raspberry Pi just restarted').'...</b></div>';
+	echo '<div id="info_site"><b>'.gettext('Restarting RaspberryPi').'...</b></div>';
 	echo '<script>$(function() { showLoading();});</script>';
 	exit;
 }
