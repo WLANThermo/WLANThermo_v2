@@ -43,7 +43,7 @@
 		if ($_SESSION["checkUpdate"] == "True"){	
 			if ($_SESSION["updateAvailable"] == "False"){
 				echo "<p>&#10026; <b>".gettext("WLANThermo update").":</b> &#10026;</p>";
-				echo "<p>".gettext("no update available")."</p>";
+				echo "<p>".gettext("no updates available")."</p>";
 				echo '<hr class="linie">';
 			}elseif	($_SESSION["updateAvailable"] == "True"){
 				echo "<p>&#10026; <b>".gettext("WLANThermo update").":</b> &#10026;</p>";

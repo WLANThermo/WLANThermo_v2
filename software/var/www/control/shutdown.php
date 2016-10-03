@@ -19,7 +19,7 @@ if(isset($_POST["shutdown"])) {
 	$ini['ToDo']['raspi_shutdown'] = "True";
 	write_ini($inipath, $ini);
 	echo "<div class=\"infofield\">";
-		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='about:blank'\"> </head> <body> <h2>".gettext("RaspberryPi will be shut downs")."...</h2></body>";	
+		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='about:blank'\"> </head> <body> <h2>".gettext("RaspberryPi is shutting down")."...</h2></body>";	
 	echo "</div>";
 
 }elseif(isset($_POST["back"])) {
@@ -27,7 +27,7 @@ if(isset($_POST["shutdown"])) {
 	// Zurück Button auswerten ########################################################################################################
 	//---------------------------------------------------------------------------------------------------------------------------------	
 	echo "<div class=\"infofield\">";
-	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>".gettext("Shutdown cancelled...")."</h2></body>";
+	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>".gettext("Cancelled shutdown")."...</h2></body>";
 	echo "</div>";
 }else{
 	//---------------------------------------------------------------------------------------------------------------------------------
@@ -36,9 +36,9 @@ if(isset($_POST["shutdown"])) {
 ?>
 
 <div id="shutdown">
-	<h1><?php echo gettext("RASPBERRY&nbsp;PI&nbsp;&nbsp;SHUT&nbsp;DOWN");?></h1>
+	<h1><?php echo gettext("RASPBERRY PI SHUTDOWN");?></h1>
 	<form action="shutdown.php" method="post" >
-		<br><p><b><?php echo gettext("Are you sure you want to shutdown the Raspberry Pi?");?></b></p>								
+		<br><p><b><?php echo gettext("Do you want to shutdown the RaspberryPi?");?></b></p>								
 			<table align="center" width="80%">
 				<tr>
 					<td width="20%"></td>

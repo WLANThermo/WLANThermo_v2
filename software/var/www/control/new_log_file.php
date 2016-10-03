@@ -42,7 +42,7 @@ if(isset($_POST["yes"])) {
 		if ($_SESSION["plot_start"] == "True"){ // Prüfen ob der Plotdienst eingeschaltet ist
 			if(file_exists("".$document_root."/tmp/temperaturkurve.png")){ //Überprüfen ob eine Plotgrafik existiert
 				copy("".$document_root."/tmp/temperaturkurve.png","".$document_root."/thermoplot/$currentlogfilename.png"); // Plotgrafik kopieren
-				echo "<h2>".gettext("Current plot image is saved")."...</h2>";
+				echo "<h2>".gettext("Saving current plot image")."...</h2>";
 			}else{ 
 				echo "<h2>".gettext("Plot image is unavilable")."...</h2>";
 			}
@@ -59,7 +59,7 @@ if(isset($_POST["yes"])) {
 
 }elseif(isset($_POST["back"])) {
 	echo "<div class=\"infofield\">";
-	 echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <p><h2>".gettext("No new log file created")."!...</h2></p></body>";
+	 echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <p><h2>".gettext("No new log file has been created")."!...</h2></p></body>";
 	echo "</div>";
 }else{
 
@@ -71,7 +71,7 @@ if(isset($_POST["yes"])) {
 	<h1><?php echo gettext("Create New Log File");?></h1>
 	<form action="new_log_file.php" method="post" >
 		<br>
-		<p><b><?php echo gettext("Are you sure you want to create a new logfile?");?></b></p>			
+		<p><b><?php echo gettext("Are you sure you want to create a new log file?");?></b></p>			
 			<table align="center" width="80%"><tr><td width="20%"></td>
 				<td align="center"> <input type="submit" class=button_yes name="yes"  value="">
 					<input type="submit" class=button_back name="back"  value=""> </td>

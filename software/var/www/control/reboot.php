@@ -25,19 +25,19 @@ if(isset($_POST["reboot"])) {
 	exec("/usr/bin/touch /var/www/tmp/reboot",$output);
 	
 	echo "<div class=\"infofield\">";	
-	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>".gettext("RaspberryPi is restarted...")."</h2></body>";	
+	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>".gettext("Restarting RaspberryPi")."...</h2></body>";	
 	echo "</div>";
 
 }elseif(isset($_POST["back"])) {
 	echo "<div class=\"infofield\">";
-	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>".gettext("Reboot cancelled...")."</h2></body>";
+	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>".gettext("Cancelling reboot")."...</h2></body>";
 	echo "</div>";
 }else{
 ?>
 <div id="shutdown">
-	<h1><?php echo gettext("RASPBERRY&nbsp;PI&nbsp;&nbsp;REBOOT");?></h1>
+	<h1><?php echo gettext("RASPBERRY PI REBOOT");?></h1>
 	<form action="reboot.php" method="post" >
-		<br><p><b><?php echo gettext("Are you sure you want to reboot the Raspberry Pi?");?></b></p>								
+		<br><p><b><?php echo gettext("Do you want to reboot the RaspberryPi?");?></b></p>								
 			<table align="center" width="80%">
 				<tr>
 					<td width="20%"></td>

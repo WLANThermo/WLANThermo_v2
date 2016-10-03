@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2016-07-05 21:15+0200\n"
-"PO-Revision-Date: 2016-10-01 23:50+0200\n"
+"PO-Revision-Date: 2016-10-03 22:26+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -37,32 +37,29 @@ msgid "Temperature Chart"
 msgstr "Temperatur Graph"
 
 # shutdown.php
-msgid "RaspberryPi will be shut down..."
-msgstr "RaspberryPi wird heruntergefahren..."
+msgid "Cancelling reboot"
+msgstr "Der Neustart wird abgebrochen"
 
-msgid "Reboot cancelled..."
-msgstr "Verlassen der Seite ohne Neustart des RaspberryPi!..."
+msgid "Cancelled shutdown"
+msgstr "Das Herunterfahren wird abgebrochen"
 
-msgid "Shutdown cancelled..."
-msgstr "Verlassen der Seite ohne Herunterfahren des RaspberryPi!..."
-
-msgid "RaspberryPi will be shut down"
+msgid "RaspberryPi is shutting down"
 msgstr "RaspberryPi wird heruntergefahren"
 
-msgid "RaspberryPi is restarted..."
-msgstr "RaspberryPi wird neu gestartet..."
+msgid "Restarting RaspberryPi"
+msgstr "RaspberryPi wird neu gestartet"
 
-msgid "Are you sure you want to shutdown the Raspberry Pi?"
-msgstr "M&ouml;chten Sie den RaspberryPi herunterfahren?"
+msgid "Do you want to shutdown the RaspberryPi?"
+msgstr "Möchten Sie den RaspberryPi herunterfahren?"
 
-msgid "RASPBERRY&nbsp;PI&nbsp;&nbsp;SHUT&nbsp;DOWN"
-msgstr "RASPBERRY&nbsp;PI&nbsp;&nbsp;HERUNTERFAHREN"
+msgid "RASPBERRY PI SHUTDOWN"
+msgstr "RASPBERRY PI HERUNTERFAHREN"
 
-msgid "Are you sure you want to reboot the Raspberry Pi?"
-msgstr "M&ouml;chten Sie den RaspberryPi neu starten?"
+msgid "Do you want to reboot the RaspberryPi?"
+msgstr "Möchten Sie den RaspberryPi neu starten?"
 
-msgid "RASPBERRY&nbsp;PI&nbsp;&nbsp;REBOOT"
-msgstr "RASPBERRY&nbsp;PI&nbsp;&nbsp;NEU STARTEN"
+msgid "RASPBERRY PI REBOOT"
+msgstr "RASPBERRY PI NEU STARTEN"
 
 # info.php
 msgid "Information"
@@ -83,11 +80,11 @@ msgstr "ein Projekt der BBQ-Community"
 msgid "WLANThermo update"
 msgstr "WLANThermo Update"
 
-msgid "no update available"
+msgid "no updates available"
 msgstr "kein Update verfügbar"
 
 msgid "new update available"
-msgstr "neues Update verf&uuml;gbar"
+msgstr "neues Update verfügbar"
 
 msgid "Installed version"
 msgstr "Installierte Version"
@@ -124,7 +121,7 @@ msgstr "Thermolog Ordner"
 msgid "Filename"
 msgstr "Dateiname"
 
-msgid "D/L<"
+msgid "D/L"
 msgstr "D/L"
 
 msgid "Plot"
@@ -152,7 +149,7 @@ msgstr "Die Konfigurationsdatei"
 msgid "does not exist"
 msgstr "existiert nicht"
 
-msgid "Current plot image is saved"
+msgid "Saving current plot image"
 msgstr "Aktuelle Plotgrafik wird gesichert"
 
 msgid "Plot image is unavilable"
@@ -161,8 +158,8 @@ msgstr "Plotgrafik nicht vorhanden"
 msgid "New log file created"
 msgstr "Neues Logfile wird angelegt"
 
-msgid "No new log file created"
+msgid "No new log file has been created"
 msgstr "Verlassen der Seite ohne ein neues Logfile anzulegen"
 
-msgid "Are you sure you want to create a new logfile?"
+msgid "Are you sure you want to create a new log file?"
 msgstr "Möchten Sie ein neues Logfile erstellen?"
