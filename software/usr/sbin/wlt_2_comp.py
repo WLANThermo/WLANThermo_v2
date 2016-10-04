@@ -322,13 +322,9 @@ temp_max = [0 for i in xrange(8)]
 messwiderstand = [0 for i in xrange(8)]
 kanal_name = [0 for i in xrange(8)]
 
+# read log_kanal only once because of log file format
 for kanal in xrange(8):
-    sensortyp[kanal] = Config.get('Sensoren','CH' + str(kanal))
     log_kanal[kanal] = Config.getboolean('Logging','CH' + str(kanal))
-    temp_min[kanal] = Config.get('temp_min','temp_min' + str(kanal))
-    temp_max[kanal] = Config.get('temp_max','temp_max' + str(kanal))
-    messwiderstand[kanal] = Config.getfloat('Messen','Messwiderstand' + str(kanal))
-    kanal_name[kanal] = Config.get('ch_name','ch_name' + str(kanal))
 
 log_pitmaster =  Config.getboolean('Logging','pit_control_out')
 
@@ -431,9 +427,24 @@ try:
         pit_on = new_config.getboolean('ToDo','pit_on')
         
         for kanal in xrange (8):
-            temp_max[kanal] = new_config.getfloat('temp_max','temp_max' + str(kanal))
-            temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
-            messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
+            try:
+                temp_max[kanal] = new_config.getfloat('temp_max','temp_max' + str(kanal))
+            except ValueError:
+                logger.error(_(u'Error reading upper limit on channel ') + str(kanal))
+                temp_max[kanal] = 200
+            
+            try:
+                temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
+            except ValueError:
+                logger.error(_(u'Error reading lower limit on channel ') + str(kanal))
+                temp_max[kanal] = -20
+            
+            try:
+                messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
+            except ValueError:
+                logger.error(_(u'Error reading measurement resistor on channel ') + str(kanal))
+                messwiderstand[kanal] = 47    
+            
             sensortyp[kanal] = new_config.get('Sensoren','CH' + str(kanal))
             kanal_name[kanal] = new_config.get('ch_name','ch_name' + str(kanal))
             
@@ -451,8 +462,18 @@ try:
         alarm_low_template = new_config.get('Alert', 'alarm_low_template')
         status_template = new_config.get('Alert', 'status_template')
         message_template = new_config.get('Alert', 'message_template')
-        status_interval = new_config.getint('Alert', 'status_interval')
-        alarm_interval = new_config.getint('Alert', 'alarm_interval')
+        
+        try:
+            status_interval = new_config.getint('Alert', 'status_interval')
+        except ValueError:
+            logger.error(_(u'Error reading status interval from config'))
+            status_interval = 0
+            
+        try:
+            alarm_interval = new_config.getint('Alert', 'alarm_interval')
+        except ValueError:
+            logger.error(_(u'Error reading alarm interval from config'))
+            alarm_interval = 0
 
         # Einlesen welche Alarmierungsart aktiv ist
         Email_alert = new_config.getboolean('Email','email_alert')
@@ -659,9 +680,9 @@ try:
                     logger.debug(_(u'Telegram result: ') + response.read(500))
 
                 except urllib2.HTTPError, e:
-                    logger.error('Telegram HTTP error: ' + str(e.code) + ' - ' + e.read(500))
+                    logger.error(u'Telegram HTTP error: ' + str(e.code) + u' - ' + e.read(500))
                 except urllib2.URLError, e:
-                    logger.error('Telegram URLError: ' + str(e.reason))  
+                    logger.error(u'Telegram URLError: ' + str(e.reason))  
                     
             if App_alert:
                 # Wenn konfiguriert, Alarm per Appnachricht schicken
@@ -691,9 +712,9 @@ try:
                     logger.debug(_(u'App result: ') + response.read(500))
 
                 except urllib2.HTTPError, e:
-                    logger.error('App HTTP error: ' + str(e.code) + ' - ' + e.read(500))
+                    logger.error(u'App HTTP error: ' + str(e.code) + u' - ' + e.read(500))
                 except urllib2.URLError, e:
-                    logger.error('App URLError: ' + str(e.reason))
+                    logger.error(u'App URLError: ' + str(e.reason))
                     
             if Push_alert:
                 # Wenn konfiguriert, Alarm per Pushnachricht schicken
@@ -701,24 +722,29 @@ try:
                 Push_Body = new_config.get('Push', 'push_body')
         
                 alarm_message2 = urllib.quote(alarm_message)
-                url = Push_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'))
-                body = Push_Body.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'))
-                try: 
-                    if Push_Body == '':
-                        logger.debug(_(u'push GET request, URL: ') + url)
-                        response = urllib2.urlopen(url)
-                    else:
-                        logger.debug(_(u'push POST request, URL: ') + url + _(u'\nbody: ') + body)
-                        response = urllib2.urlopen(url, body)
-                    
-                    logger.info(_(u'push HTTP return code: ') + str(response.getcode()))
-                    logger.debug(_(u'push URL: ') + response.geturl())
-                    logger.debug(_(u'push result: ') + response.read(500))
-
-                except urllib2.HTTPError, e:
-                    logger.error('Push HTTP error: ' + str(e.code) + ' - ' + e.read(500))
-                except urllib2.URLError, e:
-                    logger.error('Push URLError: ' + str(e.reason))
+                
+                try:
+                    url = Push_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'))
+                    body = Push_Body.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'))
+                except KeyError, key:
+                    logger.error(u'Key "' + str(key) + u'" is undefined!')
+                else:
+                    try: 
+                        if Push_Body == '':
+                            logger.debug(_(u'push GET request, URL: ') + url)
+                            response = urllib2.urlopen(url)
+                        else:
+                            logger.debug(_(u'push POST request, URL: ') + url + _(u'\nbody: ') + body)
+                            response = urllib2.urlopen(url, body)
+                        
+                        logger.info(_(u'push HTTP return code: ') + str(response.getcode()))
+                        logger.debug(_(u'push URL: ') + response.geturl())
+                        logger.debug(_(u'push result: ') + response.read(500))
+    
+                    except urllib2.HTTPError, e:
+                        logger.error(u'Push HTTP error: ' + str(e.code) + ' - ' + e.read(500))
+                    except urllib2.URLError, e:
+                        logger.error(u'Push URLError: ' + str(e.reason))
         
         # Log datei erzeugen
         lcsv = []
