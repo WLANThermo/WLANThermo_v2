@@ -170,7 +170,10 @@ def NX_reader():
         message = {'raw' : '', 'iserr' : False, 'errmsg' : '', 'data' : {}, 'type': ''}
         
         while (endcount != 3):
-            byte = ser.read()
+            try:
+                byte = ser.read()
+            except termios.error, e:
+                logger.error(_(u'termios.error in NX_reader: {}').format(e[1]))
             if byte != '':
                 # Kein Timeout
                 bytecount += 1
@@ -297,9 +300,14 @@ def NX_waitok():
     endcount = 0
     bytecount = 0
     ok = False
+    byte = ''
 
     while endcount != 3:
-        byte = ser.read()
+        try:
+            byte = ser.read()
+        except termios.error, e:
+            logger.error(_(u'termios.error in NX_waitok: {}').format(e[1]))
+        
         if byte == '':
             logger.info(_(u'Serial Communication Timeout!'))
             break
@@ -320,24 +328,28 @@ def NX_waitok():
 
 def NX_init(port, baudrate):
     global ser, NX_lf, NX_reader_thread
-    ser.port = port
-    ser.baudrate = baudrate
-    ser.timeout = 0.2
-    ser.open()
-    logger.debug(_(u'Clear serial buffer'))
-    # Buffer des Displays leeren
-    # - Ungültigen Befehl senden
-    # - Aufwachbefehl senden
-    ser.write('nop' + NX_lf)
-    ser.write('sleep=0' + NX_lf)
-    # - Warten
-    ser.flush()
-    time.sleep(0.2)
-    # - Empfangene Zeichen löschen
-    ser.flushInput()
-    # Immer eine Rückmeldung erhalten
-    ser.write('ref 0' + NX_lf)
-    ser.flush()
+    try:
+        ser.port = port
+        ser.baudrate = baudrate
+        ser.timeout = 0.2
+        ser.open()
+        logger.debug(_(u'Clear serial buffer'))
+        # Buffer des Displays leeren
+        # - Ungültigen Befehl senden
+        # - Aufwachbefehl senden
+        ser.write('nop' + NX_lf)
+        ser.write('sleep=0' + NX_lf)
+        # - Warten
+        ser.flush()
+        time.sleep(0.2)
+        # - Empfangene Zeichen löschen
+        ser.flushInput()
+        # Immer eine Rückmeldung erhalten
+        ser.write('ref 0' + NX_lf)
+        ser.flush()
+    except termios.error, e:
+        logger.error(_(u'termios.error in NX_init: {}').format(e[1]))
+        
     return NX_waitok()
 
 
@@ -355,13 +367,17 @@ def NX_sendvalues(values):
             length = None
         # Sendet die Daten zum Display und wartet auf eine Rückmeldung
         logger.debug(_(u'Sending {key} to the display: {value}').format(key=key, value=str(value).decode('iso-8859-1')))
-        if key[-3:] == 'txt':
-            ser.write(str(key) + '="' + str(value)[:length] + '"\xff\xff\xff')
-        elif key[-3:]  == 'val':
-            ser.write(str(key) + '=' + str(value) + '\xff\xff\xff')
-        else:
-            logger.warning(_(u'Unknown type of variable'))
-        ser.flush()
+        try:
+            if key[-3:] == 'txt':
+                ser.write(str(key) + '="' + str(value)[:length] + '"\xff\xff\xff')
+            elif key[-3:]  == 'val':
+                ser.write(str(key) + '=' + str(value) + '\xff\xff\xff')
+            else:
+                logger.warning(_(u'Unknown type of variable'))
+            ser.flush()
+        except termios.error, e:
+            logger.error(_(u'termios.error in NX_sendvalues: {}').format(e[1]))
+            
         try:
             ret = NX_returnq.get(timeout=1)
         except Queue.Empty:
@@ -393,8 +409,12 @@ def NX_getvalues(ids):
         for value_id in ids:
         # Sendet die Daten zum Display und wartet auf eine Rückmeldung
             logger.debug(_(u'Get {} from the display').format(str(value_id)))
-            ser.write('get ' + str(value_id) + '\xff\xff\xff')
-            ser.flush()
+            try:
+                ser.write('get ' + str(value_id) + '\xff\xff\xff')
+                ser.flush()
+            except termios.error, e:
+                logger.error(_(u'termios.error in NX_getvalues: {}').format(e[1]))
+                
             try:
                 ret = NX_returnq.get(0.5)
                 NX_returnq.task_done()
@@ -432,8 +452,11 @@ def NX_getvalue(value_id):
             ret = NX_returnq.get(False)
             logger.info(_(u'Received unexpected message {} from the display (out of the display program)').format(ret['type']))
     except Queue.Empty:
-        ser.write('get ' + str(value_id) + '\xff\xff\xff')
-        ser.flush()
+        try:
+            ser.write('get ' + str(value_id) + '\xff\xff\xff')
+            ser.flush()
+        except termios.error, e:
+            
         try:
             ret = NX_returnq.get(True, 0.5)
             NX_returnq.task_done()
@@ -469,9 +492,9 @@ def NX_sendcmd(cmd):
             logger.info(_(u'Received unexpected message {} from the display (out of the display program)').format(ret['type']))
             NX_returnq.task_done()
     except Queue.Empty:
-        ser.write(str(cmd) + '\xff\xff\xff')
-        ser.flush()
         try:
+            ser.write(str(cmd) + '\xff\xff\xff')
+            ser.flush()
             ret = NX_returnq.get(True, 0.5)
             NX_returnq.task_done()
             if ret['iserr']:
@@ -482,7 +505,9 @@ def NX_sendcmd(cmd):
         except Queue.Empty:
             logger.warning(_(u'Received no answer from the display'))
             error = True
-    
+        except termios.error, e:
+            logger.error(_(u'termios.error in NX_sendcmd: {}').format(e[1]))
+            error = True
     if error:
         return False
     return True
@@ -497,9 +522,9 @@ def NX_switchpage(new_page):
             ret = NX_returnq.get(False)
             logger.info(_(u'Received unexpected message {} from the display (out of the display program)').format(ret['type']))
     except Queue.Empty:
-        ser.write('page ' + str(new_page) + '\xff\xff\xff')
-        ser.flush()
         try:
+            ser.write('page ' + str(new_page) + '\xff\xff\xff')
+            ser.flush()
             ret = NX_returnq.get(True, 0.5)
             if ret['iserr']:
                 logger.error(_(u'Received error message {} from the display').format(ret['type']))
@@ -509,7 +534,9 @@ def NX_switchpage(new_page):
         except Queue.Empty:
             logger.warning(_(u'Received no answer from the display'))
             error = True
-            
+        except termios.error, e:
+            logger.error(_(u'termios.error in NX_switchpage: {}').format(e[1]))
+            error = True
     if error:
         return False
     NX_page = new_page
