@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2016-07-05 21:15+0200\n"
-"PO-Revision-Date: 2016-10-03 22:26+0200\n"
+"PO-Revision-Date: 2016-10-04 18:09+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -163,3 +163,316 @@ msgstr "Verlassen der Seite ohne ein neues Logfile anzulegen"
 
 msgid "Are you sure you want to create a new log file?"
 msgstr "Möchten Sie ein neues Logfile erstellen?"
+
+# config.php
+msgid "Name"
+msgstr "Name"
+
+msgid "Probe Type"
+msgstr "Fühler"
+
+msgid "Probe Thresholds"
+msgstr "Temperatur"
+
+msgid "min"
+msgstr "min"
+
+msgid "max"
+msgstr "max"
+
+msgid "Plot Color"
+msgstr "Plotfarbe"
+
+msgid "Measuring Resistance"
+msgstr "Messwiderstand"
+
+msgid "Browser Alarm"
+msgstr "WebSound Alarm"
+
+msgid "Alarm Notification Settings"
+msgstr "Alarmierungseinstellungen"
+
+msgid "Alarm Interval (s)"
+msgstr "Alarmintervall (s)"
+
+msgid "Status Interval (s)"
+msgstr "Statusintervall (s)"
+
+msgid "Over Temp"
+msgstr "Über"
+
+msgid "Under Temp"
+msgstr "Unter"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Message"
+msgstr "Nachricht"
+
+msgid "Send Test Message"
+msgstr "Testnachricht senden!"
+
+msgid "Email Notification Settings"
+msgstr "Email Einstellungen"
+
+msgid "TLS encryption"
+msgstr "TLS Verschlüsselung"
+
+msgid "Enable Email Notification"
+msgstr "EMail versenden"
+
+msgid "Authentication"
+msgstr "Authentifizierung"
+
+msgid "To"
+msgstr "An"
+
+msgid "From"
+msgstr "Von"
+
+msgid "Subject"
+msgstr "Betreff"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Password"
+msgstr "Passwort"
+
+msgid "Username"
+msgstr "Benutzername"
+
+msgid "Push Notification Settings"
+msgstr "Pushdienst Einstellungen"
+
+msgid "Enable Push Notification"
+msgstr "Pushnachricht versenden"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Body"
+msgstr "Body"
+
+msgid "Webcam Settings"
+msgstr "Webcam Einstellungen"
+
+msgid "Enable Webcam"
+msgstr "Webcam Start"
+
+msgid "Enable Raspicam"
+msgstr "Raspicam Start"
+
+msgid "Exposure"
+msgstr "Exposure"
+
+msgid "Resolution"
+msgstr "Auflösung"
+
+msgid "General Settings"
+msgstr "Allgemeine Einstellungen"
+
+msgid "Hardware Version"
+msgstr "Hardware Version"
+
+msgid "Language"
+msgstr "Sprache"
+
+msgid "Unit"
+msgstr "Einheit"
+
+msgid "New Log File on Start"
+msgstr "Neues Logfile bei Neustart"
+
+msgid "Auto-Check for Update"
+msgstr "Nach Updates suchen"
+
+msgid "Show CPU Usage"
+msgstr "CPU Auslastung anzeigen"
+
+msgid "View Channels"
+msgstr "Kanal anzeigen"
+
+msgid "Enable Sound"
+msgstr "Beeper"
+
+msgid "Beep at Start"
+msgstr "Beeper bei Start"
+
+msgid "Display Settings"
+msgstr "Display Einstellungen"
+
+msgid "LCD Display"
+msgstr "LCD Anzeige"
+
+msgid "LCD Type"
+msgstr "LCD Type"
+
+msgid "Start Page"
+msgstr "Start Seite"
+
+msgid "Menu"
+msgstr "Menü"
+
+msgid "Temperature"
+msgstr "Temperatur"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Pitmaster Settings"
+msgstr "Pitmaster Einstellungen"
+
+msgid "Control Curve"
+msgstr "Regelkurve"
+
+msgid "Duty Cycle (%)"
+msgstr "Duty Cycle (%)"
+
+msgid "Enable Pitmaster"
+msgstr "Pitmaster Start"
+
+msgid "Channel"
+msgstr "Kanal"
+
+msgid "Servo"
+msgstr "Servo"
+
+msgid "PWM Fan"
+msgstr "PWM Lüfter"
+
+msgid "Fan"
+msgstr "Lüfter"
+
+msgid "IO"
+msgstr "IO"
+
+msgid "IO with PWM"
+msgstr "IO mit PWM"
+
+msgid "Delay"
+msgstr "Pause"
+
+msgid "Manual Control"
+msgstr "Manueller Wert"
+
+msgid "Servo Pulse (µs) min"
+msgstr "Servoimpuls (µs) min"
+
+msgid "PID Control"
+msgstr "PID Regelung"
+
+msgid "Open Lid detection"
+msgstr "Deckelüberwachung"
+
+msgid "Kp"
+msgstr "Kp"
+
+msgid "Ki"
+msgstr "Ki"
+
+msgid "Kd"
+msgstr "Kd"
+
+msgid "Kp_a"
+msgstr "Kp_a"
+
+msgid "Ki_a"
+msgstr "Ki_a"
+
+msgid "Kd_a"
+msgstr "Kd_a"
+
+msgid "IO GPIO"
+msgstr "IO GPIO"
+
+msgid "Reverse Drive"
+msgstr "Ansteuerung umkehren"
+
+msgid "WhatsApp Settings"
+msgstr "WhatsApp Einstellungen"
+
+msgid "Enable WhatsApp"
+msgstr "WhatsApp aktivieren"
+
+msgid "Telegram Settings"
+msgstr "Telegram Einstellungen"
+
+msgid "Token"
+msgstr "Token"
+
+msgid "Chat-ID"
+msgstr "Chat-ID"
+
+msgid "Enable Telegram"
+msgstr "Telegram aktivieren"
+
+msgid "App Settings"
+msgstr "App Einstellungen"
+
+msgid "Enable App Notification"
+msgstr "An App versenden"
+
+msgid "Device ID"
+msgstr "Geräte ID"
+
+msgid "Alarm Sound"
+msgstr "Alarm Sound"
+
+msgid "Device Type"
+msgstr "Gerätetyp"
+
+msgid "Chart Settings"
+msgstr "Plotter Einstellungen"
+
+msgid "Chart Name"
+msgstr "Plotter Titel"
+
+msgid "Enable Chart"
+msgstr "Plotdienst Start"
+
+msgid "Chart Range"
+msgstr "Plotbereich"
+
+msgid "from"
+msgstr "von"
+
+msgid "to"
+msgstr "bis"
+
+msgid "Chart Size"
+msgstr "Plotsize"
+
+msgid "top left"
+msgstr "oben links"
+
+msgid "top right"
+msgstr "oben rechts"
+
+msgid "bottom left"
+msgstr "unten links"
+
+msgid "bottom right"
+msgstr "unten rechts"
+
+msgid "center left"
+msgstr "mitte links"
+
+msgid "center right"
+msgstr "mitte rechts"
+
+msgid "Enable Frame Legend"
+msgstr "Rahmen Legende"
+
+msgid "Show Legend"
+msgstr "Key Box"
+
+msgid "Pitmaster Setpoint"
+msgstr "Pitmaster Sollwert"
+
+msgid "Enable Pitmaster Chart"
+msgstr "Pitmaster plotten"
+
+msgid "Pitmaster Output"
+msgstr "Pitmaster Ausgang"
