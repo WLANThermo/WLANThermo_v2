@@ -456,6 +456,7 @@ def NX_getvalue(value_id):
             ser.write('get ' + str(value_id) + '\xff\xff\xff')
             ser.flush()
         except termios.error, e:
+            logger.error(_(u'termios.error in NX_getvalues: {}').format(e[1]))
             
         try:
             ret = NX_returnq.get(True, 0.5)
