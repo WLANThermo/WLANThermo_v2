@@ -11,13 +11,13 @@ session("../conf/WLANThermo.conf");
 $tmpFile = '../temperaturen.csv';
 $inipath = '../conf/WLANThermo.conf';
 
-
 $plotcolors = array('green', 'red', 'blue', 'olive', 'magenta', 'yellow', 'violet', 'orange',
 	'mediumpurple3', 'aquamarine', 'brown', 'plum', 'skyblue', 'orange-red', 'salmon',
 	'black', 'dark-grey', 'purple', 'turquoise', 'khaki', 'dark-violet', 'seagreen');
 $app_sounds=array('None', 'Standard', 'Bell', 'Firepager', 'Police_kurz', 'Police_lang',
 	 'Sirene', 'SmokeAlarm', 'TempleBell', 'Tornado_kurz', 'Tornado_lang');
 $app_devices=array('iOS' => '0', 'Android' => '1');
+
 // ##################################################################################
 // Config-Files einlesen ------------------------------------------------------------
 // ##################################################################################
@@ -649,7 +649,7 @@ if(isset($_POST["save"])) {
 // ##################################################################################
 ?>
 <div id="config">	
-	<h1>Konfiguration</h1>
+	<h1><?php echo gettext("Settings");?></h1>
 	<form action="config.php" method="post" >
 	
 <?php
@@ -661,16 +661,16 @@ if(isset($_POST["save"])) {
 			<div id="ch<?php echo $i; ?>" class="config small">
 				<div class="headline"><?php echo htmlentities($ini['ch_name']['ch_name'.$i], ENT_QUOTES, "UTF-8"); ?></div>
 				<div class="headicon"><font color="<?php echo $ini['plotter']['color_ch'.$i];?>">#<?php echo $i?></font></div>
-				<div class="config_text row_1 col_1">Name:</div>
-				<div class="config_text row_1 col_6">F&uuml;hler:</div>
+				<div class="config_text row_1 col_1"><?php echo gettext("Name");?>:</div>
+				<div class="config_text row_1 col_6"><?php echo gettext("Probe Type");?>:</div>
 				<div class="config_text row_1 col_3"><input type="text" name="tch<?php echo $i;?>" size="25" maxlength="28" value="<?php echo $ini['ch_name']['ch_name'.$i];?>"></div>
-				<div class="config_text row_3 col_1">Temperatur</div>
-				<div class="config_text row_3 col_2">min:</div>
+				<div class="config_text row_3 col_1"><?php echo gettext("Probe Thresholds");?></div>
+				<div class="config_text row_3 col_2"><?php echo gettext("min");?>:</div>
 				<div class="config_text row_3 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9-]/g,'');" name="temp_min<?php echo $i;?>" size="6" maxlength="3" value="<?php echo $ini['temp_min']['temp_min'.$i];?>"></div>
-				<div class="config_text row_3 col_4">max:</div>
+				<div class="config_text row_3 col_4"><?php echo gettext("max");?>:</div>
 				<div class="config_text row_3 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="temp_max<?php echo $i;?>" size="6" maxlength="3" value="<?php echo $ini['temp_max']['temp_max'.$i];?>"></div>
-				<div class="config_text row_2 col_6">Plotfarbe:</div>
-				<div class="config_text row_2 col_1">Messwiderstand:</div>
+				<div class="config_text row_2 col_6"><?php echo gettext("Plot Color");?>:</div>
+				<div class="config_text row_2 col_1"><?php echo gettext("Measuring Resistance");?>:</div>
 				<div class="config_text row_2 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="measuring_resistance<?php echo $i;?>" size="6" maxlength="6" value="<?php echo $ini['Messen']['messwiderstand'.$i];?>"></div>
 				<div class="config_text row_1 col_7">
 					<select name="fuehler<?php echo $i?>" size="1">	
@@ -695,7 +695,7 @@ if(isset($_POST["save"])) {
 					</select>				
 				</div>
 				<div class="config_text row_3 col_7"><input type="checkbox" name="alert<?php echo $i;?>" value="salarm<?php echo $i?>" <?php if($ini['web_alert']['ch'.$i] == "True") {echo "checked=\"checked\"";}?> ></div>
-				<div class="config_text row_3 col_6">WebSound Alarm:</div>
+				<div class="config_text row_3 col_6"><?php echo gettext("Browser Alarm");?>:</div>
 			</div>
 <?php 	}
 // ##################################################################################
@@ -703,21 +703,21 @@ if(isset($_POST["save"])) {
 // ##################################################################################	
 ?>
 		<div class="config middle">
-			<div class="headline">Alarmierungseinstellungen</div>
+			<div class="headline"><?php echo gettext("Alarm Notification Settings");?></div>
 			<div class="headicon"><img src="../images/icons16x16/speaker.png" alt=""></div>
-			<div class="config_text row_1 col_6">Alarmintervall (s):</div>
+			<div class="config_text row_1 col_6"><?php echo gettext("Alarm Interval (s)");?>:</div>
 			<div class="config_text row_1 col_7"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="alarm_interval" size="6" maxlength="6" value="<?php echo $ini['Alert']['alarm_interval'];?>"></div>
-			<div class="config_text row_2 col_6">Statusintervall (s):</div>
+			<div class="config_text row_2 col_6"><?php echo gettext("Status Interval (s)");?>:</div>
 			<div class="config_text row_2 col_7"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name=status_interval size="6" maxlength="6" value="<?php echo $ini['Alert']['status_interval'];?>"></div>
-			<div class="config_text row_1 col_1">Über:</div>
-			<div class="config_text row_2 col_1">Unter:</div>
-			<div class="config_text row_3 col_1">Status:</div>
-			<div class="config_text row_4 col_1">Nachricht:</div>
-			<div class="config_text row_1 col_5"><input type="text" name="alarm_high_template" id="alarm_high_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['alarm_high_template'];?>"></div>
-			<div class="config_text row_2 col_5"><input type="text" name="alarm_low_template" id="alarm_low_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['alarm_low_template'];?>"></div>
-			<div class="config_text row_3 col_5"><input type="text" name="status_template" id="status_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['status_template'];?>"></div>
-			<div class="config_text row_4 col_5"><input type="text" name="message_template" id="message_template" size="40" maxlength="250" value="<?php echo $ini['Alert']['message_template'];?>"></div>
-			<div class="config_text row_4 col_7"><button type="button" onclick="$.get('config.php?alert-test=true')">Test senden!</button></div>
+			<div class="config_text row_1 col_1"><?php echo gettext("Over Temp");?>:</div>
+			<div class="config_text row_2 col_1"><?php echo gettext("Under Temp");?>:</div>
+			<div class="config_text row_3 col_1"><?php echo gettext("Status");?>:</div>
+			<div class="config_text row_4 col_1"><?php echo gettext("Message");?>:</div>
+			<div class="config_text row_1 col_5"><input type="text" name="alarm_high_template" id="alarm_high_template" size="35" maxlength="250" value="<?php echo $ini['Alert']['alarm_high_template'];?>"></div>
+			<div class="config_text row_2 col_5"><input type="text" name="alarm_low_template" id="alarm_low_template" size="35" maxlength="250" value="<?php echo $ini['Alert']['alarm_low_template'];?>"></div>
+			<div class="config_text row_3 col_5"><input type="text" name="status_template" id="status_template" size="35" maxlength="250" value="<?php echo $ini['Alert']['status_template'];?>"></div>
+			<div class="config_text row_4 col_5"><input type="text" name="message_template" id="message_template" size="35" maxlength="250" value="<?php echo $ini['Alert']['message_template'];?>"></div>
+			<div class="config_text row_4 col_7"><button type="button" onclick="$.get('config.php?alert-test=true')"><?php echo gettext("Send Test Message");?></button></div>
 
 		</div>
 <?php
@@ -726,24 +726,24 @@ if(isset($_POST["save"])) {
 // ##################################################################################	
 ?>
 		<div class="config middle">
-			<div class="headline">EMail Einstellungen</div>
-			<div class="config_text row_4 col_4">TLS Verschl&uuml;sselung:&nbsp;<input type="checkbox" name="starttls" id="email_starttls" value="True" <?php if($ini['Email']['starttls'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_1 col_6">EMail versenden:</div>			
+			<div class="headline"><?php echo gettext("Email Notification Settings");?></div>
+			<div class="config_text row_4 col_4"><?php echo gettext("TLS encryption");?>:&nbsp;<input type="checkbox" name="starttls" id="email_starttls" value="True" <?php if($ini['Email']['starttls'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_1 col_6"><?php echo gettext("Enable Email Notification");?>:</div>			
 			<div class="config_text row_1 col_7"><input type="checkbox" name="email" id="email" value="True" <?php if($ini['Email']['email_alert'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="headicon"><img src="../images/icons16x16/mail.png" alt=""></div>
-			<div class="config_text row_2 col_6">Authentifizierung:</div>
+			<div class="config_text row_2 col_6"><?php echo gettext("Authentication");?>:</div>
 			<div class="config_text row_2 col_7"><input type="checkbox" name="auth_check" id="email_auth_check" value="True" <?php if($ini['Email']['auth'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_1 col_1">An:</div>
-			<div class="config_text row_2 col_1">Von:</div>
-			<div class="config_text row_3 col_1">Betreff:</div>
-			<div class="config_text row_1 col_3"><input type="text" name="email_to" id="email_to" size="25" maxlength="50" value="<?php echo $ini['Email']['email_to'];?>"></div>
-			<div class="config_text row_2 col_3"><input type="text" name="email_from" id="email_from" size="25" maxlength="50" value="<?php echo $ini['Email']['email_from'];?>"></div>
-			<div class="config_text row_3 col_3"><input type="text" name="email_subject" id="email_subject" size="25" maxlength="50" value="<?php echo $ini['Email']['email_subject'];?>"></div>
-			<div class="config_text row_3 col_6">Server:</div>
+			<div class="config_text row_1 col_1"><?php echo gettext("To");?>:</div>
+			<div class="config_text row_2 col_1"><?php echo gettext("From");?>:</div>
+			<div class="config_text row_3 col_1"><?php echo gettext("Subject");?>:</div>
+			<div class="config_text row_1 col_5"><input type="text" name="email_to" id="email_to" size="35" maxlength="50" value="<?php echo $ini['Email']['email_to'];?>"></div>
+			<div class="config_text row_2 col_5"><input type="text" name="email_from" id="email_from" size="35" maxlength="50" value="<?php echo $ini['Email']['email_from'];?>"></div>
+			<div class="config_text row_3 col_5"><input type="text" name="email_subject" id="email_subject" size="35" maxlength="50" value="<?php echo $ini['Email']['email_subject'];?>"></div>
+			<div class="config_text row_3 col_6"><?php echo gettext("Server");?>:</div>
 			<div class="config_text row_3 col_7"><input type="text" name="email_smtp" id="email_smtp" size="18" maxlength="50" value="<?php echo $ini['Email']['server'];?>"></div>
-			<div class="config_text row_4 col_6">Passwort:</div>
+			<div class="config_text row_4 col_6"><?php echo gettext("Password");?>:</div>
 			<div class="config_text row_4 col_7"><input type="password" name="email_password" id="email_password" size="18" maxlength="50" value="<?php echo $ini['Email']['password'];?>"></div>
-			<div class="config_text row_4 col_1">Benutzername:</div>
+			<div class="config_text row_4 col_1"><?php echo gettext("Username");?>:</div>
 			<div class="config_text row_4 col_3"><input type="text" name="email_username" id="email_username" size="15" maxlength="50" value="<?php echo $ini['Email']['username'];?>"></div>
 		</div>
 <?php
@@ -752,17 +752,17 @@ if(isset($_POST["save"])) {
 // ##################################################################################
 ?>
 		<div class="config middle">
-			<div class="headline">App Einstellungen</div>
-			<div class="config_text row_1 col_6">An App versenden:</div>			
+			<div class="headline"><?php echo gettext("App Settings");?></div>
+			<div class="config_text row_1 col_6"><?php echo gettext("Enable App Notification");?>:</div>			
 			<div class="config_text row_1 col_7"><input type="checkbox" name="app_alert" id="app_alert" value="True" <?php if($ini['App']['app_alert'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="headicon"><img src="../images/icons16x16/app.png" alt=""></div>
-			<div class="config_text row_2 col_1">ID 1:</div>
-			<div class="config_text row_3 col_1">ID 2:</div>
-			<div class="config_text row_4 col_1">ID 3:</div>
-			<div class="config_text row_1 col_1">Sound:</div>
-			<div class="config_text row_2 col_3"><input type="text" name="app_inst_id" id="app_inst_id" size="25" maxlength="200" value="<?php echo $ini['App']['app_inst_id'];?>"></div>
-			<div class="config_text row_3 col_3"><input type="text" name="app_inst_id2" id="app_inst_id2" size="25" maxlength="200" value="<?php echo $ini['App']['app_inst_id2'];?>"></div>
-			<div class="config_text row_4 col_3"><input type="text" name="app_inst_id3" id="app_inst_id3" size="25" maxlength="200" value="<?php echo $ini['App']['app_inst_id3'];?>"></div>
+			<div class="config_text row_2 col_1"><?php echo gettext("Device ID");?> 1:</div>
+			<div class="config_text row_3 col_1"><?php echo gettext("Device ID");?> 2:</div>
+			<div class="config_text row_4 col_1"><?php echo gettext("Device ID");?> 3:</div>
+			<div class="config_text row_1 col_1"><?php echo gettext("Alarm Sound");?>:</div>
+			<div class="config_text row_2 col_5"><input type="text" name="app_inst_id" id="app_inst_id" size="35" maxlength="200" value="<?php echo $ini['App']['app_inst_id'];?>"></div>
+			<div class="config_text row_3 col_5"><input type="text" name="app_inst_id2" id="app_inst_id2" size="35" maxlength="200" value="<?php echo $ini['App']['app_inst_id2'];?>"></div>
+			<div class="config_text row_4 col_5"><input type="text" name="app_inst_id3" id="app_inst_id3" size="35" maxlength="200" value="<?php echo $ini['App']['app_inst_id3'];?>"></div>
 			<div class="config_text row_1 col_3">
 				<select name="app_sound" size="1">	
 					<?php
@@ -778,9 +778,9 @@ if(isset($_POST["save"])) {
 			<div class="config_text row_2 col_5"></div>
 			<div class="config_text row_3 col_5"></div>
 			<div class="config_text row_4 col_5"></div>
-			<div class="config_text row_2 col_6">Gerätetyp 1:</div>
-			<div class="config_text row_3 col_6">Gerätetyp 2:</div>
-			<div class="config_text row_4 col_6">Gerätetyp 3:</div>
+			<div class="config_text row_2 col_6"><?php echo gettext("Device Type");?> 1:</div>
+			<div class="config_text row_3 col_6"><?php echo gettext("Device Type");?> 2:</div>
+			<div class="config_text row_4 col_6"><?php echo gettext("Device Type");?> 3:</div>
 			<div class="config_text row_2 col_7">
 				<select name="app_device" size="1">	
 					<?php
@@ -815,11 +815,11 @@ if(isset($_POST["save"])) {
 // ##################################################################################	
 ?>
 		<div class="config little">
-			<div class="headline">WhatsApp Einstellungen</div>
+			<div class="headline"><?php echo gettext("WhatsApp Settings");?></div>
 			<div class="headicon"><img src="../images/icons16x16/whatsapp.png" alt=""></div>
-			<div class="config_text row_1 col_1">An:</div>
+			<div class="config_text row_1 col_1"><?php echo gettext("To");?>:</div>
 			<div class="config_text row_1 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9]/g,'');" name="whatsapp_number" id="whatsapp_number" size="25" maxlength="27" value="<?php echo $ini['WhatsApp']['whatsapp_number'];?>"></div>
-			<div class="config_text row_1 col_6">WhatsApp aktivieren:</div>			
+			<div class="config_text row_1 col_6"><?php echo gettext("Enable WhatsApp");?>:</div>			
 			<div class="config_text row_1 col_7"><input type="checkbox" name="whatsapp_alert" id="whatsapp_alert" value="True" <?php if($ini['WhatsApp']['whatsapp_alert'] == "True") {echo "checked=\"checked\"";}?> ></div>
 		</div>
 <?php
@@ -828,13 +828,13 @@ if(isset($_POST["save"])) {
 // ##################################################################################
 ?>
 		<div class="config little">
-			<div class="headline">Telegram Einstellungen</div>
+			<div class="headline"><?php echo gettext("Telegram Settings");?></div>
 			<div class="headicon"><img src="../images/icons16x16/telegram.png" alt=""></div>
-			<div class="config_text row_1 col_1">Token:</div>
+			<div class="config_text row_1 col_1"><?php echo gettext("Token");?>:</div>
 			<div class="config_text row_1 col_3"><input type="text" name="telegram_token" id="telegram_token" size="25" maxlength="50" value="<?php echo $ini['Telegram']['telegram_token'];?>"></div>
-			<div class="config_text row_1 col_4">Chat-ID: <input type="text" name="telegram_chat_id" id="telegram_chat_id" size="18" maxlength="20" value="<?php echo $ini['Telegram']['telegram_chat_id'];?>"></div>
+			<div class="config_text row_1 col_4"><?php echo gettext("Chat-ID");?>: <input type="text" name="telegram_chat_id" id="telegram_chat_id" size="18" maxlength="20" value="<?php echo $ini['Telegram']['telegram_chat_id'];?>"></div>
 			<div class="config_text row_1 col_5"></div>
-			<div class="config_text row_1 col_6">Telegram aktivieren:</div>			
+			<div class="config_text row_1 col_6"><?php echo gettext("Enable Telegram");?>:</div>			
 			<div class="config_text row_1 col_7"><input type="checkbox" name="telegram_alert" id="telegram_alert" value="True" <?php if($ini['Telegram']['telegram_alert'] == "True") {echo "checked=\"checked\"";}?> ></div>
 		</div>
 <?php
@@ -843,12 +843,12 @@ if(isset($_POST["save"])) {
 // ##################################################################################
 ?>
 		<div class="config little">
-			<div class="headline">Pushdienst Einstellungen</div>
-			<div class="config_text row_1 col_6">Pushnachricht versenden:</div>			
+			<div class="headline"><?php echo gettext("Push Notification Settings");?></div>
+			<div class="config_text row_1 col_6"><?php echo gettext("Enable Push Notification");?>:</div>			
 			<div class="config_text row_1 col_7"><input type="checkbox" name="push_on" id="push_on" value="True" <?php if($ini['Push']['push_on'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="headicon">&nbsp;</div>
-			<div class="config_text row_1 col_1">URL:</div>
-			<div class="config_text row_1 col_4">Body: <input type="text" name="push_body" id="push_body" size="23" maxlength="500" value="<?php echo $ini['Push']['push_body'];?>"></div>
+			<div class="config_text row_1 col_1"><?php echo gettext("URL");?>:</div>
+			<div class="config_text row_1 col_4"><?php echo gettext("Body");?>: <input type="text" name="push_body" id="push_body" size="23" maxlength="500" value="<?php echo $ini['Push']['push_body'];?>"></div>
 			<div class="config_text row_1 col_3"><input type="text" name="push_url" id="push_url" size="25" maxlength="500" value="<?php echo $ini['Push']['push_url'];?>"></div>
 			<div class="config_text row_1 col_5"></div>
 		</div>
@@ -859,29 +859,29 @@ if(isset($_POST["save"])) {
 
 ?>
         <div class="config five_lines">
-            <div class="headline">Plotter Einstellungen</div>           
+            <div class="headline"><?php echo gettext("Chart Settings");?></div>           
             <div class="headicon"><img src="../images/icons16x16/chart.png" alt=""></div>
-            <div class="config_text row_1 col_1">Plotter Titel:</div>
+            <div class="config_text row_1 col_1"><?php echo gettext("Chart Name");?>:</div>
             <div class="config_text row_1 col_3"><input type="text" name="plotname" id="plot_name" size="18" maxlength="25" value="<?php echo $ini['plotter']['plotname'];?>"></div>
-            <div class="config_text row_1 col_6">Plotdienst Start:</div>
+            <div class="config_text row_1 col_6"><?php echo gettext("Enable Chart");?>:</div>
             <div class="config_text row_1 col_7"><input type="checkbox" name="plot_start" id="plot_start" value="True" <?php if($ini['ToDo']['plot_start'] == "True") {echo "checked=\"checked\"";}?> ></div>
-            <div class="config_text row_2 col_1">Plotbereich</div>
-            <div class="config_text row_2 col_2">von:</div>
+            <div class="config_text row_2 col_1"><?php echo gettext("Chart Range");?></div>
+            <div class="config_text row_2 col_2"><?php echo gettext("from");?>:</div>
             <div class="config_text row_2 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9-]/g,'');" name="plotbereich_min" id="plotbereich_min" size="6" maxlength="3" value="<?php echo $ini['plotter']['plotbereich_min'];?>"></div>
-            <div class="config_text row_2 col_4">bis:</div>
+            <div class="config_text row_2 col_4"><?php echo gettext("to");?>:</div>
             <div class="config_text row_2 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="plotbereich_max" id="plotbereich_max" size="6" maxlength="3" value="<?php echo $ini['plotter']['plotbereich_max'];?>"></div>
-            <div class="config_text row_2 col_6">Key Box:</div>
+            <div class="config_text row_2 col_6"><?php echo gettext("Show Legend");?>:</div>
             <div class="config_text row_2 col_7">
                 <select name="keybox" id="plot_keybox" size="1">
-                    <option <?php if($ini['plotter']['keybox'] == "top left")                {echo " selected";} ?> value="top left"     >oben links</option>
-                    <option <?php if($ini['plotter']['keybox'] == "top right")                {echo " selected";} ?> value="top right"     >oben rechts</option>
-                    <option <?php if($ini['plotter']['keybox'] == "bottom left")            {echo " selected";} ?> value="bottom left"     >unten links</option>
-                    <option <?php if($ini['plotter']['keybox'] == "bottom right")            {echo " selected";} ?> value="bottom right" >unten rechts</option>
-                    <option <?php if($ini['plotter']['keybox'] == "center left")            {echo " selected";} ?> value="center left"     >mitte links</option>
-                    <option <?php if($ini['plotter']['keybox'] == "center right")            {echo " selected";} ?> value="center right" >mitte rechts</option>
+                    <option <?php if($ini['plotter']['keybox'] == "top left")                {echo " selected";} ?> value="top left"     ><?php echo gettext("top left");?></option>
+                    <option <?php if($ini['plotter']['keybox'] == "top right")                {echo " selected";} ?> value="top right"     ><?php echo gettext("top right");?></option>
+                    <option <?php if($ini['plotter']['keybox'] == "bottom left")            {echo " selected";} ?> value="bottom left"     ><?php echo gettext("bottom left");?></option>
+                    <option <?php if($ini['plotter']['keybox'] == "bottom right")            {echo " selected";} ?> value="bottom right" ><?php echo gettext("bottom right");?></option>
+                    <option <?php if($ini['plotter']['keybox'] == "center left")            {echo " selected";} ?> value="center left"     ><?php echo gettext("center left");?></option>
+                    <option <?php if($ini['plotter']['keybox'] == "center right")            {echo " selected";} ?> value="center right" ><?php echo gettext("center right");?></option>
                 </select>       
             </div>
-            <div class="config_text row_3 col_1">Plotsize:</div>
+            <div class="config_text row_3 col_1"><?php echo gettext("Chart Size");?>:</div>
             <div class="config_text row_3 col_3">
                 <select name="plotsize" id="plot_size" size="1">                       
                     <option <?php if($ini['plotter']['plotsize'] == "700x350")              {echo " selected";} ?> value="700x350" >700x350</option>
@@ -893,9 +893,9 @@ if(isset($_POST["save"])) {
                     <option <?php if($ini['plotter']['plotsize'] == "1920x1200")            {echo " selected";} ?> value="1920x1200" >1920x1200</option>
                 </select>
             </div>
-            <div class="config_text row_3 col_6">Rahmen Legende:</div>
+            <div class="config_text row_3 col_6"><?php echo gettext("Enable Frame Legend");?>:</div>
             <div class="config_text row_3 col_7"><input type="checkbox" name="keyboxframe" id="plot_keyboxframe" value="True" <?php if($ini['plotter']['keyboxframe'] == "True") {echo "checked=\"checked\"";}?> ></div>   
-            <div class="config_text row_4 col_1">Pitmaster Ausgang:</div>
+            <div class="config_text row_4 col_1"><?php echo gettext("Pitmaster Output");?>:</div>
             <div class="config_text row_4 col_4">
                 <select name="color_pit" id="plot_color_pit" size="1">
                 <?php
@@ -908,9 +908,9 @@ if(isset($_POST["save"])) {
                 ?>
                 </select>
             </div>           
-            <div class="config_text row_4 col_6">Pitmaster plotten:</div>
+            <div class="config_text row_4 col_6"><?php echo gettext("Enable Pitmaster Chart");?>:</div>
             <div class="config_text row_4 col_7"><input type="checkbox" name="plot_pit" id="plot_pit" value="True" <?php if($ini['plotter']['plot_pit'] == "True") {echo "checked=\"checked\"";}?> ></div>
-            <div class="config_text row_5 col_1">Pitmaster Sollwert:</div>
+            <div class="config_text row_5 col_1"><?php echo gettext("Pitmaster Setpoint");?>:</div>
             <div class="config_text row_5 col_4">
                 <select name="color_pitsoll" id="plot_color_pitsoll" size="1">
                 <?php
@@ -930,13 +930,13 @@ if(isset($_POST["save"])) {
 // ##################################################################################
 ?>	
 		<div class="config middle">
-			<div class="headline">Webcam Einstellungen</div>
+			<div class="headline"><?php echo gettext("Webcam Settings");?></div>
 			<div class="headicon"><img src="../images/icons16x16/webcam.png" alt=""></div>
-			<div class="config_text row_1 col_1">Name:</div>
+			<div class="config_text row_1 col_1"><?php echo gettext("Name");?>:</div>
 			<div class="config_text row_1 col_3"><input type="text" name="webcam_name" id="webcam_name" size="25" maxlength="28" value="<?php echo $ini['webcam']['webcam_name'];?>"></div>
-			<div class="config_text row_1 col_6">Webcam Start:</div>
+			<div class="config_text row_1 col_6"><?php echo gettext("Enable Webcam");?>:</div>
 			<div class="config_text row_1 col_7"><input type="checkbox" name="webcam_start" id="webcam_start" value="True" <?php if($ini['webcam']['webcam_start'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_2 col_1">Webcam size:</div>
+			<div class="config_text row_2 col_1"><?php echo gettext("Resolution");?>:</div>
 			<div class="config_text row_2 col_3">
 				<select name="webcam_size" id="webcam_size" size="1">						
 					<option <?php if($ini['webcam']['webcam_size'] == "320x240")			{echo " selected";} ?> >320x240</option>
@@ -945,11 +945,11 @@ if(isset($_POST["save"])) {
 		            <option <?php if($ini['webcam']['webcam_size'] == "1280x1024")			{echo " selected";} ?> >1280x1024</option>
 				</select>
 			</div>					
-			<div class="config_text row_3 col_1">Name:</div>
+			<div class="config_text row_3 col_1"><?php echo gettext("Name");?>:</div>
 			<div class="config_text row_3 col_3"><input type="text" name="raspicam_name" id="raspicam_name" size="25" maxlength="28" value="<?php echo $ini['webcam']['raspicam_name'];?>"></div>
-			<div class="config_text row_3 col_6">Raspicam Start:</div>
+			<div class="config_text row_3 col_6"><?php echo gettext("Enable Raspicam");?>:</div>
 			<div class="config_text row_3 col_7"><input type="checkbox" name="raspicam_start" id="raspicam_start" value="True" <?php if($ini['webcam']['raspicam_start'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_4 col_1">Raspicam size:</div>
+			<div class="config_text row_4 col_1"><?php echo gettext("Resolution");?>:</div>
 			<div class="config_text row_4 col_3">
 				<select name="raspicam_size" id="raspicam_size" size="1">						
 					<option <?php if($ini['webcam']['raspicam_size'] == "320x240")			{echo " selected";} ?> >320x240</option>
@@ -960,7 +960,7 @@ if(isset($_POST["save"])) {
 					<option <?php if($ini['webcam']['raspicam_size'] == "2592x1944")		{echo " selected";} ?> >2592x1944</option>
 				</select>
 			</div>
-			<div class="config_text row_3 col_4">Exposure:&nbsp;&nbsp;
+			<div class="config_text row_3 col_4"><?php echo gettext("Exposure");?>:&nbsp;&nbsp;
 				<select name="raspicam_exposure" id="raspicam_exposure" size="1">						
 					<option <?php if($ini['webcam']['raspicam_exposure'] == "off")			{echo " selected";} ?> >off</option>
 					<option <?php if($ini['webcam']['raspicam_exposure'] == "auto")			{echo " selected";} ?> >auto</option>
@@ -978,71 +978,71 @@ if(isset($_POST["save"])) {
 // ##################################################################################
 ?>			
         <div class="config big">
-            <div class="headline">Pitmaster Einstellungen</div>
+            <div class="headline"><?php echo gettext("Pitmaster Settings");?></div>
             <div class="headicon"><img src="../images/icons16x16/pitmaster.png" alt=""></div>
-            <div class="config_text row_1 col_1">Temperatur:</div>
-            <div class="config_text row_3 col_1">Regelkurve:</div>
-            <div class="config_text row_4 col_1">Duty Cycle (%)</div>
-			<div class="config_text row_4 col_2">min:</div>
-            <div class="config_text row_1 col_6">Pitmaster Start:</div>
+            <div class="config_text row_1 col_1"><?php echo gettext("Temperature");?>:</div>
+            <div class="config_text row_3 col_1"><?php echo gettext("Control Curve");?>:</div>
+            <div class="config_text row_4 col_1"><?php echo gettext("Duty Cycle (%)");?></div>
+			<div class="config_text row_4 col_2"><?php echo gettext("min");?>:</div>
+            <div class="config_text row_1 col_6"><?php echo gettext("Enable Pitmaster");?>:</div>
             <div class="config_text row_1 col_7"><input type="checkbox" name="pit_on" id="pit_on" value="True" <?php if($ini['ToDo']['pit_on'] == "True") {echo "checked=\"checked\"";}?> ></div>
-            <div class="config_text row_3 col_6">Type:</div>
+            <div class="config_text row_3 col_6"><?php echo gettext("Type");?>:</div>
             <div class="config_text row_3 col_7">
                 <select name="pit_type" id="pit_type" size="1">
-                    <option <?php if($ini['Pitmaster']['pit_type'] == "servo")            	{echo " selected";} ?> value="servo">Servo</option>
-                    <option <?php if($ini['Pitmaster']['pit_type'] == "fan_pwm")            {echo " selected";} ?> value="fan_pwm">PWM L&uuml;fter</option>
-                    <option <?php if($ini['Pitmaster']['pit_type'] == "fan")            	{echo " selected";} ?> value="fan">L&uuml;fter</option>
-                    <option <?php if($ini['Pitmaster']['pit_type'] == "io")                	{echo " selected";} ?> value="io">IO</option>
-                    <option <?php if($ini['Pitmaster']['pit_type'] == "io_pwm")         	{echo " selected";} ?> value="io_pwm">IO mit PWM</option>
+                    <option <?php if($ini['Pitmaster']['pit_type'] == "servo")            	{echo " selected";} ?> value="servo"><?php echo gettext("Servo");?></option>
+                    <option <?php if($ini['Pitmaster']['pit_type'] == "fan_pwm")            {echo " selected";} ?> value="fan_pwm"><?php echo gettext("PWM Fan");?></option>
+                    <option <?php if($ini['Pitmaster']['pit_type'] == "fan")            	{echo " selected";} ?> value="fan"><?php echo gettext("Fan");?></option>
+                    <option <?php if($ini['Pitmaster']['pit_type'] == "io")                	{echo " selected";} ?> value="io"><?php echo gettext("IO");?></option>
+                    <option <?php if($ini['Pitmaster']['pit_type'] == "io_pwm")         	{echo " selected";} ?> value="io_pwm"><?php echo gettext("IO with PWM");?></option>
                 </select>
             </div>
             <div class="config_text row_3 col_5"><input type="text" name="pit_curve" id="pit_curve" size="35" maxlength="50" value="<?php echo $ini['Pitmaster']['pit_curve'];?>"></div>
             
-            <div class="config_text row_2 col_6">Kanal:</div>
+            <div class="config_text row_2 col_6"><?php echo gettext("Channel");?>:</div>
 			<div class="config_text row_2 col_7">
 				<select name="pit_ch" id="pit_ch" size="1">
-                    <option <?php if($ini['Pitmaster']['pit_ch'] == "0")                {echo " selected";} ?> value="0" >Kanal0</option>
-                    <option <?php if($ini['Pitmaster']['pit_ch'] == "1")                {echo " selected";} ?> value="1" >Kanal1</option>
-                    <option <?php if($ini['Pitmaster']['pit_ch'] == "2")                {echo " selected";} ?> value="2" >Kanal2</option>
-                    <option <?php if($ini['Pitmaster']['pit_ch'] == "3")                {echo " selected";} ?> value="3" >Kanal3</option>
-                    <option <?php if($ini['Pitmaster']['pit_ch'] == "4")                {echo " selected";} ?> value="4" >Kanal4</option>
-                    <option <?php if($ini['Pitmaster']['pit_ch'] == "5")                {echo " selected";} ?> value="5" >Kanal5</option>
-                    <option <?php if($ini['Pitmaster']['pit_ch'] == "6")                {echo " selected";} ?> value="6" >Kanal6</option>
-                    <option <?php if($ini['Pitmaster']['pit_ch'] == "7")                {echo " selected";} ?> value="7" >Kanal7</option>
+                    <option <?php if($ini['Pitmaster']['pit_ch'] == "0")                {echo " selected";} ?> value="0" ><?php echo gettext("Channel");?>0</option>
+                    <option <?php if($ini['Pitmaster']['pit_ch'] == "1")                {echo " selected";} ?> value="1" ><?php echo gettext("Channel");?>1</option>
+                    <option <?php if($ini['Pitmaster']['pit_ch'] == "2")                {echo " selected";} ?> value="2" ><?php echo gettext("Channel");?>2</option>
+                    <option <?php if($ini['Pitmaster']['pit_ch'] == "3")                {echo " selected";} ?> value="3" ><?php echo gettext("Channel");?>3</option>
+                    <option <?php if($ini['Pitmaster']['pit_ch'] == "4")                {echo " selected";} ?> value="4" ><?php echo gettext("Channel");?>4</option>
+                    <option <?php if($ini['Pitmaster']['pit_ch'] == "5")                {echo " selected";} ?> value="5" ><?php echo gettext("Channel");?></option>
+                    <option <?php if($ini['Pitmaster']['pit_ch'] == "6")                {echo " selected";} ?> value="6" ><?php echo gettext("Channel");?>6</option>
+                    <option <?php if($ini['Pitmaster']['pit_ch'] == "7")                {echo " selected";} ?> value="7" ><?php echo gettext("Channel");?>7</option>
                 </select>
             </div>
             <div class="config_text row_1 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="pit_set" id="pit_set" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_set'];?>"></div>
-            <div class="config_text row_1 col_4">Pause: </div>
+            <div class="config_text row_1 col_4"><?php echo gettext("Delay");?>: </div>
             <div class="config_text row_2 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="pit_man" id="pit_man" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_man'];?>"></div>
-            <div class="config_text row_2 col_1">Manueller Wert: </div>
+            <div class="config_text row_2 col_1"><?php echo gettext("Manual Control");?>: </div>
             <div class="config_text row_1 col_5"><input type="text" onkeyup="this.value=this.value.replace(/[^\d\.]/g, '');" name="pit_pause" id="pit_pause" size="5" maxlength="4" value="<?php echo $ini['Pitmaster']['pit_pause'];?>"></div>
             <div class="config_text row_4 col_2"></div>
             <div class="config_text row_4 col_3"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit_pwm_min" id="pit_pwm_min" size="5" maxlength="3" value="<?php echo $ini['Pitmaster']['pit_pwm_min'];?>"></div>      
-            <div class="config_text row_4 col_4">max:</div>
+            <div class="config_text row_4 col_4"><?php echo gettext("max");?>:</div>
             <div class="config_text row_4 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit_pwm_max" id="pit_pwm_max" size="5" maxlength="3" value="<?php echo $ini['Pitmaster']['pit_pwm_max'];?>" ></div>  
-            <div class="config_text row_5 col_1">Servoimpuls (µs) min:</div>
+            <div class="config_text row_5 col_1"><?php echo gettext("Servo Pulse (µs) min");?>:</div>
             <div class="config_text row_5 col_3"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit_servo_min" id="pit_servo_min" size="5" maxlength="4" value="<?php echo $ini['Pitmaster']['pit_servo_min'];?>"></div>      
-            <div class="config_text row_7 col_6">PID Regelung:</div>
+            <div class="config_text row_7 col_6"><?php echo gettext("PID Control");?>:</div>
 			<div class="config_text row_7 col_7"><input type="checkbox" name="pit_controller_type" id="pit_controller_type" value="True" <?php if($ini['Pitmaster']['pit_controller_type'] == "PID") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_6 col_6">Deckel&uuml;berwachung:</div>
+			<div class="config_text row_6 col_6"><?php echo gettext("Open Lid detection");?>:</div>
 			<div class="config_text row_6 col_7"><input type="checkbox" name="pit_open_lid_detection" id="pit_open_lid_detection" value="True" <?php if($ini['Pitmaster']['pit_open_lid_detection'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_5 col_4">max:</div>
+			<div class="config_text row_5 col_4"><?php echo gettext("max");?>:</div>
             <div class="config_text row_5 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit_servo_max" id="pit_servo_max" size="5" maxlength="4" value="<?php echo $ini['Pitmaster']['pit_servo_max'];?>"></div>  
-			<div class="config_text row_5 col_6">Ansteuerung umkehren:</div>
+			<div class="config_text row_5 col_6"><?php echo gettext("Reverse Drive");?>:</div>
             <div class="config_text row_5 col_7"><input type="checkbox" name="pit_inverted" id="pit_inverted" value="True" <?php if($ini['Pitmaster']['pit_inverted'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_6 col_1">Kp:</div>
+			<div class="config_text row_6 col_1"><?php echo gettext("Kp");?>:</div>
 			<div class="config_text row_6 col_1_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_kp" id="pit_kp" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_kp'];?>"></div>
-			<div class="config_text row_6 col_2">Ki:</div>
+			<div class="config_text row_6 col_2"><?php echo gettext("Ki");?>:</div>
 			<div class="config_text row_6 col_3"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_ki" id="pit_ki" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_ki'];?>"></div>
-			<div class="config_text row_6 col_4">Kd:</div>
+			<div class="config_text row_6 col_4"><?php echo gettext("Kd");?>:</div>
 			<div class="config_text row_6 col_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_kd" id="pit_kd" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_kd'];?>"></div>
-			<div class="config_text row_7 col_1">Kp_a:</div>
+			<div class="config_text row_7 col_1"><?php echo gettext("Kp_a");?>:</div>
 			<div class="config_text row_7 col_1_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_kp_a" id="pit_kp_a" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_kp_a'];?>"></div>
-			<div class="config_text row_7 col_2">Ki_a:</div>
+			<div class="config_text row_7 col_2"><?php echo gettext("Ki_a");?>:</div>
 			<div class="config_text row_7 col_3"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_ki_a" id="pit_ki_a" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_ki_a'];?>"></div>
-			<div class="config_text row_7 col_4">Kd_a:</div>
+			<div class="config_text row_7 col_4"><?php echo gettext("Kd_a");?>:</div>
 			<div class="config_text row_7 col_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_kd_a" id="pit_kd_a" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_kd_a'];?>"></div>
-			<div class="config_text row_4 col_6">IO GPIO:</div>
+			<div class="config_text row_4 col_6"><?php echo gettext("IO GPIO");?>:</div>
 			<div class="config_text row_4 col_7">
 				<select name="pit_io_gpio" id="pit_io_gpio" size="1">
                     <option <?php if($ini['Pitmaster']['pit_io_gpio'] == "2")                {echo " selected";} ?> value="2" >GPIO2</option>
@@ -1056,11 +1056,11 @@ if(isset($_POST["save"])) {
 // ##################################################################################
 ?>
 		<div class="config five_lines">
-			<div class="headline">Allgemeine Einstellungen</div>		
+			<div class="headline"><?php echo gettext("General Settings");?></div>		
 			<div class="headicon"><img src="../images/icons16x16/settings.png" alt=""></div>
-			<div class="config_text row_1 col_1">Hardware Version:</div>
+			<div class="config_text row_1 col_1"><?php echo gettext("Hardware Version");?>:</div>
 			<div class="config_text row_1 col_4"><input type="radio" name="hardware_version" value="v1" <?php if($ini['Hardware']['version'] == "v1") {echo "checked=\"checked\"";}?> > v1 <input type="radio" name="hardware_version" value="v2" <?php if($ini['Hardware']['version'] == "v2") {echo "checked=\"checked\"";}?> > v2 <input type="radio" name="hardware_version" value="v3" <?php if($ini['Hardware']['version'] == "v3") {echo "checked=\"checked\"";}?> > v3</div>
-			<div class="config_text row_1 col_6">Sprache:</div>
+			<div class="config_text row_1 col_6"><?php echo gettext("Language");?>:</div>
 			<div class="config_text row_1 col_7">
 				<select name="language" id="language" size="1">
 					<?php
@@ -1072,23 +1072,23 @@ if(isset($_POST["save"])) {
 					?>
                 </select>
 			</div>
-			<div class="config_text row_2 col_6">Einheit:</div>
+			<div class="config_text row_2 col_6"><?php echo gettext("Unit");?>:</div>
 			<div class="config_text row_2 col_7">
 				<select name="temp_unit" id="temp_unit" size="1">
 					<option <?php if($ini['locale']['temp_unit'] == "celsius") {echo " selected";} ?> value="celsius">Celsius</option>
                     <option <?php if($ini['locale']['temp_unit'] == "fahrenheit") {echo " selected";} ?> value="fahrenheit">Fahrenheit</option>
                 </select>
 			</div>
-			<div class="config_text row_2 col_1">Neues Logfile bei Neustart:</div>
+			<div class="config_text row_2 col_1"><?php echo gettext("New Log File on Start");?>:</div>
 			<div class="config_text row_2 col_4"><input type="checkbox" name="new_logfile_restart" value="True" <?php if($ini['Logging']['write_new_log_on_restart'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_3 col_1">Nach Updates suchen:</div>
+			<div class="config_text row_3 col_1"><?php echo gettext("Auto-Check for Update");?>:</div>
 			<div class="config_text row_3 col_4"><input type="checkbox" name="checkUpdate" value="True" <?php if($ini['update']['checkupdate'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_3 col_6">CPU Auslastung anzeigen:</div>
+			<div class="config_text row_3 col_6"><?php echo gettext("Show CPU Usage");?>:</div>
 			<div class="config_text row_3 col_7"><input type="checkbox" name="showcpulast" value="True" <?php if($ini['Hardware']['showcpulast'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_5 col_1">Kanal anzeigen:</div>
-			<div class="config_text row_4 col_1">Beeper:</div>
+			<div class="config_text row_5 col_1"><?php echo gettext("View Channels");?>:</div>
+			<div class="config_text row_4 col_1"><?php echo gettext("Enable Sound");?>:</div>
 			<div class="config_text row_4 col_4"><input type="checkbox" name="beeper_enabled" value="True" <?php if($ini['Sound']['beeper_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_4 col_6">Beeper bei Start:</div>
+			<div class="config_text row_4 col_6"><?php echo gettext("Beep at Start");?>:</div>
 			<div class="config_text row_4 col_7"><input type="checkbox" name="beeper_on_start" value="True" <?php if($ini['Sound']['beeper_on_start'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_5 col_7">
 				ch0&nbsp;<input type="checkbox" name="ch_show0" id="show_ch0" value="True" <?php if($ini['ch_show']['ch0'] == "True") {echo "checked=\"checked\"";}?> >&nbsp;&nbsp;
@@ -1107,22 +1107,22 @@ if(isset($_POST["save"])) {
 // ##################################################################################
 ?>
 		<div class="config small">
-			<div class="headline">Display Einstellungen</div>		
+			<div class="headline"><?php echo gettext("Display Einstellungen");?></div>		
 			<div class="headicon"><img src="../images/icons16x16/display.png" alt=""></div>
-			<div class="config_text row_1 col_6">LCD Anzeige:</div>
+			<div class="config_text row_1 col_6"><?php echo gettext("LCD Display");?>:</div>
 			<div class="config_text row_1 col_7"><input type="checkbox" name="lcd_show" id="lcd_present" value="True" <?php if($ini['Display']['lcd_present'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_2 col_6">LCD Type:</div>
+			<div class="config_text row_2 col_6"><?php echo gettext("LCD Type");?>:</div>
 			<div class="config_text row_2 col_7">
 				<select name="lcd_type" id="lcd_type" size="1">
 					<option <?php if($ini['Display']['lcd_type'] == "wlt_2_lcd_204.py") {echo " selected";} ?> value="wlt_2_lcd_204.py">4x20 HD44780</option>
                     <option <?php if($ini['Display']['lcd_type'] == "wlt_2_nextion.py") {echo " selected";} ?> value="wlt_2_nextion.py">Nextion LCD</option>
                 </select>
             </div>
-			<div class="config_text row_1 col_1">Start Seite:</div>
+			<div class="config_text row_1 col_1"><?php echo gettext("Start Page");?>:</div>
 			<div class="config_text row_1 col_3">
 				<select name="lcd_start_page" id="startpage" size="1">
-					<option <?php if($ini['Display']['start_page'] == "main") {echo " selected";} ?> value="main">Men&uuml;</option>
-                    <option <?php if($ini['Display']['start_page'] == "temp") {echo " selected";} ?> value="temp">Temperatur</option>
+					<option <?php if($ini['Display']['start_page'] == "main") {echo " selected";} ?> value="main"><?php echo gettext("Menu");?></option>
+                    <option <?php if($ini['Display']['start_page'] == "temp") {echo " selected";} ?> value="temp"><?php echo gettext("Temperature");?></option>
                 </select>
             </div>						
 		</div>
