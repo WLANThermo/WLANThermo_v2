@@ -680,7 +680,6 @@ try:
                 else:
                     App_URL = 'http://weyerstall.de/WlanthermoPush.php?inst_id={inst_id}&device={device}&message={messagetext}'
 
-                App_URL = new_config.get('App', 'app_url')
                 alarm_message2 = urllib.quote(alarm_message)
                 url = App_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), inst_id=App_inst_id, device=App_device, inst_id2=App_inst_id2, device2=App_device2, inst_id3=App_inst_id3, device3=App_device3)
                 try: 
