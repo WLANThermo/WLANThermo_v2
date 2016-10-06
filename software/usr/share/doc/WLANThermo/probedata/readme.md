@@ -56,7 +56,6 @@ Used in these thermometers:
 * iDevices iGrill2
 * Weber iGrill2
 * Cappec Bluetooth Wireless BBQ Thermometer
-* ThermoWorks Pro-Series Probes (*maybe slightly different values*)
 
 Not to be confused with the older iGrill 1.
 Available as a meat probe or as a shorter grill chamber probe.
@@ -99,6 +98,11 @@ Used in these thermometers:
 * Froggit Smoke MAX 2
 
 Available as a meat probe or as a shorter grill chamber probe.
+## ThermoWorks
+Used in these thermometers:
+* ThermoWorks Pro-Series Probes (*maybe slightly different values*)
+
+Available in differents shapes.
 ## Weber_6743
 Used in these thermometers:
 * Weber Style 6741
