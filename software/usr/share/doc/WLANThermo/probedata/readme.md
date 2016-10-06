@@ -56,7 +56,7 @@ Used in these thermometers:
 * iDevices iGrill2
 * Weber iGrill2
 * Cappec Bluetooth Wireless BBQ Thermometer
-* ThermoWorks Pro-Series Probes (/maybe slightly different values/)
+* ThermoWorks Pro-Series Probes (*maybe slightly different values*)
 
 Not to be confused with the older iGrill 1.
 Available as a meat probe or as a shorter grill chamber probe.
@@ -72,10 +72,15 @@ Used in these thermometers:
 * TFA Dostmann Küchen-Chef 14.1503 (Replacement probe type TFA 30.3520)
 
 To be used as a combined meat and grill chamber probe.
+
 Connector is 2,5mm stereo:
-tip: meat probe
-sleeve: grill chamber probe
-base: common ground (connected to shield)
+
+| contact |  signal                             |
+| ------- | ----------------------------------- |
+| tip     | meat probe                          |
+| sleeve  | grill chamber probe                 |
+| base    | common ground (connected to shield) |
+
 ## PERFEKTION
 Used in these thermometers:
 * Perfection Meat Thermometer
