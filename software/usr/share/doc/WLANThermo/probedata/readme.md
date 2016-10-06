@@ -51,6 +51,15 @@ Used in these thermometers:
 
 Not to be confused with the new iGrill 2.
 To be used as a meat probe as designed or as grill chamber probe.
+## iGrill2
+Used in these thermometers:
+* iDevices iGrill2
+* Weber iGrill2
+* Cappec Bluetooth Wireless BBQ Thermometer
+* ThermoWorks Pro-Series Probes (/maybe slightly different values/)
+
+Not to be confused with the older iGrill 1.
+Available as a meat probe or as a shorter grill chamber probe.
 ## MAVERICK
 Used in these thermometers:
 * Maverick ET-732
@@ -73,3 +82,21 @@ Used in these thermometers:
  
 Available as a cheap spare part at Amazon ("Ersatzsonde für Perfektion Fleisch Ofen BBQ Grill und Smoker Digital thermometer").
 To be used as am meat probe as designed or as smoker probe.
+## Santos
+Used in these thermometers:
+* Santos BBQ Thermometer
+* Weber Style Audiodigital-Thermometer
+
+To be used as a meat probe as designed or as grill chamber probe.
+## SmokeMAX
+Used in these thermometers:
+* Froggit Smoke MAX 1
+* Froggit Smoke MAX 2
+
+Available as a meat probe or as a shorter grill chamber probe.
+## Weber_6743
+Used in these thermometers:
+* Weber Style 6741
+* Weber Style 6742
+
+To be used as a meat probe as designed or as grill chamber probe.
