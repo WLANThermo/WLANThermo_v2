@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WLANThermo 2.4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-13 22:25+0200\n"
-"PO-Revision-Date: 2016-08-13 22:26+0200\n"
+"POT-Creation-Date: 2016-10-07 16:35+0200\n"
+"PO-Revision-Date: 2016-10-07 16:37+0200\n"
 "Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
 "Language-Team: \n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.8\n"
+"X-Generator: Poedit 1.8.9\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ../../../../../sbin\n"
 "X-Poedit-SearchPath-0: wlt_2_comp.py\n"
@@ -69,59 +69,79 @@ msgstr "Regler Ausgang"
 msgid "Regler set value"
 msgstr "Regler Sollwert"
 
-#: wlt_2_comp.py:402
+#: wlt_2_comp.py:404
 msgid "CPU: "
 msgstr "CPU: "
 
-#: wlt_2_comp.py:402
+#: wlt_2_comp.py:404
 msgid " RAM free: "
 msgstr " Arbeitsspeicher frei: "
 
-#: wlt_2_comp.py:415
+#: wlt_2_comp.py:417
 msgid "reading configuration again..."
 msgstr "lese Konfiguration neu..."
 
-#: wlt_2_comp.py:464
+#: wlt_2_comp.py:433
+msgid "Error reading upper limit on channel "
+msgstr "Fehler beim Lesen der Obergrenze für Kanal"
+
+#: wlt_2_comp.py:439
+msgid "Error reading lower limit on channel "
+msgstr "Fehler beim Lesen der Untergrenze für Kanal"
+
+#: wlt_2_comp.py:445
+msgid "Error reading measurement resistor on channel "
+msgstr "Fehler beim auslesen des Messwiderstandes auf Kanal"
+
+#: wlt_2_comp.py:469
+msgid "Error reading status interval from config"
+msgstr "Fehler beim Lesen des Statusintervalls aus der Konfiguration"
+
+#: wlt_2_comp.py:475
+msgid "Error reading alarm interval from config"
+msgstr "Fehler beim Lesen des Alarmintervalls aus der Konfiguration"
+
+#: wlt_2_comp.py:491
 msgid "Acknowledging temperature over upper limit on channel "
 msgstr "Bestätige Übertemperatur für Kanal "
 
-#: wlt_2_comp.py:467
+#: wlt_2_comp.py:494
 msgid "Acknowledging temperature under lower limit on channel "
 msgstr "Bestätige Untertemperatur für Kanal"
 
-#: wlt_2_comp.py:472
+#: wlt_2_comp.py:499
 msgid "alert.test exists"
 msgstr "alert.test vorhanden"
 
-#: wlt_2_comp.py:524
+#: wlt_2_comp.py:551
 msgid "degrees Celsius"
 msgstr "Grad Celsius"
 
-#: wlt_2_comp.py:527
+#: wlt_2_comp.py:554
 msgid "degrees Fahrenheit"
 msgstr "Grad Fahrenheit"
 
-#: wlt_2_comp.py:611
+#: wlt_2_comp.py:638
 msgid "new alert, sending messages"
 msgstr "Neuer Alarm, versende Nachrichten"
 
-#: wlt_2_comp.py:613
+#: wlt_2_comp.py:640
 msgid "test alert, sending messages"
 msgstr "Testalarm, versende Nachrichten"
 
-#: wlt_2_comp.py:615
+#: wlt_2_comp.py:642
 msgid "test message\n"
 msgstr "Testnachricht\n"
 
-#: wlt_2_comp.py:617
+#: wlt_2_comp.py:644
 msgid "repeated alert, sending messages"
 msgstr "Wiederholter Alarm, versende Nachrichten"
 
-#: wlt_2_comp.py:648
+#: wlt_2_comp.py:675
 msgid "Telegram POST request, URL: "
 msgstr "Telegram POST-Request, URL: "
 
-#: wlt_2_comp.py:648 wlt_2_comp.py:706
+#: wlt_2_comp.py:675 wlt_2_comp.py:737
 msgid ""
 "\n"
 "body: "
@@ -129,69 +149,69 @@ msgstr ""
 "\n"
 "Body: "
 
-#: wlt_2_comp.py:651
+#: wlt_2_comp.py:678
 msgid "Telegram HTTP return code: "
 msgstr "Telegram HTTP-Returncode: "
 
-#: wlt_2_comp.py:652
+#: wlt_2_comp.py:679
 msgid "Telegram URL: "
 msgstr "Telegram URL: "
 
-#: wlt_2_comp.py:653
+#: wlt_2_comp.py:680
 msgid "Telegram result: "
 msgstr "Telegram Ergebniss: "
 
-#: wlt_2_comp.py:681
+#: wlt_2_comp.py:707
 msgid "App GET request, URL: "
 msgstr "App GET-Request, URL: "
 
-#: wlt_2_comp.py:684
+#: wlt_2_comp.py:710
 msgid "App HTTP return code: "
 msgstr "App HTTP-Returncode: "
 
-#: wlt_2_comp.py:685
+#: wlt_2_comp.py:711
 msgid "App URL: "
 msgstr "App URL: "
 
-#: wlt_2_comp.py:686
+#: wlt_2_comp.py:712
 msgid "App result: "
 msgstr "App Ergebniss: "
 
-#: wlt_2_comp.py:703
+#: wlt_2_comp.py:734
 msgid "push GET request, URL: "
 msgstr "Push GET-Request, URL: "
 
-#: wlt_2_comp.py:706
+#: wlt_2_comp.py:737
 msgid "push POST request, URL: "
 msgstr "Push POST-Request, URL: "
 
-#: wlt_2_comp.py:709
+#: wlt_2_comp.py:740
 msgid "push HTTP return code: "
 msgstr "Push HTTP-Returncode: "
 
-#: wlt_2_comp.py:710
+#: wlt_2_comp.py:741
 msgid "push URL: "
 msgstr "Push URL: "
 
-#: wlt_2_comp.py:711
+#: wlt_2_comp.py:742
 msgid "push result: "
 msgstr "Push Ergebniss: "
 
-#: wlt_2_comp.py:745
+#: wlt_2_comp.py:776
 #, python-brace-format
 msgid "Error: Could not write to file {file}!"
 msgstr "Fehler: Konnte nicht in die Datei {file} schreiben!"
 
-#: wlt_2_comp.py:790
+#: wlt_2_comp.py:821
 #, python-brace-format
 msgid "measuring loop running longer than {delay}s, remaining time {time_remaining}s"
 msgstr "Messchleife lief länger als {delay}s, Restzeit {time_remaining}s"
 
-#: wlt_2_comp.py:792
+#: wlt_2_comp.py:823
 #, python-brace-format
 msgid "measuring loop remaining time {time_remaining}s of {delay}s"
 msgstr "Messchleife Restzeit {time_remaining}s von {delay}s"
 
-#: wlt_2_comp.py:796
+#: wlt_2_comp.py:827
 msgid "WLANThermo stopped!"
 msgstr "WLANThermo angehalten!"
