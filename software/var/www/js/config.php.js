@@ -85,7 +85,47 @@
 		document.getElementById("plot_pit").disabled=false;
 		document.getElementById("plot_color_pit").disabled=false;
 	}
+	// Eingabefelder für App Einstellungen aktivieren
+	function app_settings_enable() {
+		document.getElementById("app_inst_id").disabled=false;
+		document.getElementById("app_inst_id2").disabled=false;
+		document.getElementById("app_inst_id3").disabled=false;
+		document.getElementById("app_device_id1").disabled=false;
+		document.getElementById("app_device_id2").disabled=false;
+		document.getElementById("app_device_id3").disabled=false;
+		document.getElementById("app_sound_id").disabled=false;
+	}
+	// Eingabefelder für App Einstellungen deaktivieren
+	function app_settings_disable() {
+		document.getElementById("app_inst_id").disabled=true;
+		document.getElementById("app_inst_id2").disabled=true;
+		document.getElementById("app_inst_id3").disabled=true;
+		document.getElementById("app_device_id1").disabled=true;
+		document.getElementById("app_device_id2").disabled=true;
+		document.getElementById("app_device_id3").disabled=true;
+		document.getElementById("app_sound_id").disabled=true;
+	}	
 	
+	// Eingabefelder für Telegram Einstellungen aktivieren
+	function telegram_settings_enable() {
+		document.getElementById("telegram_token").disabled=false;
+		document.getElementById("telegram_chat_id").disabled=false;
+	}
+	// Eingabefelder für Telegram Einstellungen deaktivieren
+	function telegram_settings_disable() {
+		document.getElementById("telegram_token").disabled=true;
+		document.getElementById("telegram_chat_id").disabled=true;
+	}
+	// Eingabefelder für Push Einstellungen aktivieren
+	function push_settings_enable() {
+		document.getElementById("push_body").disabled=false;
+		document.getElementById("push_url").disabled=false;
+	}
+	// Eingabefelder für Push Einstellungen deaktivieren
+	function push_settings_disable() {
+		document.getElementById("push_body").disabled=true;
+		document.getElementById("push_url").disabled=true;
+	}	
 	// Eingabefelder für das Nextion Display deaktivieren
 	function nextion_settings_disable() {
 		document.getElementById("startpage").disabled=true;
@@ -114,6 +154,20 @@
 			nextion_settings_enable();
 		} else{
 			nextion_settings_disable();
+		}
+	}	
+	function check_app_present() {
+		if( $('#app_alert').is(':checked') ) { 
+			app_settings_enable();
+		} else{
+			app_settings_disable();
+		}
+	}
+	function check_push_present() {
+		if( $('#push_on').is(':checked') ) { 
+			push_settings_enable();
+		} else{
+			push_settings_disable();
 		}
 	}	
 	function check_pit_present() {
@@ -154,6 +208,13 @@
 			check_lcd_type();
 		}else{
 			lcd_settings_disable();
+		}
+	}
+	function check_telegram_present(){
+		if( $('#telegram_alert').is(':checked') ) { 
+			telegram_settings_enable();
+		}else{
+			telegram_settings_disable();
 		}
 	}
 	function check_plot_present() {
@@ -333,6 +394,8 @@
 		$("input").removeAttr('disabled'); //enable			
 	}
 	
+	check_app_present();
+	check_telegram_present();
 	check_pit_present();
 	check_plot_present();
 	check_channel_ch0();
@@ -348,9 +411,19 @@
 	check_webcam();
 	check_raspicam();
 	check_lcd_present();
+	check_push_present();
 	
     $("#pit_type").change(function () {
         check_pit_present();
+    });
+    $("#push_on").change(function () {
+        check_push_present();
+    });
+    $("#telegram_alert").change(function () {
+        check_telegram_present();
+    });
+	$("#app_alert").change(function () {
+        check_app_present();
     });
 	$( "#pit_on" ).change(function() {
 		check_pit_present();
