@@ -45,7 +45,7 @@ if(isset($_POST["save"])) {
 					}
 					// Überprüfen ob sich der Messwiderstand geändert hat (Restart)
 					if($ini['Messen']['messwiderstand'.$i] !== $_POST['measuring_resistance'.$i]){ 
-						$ini['Messen']['messwiderstand'.$i] = $_POST['measuring_resistance'.$i];
+						$ini['Messen']['messwiderstand'.$i] = floatval($_POST['measuring_resistance'.$i]);
 					}
 					// Farben für den Plotter ändern --------------------------------
 					$ini['plotter']['color_ch'.$i] = $_POST['plot_color'.$i];
@@ -152,13 +152,13 @@ if(isset($_POST["save"])) {
 			// Intervall für Statusmeldungen
 			if (isset($_POST['status_interval'])) {
 				if($ini['Alert']['status_interval'] !== $_POST['status_interval']){
-					$ini['Alert']['status_interval'] = $_POST['status_interval'];
+					$ini['Alert']['status_interval'] = floatval($_POST['status_interval']);
 				}
 			}
 			// Intervall für Alarmmeldungen
 			if (isset($_POST['alarm_interval'])) {
 				if($ini['Alert']['alarm_interval'] !== $_POST['alarm_interval']){
-					$ini['Alert']['alarm_interval'] = $_POST['alarm_interval'];
+					$ini['Alert']['alarm_interval'] = floatval($_POST['alarm_interval']);
 				}
 			}
 			// ######################################################################
@@ -764,7 +764,7 @@ if(isset($_POST["save"])) {
 			<div class="config_text row_3 col_5"><input type="text" name="app_inst_id2" id="app_inst_id2" size="35" maxlength="200" value="<?php echo $ini['App']['app_inst_id2'];?>"></div>
 			<div class="config_text row_4 col_5"><input type="text" name="app_inst_id3" id="app_inst_id3" size="35" maxlength="200" value="<?php echo $ini['App']['app_inst_id3'];?>"></div>
 			<div class="config_text row_1 col_3">
-				<select name="app_sound" size="1">	
+				<select name="app_sound" id="app_sound_id" size="1">	
 					<?php
 					foreach($app_sounds AS $sound)
 					{?> 
@@ -782,7 +782,7 @@ if(isset($_POST["save"])) {
 			<div class="config_text row_3 col_6"><?php echo gettext("Device Type");?> 2:</div>
 			<div class="config_text row_4 col_6"><?php echo gettext("Device Type");?> 3:</div>
 			<div class="config_text row_2 col_7">
-				<select name="app_device" size="1">	
+				<select name="app_device" id="app_device_id1" size="1">	
 					<?php
 					foreach($app_devices as $device_name => $device_id)
 					{?> 
@@ -791,7 +791,7 @@ if(isset($_POST["save"])) {
 				</select>			
 			</div>
 			<div class="config_text row_3 col_7">
-				<select name="app_device2" size="1">	
+				<select name="app_device2" id="app_device_id2" size="1">	
 					<?php
 					foreach($app_devices as $device_name => $device_id)
 					{?> 
@@ -800,7 +800,7 @@ if(isset($_POST["save"])) {
 				</select>			
 			</div>
 			<div class="config_text row_4 col_7">
-				<select name="app_device3" size="1">	
+				<select name="app_device3" id="app_device_id3" size="1">	
 					<?php
 					foreach($app_devices as $device_name => $device_id)
 					{?> 
