@@ -5,6 +5,7 @@
 systemctl enable WLANThermo.service
 systemctl enable WLANThermoWD.service
 systemctl enable pigpiod.service
+systemctl enable nextion_hwclock.service
 
 # restart sudo service
 systemctl restart sudo 
