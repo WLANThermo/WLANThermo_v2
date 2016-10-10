@@ -31,6 +31,7 @@ import Queue
 import traceback
 from struct import unpack
 import gettext
+import termios
 
 gettext.install('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
