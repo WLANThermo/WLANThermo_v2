@@ -742,9 +742,11 @@ try:
                         logger.debug(_(u'push result: ') + response.read(500))
     
                     except urllib2.HTTPError, e:
-                        logger.error(u'Push HTTP error: ' + str(e.code) + ' - ' + e.read(500))
+                        logger.error(u'Push HTTP error: ' + str(e.code) + u' - ' + e.read(500))
                     except urllib2.URLError, e:
                         logger.error(u'Push URLError: ' + str(e.reason))
+                    except ValueError, e:
+                        logger.error(u'Push ValueError: ' + str(e))
         
         # Log datei erzeugen
         lcsv = []
