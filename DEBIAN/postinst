@@ -36,6 +36,7 @@ else
 fi
 
 ln -s /var/log/WLAN_Thermo /var/www/thermolog
+ln -s /var/log/WLANThermo.log /var/www/log/WLANThermo.log
 chown -Rv www-data:www-data /var/www 1>/dev/null
 chown -Rv www-data:www-data /var/log/WLAN_Thermo 1>/dev/null
 
