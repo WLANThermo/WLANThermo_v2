@@ -32,6 +32,7 @@ import traceback
 from struct import unpack
 import gettext
 import termios
+import fcntl
 
 gettext.install('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -334,6 +335,8 @@ def NX_init(port, baudrate):
         ser.baudrate = baudrate
         ser.timeout = 0.2
         ser.open()
+        logger.debug(_(u'Locking serial port'))
+        fcntl.flock(ser.fileno(), fcntl.LOCK_EX)
         logger.debug(_(u'Clear serial buffer'))
         # Buffer des Displays leeren
         # - Ungültigen Befehl senden
