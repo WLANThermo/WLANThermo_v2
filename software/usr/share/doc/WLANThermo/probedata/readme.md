@@ -100,7 +100,9 @@ Used in these thermometers:
 Available as a meat probe or as a shorter grill chamber probe.
 ## ThermoWorks
 Used in these thermometers:
-* ThermoWorks Pro-Series Probes (*maybe slightly different values*)
+* ETI ChefAlarm (UK)
+* ThermoWorks ChefAlarm (US)
+* ThermoWorks Pro-Series Probes
 
 Available in differents shapes.
 ## Weber_6743
