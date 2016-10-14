@@ -5,6 +5,7 @@ wlanthermo (2.5.0-0beta) UNRELEASED; urgency=medium
   * CHANGE: i18n of the source code
   * CHANGE: new display HMI version with icons
   * CHANGE: split alert messages to push/ telegram/ app
+  * ADD: function to recalibrate the NEXTION touchscreen
   * ADD: translation to english
   * ADD: temperature unit selectable between celsius and fahrenheit
   * ADD: probe type iGrill2
@@ -17,7 +18,7 @@ wlanthermo (2.5.0-0beta) UNRELEASED; urgency=medium
   * ADD: probe type SmokeMAX
   * ADD: probe type Weber_6743
 	
- -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Wed, 12 October 2016 14:00:00 +0200
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Wed, 14 October 2016 15:00:00 +0200
 
 wlanthermo (2.4.0-0) stable; urgency=medium
 
