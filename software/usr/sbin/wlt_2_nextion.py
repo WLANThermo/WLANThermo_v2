@@ -63,7 +63,7 @@ pitmaster_event = threading.Event()
 # Neue Pitmasterkonfiguration (= geändertes Konfigfile)
 pitconf_event = threading.Event()
 # Neue Localekonfiguration (= geändertes Konfigfile)
-locale_event = threading.Event()
+config_event = threading.Event()
 # Event für ein Aufwachen aus dem Sleep-Mode (= geändertes Konfigfile)
 NX_wake_event = threading.Event()
 # Stop des Prozesses wurde angefordert
@@ -138,7 +138,7 @@ class FileEvent(pyinotify.ProcessEvent):
             logger.debug(_(u'New configuration data available'))
             channels_event.set()
             pitconf_event.set()
-            locale_event.set()
+            config_event.set()
         elif event.path == pitPath and event.name == pitFile:
             logger.debug(_(u'New pitmaster data available'))
             pitmaster_event.set()
@@ -154,7 +154,7 @@ class FileEvent(pyinotify.ProcessEvent):
             logger.debug(_(u'New configuration data available'))
             channels_event.set()
             pitconf_event.set()
-            locale_event.set()
+            config_event.set()
         elif event.path == pitPath and event.name == pitFile:
             logger.debug(_(u'New pitmaster data available'))
             pitmaster_event.set()
@@ -1263,10 +1263,12 @@ def NX_display():
                 # Im Fehlerfall später wiederholen
                 channels_event.set()
         
-        elif locale_event.is_set():
-            logger.debug(_(u'Locale event'))
-            locale_event.clear()
+        elif config_event.is_set():
+            logger.debug(_(u'Config event'))
+            config_event.clear()
+            check_recalibration()
             language = language_getvalues()
+            
             
         else:
             time.sleep(0.01)
@@ -1288,6 +1290,29 @@ def config_write(configfile, config):
         new_ini.close()
         os.rename(configfile + '_tmp', configfile)
 
+
+def check_recalibration():
+    global configfile, configfile_lock
+    
+    calibrate_display = False
+
+    with configfile_lock:
+        newconfig = ConfigParser.SafeConfigParser()
+        newconfig.read(configfile)
+        if newconfig.getboolean('ToDo', 'calibrate_display') == True:
+            logger.info(_(u'Calibrating Display'))
+            NX_sendcmd('touch_j')
+            newconfig.set('ToDo', 'calibrate_display', 'False')
+            calibrate_display = True
+            # We don´t get any useful information back from the display
+            # So we don´t know when to start again, try again after 30s
+            stop_event.set()
+            time.sleep(30)
+            config_write(configfile, newconfig)
+
+            time.sleep(1)
+            newconfig.set('ToDo', 'restart_display', 'True')
+            config_write(configfile, newconfig)
 
 def stop_all(signum, frame):
     logger.debug(_(u'Caught signal: ') + str(signum))
