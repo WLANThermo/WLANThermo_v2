@@ -61,7 +61,7 @@ class BBQpit:
         self.pit_startup_time = 0.5
         
         # Steuergröße
-        self.pit_out = None
+        self.pit_out = 0
         
         # Wave-ID
         self.fan_pwm = None
@@ -467,6 +467,9 @@ def main():
                 pit_open_lid_pause= Config.getfloat('Pitmaster','pit_open_lid_pause')
                 pit_open_lid_falling_border = Config.getfloat('Pitmaster','pit_open_lid_falling_border')
                 pit_open_lid_rising_border = Config.getfloat('Pitmaster','pit_open_lid_rising_border')
+                pit_ratelimit_rise = Config.getfloat('Pitmaster','pit_ratelimit_rise')
+                pit_ratelimit_lower = Config.getfloat('Pitmaster','pit_ratelimit_lower')
+                
                 #PID End Paramter fuer PID einlesen
                 
                 temps = tline.split(";")
@@ -591,7 +594,19 @@ def main():
                     elif pit_new  < pit_pid_min:
                         pit_new  = pit_pid_min
                     #PID End Block PID Regler
-                   
+                
+                pit_change = pit_new - bbqpit.pit_out
+                
+                if pit_change > 0 and pit_ratelimit_rise > 0:
+                    max_rise = 100 / pit_ratelimit_rise * pit_pause
+                    if pit_change > max_rise:
+                        pit_new = bbqpit.pit_out + max_rise
+                        logger.debug(_(u'Limiting raising rate'))
+                elif pit_change < 0 and pit_ratelimit_lower > 0:
+                    max_lower = -100 / pit_ratelimit_lower * pit_pause
+                    if pit_change < max_lower:
+                        pit_new = bbqpit.pit_out + max_lower
+                        logger.debug(_(u'Limiting lowering rate'))
                     
                 bbqpit.set_pit(pit_new)
                 msg += _(u'|New value: ') + str(pit_new)
