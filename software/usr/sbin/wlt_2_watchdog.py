@@ -195,7 +195,7 @@ def halt_pi():
             time.sleep(1)
             continue
         break
-    bashCommand = 'sudo halt'
+    bashCommand = 'sudo poweroff'
     retcode = subprocess.Popen(bashCommand.split())
     retcode.wait()
     if retcode < 0:
@@ -230,7 +230,7 @@ def halt_v3_pi():
     time.sleep(1)
     GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     # Fahre Betriebssystem herunter
-    bashCommand = 'sudo halt'
+    bashCommand = 'sudo poweroff'
     retcode = subprocess.Popen(bashCommand.split())
     retcode.wait()
     if retcode < 0:
