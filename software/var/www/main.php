@@ -188,9 +188,9 @@ if (isset($_SESSION["to_update"])){
 		exec("sudo /opt/vc/bin/vcgencmd measure_temp | tr -d \"temp=\" | tr -d \"'C\"",$output, $return);
 		if((!$return) AND (isset($output[0]))){
 			if ($_SESSION['temp_unit'] == 'celsius') {
-				$cpu_temp = $output[0];
+				$cpu_temp = floatval($output[0]);
 			} elseif ($_SESSION['temp_unit'] == 'fahrenheit') {
-				$cpu_temp = $output[0] * 1.8 + 32;
+				$cpu_temp = floatval($output[0]) * 1.8 + 32;
 			}
 			return $cpu_temp;
 		}else{
