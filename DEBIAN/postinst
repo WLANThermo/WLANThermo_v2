@@ -40,6 +40,7 @@ ln -s /var/log/WLANThermo.log /var/www/log/WLANThermo.log
 chown -Rv www-data:www-data /var/www 1>/dev/null
 chown -Rv www-data:www-data /var/log/WLAN_Thermo 1>/dev/null
 
+chown -v root:root /etc/sudoers.d/WLANThermo
 chmod 0440 /etc/sudoers.d/WLANThermo
 
 # Reload new unit files
