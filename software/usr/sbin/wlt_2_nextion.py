@@ -33,6 +33,8 @@ from struct import unpack
 import gettext
 import termios
 import fcntl
+import random
+import string
 
 gettext.install('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -586,27 +588,6 @@ def language_getvalues():
     
     return locale
 
-def tempcsv_write(config):
-    name ='/var/www/temperaturen.csv'
-    logger.debug(_(u'Write new temperature values to {}!').format(name))
-    while True:
-        try:
-            fw = open(name + '_tmp','w') #Datei anlegen
-            
-            for i in range(8):
-                fw.write(str(config.get('temp_max','temp_max' + str(i))) + '\n') # Alarm-Max-Werte schreiben
-            for i in range(8):
-                fw.write(str(config.get('temp_min','temp_min' + str(i))) + '\n') # Alarm-Min-Werte schreiben
-            
-            fw.flush()
-            os.fsync(fw.fileno())
-            fw.close()
-            os.rename(name + '_tmp', name)
-        except IndexError:
-            time.sleep(0.1)
-            continue
-        break
-
 
 def set_tempflag():
     # Flag Datei für WebGUI anlegen
@@ -615,30 +596,29 @@ def set_tempflag():
 
 def channels_setvalues(channel, high= None, low=None, sensor=None):
     global configfile, configfile_lock
-    restart_comp = False
     temp_changed = False
-    with configfile_lock:
-        newconfig = ConfigParser.SafeConfigParser()
-        newconfig.read(configfile)
-        if low != None:
-            newconfig.set('temp_min','temp_min' + str(channel), str(low))
-            temp_changed = True
-        if high != None:
-            newconfig.set('temp_max','temp_max' + str(channel), str(high))
-            temp_changed = True
-        if sensor != None:
-            newconfig.set('Sensoren','ch' + str(channel), str(sensor))
-            restart_comp = True
+    
+    try:
+        with configfile_lock:
+            newconfig = ConfigParser.SafeConfigParser()
+            newconfig.read(configfile)
+            if low is not None:
+                newconfig.set('temp_min','temp_min' + str(channel), str(int(low)))
+                temp_changed = True
+            if high is not None:
+                newconfig.set('temp_max','temp_max' + str(channel), str(int(high)))
+                temp_changed = True
+            if sensor is not None:
+                newconfig.set('Sensoren','ch' + str(channel), str(int(sensor)))
             
-        if restart_comp:
-            newconfig.set('ToDo','restart_thermo', 'True')
-        elif temp_changed:
-            tempcsv_write(newconfig)
+            config_write(configfile, newconfig)
         
         if temp_changed:
             set_tempflag()
-            
-        config_write(configfile, newconfig)
+    
+    except ValueError:
+        logger.error(_(u'Error while setting channel values'))
+        return False
 
 
 def display_getvalues():
@@ -660,14 +640,19 @@ def display_getvalues():
 
 def display_setvalues(dim = None, timeout = None):
     global configfile, configfile_lock
-    with configfile_lock:
-        newconfig = ConfigParser.SafeConfigParser()
-        newconfig.read(configfile)
-        if dim != None:
-            newconfig.set('Display','dim', str(dim))
-        if timeout != None:
-            newconfig.set('Display','timeout', str(timeout))
-        config_write(configfile, newconfig)
+    
+    try:
+        with configfile_lock:
+            newconfig = ConfigParser.SafeConfigParser()
+            newconfig.read(configfile)
+            if dim is not None:
+                newconfig.set('Display','dim', str(int(dim)))
+            if timeout is not None:
+                newconfig.set('Display','timeout', str(int(timeout)))
+            config_write(configfile, newconfig)
+    except ValueError:
+        logger.error(_(u'Error while setting display values'))
+        return False
 
 
 def todo_setvalues(pi_down = None, pi_reboot = None):
@@ -675,34 +660,39 @@ def todo_setvalues(pi_down = None, pi_reboot = None):
     with configfile_lock:
         newconfig = ConfigParser.SafeConfigParser()
         newconfig.read(configfile)
-        if pi_down != None:
+        if pi_down is not None:
             newconfig.set('ToDo','raspi_shutdown', ['False', 'True'][pi_down])
-        if pi_reboot != None:
+        if pi_reboot is not None:
             newconfig.set('ToDo','raspi_reboot', ['False', 'True'][pi_reboot])
         config_write(configfile, newconfig)
 
 
 def pitmaster_setvalues(pit_ch = None, pit_set = None, pit_lid=  None, pit_on = None, pit_pid = None, pit_type = None, pit_inverted = None):
     global configfile, configfile_lock
-    with configfile_lock:
-        newconfig = ConfigParser.SafeConfigParser()
-        newconfig.read(configfile)
-        if pit_ch != None:
-            newconfig.set('Pitmaster','pit_ch', str(pit_ch))
-        if pit_inverted != None:
-            newconfig.set('Pitmaster','pit_inverted', ['False', 'True'][pit_inverted])
-        if pit_set != None:
-            newconfig.set('Pitmaster','pit_set', str(pit_set))
-        if pit_lid != None:
-            newconfig.set('Pitmaster','pit_open_lid_detection', ['False', 'True'][pit_lid])
-        if pit_on != None:
-            newconfig.set('ToDo','pit_on', ['False', 'True'][pit_on])
-        if pit_pid != None:
-            newconfig.set('Pitmaster','pit_controller_type', ['False', 'PID'][pit_pid])
-        if pit_type != None:
-            newconfig.set('Pitmaster','pit_type', ['fan', 'servo', 'io', 'io_pwm', 'fan_pwm'][pit_type])
-            
-        config_write(configfile, newconfig)
+    
+    try:
+        with configfile_lock:
+            newconfig = ConfigParser.SafeConfigParser()
+            newconfig.read(configfile)
+            if pit_ch is not None:
+                newconfig.set('Pitmaster','pit_ch', str(int(pit_ch)))
+            if pit_inverted is not None:
+                newconfig.set('Pitmaster','pit_inverted', ['False', 'True'][int(pit_inverted)])
+            if pit_set is not None:
+                newconfig.set('Pitmaster','pit_set', str(float(pit_set)))
+            if pit_lid is not None:
+                newconfig.set('Pitmaster','pit_open_lid_detection', ['False', 'True'][int(pit_lid)])
+            if pit_on is not None:
+                newconfig.set('ToDo','pit_on', ['False', 'True'][int(pit_on)])
+            if pit_pid is not None:
+                newconfig.set('Pitmaster','pit_controller_type', ['False', 'PID'][int(pit_pid)])
+            if pit_type is not None:
+                newconfig.set('Pitmaster','pit_type', ['fan', 'servo', 'io', 'io_pwm', 'fan_pwm'][int(pit_type)])
+                
+            config_write(configfile, newconfig)
+    except ValueError:
+        logger.error(_(u'Error while setting pitmaster values'))
+        return False
 
 
 def channels_getvalues():
@@ -826,13 +816,14 @@ def wlan_setpassphrase(ssid, psk):
     ssids = list()
     psks = list()
     ssid_found = False
+    tmp_filename = get_random_filename('/etc/wpa_supplicant/wpa_supplicant.conf')
     
     for line in fw:
         if re.search(r'SSID',line,re.IGNORECASE):
             ssids.append(line.split("=")[1].replace('"','').strip())
         elif re.search(r'\#psk',line,re.IGNORECASE):
             psks.append(line.split("=")[1].replace('"','').strip())
-    wpa_file = open('/etc/wpa_supplicant/wpa_supplicant.conf' + '_tmp', 'w')
+    wpa_file = open(tmp_filename, 'w')
     wpa_file.write('ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\n')
     wpa_file.write('update_config=1\n')
     
@@ -865,7 +856,7 @@ def wlan_setpassphrase(ssid, psk):
     wpa_file.flush()
     os.fsync(wpa_file.fileno())
     wpa_file.close()
-    os.rename('/etc/wpa_supplicant/wpa_supplicant.conf' + '_tmp', '/etc/wpa_supplicant/wpa_supplicant.conf')
+    os.rename(tmp_filename, '/etc/wpa_supplicant/wpa_supplicant.conf')
     return True
 
 
@@ -923,7 +914,7 @@ def NX_display():
     channels_event.clear()
     logger.debug(_(u'Get temperature data...'))
     temps = temp_getvalues()
-    while temps == None:
+    while temps is None:
         logger.info(_(u'Waiting on temperature data'))
         temps_event.wait(0.1)
         temps = temp_getvalues()
@@ -964,12 +955,16 @@ def NX_display():
         logger.debug(_(u'Get pitmaster data...'))
         pitmaster = pitmaster_getvalues()
     # Kann ein wenig dauern, bis valide Daten geliefert werden, daher nicht mehr warten
-    if pitmaster == None:
+    if pitmaster is None:
         pitmaster = {'timestamp': 0, 'set': 0, 'now': 0,'new': 0,'msg': ''}
     
     values = dict()
     for i in range(1, 11):
-        values['main.sensor_name' + str(i) + '.txt:10'] = sensors[i]['name'].decode('utf-8').encode('latin-1')
+        try:
+            values['main.sensor_name' + str(i) + '.txt:10'] = sensors[i]['name'].decode('utf-8').encode('latin-1')
+        except KeyError:
+            logger.error(_(u'Sensor {} not defined!'.format(i)))
+            values['main.sensor_name' + str(i) + '.txt:10'] = '- - -'
     for i in range(8):
         if temps[i]['value'] == '999.9':
             values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].decode('utf-8').encode('latin-1')
@@ -1162,7 +1157,7 @@ def NX_display():
             logger.debug(_(u'Temperature event'))
             values = dict()
             new_temps = temp_getvalues()
-            if new_temps != None:
+            if new_temps is not None:
                 temps_event.clear()
                 if language['temp_unit'] == 'celsius':
                     temp_unit = '\xb0C'
@@ -1224,7 +1219,7 @@ def NX_display():
             pitmaster_event.clear()
             new_pitmaster = pitmaster_getvalues()
             
-            if new_pitmaster != None:
+            if new_pitmaster is not None:
                 if pitmaster['new'] != new_pitmaster['new']:
                     if pitconf['on']:
                         # Wenn Pitmaster aus, 0-Wert senden.
@@ -1276,10 +1271,16 @@ def NX_display():
     return True
 
 
+def get_random_filename(filename):
+    return filename + '_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(12))
+
+
 def config_write(configfile, config):
     # Schreibt das Configfile
     # Ein Lock sollte im aufrufenden Programm gehalten werden!
-    with open(configfile + '_tmp', 'w') as new_ini:
+    
+    tmp_filename = get_random_filename(configfile)
+    with open(tmp_filename, 'w') as new_ini:
         for section_name in config.sections():
             new_ini.write('[' + section_name + ']\n')
             for (key, value) in config.items(section_name):
@@ -1288,7 +1289,7 @@ def config_write(configfile, config):
         new_ini.flush()
         os.fsync(new_ini.fileno())
         new_ini.close()
-        os.rename(configfile + '_tmp', configfile)
+        os.rename(tmp_filename, configfile)
 
 
 def check_recalibration():
