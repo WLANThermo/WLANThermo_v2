@@ -29,13 +29,19 @@ import re
 import signal
 import Queue
 import traceback
-from struct import *
+from struct import unpack
+import gettext
+import termios
+import fcntl
+import random
+import string
 
+gettext.install('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
 NX_lf = '\xff\xff\xff'
 NX_channel = 0
 NX_page = 0
-version = '0.19'
+version = '0.20'
 
 temps = dict()
 channels = dict()
@@ -58,6 +64,8 @@ channels_event = threading.Event()
 pitmaster_event = threading.Event()
 # Neue Pitmasterkonfiguration (= geändertes Konfigfile)
 pitconf_event = threading.Event()
+# Neue Localekonfiguration (= geändertes Konfigfile)
+config_event = threading.Event()
 # Event für ein Aufwachen aus dem Sleep-Mode (= geändertes Konfigfile)
 NX_wake_event = threading.Event()
 # Stop des Prozesses wurde angefordert
@@ -82,7 +90,7 @@ for i in range(0,5):
         except IndexError:
             # Auf Event warten geht hier noch nicht, da wir die anderen Pfade aus der Config brauchen
             # Logging geht auch noch nicht, da wir das Logfile brauchen, als an StdErr
-            sys.stderr.write('Warte auf Konfigurationsdatei')
+            sys.stderr.write(_(u'Waiting for configuration file'))
             time.sleep(1)
             continue
         break
@@ -126,14 +134,15 @@ class FileEvent(pyinotify.ProcessEvent):
         global temps_event, channels_event, pitmaster_event, pitconf_event, logger
         logger.debug("IN_CLOSE_WRITE: %s " % os.path.join(event.path, event.name))
         if event.path == curPath and event.name == curFile:
-            logger.debug('Neue Temperaturwerte vorhanden')
+            logger.debug(_(u'New temperature values available'))
             temps_event.set()
         elif event.path == confPath and event.name == confFile:
-            logger.debug('Neue Konfiguration vorhanden')
+            logger.debug(_(u'New configuration data available'))
             channels_event.set()
             pitconf_event.set()
+            config_event.set()
         elif event.path == pitPath and event.name == pitFile:
-            logger.debug('Neue Pitmasterdaten vorhanden')
+            logger.debug(_(u'New pitmaster data available'))
             pitmaster_event.set()
     
     def process_IN_MOVED_TO(self, event):
@@ -141,19 +150,20 @@ class FileEvent(pyinotify.ProcessEvent):
         global temps_event, channels_event, pitmaster_event, pitconf_event, logger
         logger.debug("IN_MOVED_TO: %s " % os.path.join(event.path, event.name))
         if event.path == curPath and event.name == curFile:
-            logger.debug('Neue Temperaturwerte vorhanden')
+            logger.debug(_(u'New temperature values available'))
             temps_event.set()
         elif event.path == confPath and event.name == confFile:
-            logger.debug('Neue Konfiguration vorhanden')
+            logger.debug(_(u'New configuration data available'))
             channels_event.set()
             pitconf_event.set()
+            config_event.set()
         elif event.path == pitPath and event.name == pitFile:
-            logger.debug('Neue Pitmasterdaten vorhanden')
+            logger.debug(_(u'New pitmaster data available'))
             pitmaster_event.set()
 
 def NX_reader():
     global logger, ser, NX_returns, NX_events, stop_event, NX_wake_event
-    logger.info('Reader-Thread gestartet')
+    logger.info('Reader thread has been started')
     # Timeout setzen, damit der Thread gestoppt werden kann
     ser.timeout = 0.1
     # Dauerschleife, bricht ab wenn ein stop_event vorlieg
@@ -164,7 +174,10 @@ def NX_reader():
         message = {'raw' : '', 'iserr' : False, 'errmsg' : '', 'data' : {}, 'type': ''}
         
         while (endcount != 3):
-            byte = ser.read()
+            try:
+                byte = ser.read()
+            except termios.error, e:
+                logger.error(_(u'termios.error in NX_reader: {}').format(e[1]))
             if byte != '':
                 # Kein Timeout
                 bytecount += 1
@@ -179,6 +192,7 @@ def NX_reader():
                     break
         if stop_event.is_set():
             break
+        # errmsg taken from ITEAD website, not translated
         elif (message['raw'][0] == '\x00'):
             message['type'] = 'inv_instr'
             message['iserr'] = True
@@ -275,14 +289,14 @@ def NX_reader():
             message['data'] = {'area': unpack('B', message['raw'][1])[0], 'id': unpack('B', message['raw'][2])[0], 'action': unpack('B', message['raw'][3])[0]}
             logger.debug('Area: ' + str(message['data']['area']) + ' ID: ' + str(message['data']['id']) + ' Action: ' + str(message['data']['action']))
         
-        logger.debug('Meldung ' + message['type'] + ' vom Display erhalten')
+        logger.debug(_(u'Received message of type {type} from the Display').format(type=message['type']))
         
         if (is_return):
             NX_returnq.put(message)
         else:
             NX_eventq.put(message)
             
-    logger.info('Reader-Thread gestoppt')
+    logger.info(_(u'Reader thread has been stopped'))
     return True
 
 
@@ -290,11 +304,16 @@ def NX_waitok():
     endcount = 0
     bytecount = 0
     ok = False
+    byte = ''
 
     while endcount != 3:
-        byte = ser.read()
+        try:
+            byte = ser.read()
+        except termios.error, e:
+            logger.error(_(u'termios.error in NX_waitok: {}').format(e[1]))
+        
         if byte == '':
-            logger.info('Serial Communication Timeout!')
+            logger.info(_(u'Serial Communication Timeout!'))
             break
         bytecount += 1
         if (byte[0] == '\xff'):
@@ -313,24 +332,30 @@ def NX_waitok():
 
 def NX_init(port, baudrate):
     global ser, NX_lf, NX_reader_thread
-    ser.port = port
-    ser.baudrate = baudrate
-    ser.timeout = 0.2
-    ser.open()
-    logger.debug('Leere seriellen Buffer')
-    # Buffer des Displays leeren
-    # - Ungültigen Befehl senden
-    # - Aufwachbefehl senden
-    ser.write('nop' + NX_lf)
-    ser.write('sleep=0' + NX_lf)
-    # - Warten
-    ser.flush()
-    time.sleep(0.2)
-    # - Empfangene Zeichen löschen
-    ser.flushInput()
-    # Immer eine Rückmeldung erhalten
-    ser.write('ref 0' + NX_lf)
-    ser.flush()
+    try:
+        ser.port = port
+        ser.baudrate = baudrate
+        ser.timeout = 0.2
+        ser.open()
+        logger.debug(_(u'Locking serial port'))
+        fcntl.flock(ser.fileno(), fcntl.LOCK_EX)
+        logger.debug(_(u'Clear serial buffer'))
+        # Buffer des Displays leeren
+        # - Ungültigen Befehl senden
+        # - Aufwachbefehl senden
+        ser.write('nop' + NX_lf)
+        ser.write('sleep=0' + NX_lf)
+        # - Warten
+        ser.flush()
+        time.sleep(0.2)
+        # - Empfangene Zeichen löschen
+        ser.flushInput()
+        # Immer eine Rückmeldung erhalten
+        ser.write('ref 0' + NX_lf)
+        ser.flush()
+    except termios.error, e:
+        logger.error(_(u'termios.error in NX_init: {}').format(e[1]))
+        
     return NX_waitok()
 
 
@@ -347,27 +372,31 @@ def NX_sendvalues(values):
         else:
             length = None
         # Sendet die Daten zum Display und wartet auf eine Rückmeldung
-        logger.debug("Sende " + key + ' zum Display: ' + str(value))
-        if key[-3:] == 'txt':
-            ser.write(str(key) + '="' + str(value)[:length] + '"\xff\xff\xff')
-        elif key[-3:]  == 'val':
-            ser.write(str(key) + '=' + str(value) + '\xff\xff\xff')
-        else:
-            logger.warning('Unbekannter Variablentyp')
-        ser.flush()
+        logger.debug(_(u'Sending {key} to the display: {value}').format(key=key, value=str(value).decode('iso-8859-1')))
+        try:
+            if key[-3:] == 'txt':
+                ser.write(str(key) + '="' + str(value)[:length] + '"\xff\xff\xff')
+            elif key[-3:]  == 'val':
+                ser.write(str(key) + '=' + str(value) + '\xff\xff\xff')
+            else:
+                logger.warning(_(u'Unknown type of variable'))
+            ser.flush()
+        except termios.error, e:
+            logger.error(_(u'termios.error in NX_sendvalues: {}').format(e[1]))
+            
         try:
             ret = NX_returnq.get(timeout=1)
         except Queue.Empty:
-            logger.warning('Timeout - möglicherweise Sleep-Mode')
+            logger.warning(_(u'Timeout - display possibly in sleep mode'))
             error = True
             break
         else:
             NX_returnq.task_done()
             if ret['iserr']:
-                logger.warning('Fehlermeldung ' + ret['type'] + ' vom Display erhalten')
+                logger.warning(_(u'Received error message {} from the display').format(ret['type']))
                 error = True
             else:
-                logger.debug('Meldung ' + ret['type'] + ' vom Display erhalten')
+                logger.debug(_(u'Received message {} from the display').format(ret['type']))
     
     if error:
         return False
@@ -381,68 +410,76 @@ def NX_getvalues(ids):
     try:
         while True:
             ret = NX_returnq.get(False)
-            logger.info('Unerwartete Meldung ' + ret['type'] + ' vom Display erhalten (aus Displayprogramm)')
+            logger.info(_(u'Received unexpected message {} from the display (out of the display program)').format(ret['type']))
     except Queue.Empty:
-        for id in ids:
+        for value_id in ids:
         # Sendet die Daten zum Display und wartet auf eine Rückmeldung
-            logger.debug("Hole " + str(id) + ' vom Display')
-            ser.write('get ' + str(id) + '\xff\xff\xff')
-            ser.flush()
+            logger.debug(_(u'Get {} from the display').format(str(value_id)))
+            try:
+                ser.write('get ' + str(value_id) + '\xff\xff\xff')
+                ser.flush()
+            except termios.error, e:
+                logger.error(_(u'termios.error in NX_getvalues: {}').format(e[1]))
+                
             try:
                 ret = NX_returnq.get(0.5)
                 NX_returnq.task_done()
                 if ret['iserr']:
-                    logger.warning('Fehlermeldung ' + ret['type'] + ' vom Display erhalten')
+                    logger.warning(_(u'Received error message {} from the display').format(ret['type']))
                     error = True
                 else:
                     # Gehen wir von einem "OK" aus, was sonst?
-                    logger.debug('Meldung ' + ret['type'] + ' vom Display erhalten')
+                    logger.debug(_(u'Received message {} from the display').format(ret['type']))
                     # OK, dann Daten abholen
                     if ret['type'] == 'data_string':
-                        logger.debug('String "' + ret['data'] + '" vom Display erhalten')
+                        logger.debug(_(u'Got string {} from the display').format(ret['data']).decode('iso-8859-1'))
                     elif ret['type'] == 'data_int':
-                        logger.debug('Integer "' + ret['data'] + '" vom Display erhalten')
+                        logger.debug(_(u'Got integer {} from the display').format(ret['data']))
                     else:
-                        logger.info('Unerwartete Meldung ' + ret['type'] + ' vom Display erhalten')
+                        logger.info(_(u'Received unexpected message {} from the display').format(ret['type']))
                         
                 if not error:
-                    returnvalues[id] = ret['data']
+                    returnvalues[value_id] = ret['data']
                     error = True
             except Queue.Empty:
-                logger.warning('Keine Rückmeldung vom Display erhalten')
+                logger.warning(_(u'Received no answer from the display'))
                 error = True
     return returnvalues
 
 
-def NX_getvalue(id):
+def NX_getvalue(value_id):
     global ser, NX_lf, NX_returnq
     error = False
     # Sendet die Daten zum Display und wartet auf eine Rückmeldung
-    logger.debug("Hole " + str(id) + ' vom Display')
+    logger.debug(_(u'Get {} from the display').format(str(value_id)))
     
     try:
         while True:
             ret = NX_returnq.get(False)
-            logger.info('Unerwartete Meldung ' + ret['type'] + ' vom Display erhalten (aus Displayprogramm)')
+            logger.info(_(u'Received unexpected message {} from the display (out of the display program)').format(ret['type']))
     except Queue.Empty:
-        ser.write('get ' + str(id) + '\xff\xff\xff')
-        ser.flush()
+        try:
+            ser.write('get ' + str(value_id) + '\xff\xff\xff')
+            ser.flush()
+        except termios.error, e:
+            logger.error(_(u'termios.error in NX_getvalues: {}').format(e[1]))
+            
         try:
             ret = NX_returnq.get(True, 0.5)
             NX_returnq.task_done()
             if ret['iserr']:
-                logger.warning('Fehlermeldung ' + ret['type'] + ' vom Display erhalten')
+                logger.warning(_(u'Received error message {} from the display').format(ret['type']))
                 error = True
             else:
                 # OK, dann Daten abholen
                 if ret['type'] == 'data_string':
-                    logger.debug('String "' + ret['data'] + '" vom Display erhalten')
+                    logger.debug(_(u'Got string {} from the display').format(ret['data']).decode('iso-8859-1'))
                 elif ret['type'] == 'data_int':
-                    logger.debug('Integer "' + str(ret['data']) + '" vom Display erhalten')
+                    logger.debug(_(u'Got integer {} from the display').format(ret['data']))
                 else:
-                    logger.info('Unerwartete Meldung ' + ret['type'] + ' vom Display erhalten')
+                    logger.info(_(u'Received unexpected message {} from the display').format(ret['type']))
         except Queue.Empty:
-            logger.warning('Keine Rückmeldung vom Display erhalten')
+            logger.warning(_(u'Received no answer from the display'))
             error = True
         
     if not error:
@@ -455,27 +492,29 @@ def NX_sendcmd(cmd):
     global ser, NX_returnq
     error = False
     # Sendet die Daten zum Display und wartet auf eine Rückmeldung
-    logger.debug('Sende Befehl "' + str(cmd) + '" zum Display')
+    logger.debug(_(u'Send command {} to the display').format(str(cmd)))
     try:
         while True:
             ret = NX_returnq.get(False)
-            logger.info('Unerwartete Meldung ' + ret['type'] + ' vom Display erhalten (aus Displayprogramm)')
+            logger.info(_(u'Received unexpected message {} from the display (out of the display program)').format(ret['type']))
             NX_returnq.task_done()
     except Queue.Empty:
-        ser.write(str(cmd) + '\xff\xff\xff')
-        ser.flush()
         try:
+            ser.write(str(cmd) + '\xff\xff\xff')
+            ser.flush()
             ret = NX_returnq.get(True, 0.5)
             NX_returnq.task_done()
             if ret['iserr']:
-                logger.warning('Fehlermeldung ' + ret['type'] + ' vom Display erhalten')
+                logger.warning(_(u'Received error message {} from the display').format(ret['type']))
                 error = True
             else:
-                logger.debug('Meldung ' + ret['type'] + ' vom Display erhalten')
+                logger.debug(_(u'Received message {} from the display'.format(ret['type'])))
         except Queue.Empty:
-            logger.warning('Keine Rückmeldung vom Display erhalten')
+            logger.warning(_(u'Received no answer from the display'))
             error = True
-    
+        except termios.error, e:
+            logger.error(_(u'termios.error in NX_sendcmd: {}').format(e[1]))
+            error = True
     if error:
         return False
     return True
@@ -484,25 +523,27 @@ def NX_sendcmd(cmd):
 def NX_switchpage(new_page):
     global ser, NX_returnq, NX_page
     error = False
-    logger.debug("Sende Seitenwechsel zu " + str(new_page))
+    logger.debug(_(u'Send page command to ') + str(new_page))
     try:
         while True:
             ret = NX_returnq.get(False)
-            logger.info('Unerwartete Meldung ' + ret['type'] + ' vom Display erhalten (aus Displayprogramm)')
+            logger.info(_(u'Received unexpected message {} from the display (out of the display program)').format(ret['type']))
     except Queue.Empty:
-        ser.write('page ' + str(new_page) + '\xff\xff\xff')
-        ser.flush()
         try:
+            ser.write('page ' + str(new_page) + '\xff\xff\xff')
+            ser.flush()
             ret = NX_returnq.get(True, 0.5)
             if ret['iserr']:
-                logger.error('Fehlermeldung ' + ret['type'] + ' vom Display erhalten')
+                logger.error(_(u'Received error message {} from the display').format(ret['type']))
                 error = True
             else:
-                logger.debug('Meldung ' + ret['type'] + ' vom Display erhalten')
+                logger.debug(_(u'Received message {} from the display'.format(ret['type'])))
         except Queue.Empty:
-            logger.warning('Keine Rückmeldung vom Display erhalten')
+            logger.warning(_(u'Received no answer from the display'))
             error = True
-            
+        except termios.error, e:
+            logger.error(_(u'termios.error in NX_switchpage: {}').format(e[1]))
+            error = True
     if error:
         return False
     NX_page = new_page
@@ -523,39 +564,29 @@ def temp_getvalues():
     global logger, curPath, curFile
     temps = dict()
     if os.path.isfile(curPath + '/' + curFile):
-        logger.debug("Daten vom WLANThermo zum Anzeigen vorhanden")
+        logger.debug(_(u'Data from WLANThermo is available to show on the display'))
         ft = open(curPath + '/' + curFile).read()
         temps_raw = ft.split(';')
         temps = dict()
         temps['timestamp'] = time.mktime(time.strptime(temps_raw[0],'%d.%m.%y %H:%M:%S'))
         for count in range(8):
-            temps[count] = {'value': str(round(float(temps_raw[count+1]),1)) + '\xb0C', 'alert': temps_raw[count+9]}
+            temps[count] = {'value': str(round(float(temps_raw[count+1]),1)), 'alert': temps_raw[count+9]}
     else:
         return None
     
     return temps
 
-
-def tempcsv_write(config):
-    name ='/var/www/temperaturen.csv'
-    logger.debug('Schreibe Temperaturen in "' + name + '" neu!')
-    while True:
-        try:
-            fw = open(name + '_tmp','w') #Datei anlegen
-            
-            for i in range(8):
-                fw.write(str(config.get('temp_max','temp_max' + str(i))) + '\n') # Alarm-Max-Werte schreiben
-            for i in range(8):
-                fw.write(str(config.get('temp_min','temp_min' + str(i))) + '\n') # Alarm-Min-Werte schreiben
-            
-            fw.flush()
-            os.fsync(fw.fileno())
-            fw.close()
-            os.rename(name + '_tmp', name)
-        except IndexError:
-            time.sleep(0.1)
-            continue
-        break
+def language_getvalues():
+    global configfile, configfile_lock
+    locale = {}
+    with configfile_lock:
+        config = ConfigParser.SafeConfigParser()
+        config.read(configfile)
+    
+    locale['locale'] = config.get('locale','locale')
+    locale['temp_unit'] = config.get('locale','temp_unit')
+    
+    return locale
 
 
 def set_tempflag():
@@ -565,30 +596,29 @@ def set_tempflag():
 
 def channels_setvalues(channel, high= None, low=None, sensor=None):
     global configfile, configfile_lock
-    restart_comp = False
     temp_changed = False
-    with configfile_lock:
-        newconfig = ConfigParser.SafeConfigParser()
-        newconfig.read(configfile)
-        if low != None:
-            newconfig.set('temp_min','temp_min' + str(channel), str(low))
-            temp_changed = True
-        if high != None:
-            newconfig.set('temp_max','temp_max' + str(channel), str(high))
-            temp_changed = True
-        if sensor != None:
-            newconfig.set('Sensoren','ch' + str(channel), str(sensor))
-            restart_comp = True
+    
+    try:
+        with configfile_lock:
+            newconfig = ConfigParser.SafeConfigParser()
+            newconfig.read(configfile)
+            if low is not None:
+                newconfig.set('temp_min','temp_min' + str(channel), str(int(low)))
+                temp_changed = True
+            if high is not None:
+                newconfig.set('temp_max','temp_max' + str(channel), str(int(high)))
+                temp_changed = True
+            if sensor is not None:
+                newconfig.set('Sensoren','ch' + str(channel), str(int(sensor)))
             
-        if restart_comp:
-            newconfig.set('ToDo','restart_thermo', 'True')
-        elif temp_changed:
-            tempcsv_write(newconfig)
+            config_write(configfile, newconfig)
         
         if temp_changed:
             set_tempflag()
-            
-        config_write(configfile, newconfig)
+    
+    except ValueError:
+        logger.error(_(u'Error while setting channel values'))
+        return False
 
 
 def display_getvalues():
@@ -610,14 +640,19 @@ def display_getvalues():
 
 def display_setvalues(dim = None, timeout = None):
     global configfile, configfile_lock
-    with configfile_lock:
-        newconfig = ConfigParser.SafeConfigParser()
-        newconfig.read(configfile)
-        if dim != None:
-            newconfig.set('Display','dim', str(dim))
-        if timeout != None:
-            newconfig.set('Display','timeout', str(timeout))
-        config_write(configfile, newconfig)
+    
+    try:
+        with configfile_lock:
+            newconfig = ConfigParser.SafeConfigParser()
+            newconfig.read(configfile)
+            if dim is not None:
+                newconfig.set('Display','dim', str(int(dim)))
+            if timeout is not None:
+                newconfig.set('Display','timeout', str(int(timeout)))
+            config_write(configfile, newconfig)
+    except ValueError:
+        logger.error(_(u'Error while setting display values'))
+        return False
 
 
 def todo_setvalues(pi_down = None, pi_reboot = None):
@@ -625,39 +660,44 @@ def todo_setvalues(pi_down = None, pi_reboot = None):
     with configfile_lock:
         newconfig = ConfigParser.SafeConfigParser()
         newconfig.read(configfile)
-        if pi_down != None:
+        if pi_down is not None:
             newconfig.set('ToDo','raspi_shutdown', ['False', 'True'][pi_down])
-        if pi_reboot != None:
+        if pi_reboot is not None:
             newconfig.set('ToDo','raspi_reboot', ['False', 'True'][pi_reboot])
         config_write(configfile, newconfig)
 
 
 def pitmaster_setvalues(pit_ch = None, pit_set = None, pit_lid=  None, pit_on = None, pit_pid = None, pit_type = None, pit_inverted = None):
     global configfile, configfile_lock
-    with configfile_lock:
-        newconfig = ConfigParser.SafeConfigParser()
-        newconfig.read(configfile)
-        if pit_ch != None:
-            newconfig.set('Pitmaster','pit_ch', str(pit_ch))
-        if pit_inverted != None:
-            newconfig.set('Pitmaster','pit_inverted', ['False', 'True'][pit_inverted])
-        if pit_set != None:
-            newconfig.set('Pitmaster','pit_set', str(pit_set))
-        if pit_lid != None:
-            newconfig.set('Pitmaster','pit_open_lid_detection', ['False', 'True'][pit_lid])
-        if pit_on != None:
-            newconfig.set('ToDo','pit_on', ['False', 'True'][pit_on])
-        if pit_pid != None:
-            newconfig.set('Pitmaster','pit_controller_type', ['False', 'PID'][pit_pid])
-        if pit_type != None:
-            newconfig.set('Pitmaster','pit_type', ['fan', 'servo', 'io', 'io_pwm', 'fan_pwm'][pit_type])
-            
-        config_write(configfile, newconfig)
+    
+    try:
+        with configfile_lock:
+            newconfig = ConfigParser.SafeConfigParser()
+            newconfig.read(configfile)
+            if pit_ch is not None:
+                newconfig.set('Pitmaster','pit_ch', str(int(pit_ch)))
+            if pit_inverted is not None:
+                newconfig.set('Pitmaster','pit_inverted', ['False', 'True'][int(pit_inverted)])
+            if pit_set is not None:
+                newconfig.set('Pitmaster','pit_set', str(float(pit_set)))
+            if pit_lid is not None:
+                newconfig.set('Pitmaster','pit_open_lid_detection', ['False', 'True'][int(pit_lid)])
+            if pit_on is not None:
+                newconfig.set('ToDo','pit_on', ['False', 'True'][int(pit_on)])
+            if pit_pid is not None:
+                newconfig.set('Pitmaster','pit_controller_type', ['False', 'PID'][int(pit_pid)])
+            if pit_type is not None:
+                newconfig.set('Pitmaster','pit_type', ['fan', 'servo', 'io', 'io_pwm', 'fan_pwm'][int(pit_type)])
+                
+            config_write(configfile, newconfig)
+    except ValueError:
+        logger.error(_(u'Error while setting pitmaster values'))
+        return False
 
 
 def channels_getvalues():
     global logger, configfile, configfile_lock
-    logger.debug('Lade Kanalkonfiguration aus Logfile')
+    logger.debug(_(u'Get channel configuration from config file'))
     channels = {}
     with configfile_lock:
         Config = ConfigParser.SafeConfigParser()
@@ -713,7 +753,7 @@ def pitmaster_config_getvalues():
 def pitmaster_getvalues():
     global logger, pitPath, pitFile
     if os.path.isfile(pitPath + '/' + pitFile):
-        logger.debug("Daten vom Pitmaster zum Anzeigen vorhanden")
+        logger.debug(_(u'Data from the pitmaster is available to show on the display'))
         fp = open(pitPath + '/' + pitFile).read()
         pitmaster_raw = fp.split(';',4)
         # Es trägt sich zu, das im Lande WLANThermo manchmal nix im Pitmaster File steht
@@ -741,7 +781,7 @@ def lan_getvalues():
 
 
 def wlan_getsignal(interface):
-    logger.debug('Hole Signalstärke für "' + interface + '"')
+    logger.debug(_(u'Get signal strength for: {}').format(interface))
     retvalue = os.popen("LANG=C iwconfig " + interface + " 2>/dev/null").readlines()
     for line in retvalue:
         if 'Link Quality=' in line:
@@ -771,51 +811,52 @@ def wlan_reconnect():
 
 
 def wlan_setpassphrase(ssid, psk):
-    logger.debug('Setze WPA Passhrase für: ' + ssid)
+    logger.debug(_(u'Set WPA Passphrase for: {}').format(ssid))
     fw = file('/etc/wpa_supplicant/wpa_supplicant.conf').readlines()
     ssids = list()
     psks = list()
     ssid_found = False
+    tmp_filename = get_random_filename('/etc/wpa_supplicant/wpa_supplicant.conf')
     
     for line in fw:
         if re.search(r'SSID',line,re.IGNORECASE):
             ssids.append(line.split("=")[1].replace('"','').strip())
         elif re.search(r'\#psk',line,re.IGNORECASE):
             psks.append(line.split("=")[1].replace('"','').strip())
-    wpa_file = open('/etc/wpa_supplicant/wpa_supplicant.conf' + '_tmp', 'w')
+    wpa_file = open(tmp_filename, 'w')
     wpa_file.write('ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\n')
     wpa_file.write('update_config=1\n')
     
     if ssids:
         for i in range(len(ssids)):
-            logger.debug('Schreibe wpa_supplicant.conf für: ' + ssids[i])
+            logger.debug(_(u'Writing wpa_supplicant.conf for SSID: {}').format(ssids[i]))
             if ssid == ssids[i]:
                 # Wert verändert
-                logger.debug('SSID bereits in Config, PSK ändern')
+                logger.debug(_(u'SSID exists already in the configuration file, change PSK'))
                 wpa_passphrase = subprocess.Popen(("/usr/bin/wpa_passphrase", str(ssid), str(psk)), stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.readlines()
                 ssid_found = True
             else:
                 # neue SSID
-                logger.debug('SSID und PSK aus alter Datei übernommen')
+                logger.debug(_(u'SSID and PSK taken from old configuration file'))
                 wpa_passphrase = subprocess.Popen(("/usr/bin/wpa_passphrase", str(ssids[i]), str(psks[i])), stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.readlines()
-            if wpa_passphrase[0] != "Passphrase must be 8..63 characters":
-                for line in wpa_passphrase:
-                    wpa_file.write(line)
-            else:
-                logger.warning('Neuer PSK zu kurz für SSID: ' + ssid)
+                if wpa_passphrase[0] != "Passphrase must be 8..63 characters":
+                    for line in wpa_passphrase:
+                        wpa_file.write(line)
+                else:
+                    logger.warning(_(u'New PSK to short for SSID: {}').format(ssid))
     if not ssid_found:
         # SSID nicht in konfigurierten WLANs, das neue hinzufügen
-        logger.debug('Schreibe wpa_supplicant.conf für: ' + ssid)
+        logger.debug(_(u'Writing wpa_supplicant.conf for SSID: {}').format(ssid))
         wpa_passphrase = subprocess.Popen(("/usr/bin/wpa_passphrase", str(ssid), str(psk)), stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.readlines()
         if wpa_passphrase[0] != "Passphrase must be 8..63 characters":
             for line in wpa_passphrase:
                 wpa_file.write(line)
         else:
-            logger.warning('Neuer PSK zu kurz für SSID: ' + ssid)
+            logger.warning(_(u'New PSK to short for SSID: {}').format(ssid))
     wpa_file.flush()
     os.fsync(wpa_file.fileno())
     wpa_file.close()
-    os.rename('/etc/wpa_supplicant/wpa_supplicant.conf' + '_tmp', '/etc/wpa_supplicant/wpa_supplicant.conf')
+    os.rename(tmp_filename, '/etc/wpa_supplicant/wpa_supplicant.conf')
     return True
 
 
@@ -827,17 +868,17 @@ def alert_setack():
 
 
 def check_reboot():
-    logger.debug('Check for reboot:')
+    logger.debug(_(u'Check for reboot:'))
     lines = subprocess.Popen(["/bin/systemctl", "list-jobs"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, preexec_fn=preexec_function()).stdout.readlines()
     for line in lines:
         if re.search(r'reboot\.target.*start', line) is not None:
-            logger.debug('Reboot detected')
+            logger.debug(_(u'Reboot detected'))
             return True
-    logger.debug('Shutdown assumed')
+    logger.debug(_(u'Shutdown assumed'))
     return False
 
 def NX_display():
-    logger.info('Display-Thread gestartet')
+    logger.info(_(u'Display thread has been startet'))
     global NX_page, NX_channel, stop_event, NX_eventq
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
@@ -846,74 +887,89 @@ def NX_display():
     
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
-    logger.info('Version auf dem Display: ' + str(display_version))
+    logger.info(_(u'Software version on the display: {}').format(display_version))
     if str(display_version) == nextion_versions[0]:
         # Version on the display is current version
-        logger.info('Displaysoftware auf aktuellem Stand')
+        logger.info(_(u'Display software is on the current level'))
         if os.path.isfile('/var/www/tmp/nextionupdate'):
             # Update-Flag löschen wenn Version i.O.
             os.unlink('/var/www/tmp/nextionupdate')
     elif str(display_version) in nextion_versions:
         # Version is not current, but working
-        logger.info('Update des Displays empfohlen')
+        logger.info(_(u'Display software update is recommended'))
         open('/var/www/tmp/nextionupdate', 'w').close()
     else:
         # Version is not suitable for this script version
-        logger.info('Update des Displays notwendig')
+        logger.info(_(u'Display software update is required'))
         NX_sendcmd('page update')
         open('/var/www/tmp/nextionupdate', 'w').close()
         stop_event.wait()
         return False
 
-    NX_sendvalues({'boot.text.txt:35':'Temperaturen werden geladen'})
+    NX_sendvalues({'boot.text.txt:35':_(u'Loading temperature data')})
     NX_switchpage('boot')
     
     # Werte initialisieren
     temps_event.clear()
     channels_event.clear()
-    logger.debug('Hole Temperaturen...')
+    logger.debug(_(u'Get temperature data...'))
     temps = temp_getvalues()
-    while temps == None:
-        logger.info("Wartet auf Temperaturen")
+    while temps is None:
+        logger.info(_(u'Waiting on temperature data'))
         temps_event.wait(0.1)
         temps = temp_getvalues()
     
-    NX_sendvalues({'boot.text.txt:35':'Konfiguration wird geladen'})
+    NX_sendvalues({'boot.text.txt:35':_(u'Loading configuration')})
     
-    logger.debug('Hole Displaykonfiguration...')
+    logger.debug(_(u'Get display configuration...'))
     display = display_getvalues()
     
-    logger.debug('Hole Sensorkonfiguration...')
+    logger.debug(_(u'Get sensor configuration...'))
     sensors = sensors_getvalues()
     
-    logger.debug('Hole Kanalkonfiguration...')
+    logger.debug(_(u'Get channel configuration...'))
     channels = channels_getvalues()
     
-    logger.debug('Hole Pitmasterkonfiguration...')
+    logger.debug(_(u'Get pitmaster configuration...'))
     pitconf = pitmaster_config_getvalues()
+    
+    logger.debug(_(u'Get locale configuration...'))
+    language = language_getvalues()
     
     interfaces = lan_getvalues()
     
+    if language['temp_unit'] == 'celsius':
+        temp_unit = '\xb0C'
+    elif language['temp_unit'] == 'fahrenheit':
+        temp_unit = '\xb0F'
+    else:
+        logger.error('Unknown unit of measurement')
+        temp_unit = ''
+                    
     # Leere Liste da der Scan etwas dauert...
     ssids = []
     # Zahl des aktuell gewählen Eintrages
     ssids_i = 0
     pitmaster = None
     if pitconf['on'] == True:
-        logger.debug('Hole Pitmasterdaten...')
+        logger.debug(_(u'Get pitmaster data...'))
         pitmaster = pitmaster_getvalues()
     # Kann ein wenig dauern, bis valide Daten geliefert werden, daher nicht mehr warten
-    if pitmaster == None:
+    if pitmaster is None:
         pitmaster = {'timestamp': 0, 'set': 0, 'now': 0,'new': 0,'msg': ''}
     
     values = dict()
     for i in range(1, 11):
-        values['main.sensor_name' + str(i) + '.txt:10'] = sensors[i]['name'].decode('utf-8').encode('latin-1')
+        try:
+            values['main.sensor_name' + str(i) + '.txt:10'] = sensors[i]['name'].decode('utf-8').encode('latin-1')
+        except KeyError:
+            logger.error(_(u'Sensor {} not defined!'.format(i)))
+            values['main.sensor_name' + str(i) + '.txt:10'] = '- - -'
     for i in range(8):
-        if temps[i]['value'] == '999.9\xb0C':
+        if temps[i]['value'] == '999.9':
             values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].decode('utf-8').encode('latin-1')
         else:
-            values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value']
+            values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value'] + temp_unit
         values['main.alert' + str(i) + '.txt:10'] = temps[i]['alert']
         values['main.al' + str(i) + 'minist.txt:10'] = int(round(channels[i]['temp_min']))
         values['main.al' + str(i) + 'maxist.txt:10'] = int(round(channels[i]['temp_max']))
@@ -936,11 +992,11 @@ def NX_display():
     # NX_sendcmd('thsp=' + str(values['main.timeout.val']))
     pit_types = {'fan':0, 'servo':1, 'io':2, 'io_pwm':3, 'fan_pwm':4}
     values['main.pit_type.val'] = pit_types[pitconf['type']]
-    NX_sendvalues({'boot.text.txt:35':'Werte werden uebertragen'})
+    NX_sendvalues({'boot.text.txt:35':_(u'Transferring data')})
     NX_sendvalues(values)
     
     # Ruft die Startseite auf, vorher Text zurücksetzen
-    NX_sendvalues({'boot.text.txt:35':'Verbindung wird hergestellt'})
+    NX_sendvalues({'boot.text.txt:35':_(u'Establishing connection')})
     NX_sendcmd('page ' + display['start_page'])
     NX_wake_event.set()
     
@@ -955,7 +1011,7 @@ def NX_display():
                 NX_page = event['data']['page']
             elif event['type'] == 'startup':
                 # Restart des Displays - sterben und auf Wiedergeburt hoffen
-                logger.warning('Start-Up Meldung vom Display erhalten, breche ab.')
+                logger.warning(_(u'Received start-up message from the display, exiting.'))
                 return False
             elif event['type'] == 'read_cmd':
                 if event['data']['area'] == 0:
@@ -1019,7 +1075,7 @@ def NX_display():
                         todo_setvalues(pi_reboot = 1)
                     elif event['data']['id'] == 4:
                         # main.password.txt = WLAN konfigurieren
-                        passphrase = wlan_setpassphrase(ssids[ssids_i], NX_getvalue('main.password.txt'))
+                        wlan_setpassphrase(ssids[ssids_i], NX_getvalue('main.password.txt'))
                         wlan_reconnect()
                         # Sleepmode deaktivierne
                         # NX_sendcmd('thsp=0')
@@ -1037,7 +1093,7 @@ def NX_display():
                                 break
                             elif i == 44:
                                 # wlan0 hat nach 20s noch keine IP-Adresse
-                                NX_sendvalues({'main.result.txt:20': 'fehlgeschlagen'})
+                                NX_sendvalues({'main.result.txt:20': _(u'failed')})
                                 NX_sendcmd('page result')
                                 break
                             else:
@@ -1058,21 +1114,21 @@ def NX_display():
                 if event['data']['area'] == 5:
                     if event['data']['id'] == 0:
                         if event['data']['action'] == 0:
-                            logger.debug('Fahre herunter...')
+                            logger.debug(_(u'Shutting down...'))
                             todo_setvalues(pi_down = 1)
                     elif event['data']['id'] == 1:
                         if event['data']['action'] == 0:
-                            logger.debug('Starte neu...')
+                            logger.debug(_(u'Rebooting...'))
                             todo_setvalues(pi_reboot = 1)
                     elif event['data']['id'] == 3:
                         if event['data']['action'] == 0:
                             # WLAN scannen
-                            logger.debug('Scanne WLANs')
+                            logger.debug(_(u'Scanning WLANs'))
                             ssids = wlan_getssids()
                             ssids_i = 0
                             logger.debug('SSIDs:' + str(ssids))
                             if not ssids:
-                                NX_sendvalues({'main.ssid.txt:35': 'Kein WLAN'})
+                                NX_sendvalues({'main.ssid.txt:35': _(u'No WLAN found')})
                                 NX_sendcmd('page setup')
                             else:
                                 NX_sendvalues({'main.ssid.txt:35': ssids[ssids_i]})
@@ -1094,21 +1150,28 @@ def NX_display():
                 elif event['data']['area'] == 6:
                     if event['data']['id'] == 0:
                         if event['data']['action'] == 0:
-                            logger.debug('Alarm bestätigt!')
+                            logger.debug(_(u'Alert acknowledged!'))
                             alert_setack()
             NX_eventq.task_done()
         elif temps_event.is_set():
-            logger.debug('Temperatur Event')
+            logger.debug(_(u'Temperature event'))
             values = dict()
             new_temps = temp_getvalues()
-            if new_temps != None:
+            if new_temps is not None:
                 temps_event.clear()
+                if language['temp_unit'] == 'celsius':
+                    temp_unit = '\xb0C'
+                elif language['temp_unit'] == 'fahrenheit':
+                    temp_unit = '\xb0F'
+                else:
+                    logger.error(_(u'Unknown unit of measurement'))
+                    temp_unit = ''
                 for i in range(8):
                     if temps[i]['value'] != new_temps[i]['value']:
-                        if new_temps[i]['value'] == '999.9\xb0C':
+                        if new_temps[i]['value'] == '999.9':
                             values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].decode('utf-8').encode('latin-1')
                         else:
-                            values['main.kanal' + str(i) + '.txt:10'] = new_temps[i]['value']
+                            values['main.kanal' + str(i) + '.txt:10'] = new_temps[i]['value'] + temp_unit
                     
                     if temps[i]['alert'] != new_temps[i]['alert']:
                         values['main.alert' + str(i) + '.txt:10'] = new_temps[i]['alert']
@@ -1120,7 +1183,7 @@ def NX_display():
                     temps_event.set()
         
         elif pitconf_event.is_set():
-            logger.debug('Pitmasterkonfiguration Event')
+            logger.debug(_(u'Pitmaster configuration event'))
             values = dict()
             
             pitconf_event.clear()
@@ -1150,13 +1213,13 @@ def NX_display():
                 pitconf_event.set()
         
         elif pitmaster_event.is_set():
-            logger.debug('Pitmaster Event')
+            logger.debug(_(u'Pitmaster data event'))
             values = dict()
             
             pitmaster_event.clear()
             new_pitmaster = pitmaster_getvalues()
             
-            if new_pitmaster != None:
+            if new_pitmaster is not None:
                 if pitmaster['new'] != new_pitmaster['new']:
                     if pitconf['on']:
                         # Wenn Pitmaster aus, 0-Wert senden.
@@ -1171,7 +1234,7 @@ def NX_display():
                         pitmaster_event.set()
         
         elif channels_event.is_set():
-            logger.debug('Channels Event')
+            logger.debug(_(u'Channels data event'))
             values = dict()
             
             channels_event.clear()
@@ -1195,16 +1258,29 @@ def NX_display():
                 # Im Fehlerfall später wiederholen
                 channels_event.set()
         
+        elif config_event.is_set():
+            logger.debug(_(u'Config event'))
+            config_event.clear()
+            check_recalibration()
+            language = language_getvalues()
+            
+            
         else:
             time.sleep(0.01)
-    logger.info('Display-Thread gestoppt')
+    logger.info(_(u'Display thread stopped'))
     return True
+
+
+def get_random_filename(filename):
+    return filename + '_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(12))
 
 
 def config_write(configfile, config):
     # Schreibt das Configfile
     # Ein Lock sollte im aufrufenden Programm gehalten werden!
-    with open(configfile + '_tmp', 'w') as new_ini:
+    
+    tmp_filename = get_random_filename(configfile)
+    with open(tmp_filename, 'w') as new_ini:
         for section_name in config.sections():
             new_ini.write('[' + section_name + ']\n')
             for (key, value) in config.items(section_name):
@@ -1213,12 +1289,35 @@ def config_write(configfile, config):
         new_ini.flush()
         os.fsync(new_ini.fileno())
         new_ini.close()
-        os.rename(configfile + '_tmp', configfile)
+        os.rename(tmp_filename, configfile)
 
+
+def check_recalibration():
+    global configfile, configfile_lock
+    
+    calibrate_display = False
+
+    with configfile_lock:
+        newconfig = ConfigParser.SafeConfigParser()
+        newconfig.read(configfile)
+        if newconfig.getboolean('ToDo', 'calibrate_display') == True:
+            logger.info(_(u'Calibrating Display'))
+            NX_sendcmd('touch_j')
+            newconfig.set('ToDo', 'calibrate_display', 'False')
+            calibrate_display = True
+            # We don´t get any useful information back from the display
+            # So we don´t know when to start again, try again after 30s
+            stop_event.set()
+            time.sleep(30)
+            config_write(configfile, newconfig)
+
+            time.sleep(1)
+            newconfig.set('ToDo', 'restart_display', 'True')
+            config_write(configfile, newconfig)
 
 def stop_all(signum, frame):
-    logger.debug('Caught Signal: ' + str(signum))
-    logger.info('Sende Stopsignal an alle Threads')
+    logger.debug(_(u'Caught signal: ') + str(signum))
+    logger.info(_(u'Sende stop signal to all threads'))
     stop_event.set()
 
 
@@ -1243,7 +1342,7 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
 sys.excepthook = log_uncaught_exceptions
 
 # Auf geht es
-logger.info('Nextion Display gestartet, Skriptversion: ' + version)
+logger.info(_(u'Nextion display started, script version: ') + version)
 
 signal.signal(15, stop_all)
 signal.signal(2, stop_all)
@@ -1263,41 +1362,41 @@ if os.access(pidfilename, os.F_OK):
     pidfile.seek(0)
     old_pid = int(pidfile.readline())
     if check_pid(old_pid):
-        print("%s existiert, Prozess läuft bereits, beende Skript" % pidfilename)
-        logger.error("%s existiert, Prozess läuft bereits, beende Skript" % pidfilename)
+        print(_(u"%s already exists, Process is running, exiting") % pidfilename)
+        logger.error(_(u"%s already exists, Process is running, exiting") % pidfilename)
         sys.exit()
     else:
-        logger.info("%s existiert, Prozess läuft nicht, setze Ausführung fort" % pidfilename)
+        logger.info(_(u"%s already exists, Process is NOT running, resuming operation") % pidfilename)
         pidfile.seek(0)
         open(pidfilename, 'w').write(pid)
     
 else:
-    logger.debug("%s geschrieben" % pidfilename)
+    logger.debug(_(u"%s written") % pidfilename)
     open(pidfilename, 'w').write(pid)
 
 # Display initialisieren
-logger.debug('Lade Displaykonfiguration')
+logger.debug(_(u'Loading display configuration'))
 display = display_getvalues()
 
-logger.debug('Öffne seriellen Port: ' + display['serialdevice'])
+logger.debug(_(u'Opening serial port: ') + display['serialdevice'])
 ser = serial.Serial()
 
-logger.debug('Initialisiere Display,  Baudrate: ' + str(display['serialspeed']))
+logger.debug(_(u'Initializing display, baud rate: ') + str(display['serialspeed']))
 
 if NX_init(display['serialdevice'], display['serialspeed']):
-    logger.debug('Initialisierung OK')
+    logger.debug(_(u'Initialisation OK'))
     
-    logger.debug('Starte Reader-Thread')
+    logger.debug(_(u'Starting reader thread'))
     NX_reader_thread = threading.Thread(target=NX_reader)
     NX_reader_thread.daemon = True
     NX_reader_thread.start()
     
-    logger.debug('Starte Display-Thread')
+    logger.debug(_(u'Starting display thread'))
     NX_display_thread = threading.Thread(target=NX_display)
     NX_display_thread.daemon = True
     NX_display_thread.start()
     
-    logger.debug('Starte Dateiüberwachung')
+    logger.debug(_(u'Starting file watcher'))
     wm = pyinotify.WatchManager()
     mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
     notifier = pyinotify.ThreadedNotifier(wm, FileEvent())
@@ -1318,25 +1417,28 @@ if NX_init(display['serialdevice'], display['serialspeed']):
     if not NX_wake_event.is_set():
         NX_sendcmd('sleep=0')
         time.sleep(0.2)
+    
     if check_reboot():
-        NX_sendvalues({'boot.text.txt:35': 'System wird neu gestartet...'})
+        NX_sendvalues({'boot.text.txt:35': _(u'System is rebooting...')})
     else:
+        NX_sendvalues({'boot.text.txt:35': _(u'System is shutting down...')})
         NX_sendvalues({'boot.nextion_down.val': 1})
+    
     NX_switchpage('boot')
     
     notifier.stop()
     # Signal zum stoppen geben
 
-    logger.debug('Warte auf Threads...')
+    logger.debug(_(u'Waiting for Threads...'))
     # Auf Threads warten
     NX_display_thread.join()
     NX_reader_thread.join()
     
 else:
-    logger.error('Keine Verbindung zum Nextion Display')
+    logger.error(_(u'Can´t establish connection to the Nextion display'))
     # Vielleicht ist die Software noch nicht auf dem Display installiert
     open('/var/www/tmp/nextionupdate', 'w').close()
 
-logger.info('Display stopped!')
+logger.info(_(u'Display stopped!'))
 logging.shutdown()
 os.unlink(pidfilename)

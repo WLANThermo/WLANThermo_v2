@@ -1,0 +1,7 @@
+/var/log/WLANThermo.log {
+  rotate 12
+  monthly
+  compress
+  missingok
+  notifempty
+}

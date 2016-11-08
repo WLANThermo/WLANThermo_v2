@@ -1,9 +1,17 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
-$_SESSION["webGUIversion"] = "V2.4.0-0";
+$_SESSION["webGUIversion"] = "V2.5.0-alpha1";
 $title = "WLAN Thermometer";
 $document_root = getenv('DOCUMENT_ROOT');
+include("gettext.php");
+if (isset($_SESSION["locale"])){	
+	set_locale($_SESSION["locale"]);
+}else{
+	set_locale("de_DE.utf8");
+	setlocale(LC_ALL, 'de_DE.utf8');
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -64,8 +72,8 @@ $document_root = getenv('DOCUMENT_ROOT');
 						<li class = "shutdown_menu">
 							<a href="#" class="mainmenu"><img src="../images/icons32x32/shutdown.png" alt="Home" title="Shutdown"></a>
 							<ul>
-								<li><a href="../control/shutdown.php?id=reboot"><b>Neu starten</b></a></li>
-								<li><a href="../control/shutdown.php?id=shutdown"><b>Herunterfahren</b></a></li>
+								<li><a href="../control/reboot.php"><b><?php echo gettext("Reboot");?></b></a></li>
+								<li><a href="../control/shutdown.php"><b><?php echo gettext("Shutdown");?></b></a></li>
 							</ul>
 						</li>
 						<li>
@@ -75,13 +83,13 @@ $document_root = getenv('DOCUMENT_ROOT');
 							<a href="../info.php" class="mainmenu"><img src="../images/icons32x32/info.png" alt="Info" title="Info"></a>
 						</li>
 						<li>
-							<a href="../control/wifi.php" class="mainmenu"><img src="../images/icons32x32/wifi.png" alt="Home" title="WiFi Einstellungen"></a>
+							<a href="../control/wifi.php" class="mainmenu"><img src="../images/icons32x32/wifi.png" alt="<?php echo gettext("WiFi Settings");?>" title="<?php echo gettext("WiFi Settings");?>"></a>
 						</li>
 						<li>
-							<a href="../control/config.php" class="mainmenu"><img src="../images/icons32x32/thermo.png" alt="Temp Einstellen" title="Einstellungen"></a>
+							<a href="../control/config.php" class="mainmenu"><img src="../images/icons32x32/thermo.png" alt="<?php echo gettext("Settings");?>" title="<?php echo gettext("Settings");?>"></a>
 						</li>	
 						<li>
-							<a href="../thermolog.php" class="mainmenu"><img src="../images/icons32x32/log.png" alt="Log Datei" title="Log Datei"></a>
+							<a href="../thermolog.php" class="mainmenu"><img src="../images/icons32x32/log.png" alt="<?php echo gettext("Log File");?>" title="<?php echo gettext("Log File");?>"></a>
 						</li>
 						<li <?php echo $raspicam_start;?>>
 							<a href="#" id="raspicam_button" class="mainmenu"><img src="../images/icons32x32/raspicam.png" alt="RaspiCam" title="RaspiCam"></a>
@@ -90,10 +98,10 @@ $document_root = getenv('DOCUMENT_ROOT');
 							<a href="#" id="webcam_button" class="mainmenu"><img src="../images/icons32x32/webcam.png" alt="WebCam" title="WebCam"></a>
 						</li>
 						<li	<?php echo $plot_start;?>>
-							<a href="#" id="ThermoPlot_button" class="mainmenu"><img src="../images/icons32x32/chart.png" alt="TempGraph" title="TempGraph"></a>
+							<a href="#" id="ThermoPlot_button" class="mainmenu"><img src="../images/icons32x32/chart.png" alt="<?php echo gettext("Temperature Graph");?>" title="<?php echo gettext("Temperature Graph");?>"></a>
 						</li>				
 						<li>
-							<div id="newlogmenu"><a href="../control/new_log_file.php" class="mainmenu" style="text-align:left;"><b>NEUES LOGFILE ERSTELLEN</b></a></div>
+							<div id="newlogmenu"><a href="../control/new_log_file.php" class="mainmenu" style="text-align:left;"><b><?php echo gettext("Create New Log File");?></b></a></div>
 						</li>
 					</ul>
 				</nav>

@@ -1,0 +1,181 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WLANThermo 2.4.0\n"
+"POT-Creation-Date: 2016-10-07 16:40+0200\n"
+"PO-Revision-Date: 2016-10-07 16:40+0200\n"
+"Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
+"Language-Team: \n"
+"Language: de_DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.9\n"
+"X-Poedit-Basepath: ../../../../../sbin\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: wlt_2_pitmaster.py\n"
+
+#: wlt_2_pitmaster.py:102
+#, python-brace-format
+msgid "Starting pit {pit_type} on GPIO {gpio}"
+msgstr "Starte Pit {pit_type} auf GPIO {gpio}"
+
+#: wlt_2_pitmaster.py:162
+msgid "Setting pit to {}%"
+msgstr "Setze Pit auf {}%"
+
+#: wlt_2_pitmaster.py:164
+msgid "Control-out over maximum, limiting to 100%"
+msgstr "Steuergröße über Maximum, begrenze auf 100%"
+
+#: wlt_2_pitmaster.py:167
+msgid "Control-out below minimum, limiting to 0%"
+msgstr "Steuergröße unter Minimum, begrenze auf 0%"
+
+#: wlt_2_pitmaster.py:174
+msgid "Fan startup, 0,5s 25%"
+msgstr "Lüfteranlauf, 0,5s 25%"
+
+#: wlt_2_pitmaster.py:194
+msgid "fan_pwm pulse width "
+msgstr "fan_pwm Pulsweite "
+
+#: wlt_2_pitmaster.py:217
+msgid "fan PWM {} of 255"
+msgstr "fan PWM {} von 255"
+
+#: wlt_2_pitmaster.py:225
+msgid "servo impulse width {}µs"
+msgstr "servo Impulsbreite {}µs"
+
+#: wlt_2_pitmaster.py:240
+#, python-brace-format
+msgid "io_pwm impulse width {on}s of {cycletime}s"
+msgstr "io_pwm Impulsbreite {on}s von {cycletime}s"
+
+#: wlt_2_pitmaster.py:245
+msgid "io switching on!"
+msgstr "io Schalte ein!"
+
+#: wlt_2_pitmaster.py:252
+msgid "io switching off!"
+msgstr "io Schalte aus!"
+
+#: wlt_2_pitmaster.py:261
+msgid "io_pwm - starting thread"
+msgstr "io_pwm - Starte Thread"
+
+#: wlt_2_pitmaster.py:272
+msgid "io_pwm - stopping thread"
+msgstr "io_pwm - Beende Thread"
+
+#: wlt_2_pitmaster.py:340
+msgid "WLANThermoPID started"
+msgstr "WLANThermoPID gestartet"
+
+#: wlt_2_pitmaster.py:343
+msgid "Pitmaster start"
+msgstr "Pitmaster startet"
+
+#: wlt_2_pitmaster.py:393
+msgid "Loading configuration..."
+msgstr "Konfiguration wird geladen..."
+
+#: wlt_2_pitmaster.py:407
+msgid "Setting pit type to: "
+msgstr "Setze Pittyp auf: "
+
+#: wlt_2_pitmaster.py:410 wlt_2_pitmaster.py:419
+msgid "Setting pit IO GPIO to: "
+msgstr "Setze Pit IO GPIO auf: "
+
+#: wlt_2_pitmaster.py:440
+msgid "Restarting pit..."
+msgstr "Starte Pit neu..."
+
+#: wlt_2_pitmaster.py:475
+msgid "Setting output to {}% manual value"
+msgstr "Setze Ausgang manuell auf {}%"
+
+#: wlt_2_pitmaster.py:483
+msgid "No signal on channel "
+msgstr "Kein Messwert auf Kanal "
+
+#: wlt_2_pitmaster.py:484
+msgid "|no probe connected to Channel {}!"
+msgstr "|Kein Temperaturfuehler an Kanal {} angeschlossen!"
+
+#: wlt_2_pitmaster.py:498
+msgid "Open lid detected!"
+msgstr "Offener Deckel erkannt!"
+
+#: wlt_2_pitmaster.py:501
+msgid "Open lid detection: timeout!"
+msgstr "Deckelöffnung: Timeout!"
+
+#: wlt_2_pitmaster.py:503
+msgid "|timeout open lid detection"
+msgstr "|Timeout Deckelerkennung"
+
+#: wlt_2_pitmaster.py:505
+msgid "Open lid detection: lid closed again!"
+msgstr "Deckelöffnung: Deckel wieder geschlossen!"
+
+#: wlt_2_pitmaster.py:507
+msgid "|lid closed"
+msgstr "|Deckel geschlossen"
+
+#: wlt_2_pitmaster.py:510
+msgid "Opened lid detected!"
+msgstr "Deckelöffnung erkannt!"
+
+#: wlt_2_pitmaster.py:514
+msgid "|open lid detected"
+msgstr "|Deckelöffnung erkannt"
+
+#: wlt_2_pitmaster.py:520
+#, python-brace-format
+msgid "|current: {pit_now}, set: {pit_set}"
+msgstr "|Ist: {pit_now}, Soll: {pit_set}"
+
+#: wlt_2_pitmaster.py:531
+msgid "|dif: "
+msgstr "|Diff: "
+
+#: wlt_2_pitmaster.py:534
+msgid "|step: "
+msgstr "|Schritt: "
+
+#: wlt_2_pitmaster.py:536
+msgid "|new: "
+msgstr "|Neu: "
+
+#: wlt_2_pitmaster.py:540
+msgid "|new overshoot: "
+msgstr "|Neuer overshoot: "
+
+#: wlt_2_pitmaster.py:543
+msgid "|no matching rule, stop pit!"
+msgstr "|Keine Regel zutreffend, Ausschalten!"
+
+#: wlt_2_pitmaster.py:587
+#, python-brace-format
+msgid "|PID values P {p_out}, Iterm {i_out}, dInput {dInput}"
+msgstr "|PID Werte P {p_out}, Iterm {i_out}, dInput {dInput}"
+
+#: wlt_2_pitmaster.py:597
+msgid "|New value: "
+msgstr "|Neuer Wert: "
+
+#: wlt_2_pitmaster.py:635
+msgid "Error while deleting the pitmaster values"
+msgstr "Fehler beim löschen der Pitmasterwerte"
+
+#: wlt_2_pitmaster.py:636
+msgid "Shutting down WLANThermoPID"
+msgstr "WLANThermoPID wird heruntergefahren"
+
+#: wlt_2_pitmaster.py:657
+#, python-format
+msgid "%s already exists, Process is running, exiting"
+msgstr "%s existiert, Prozess läuft bereits, beende Skript"

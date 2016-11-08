@@ -12,6 +12,7 @@ if (!file_exists($tmp_dir)) {
 
 	$beginn = microtime(true);
 	include("function.php");
+	include("gettext.php");
 	$esound = "0"; // Variable für Soundalarmierung;
 	$esound_ = "0";
 	$message = "\n";
@@ -19,6 +20,7 @@ if (!file_exists($tmp_dir)) {
 	$pit_time_stamp = "";
 	$pit_val = "";
 	$pit_set = "";
+	$log_dateformat = 'd.m.y H:i:s';
 
 //	$pit_file = '.'.$_SESSION["pitmaster"].'';
 //	if (file_exists($pit_file)) {
@@ -31,6 +33,16 @@ if (!file_exists($tmp_dir)) {
 
 	checkSession();
 	
+//-------------------------------------------------------------------------------------------------------------------------------------
+// Sprache setzen #####################################################################################################################
+//-------------------------------------------------------------------------------------------------------------------------------------
+	
+if (isset($_SESSION["locale"])){	
+	set_locale($_SESSION["locale"]);
+}else{
+	set_locale("de_DE.utf8");
+}
+
 //-------------------------------------------------------------------------------------------------------------------------------------
 // Flag für Änderungen in der config ##################################################################################################
 //-------------------------------------------------------------------------------------------------------------------------------------
@@ -48,9 +60,9 @@ if (file_exists(dirname(__FILE__).'/tmp/update')) {
 	if (file_exists(dirname(__FILE__).'/tmp/update.log')) {
 		$lines = file('tmp/update.log');
 		$last_line = $lines[count($lines)-1];
-		echo '<div id="info_site"><p><b>WLANThermo update:</b> '.$last_line.'</p></div>';
+		echo '<div id="info_site"><p><b>'.gettext('WLANThermo update').':</b> '.$last_line.'</p></div>';
 	}else{
-		echo '<div id="info_site"><b>Das Update wird gerade Installiert...</b></div>';
+		echo '<div id="info_site"><b>'.gettext('The update is currently being installed').'...</b></div>';
 	}
 	$_SESSION["to_update"] = 'True';
 	echo '<script>$(function() { showLoading();});</script>';
@@ -58,7 +70,7 @@ if (file_exists(dirname(__FILE__).'/tmp/update')) {
 } 
 if (file_exists(dirname(__FILE__).'/tmp/reboot')) { 
 	$message .= "Reboot - Raspberry wird neu gestartet\n";
-	echo '<div id="info_site"><b>Raspberry Pi wird gerade neu gestartet...</b></div>';
+	echo '<div id="info_site"><b>'.gettext('Restarting RaspberryPi').'...</b></div>';
 	echo '<script>$(function() { showLoading();});</script>';
 	exit;
 }
@@ -72,7 +84,7 @@ if (file_exists(dirname(__FILE__).'/tmp/nextionupdate')) {
 		$lines = file('tmp/nextionupdatelog');
 		$last_line = $lines[count($lines)-1];
 		echo '<script>$(function() { showLoading();});</script>';
-		echo '<div id="info_site"><p><b>NEXTION Display update:</b> '.$last_line.'</p></div>';
+		echo '<div id="info_site"><p><b>'.gettext('NEXTION Display update').':</b> '.$last_line.'</p></div>';
 		exit;
 	}
 }else{
@@ -95,85 +107,14 @@ if (isset($_SESSION["to_update"])){
 	}
 }
 	echo '<script>$(function() { hideLoading();});</script>';
-
-	//-------------------------------------------------------------------------------------------------------------------------------------
-	// CPU Auslastung #####################################################################################################################
-	//-------------------------------------------------------------------------------------------------------------------------------------
-
-	define("TEMP_PATH","/tmp/");
-
-	class CPULoad {
 	
-		function check_load() {
-			$fd = fopen("/proc/stat","r");
-			if ($fd) {
-				$statinfo = explode("\n",fgets($fd, 1024));
-				fclose($fd);
-				foreach($statinfo as $line) {
-					$info = explode(" ",$line);
-					//echo "<pre>"; var_dump($info); echo "</pre>";
-					if($info[0]=="cpu") {
-						array_shift($info);  // pop off "cpu"
-						if(!$info[0]) array_shift($info); // pop off blank space (if any)
-						$this->user = $info[0];
-						$this->nice = $info[1];
-						$this->system = $info[2];
-						$this->idle = $info[3];
-						// $this->print_current();
-						return;
-					}
-				}
-			}
-		}
-		function load_load() {
-			$fp = @fopen(TEMP_PATH."cpuinfo.tmp","r");
-			if ($fp) {
-				$lines = explode("\n",fread($fp,1024));
-				$this->lasttime = $lines[0];
-				list($this->last_user,$this->last_nice,$this->last_system,$this->last_idle) = explode(" ",$lines[1]);
-				list($this->load["user"],$this->load["nice"],$this->load["system"],$this->load["idle"],$this->load["cpu"]) = explode(" ",$lines[2]);
-				fclose($fp);
-			}else{
-				$this->lasttime = time() - 60;
-				$this->last_user = $this->last_nice = $this->last_system = $this->last_idle = 0;
-				$this->user = $this->nice = $this->system = $this->idle = 0;
-			}
-		}
-		function calculate_load() {
-			//$this->print_current();
-			$d_user = $this->user - $this->last_user;
-			$d_nice = $this->nice - $this->last_nice;
-			$d_system = $this->system - $this->last_system;
-			$d_idle = $this->idle - $this->last_idle;
-			//printf("Delta - User: %f  Nice: %f  System: %f  Idle: %f<br/>",$d_user,$d_nice,$d_system,$d_idle);
-			$total=$d_user+$d_nice+$d_system+$d_idle;
-			if ($total<1) $total=1;
-			$scale = 100.0/$total;
-			$cpu_load = ($d_user+$d_nice+$d_system)*$scale;
-			$this->load["user"] = $d_user*$scale;
-			$this->load["nice"] = $d_nice*$scale;
-			$this->load["system"] = $d_system*$scale;
-			$this->load["idle"] = $d_idle*$scale;
-			$this->load["cpu"] = ($d_user+$d_nice+$d_system)*$scale;
-		}
+	if ($_SESSION["temp_unit"] == 'celsius') {
+		$temp_unit_short = '&#176;C';
+	} elseif ($_SESSION["temp_unit"] == 'fahrenheit') {
+		$temp_unit_short = '&#176;F';
+	}
+	
 
-		function get_load($fastest_sample=4) {
-			$this->load_load();
-			$this->cached = (time()-$this->lasttime);
-			if ($this->cached>=$fastest_sample) {
-				$this->check_load(); 
-				$this->calculate_load();
-			}
-		}
-	}	
-	function get_cputemp(){
-		exec("sudo /opt/vc/bin/vcgencmd measure_temp | tr -d \"temp=\" | tr -d \"'C\"",$output, $return);
-		if((!$return) AND (isset($output[0]))){
-			return $output[0];
-		}else{
-			return "n/a";
-		}
-	} 
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	// Temperaturwerte einlesen ###########################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
@@ -183,7 +124,7 @@ if (isset($_SESSION["to_update"])){
 			$currenttemp = file_get_contents($_SESSION["current_temp"]);
 		}
 		$temp = explode(";",$currenttemp);
-		$time_stamp = $temp[0];
+		$time_stamp = DateTime::createFromFormat($log_dateformat, $temp[0]);
 		$temp_0 = floatval($temp[1]);
 		$temp_1 = floatval($temp[2]);
 		$temp_2 = floatval($temp[3]);
@@ -198,7 +139,7 @@ if (isset($_SESSION["to_update"])){
 		if (file_exists($pit_file)) {
 			$currentpit = file_get_contents($_SESSION["pitmaster"]);
 			$pits = explode(";",$currentpit);
-			$pit_time_stamp = $pits[0];
+			$pit_time_stamp = DateTime::createFromFormat($log_dateformat, $pits[0]);
 			$pit_set = floatval($pits[1]);
 			$pit_val = floatval($pits[3]);
 		}
@@ -208,15 +149,15 @@ if (isset($_SESSION["to_update"])){
 	//-------------------------------------------------------------------------------------------------------------------------------------
 
 	if ($_SESSION["pit_on"] == "True"){?>
-		<div class="last_regulation_view">Letzte Regelung am <b><?php echo $pit_time_stamp; ?></b> Uhr</div><?php
+		<div class="last_regulation_view"><?php echo gettext("Last regulation on");?> <b><?php echo IntlDateFormatter::formatObject($pit_time_stamp, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ; ?></b></div><?php
 	}?>
-	<div class="last_measure_view">Letzte Messung am <b><?php echo $time_stamp; ?></b> Uhr
+	<div class="last_measure_view"><?php echo gettext("Last measurement on");?> <b><?php echo IntlDateFormatter::formatObject($time_stamp, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ?></b>
 	<?php if($_SESSION["showcpulast"] == "True"){
 	echo "<br>";
 	$cpuload = new CPULoad();
 	$cpuload->get_load();
 	$CPULOAD = round($cpuload->load["cpu"],1);
-	echo "CPU Auslastung: <b>".$CPULOAD."% / ".get_cputemp()."&#176;C</b>";
+	echo gettext("CPU utilization").": <b>".$CPULOAD."% / ".get_cputemp(). $temp_unit_short;"</b>";
 	}
 	?>
 	</div>						 
@@ -275,8 +216,8 @@ if (isset($_SESSION["to_update"])){
 				?>
 					<div class="channel_view">
 						<div class="channel_name"><?php echo htmlentities($channel_name[$i], ENT_QUOTES, "UTF-8"); ?></div>
-						<div class="<?php echo $temperature_indicator_color;?>"><?php printf('%.1f&#176;C', ${"temp_$i"});?></div>
-						<div class="tempmm">Temp min <b><?php echo $temp_min[$i];?>&#176;C</b> / max <b><?php echo $temp_max[$i];?>&#176;C</b></div>
+						<div class="<?php echo $temperature_indicator_color;?>"><?php printf('%.1f%s', ${"temp_$i"}, $temp_unit_short);?></div>
+						<div class="tempmm">Temp min <b><?php echo $temp_min[$i]; echo $temp_unit_short;?></b> / max <b><?php echo $temp_max[$i]; echo $temp_unit_short;?></b></div>
 						<div class="headicon"><font color="<?php echo $color_ch[$i];?>">#<?php echo $i;?></font></div>
 						<div class="webalert"><?php 
 							if ($_SESSION["websoundalert"] == "True" && $esound_ == "1"){ 
@@ -289,7 +230,7 @@ if (isset($_SESSION["to_update"])){
 						if (($_SESSION["pit_ch"] == "$i") && ($_SESSION["pit_on"] == "True")){
 						?>
 							<div class="headicon_left"><img src="../images/icons16x16/pitmaster.png" alt=""></div>
-							<div class="pitmaster_left"> <?php printf('%.1f%%',$pit_val); ?> / <?php printf('%.1f&#176;C',$pit_set); ?></div>
+							<div class="pitmaster_left"> <?php printf('%.1f%%',$pit_val); ?> / <?php printf('%.1f%s',$pit_set, $temp_unit_short); ?></div>
 						<?php 
 						}
 						?>
@@ -303,7 +244,7 @@ if (isset($_SESSION["to_update"])){
 	//-------------------------------------------------------------------------------------------------------------------------------------	
 	
 	if ($_SESSION["plot_start"] == "True"){
-		$plot_setting = getPlotConfig($plot);
+		$plot_setting = getPlotConfig($plot,$_SESSION['temp_unit']);
 		if (is_dir("/var/www/tmp")){
 			$message .= "Verzeichnis 'tmp' vorhanden! \n";
 			$plotdateiname = '/var/www/tmp/temperaturkurve.png';
@@ -428,6 +369,7 @@ if (isset($_SESSION["to_update"])){
 	//echo nl2br(print_r($plot,true));
 	//echo $_SESSION["plot_start"];
 	//echo $_SESSION["keyboxframe"];
+	
 	//echo "".$keyboxframe_value."";
 	//print_r($message);
 	//echo "<pre>" . var_export($message,true) . "</pre>";  

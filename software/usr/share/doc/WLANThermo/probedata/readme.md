@@ -20,10 +20,21 @@ Used in these thermometers:
 To be used as a meat probe as designed or as grill chamber probe.
 ## ET-73
 Used in these thermometers:
-* Maverick ET-71
+* Maverick ET-7
+* Maverick ET-71c, ET-71d, ET-71os
+* Maverick ET-72
 * Maverick ET-73
+* Maverick ET-77
+* Maverick ET-901b
 
 To be used as a meat probe as designed or as grill chamber probe.
+## ET-735
+Used in these thermometers:
+* Maverick ET-735
+
+* *Waterproof*
+
+To be used as a combined meat and grill chamber probe.
 ## FANTAST
 Used in these thermometers:
 * IKEA Fantast (old Version)
@@ -40,25 +51,63 @@ Used in these thermometers:
 
 Not to be confused with the new iGrill 2.
 To be used as a meat probe as designed or as grill chamber probe.
+## iGrill2
+Used in these thermometers:
+* iDevices iGrill2
+* Weber iGrill2
+* Cappec Bluetooth Wireless BBQ Thermometer
+
+Not to be confused with the older iGrill 1.
+Available as a meat probe or as a shorter grill chamber probe.
 ## MAVERICK
 Used in these thermometers:
 * Maverick ET-732
 * Maverick ET-733
-* Maverick ET-735
 
 To be used as a meat probe as designed or as grill chamber probe.
 ## ODC
 Used in these thermometers:
 * Outdoorchef Gourmet Check
+* TFA Dostmann Küchen-Chef 14.1503 (Replacement probe type TFA 30.3520)
 
 To be used as a combined meat and grill chamber probe.
+
 Connector is 2,5mm stereo:
-tip: ?
-sleeve: ?
-base: ?
+
+| contact |  signal                             |
+| ------- | ----------------------------------- |
+| tip     | meat probe                          |
+| sleeve  | grill chamber probe                 |
+| base    | common ground (connected to shield) |
+
 ## PERFEKTION
 Used in these thermometers:
 * Perfection Meat Thermometer
  
-Was available as a cheap spare part at Amazon.
+Available as a cheap spare part at Amazon ("Ersatzsonde für Perfektion Fleisch Ofen BBQ Grill und Smoker Digital thermometer").
 To be used as am meat probe as designed or as smoker probe.
+## Santos
+Used in these thermometers:
+* Santos BBQ Thermometer
+* Weber Style Audiodigital-Thermometer
+
+To be used as a meat probe as designed or as grill chamber probe.
+## SmokeMAX
+Used in these thermometers:
+* Froggit Smoke MAX 1
+* Froggit Smoke MAX 2
+
+Available as a meat probe or as a shorter grill chamber probe.
+## ThermoWorks
+Used in these thermometers:
+* ETI ChefAlarm (UK)
+* ThermoWorks ChefAlarm (US)
+* ThermoWorks Pro-Series Probes
+
+Available in differents shapes.
+## Weber_6743
+Used in these thermometers:
+* Weber Style 6741
+* Weber Style 6742
+
+To be used as a meat probe as designed or as grill chamber probe.
