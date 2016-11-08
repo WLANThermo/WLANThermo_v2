@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WLANThermo 2.4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-14 14:50+0200\n"
-"PO-Revision-Date: 2016-10-14 14:50+0200\n"
+"POT-Creation-Date: 2016-11-08 09:54+0100\n"
+"PO-Revision-Date: 2016-11-08 09:56+0100\n"
 "Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -21,382 +21,397 @@ msgstr ""
 "X-Poedit-Basepath: ../../../../../sbin\n"
 "X-Poedit-SearchPath-0: wlt_2_nextion.py\n"
 
-#: wlt_2_nextion.py:91
+#: wlt_2_nextion.py:93
 msgid "Waiting for configuration file"
 msgstr "Warten auf Konfigurationsdatei"
 
-#: wlt_2_nextion.py:135 wlt_2_nextion.py:151
+#: wlt_2_nextion.py:137 wlt_2_nextion.py:153
 msgid "New temperature values available"
 msgstr "Neue Temperaturwerte verfügbar"
 
-#: wlt_2_nextion.py:138 wlt_2_nextion.py:154
+#: wlt_2_nextion.py:140 wlt_2_nextion.py:156
 msgid "New configuration data available"
 msgstr "Neue Konfigurationsdaten verfügbar"
 
-#: wlt_2_nextion.py:143 wlt_2_nextion.py:159
+#: wlt_2_nextion.py:145 wlt_2_nextion.py:161
 msgid "New pitmaster data available"
 msgstr "Neue Pitmasterdaten vorhanden"
 
-#: wlt_2_nextion.py:178
+#: wlt_2_nextion.py:180
 msgid "termios.error in NX_reader: {}"
 msgstr "termios.error in NX_reader aufgetreten: {}"
 
-#: wlt_2_nextion.py:290
+#: wlt_2_nextion.py:292
 #, python-brace-format
 msgid "Received message of type {type} from the Display"
 msgstr "Meldung vom Typ {type} vom Display erhalten"
 
-#: wlt_2_nextion.py:297
+#: wlt_2_nextion.py:299
 msgid "Reader thread has been stopped"
 msgstr "Reader-Thread wurde gestoppt"
 
-#: wlt_2_nextion.py:311
+#: wlt_2_nextion.py:313
 msgid "termios.error in NX_waitok: {}"
 msgstr "termios.error in NX_waitok aufgetreten: {}"
 
-#: wlt_2_nextion.py:314
+#: wlt_2_nextion.py:316
 msgid "Serial Communication Timeout!"
 msgstr "Timeout der seriellen Kommunikation!"
 
-#: wlt_2_nextion.py:338
+#: wlt_2_nextion.py:340
 msgid "Locking serial port"
 msgstr "Sperre seriellen Port"
 
-#: wlt_2_nextion.py:340
+#: wlt_2_nextion.py:342
 msgid "Clear serial buffer"
 msgstr "Leere seriellen Buffer"
 
-#: wlt_2_nextion.py:355
+#: wlt_2_nextion.py:357
 msgid "termios.error in NX_init: {}"
 msgstr "termios.error in NX_init aufgetreten: {}"
 
-#: wlt_2_nextion.py:373
+#: wlt_2_nextion.py:375
 #, python-brace-format
 msgid "Sending {key} to the display: {value}"
 msgstr "Sende {key} zum Display: {value}"
 
-#: wlt_2_nextion.py:380
+#: wlt_2_nextion.py:382
 msgid "Unknown type of variable"
 msgstr "Unknown type of variable"
 
-#: wlt_2_nextion.py:383
+#: wlt_2_nextion.py:385
 msgid "termios.error in NX_sendvalues: {}"
 msgstr "termios.error in NX_sendvalues aufgetreten: {}"
 
-#: wlt_2_nextion.py:388
+#: wlt_2_nextion.py:390
 msgid "Timeout - display possibly in sleep mode"
 msgstr "Timeout - Display befindet sich möglicherweise im Sleep-Mode"
 
-#: wlt_2_nextion.py:394 wlt_2_nextion.py:426 wlt_2_nextion.py:469
-#: wlt_2_nextion.py:506 wlt_2_nextion.py:535
+#: wlt_2_nextion.py:396 wlt_2_nextion.py:428 wlt_2_nextion.py:471
+#: wlt_2_nextion.py:508 wlt_2_nextion.py:537
 msgid "Received error message {} from the display"
 msgstr "Fehlermeldung {} vom Display erhalten"
 
-#: wlt_2_nextion.py:397 wlt_2_nextion.py:430 wlt_2_nextion.py:509
-#: wlt_2_nextion.py:538
+#: wlt_2_nextion.py:399 wlt_2_nextion.py:432 wlt_2_nextion.py:511
+#: wlt_2_nextion.py:540
 msgid "Received message {} from the display"
 msgstr "Meldung {} vom Display erhalten"
 
-#: wlt_2_nextion.py:411 wlt_2_nextion.py:457 wlt_2_nextion.py:497
-#: wlt_2_nextion.py:528
+#: wlt_2_nextion.py:413 wlt_2_nextion.py:459 wlt_2_nextion.py:499
+#: wlt_2_nextion.py:530
 msgid "Received unexpected message {} from the display (out of the display program)"
 msgstr "Unerwartete Meldung {} vom Display erhalten (aus Displayprogramm)"
 
-#: wlt_2_nextion.py:415 wlt_2_nextion.py:452
+#: wlt_2_nextion.py:417 wlt_2_nextion.py:454
 msgid "Get {} from the display"
 msgstr "Hole {} vom Display"
 
-#: wlt_2_nextion.py:420 wlt_2_nextion.py:463
+#: wlt_2_nextion.py:422 wlt_2_nextion.py:465
 msgid "termios.error in NX_getvalues: {}"
 msgstr "termios.error in NX_getvalues aufgetreten: {}"
 
-#: wlt_2_nextion.py:433 wlt_2_nextion.py:474
+#: wlt_2_nextion.py:435 wlt_2_nextion.py:476
 msgid "Got string {} from the display"
 msgstr "String {} vom Display erhalten"
 
-#: wlt_2_nextion.py:435 wlt_2_nextion.py:476
+#: wlt_2_nextion.py:437 wlt_2_nextion.py:478
 msgid "Got integer {} from the display"
 msgstr "Integer {} vom Display erhalten"
 
-#: wlt_2_nextion.py:437 wlt_2_nextion.py:478
+#: wlt_2_nextion.py:439 wlt_2_nextion.py:480
 msgid "Received unexpected message {} from the display"
 msgstr "Unerwartete Meldung {} vom Display erhalten"
 
-#: wlt_2_nextion.py:443 wlt_2_nextion.py:480 wlt_2_nextion.py:511
-#: wlt_2_nextion.py:540
+#: wlt_2_nextion.py:445 wlt_2_nextion.py:482 wlt_2_nextion.py:513
+#: wlt_2_nextion.py:542
 msgid "Received no answer from the display"
 msgstr "Keine Rückmeldung vom Display erhalten"
 
-#: wlt_2_nextion.py:493
+#: wlt_2_nextion.py:495
 msgid "Send command {} to the display"
 msgstr "Sende Befehl {} zum Display"
 
-#: wlt_2_nextion.py:514
+#: wlt_2_nextion.py:516
 msgid "termios.error in NX_sendcmd: {}"
 msgstr "termios.error in NX_sendcmd aufgetreten: {}"
 
-#: wlt_2_nextion.py:524
+#: wlt_2_nextion.py:526
 msgid "Send page command to "
 msgstr "Sende Seitenwechsel zu "
 
-#: wlt_2_nextion.py:543
+#: wlt_2_nextion.py:545
 msgid "termios.error in NX_switchpage: {}"
 msgstr "termios.error in NX_switchpage aufgetreten: {}"
 
-#: wlt_2_nextion.py:565
+#: wlt_2_nextion.py:567
 msgid "Data from WLANThermo is available to show on the display"
 msgstr "Daten vom WLANThermo zum Anzeigen vorhanden"
 
-#: wlt_2_nextion.py:591
-msgid "Write new temperature values to {}!"
-msgstr "Schreibe Temperaturen in {} neu!"
+#: wlt_2_nextion.py:620
+msgid "Error while setting channel values"
+msgstr "Fehler beim Setzen der Kanalwerte"
 
-#: wlt_2_nextion.py:710
+#: wlt_2_nextion.py:654
+msgid "Error while setting display values"
+msgstr "Fehler beim Setzen der Displayeinstellungen"
+
+#: wlt_2_nextion.py:694
+msgid "Error while setting pitmaster values"
+msgstr "Fehler beim Setzen der Pitmasterwerte"
+
+#: wlt_2_nextion.py:700
 msgid "Get channel configuration from config file"
 msgstr "Lade Kanalkonfiguration aus Konfigurationsdatei"
 
-#: wlt_2_nextion.py:766
+#: wlt_2_nextion.py:756
 msgid "Data from the pitmaster is available to show on the display"
 msgstr "Daten vom Pitmaster zum Anzeigen vorhanden"
 
-#: wlt_2_nextion.py:794
+#: wlt_2_nextion.py:784
 msgid "Get signal strength for: {}"
 msgstr "Hole Signalstärke für: {}"
 
-#: wlt_2_nextion.py:824
+#: wlt_2_nextion.py:814
 msgid "Set WPA Passphrase for: {}"
 msgstr "Setze WPA Passphrase für: {}"
 
-#: wlt_2_nextion.py:841 wlt_2_nextion.py:858
+#: wlt_2_nextion.py:832 wlt_2_nextion.py:849
 msgid "Writing wpa_supplicant.conf for SSID: {}"
 msgstr "Schreibe wpa_supplicant.conf für SSID: {}"
 
-#: wlt_2_nextion.py:844
+#: wlt_2_nextion.py:835
 msgid "SSID exists already in the configuration file, change PSK"
 msgstr "SSID bereits in der Konfigurationsdatei vorhanden, PSK ändern"
 
-#: wlt_2_nextion.py:849
+#: wlt_2_nextion.py:840
 msgid "SSID and PSK taken from old configuration file"
 msgstr "SSID und PSK aus alter Konfigurationsdatei übernommen"
 
-#: wlt_2_nextion.py:855 wlt_2_nextion.py:864
+#: wlt_2_nextion.py:846 wlt_2_nextion.py:855
 msgid "New PSK to short for SSID: {}"
 msgstr "Neuer PSK zu kurz für SSID: {}"
 
-#: wlt_2_nextion.py:880
+#: wlt_2_nextion.py:871
 msgid "Check for reboot:"
 msgstr "Prüfe auf Reboot:"
 
-#: wlt_2_nextion.py:884
+#: wlt_2_nextion.py:875
 msgid "Reboot detected"
 msgstr "Reboot erkannt"
 
-#: wlt_2_nextion.py:886
+#: wlt_2_nextion.py:877
 msgid "Shutdown assumed"
 msgstr "Shutdown angenommen"
 
-#: wlt_2_nextion.py:890
+#: wlt_2_nextion.py:881
 msgid "Display thread has been startet"
 msgstr "Display-Thread gestartet"
 
-#: wlt_2_nextion.py:899
+#: wlt_2_nextion.py:890
 msgid "Software version on the display: {}"
 msgstr "Softwareversion auf dem Display: {}"
 
-#: wlt_2_nextion.py:902
+#: wlt_2_nextion.py:893
 msgid "Display software is on the current level"
 msgstr "Displaysoftware auf aktuellem Stand"
 
-#: wlt_2_nextion.py:908
+#: wlt_2_nextion.py:899
 msgid "Display software update is recommended"
 msgstr "Update des Displays empfohlen"
 
-#: wlt_2_nextion.py:912
+#: wlt_2_nextion.py:903
 msgid "Display software update is required"
 msgstr "Update des Displays notwendig"
 
-#: wlt_2_nextion.py:918
+#: wlt_2_nextion.py:909
 msgid "Loading temperature data"
 msgstr "Temperaturen werden geladen"
 
-#: wlt_2_nextion.py:924
+#: wlt_2_nextion.py:915
 msgid "Get temperature data..."
 msgstr "Hole Temperaturen..."
 
-#: wlt_2_nextion.py:927
+#: wlt_2_nextion.py:918
 msgid "Waiting on temperature data"
 msgstr "Wartet auf Temperaturen"
 
-#: wlt_2_nextion.py:931
+#: wlt_2_nextion.py:922
 msgid "Loading configuration"
 msgstr "Konfiguration wird geladen"
 
-#: wlt_2_nextion.py:933
+#: wlt_2_nextion.py:924
 msgid "Get display configuration..."
 msgstr "Hole Displaykonfiguration..."
 
-#: wlt_2_nextion.py:936
+#: wlt_2_nextion.py:927
 msgid "Get sensor configuration..."
 msgstr "Hole Sensorkonfiguration..."
 
-#: wlt_2_nextion.py:939
+#: wlt_2_nextion.py:930
 msgid "Get channel configuration..."
 msgstr "Hole Kanalkonfiguration..."
 
-#: wlt_2_nextion.py:942
+#: wlt_2_nextion.py:933
 msgid "Get pitmaster configuration..."
 msgstr "Hole Pitmasterkonfiguration..."
 
-#: wlt_2_nextion.py:945
+#: wlt_2_nextion.py:936
 msgid "Get locale configuration..."
 msgstr "Hole Locale Konfiguration..."
 
-#: wlt_2_nextion.py:964
+#: wlt_2_nextion.py:955
 msgid "Get pitmaster data..."
 msgstr "Hole Pitmasterdaten..."
 
-#: wlt_2_nextion.py:1000
+#: wlt_2_nextion.py:966
+msgid "Sensor {} not defined!"
+msgstr "Sensor {} nicht definiert!"
+
+#: wlt_2_nextion.py:995
 msgid "Transferring data"
 msgstr "Werte werden uebertragen"
 
-#: wlt_2_nextion.py:1004
+#: wlt_2_nextion.py:999
 msgid "Establishing connection"
 msgstr "Verbindung wird hergestellt"
 
-#: wlt_2_nextion.py:1019
+#: wlt_2_nextion.py:1014
 msgid "Received start-up message from the display, exiting."
 msgstr "Start-Up Meldung vom Display erhalten, breche ab."
 
-#: wlt_2_nextion.py:1101
+#: wlt_2_nextion.py:1096
 msgid "failed"
 msgstr "fehlgeschlagen"
 
-#: wlt_2_nextion.py:1122
+#: wlt_2_nextion.py:1117
 msgid "Shutting down..."
 msgstr "Fahre herunter..."
 
-#: wlt_2_nextion.py:1126
+#: wlt_2_nextion.py:1121
 msgid "Rebooting..."
 msgstr "Starte neu..."
 
-#: wlt_2_nextion.py:1131
+#: wlt_2_nextion.py:1126
 msgid "Scanning WLANs"
 msgstr "Scanne WLANs"
 
-#: wlt_2_nextion.py:1136
+#: wlt_2_nextion.py:1131
 msgid "No WLAN found"
 msgstr "Kein WLAN gefunden"
 
-#: wlt_2_nextion.py:1158
+#: wlt_2_nextion.py:1153
 msgid "Alert acknowledged!"
 msgstr "Alarm bestätigt!"
 
-#: wlt_2_nextion.py:1162
+#: wlt_2_nextion.py:1157
 msgid "Temperature event"
 msgstr "Temperatur Event"
 
-#: wlt_2_nextion.py:1172
+#: wlt_2_nextion.py:1167
 msgid "Unknown unit of measurement"
 msgstr "Unbekannte Maßeinheit"
 
-#: wlt_2_nextion.py:1191
+#: wlt_2_nextion.py:1186
 msgid "Pitmaster configuration event"
 msgstr "Pitmasterkonfiguration Event"
 
-#: wlt_2_nextion.py:1221
+#: wlt_2_nextion.py:1216
 msgid "Pitmaster data event"
 msgstr "Pitmaster Event"
 
-#: wlt_2_nextion.py:1242
+#: wlt_2_nextion.py:1237
 msgid "Channels data event"
 msgstr "Kanäle Event"
 
-#: wlt_2_nextion.py:1267
+#: wlt_2_nextion.py:1262
 msgid "Config event"
 msgstr "Konfigurationsevent"
 
-#: wlt_2_nextion.py:1275
+#: wlt_2_nextion.py:1270
 msgid "Display thread stopped"
 msgstr "Display-Thread gestoppt"
 
-#: wlt_2_nextion.py:1303
+#: wlt_2_nextion.py:1304
 msgid "Calibrating Display"
 msgstr "Kalibriere Display"
 
-#: wlt_2_nextion.py:1318
+#: wlt_2_nextion.py:1319
 msgid "Caught signal: "
 msgstr "Signal empfangen: "
 
-#: wlt_2_nextion.py:1319
+#: wlt_2_nextion.py:1320
 msgid "Sende stop signal to all threads"
 msgstr "Sende Stopsignal an alle Threads"
 
-#: wlt_2_nextion.py:1344
+#: wlt_2_nextion.py:1345
 msgid "Nextion display started, script version: "
 msgstr "Nextion Display gestartet, Skriptversion: "
 
-#: wlt_2_nextion.py:1364 wlt_2_nextion.py:1365
+#: wlt_2_nextion.py:1365 wlt_2_nextion.py:1366
 #, python-format
 msgid "%s already exists, Process is running, exiting"
 msgstr "%s existiert, Prozess läuft bereits, beende Skript"
 
-#: wlt_2_nextion.py:1368
+#: wlt_2_nextion.py:1369
 #, python-format
 msgid "%s already exists, Process is NOT running, resuming operation"
 msgstr "%s existiert, Prozess läuft nicht, setze Ausführung fort"
 
-#: wlt_2_nextion.py:1373
+#: wlt_2_nextion.py:1374
 #, python-format
 msgid "%s written"
 msgstr "%s geschrieben"
 
-#: wlt_2_nextion.py:1377
+#: wlt_2_nextion.py:1378
 msgid "Loading display configuration"
 msgstr "Lade Displaykonfiguration"
 
-#: wlt_2_nextion.py:1380
+#: wlt_2_nextion.py:1381
 msgid "Opening serial port: "
 msgstr "Öffne seriellen Port: "
 
-#: wlt_2_nextion.py:1383
+#: wlt_2_nextion.py:1384
 msgid "Initializing display, baud rate: "
 msgstr "Initialisiere Display,  Baudrate: "
 
-#: wlt_2_nextion.py:1386
+#: wlt_2_nextion.py:1387
 msgid "Initialisation OK"
 msgstr "Initialisierung OK"
 
-#: wlt_2_nextion.py:1388
+#: wlt_2_nextion.py:1389
 msgid "Starting reader thread"
 msgstr "Starte Reader-Thread"
 
-#: wlt_2_nextion.py:1393
+#: wlt_2_nextion.py:1394
 msgid "Starting display thread"
 msgstr "Starte Display-Thread"
 
-#: wlt_2_nextion.py:1398
+#: wlt_2_nextion.py:1399
 msgid "Starting file watcher"
 msgstr "Starte Dateiüberwachung"
 
-#: wlt_2_nextion.py:1421
+#: wlt_2_nextion.py:1422
 msgid "System is rebooting..."
 msgstr "System wird neu gestartet..."
 
-#: wlt_2_nextion.py:1423
+#: wlt_2_nextion.py:1424
 msgid "System is shutting down..."
 msgstr "System wird heruntergefahren..."
 
-#: wlt_2_nextion.py:1431
+#: wlt_2_nextion.py:1432
 msgid "Waiting for Threads..."
 msgstr "Warte auf Threads..."
 
-#: wlt_2_nextion.py:1437
+#: wlt_2_nextion.py:1438
 msgid "Can´t establish connection to the Nextion display"
 msgstr "Keine Verbindung zum Nextion Display"
 
-#: wlt_2_nextion.py:1441
+#: wlt_2_nextion.py:1442
 msgid "Display stopped!"
 msgstr "Display gestoppt!"
+
+#~ msgid "Write new temperature values to {}!"
+#~ msgstr "Schreibe Temperaturen in {} neu!"
 
 #~ msgid "Locale event"
 #~ msgstr "Locale Event"
