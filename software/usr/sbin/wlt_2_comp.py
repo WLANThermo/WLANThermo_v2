@@ -514,7 +514,7 @@ try:
                     # Spannungsteiler ist nach v1 anders herum aufgebaut
                     Wert = 4095 - readAnalogData(kanal, SCLK, MOSI, MISO, CS)
                     
-                if (Wert > 60) and (sensorname != 'KTYPE'):
+                if (Wert > 15) and (Wert < 4080) and (sensorname != 'KTYPE'):
                     # sinnvoller Wertebereich
                     Rtheta = messwiderstand[kanal]*((4096.0/Wert) - 1)
                     Tempvar = temperatur_sensor(Rtheta, sensortyp[kanal], temp_unit)

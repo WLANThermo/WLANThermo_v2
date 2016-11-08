@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WLANThermo 2.4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-07 16:35+0200\n"
-"PO-Revision-Date: 2016-10-07 16:37+0200\n"
+"POT-Creation-Date: 2016-11-08 09:52+0100\n"
+"PO-Revision-Date: 2016-11-08 09:53+0100\n"
 "Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -197,21 +197,21 @@ msgstr "Push URL: "
 msgid "push result: "
 msgstr "Push Ergebniss: "
 
-#: wlt_2_comp.py:776
+#: wlt_2_comp.py:778
 #, python-brace-format
 msgid "Error: Could not write to file {file}!"
 msgstr "Fehler: Konnte nicht in die Datei {file} schreiben!"
 
-#: wlt_2_comp.py:821
+#: wlt_2_comp.py:823
 #, python-brace-format
 msgid "measuring loop running longer than {delay}s, remaining time {time_remaining}s"
 msgstr "Messchleife lief länger als {delay}s, Restzeit {time_remaining}s"
 
-#: wlt_2_comp.py:823
+#: wlt_2_comp.py:825
 #, python-brace-format
 msgid "measuring loop remaining time {time_remaining}s of {delay}s"
 msgstr "Messchleife Restzeit {time_remaining}s von {delay}s"
 
-#: wlt_2_comp.py:827
+#: wlt_2_comp.py:829
 msgid "WLANThermo stopped!"
 msgstr "WLANThermo angehalten!"
