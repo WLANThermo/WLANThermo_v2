@@ -41,6 +41,8 @@ gettext.install('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/', unic
 NX_lf = '\xff\xff\xff'
 NX_channel = 0
 NX_page = 0
+NX_enhanced = False
+
 version = '0.20'
 
 temps = dict()
@@ -330,6 +332,21 @@ def NX_waitok():
         return False
 
 
+def set_hwclock():
+    localtime = time.localtime()
+    return NX_sendvalues({'rtc0':localtime[0], 'rtc1':localtime[1], 'rtc2':localtime[2], 'rtc3':localtime[3], 'rtc4':localtime[4], 'rtc5':localtime[5]})
+
+
+def check_ntp():
+    ntp = False
+    ntpstat = subprocess.Popen("/usr/bin/ntpstat", stdout=subprocess.PIPE, universal_newlines=True)
+    stdoutdata, stderrdata = ntpstat.communicate()
+    for line in stdoutdata.splitlines():
+        if 'synchronised to NTP server' in line:
+            return True
+    return False
+
+
 def NX_init(port, baudrate):
     global ser, NX_lf, NX_reader_thread
     try:
@@ -361,6 +378,8 @@ def NX_init(port, baudrate):
 
 def NX_sendvalues(values):
     global ser, NX_lf, NX_returnq, NX_wake_event
+    
+    systemvars = ['rtc0', 'rtc1', 'rtc2', 'rtc3', 'rtc4', 'rtc5', 'rtc6', 'dim', 'dims']
     # NX_sendcmd('sleep=0')
     error = False
     for rawkey, value in values.iteritems():
@@ -376,7 +395,7 @@ def NX_sendvalues(values):
         try:
             if key[-3:] == 'txt':
                 ser.write(str(key) + '="' + str(value)[:length] + '"\xff\xff\xff')
-            elif key[-3:]  == 'val':
+            elif key[-3:]  == 'val' or key in systemvars:
                 ser.write(str(key) + '=' + str(value) + '\xff\xff\xff')
             else:
                 logger.warning(_(u'Unknown type of variable'))
@@ -878,6 +897,7 @@ def check_reboot():
     return False
 
 def NX_display():
+    hwclock_nextupdate = 0
     logger.info(_(u'Display thread has been startet'))
     global NX_page, NX_channel, stop_event, NX_eventq
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
@@ -1264,7 +1284,16 @@ def NX_display():
             check_recalibration()
             language = language_getvalues()
             
-            
+        elif time.time() > hwclock_nextupdate:
+            if check_ntp():
+                logger.debug(_(u'Setting RTC'))
+                set_hwclock()
+                # Update time again in 1h
+                hwclock_nextupdate = time.time() + 3600
+            else:
+                # Try every 5min if ntp is not sync´d
+                hwclock_nextupdate = time.time() + 300
+                
         else:
             time.sleep(0.01)
     logger.info(_(u'Display thread stopped'))
