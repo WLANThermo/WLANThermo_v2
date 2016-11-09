@@ -5,7 +5,7 @@
 	$log_dateformat = 'd.m.y H:i:s';
 	
 	$output = array();
-	
+	$output['temp_unit'] = $_SESSION["temp_unit"];
 	$output['pit'] = array();
 	if ($_SESSION["pit_on"] == "True") {
 		$output['pit']['enabled'] = true;
