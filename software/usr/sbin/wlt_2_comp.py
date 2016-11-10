@@ -31,6 +31,7 @@ import psutil
 import signal
 import traceback
 import gettext
+import codecs
 
 gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -49,7 +50,7 @@ os.umask (0)
 
 while True:
     try:
-        Config.read('/var/www/conf/WLANThermo.conf')
+        Config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf8'))
     except IndexError:
         time.sleep(1)
         continue
@@ -265,7 +266,7 @@ def create_logfile(filename, log_kanal):
     
     while True:
         try:
-            fw = open(filename,'w') #Datei anlegen
+            fw = codecs.open(filename, 'w', 'utf8') #Datei anlegen
             fw.write(separator.join(kopfzeile) + '\n') # Kopfzeile der CSV-Datei schreiben
             fw.flush()
             os.fsync(fw.fileno())
@@ -417,7 +418,7 @@ try:
             logger.debug(_(u'reading configuration again...'))
             while True:
                 try:
-                    new_config.read('/var/www/conf/WLANThermo.conf')
+                    new_config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf8'))
                 except IndexError:
                     time.sleep(1)
                     continue
@@ -767,7 +768,7 @@ try:
         
         while True:
             try:
-                fcsv = open(current_temp  + '_tmp', 'w')
+                fcsv = codecs.open(current_temp  + '_tmp', 'w', 'utf8')
                 fcsv.write(';'.join(lcsv))
                 fcsv.flush()
                 os.fsync(fcsv.fileno())
@@ -789,7 +790,7 @@ try:
         
         if pit_on:
             try:
-                with open(pit_tempfile,'r') as pitfile:
+                with codecs.open(pit_tempfile, 'r', 'utf8') as pitfile:
                     pit_values = pitfile.readline().split(';')
                     pit_new = pit_values[3].rstrip('%')
                     pit_set = pit_values[1]
@@ -806,7 +807,7 @@ try:
         while True:
             try:
                 # Generierung des Logfiles
-                logfile = open(name,'a')
+                logfile = codecs.open(name, 'a', 'utf8')
                 logfile.write(separator.join(log_line) + '\n')
                 logfile.flush()
                 os.fsync(logfile.fileno())

@@ -31,6 +31,7 @@ import threading
 import signal
 import traceback
 import gettext
+import codecs
 
 gettext.install('wlt_2_pitmaster', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -383,7 +384,7 @@ def main():
             #Aktuellen ist wert auslesen
             while True:
                 try:
-                    tl = open(current_temp, 'r')
+                    tl = codecs.open(current_temp, 'r', 'utf8')
                 except IOError:
                     time.sleep(1)
                     continue
@@ -619,7 +620,7 @@ def main():
                 
                 while True:
                     try:          
-                        fp = open(pitPath + '/' + pitFile + '_tmp', 'w')
+                        fp = codecs.open(pitPath + '/' + pitFile + '_tmp', 'w', 'utf8')
                         # Schreibe mit Trennzeichen ; 
                         # Zeit;Soll;Ist;%;msg + pitFile,
                         fp.write(str(Uhrzeit_lang) + ';'+ str(pit_set) + ';' + str(pit_now) + ';' + str(pit_new) + '%;' + msg)

@@ -35,6 +35,7 @@ import termios
 import fcntl
 import random
 import string
+import codecs
 
 gettext.install('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -43,7 +44,7 @@ NX_channel = 0
 NX_page = 0
 NX_enhanced = False
 
-version = '0.20'
+version = '0.21'
 
 temps = dict()
 channels = dict()
@@ -88,7 +89,7 @@ os.umask (0)
 for i in range(0,5):
     while True:
         try:
-            Config.read(configfile)
+            Config.readfp(codecs.open(configfile, 'r', 'utf8'))
         except IndexError:
             # Auf Event warten geht hier noch nicht, da wir die anderen Pfade aus der Config brauchen
             # Logging geht auch noch nicht, da wir das Logfile brauchen, als an StdErr
@@ -584,7 +585,7 @@ def temp_getvalues():
     temps = dict()
     if os.path.isfile(curPath + '/' + curFile):
         logger.debug(_(u'Data from WLANThermo is available to show on the display'))
-        ft = open(curPath + '/' + curFile).read()
+        ft = codecs.open(curPath + '/' + curFile, 'r', 'utf8').read()
         temps_raw = ft.split(';')
         temps = dict()
         temps['timestamp'] = time.mktime(time.strptime(temps_raw[0],'%d.%m.%y %H:%M:%S'))
@@ -600,7 +601,7 @@ def language_getvalues():
     locale = {}
     with configfile_lock:
         config = ConfigParser.SafeConfigParser()
-        config.read(configfile)
+        config.readfp(codecs.open(configfile, 'r', 'utf8'))
     
     locale['locale'] = config.get('locale','locale')
     locale['temp_unit'] = config.get('locale','temp_unit')
@@ -620,7 +621,7 @@ def channels_setvalues(channel, high= None, low=None, sensor=None):
     try:
         with configfile_lock:
             newconfig = ConfigParser.SafeConfigParser()
-            newconfig.read(configfile)
+            newconfig.readfp(codecs.open(configfile, 'r', 'utf8'))
             if low is not None:
                 newconfig.set('temp_min','temp_min' + str(channel), str(int(low)))
                 temp_changed = True
@@ -646,7 +647,7 @@ def display_getvalues():
     display = {}
     with configfile_lock:
         config = ConfigParser.SafeConfigParser(defaults)
-        config.read(configfile)
+        config.readfp(codecs.open(configfile, 'r', 'utf8'))
     
     display['dim'] = config.getint('Display','dim')
     display['timeout'] = config.getint('Display','timeout')
@@ -663,7 +664,7 @@ def display_setvalues(dim = None, timeout = None):
     try:
         with configfile_lock:
             newconfig = ConfigParser.SafeConfigParser()
-            newconfig.read(configfile)
+            newconfig.readfp(codecs.open(configfile, 'r', 'utf8'))
             if dim is not None:
                 newconfig.set('Display','dim', str(int(dim)))
             if timeout is not None:
@@ -678,7 +679,7 @@ def todo_setvalues(pi_down = None, pi_reboot = None):
     global configfile, configfile_lock
     with configfile_lock:
         newconfig = ConfigParser.SafeConfigParser()
-        newconfig.read(configfile)
+        newconfig.readfp(codecs.open(configfile, 'r', 'utf8'))
         if pi_down is not None:
             newconfig.set('ToDo','raspi_shutdown', ['False', 'True'][pi_down])
         if pi_reboot is not None:
@@ -692,7 +693,7 @@ def pitmaster_setvalues(pit_ch = None, pit_set = None, pit_lid=  None, pit_on = 
     try:
         with configfile_lock:
             newconfig = ConfigParser.SafeConfigParser()
-            newconfig.read(configfile)
+            newconfig.readfp(codecs.open(configfile, 'r', 'utf8'))
             if pit_ch is not None:
                 newconfig.set('Pitmaster','pit_ch', str(int(pit_ch)))
             if pit_inverted is not None:
@@ -720,7 +721,7 @@ def channels_getvalues():
     channels = {}
     with configfile_lock:
         Config = ConfigParser.SafeConfigParser()
-        Config.read(configfile)
+        Config.readfp(codecs.open(configfile, 'r', 'utf8'))
     for i in range(8):
         channel = {}
         channel['sensor'] = Config.getint('Sensoren', 'ch' + str(i))
@@ -739,7 +740,7 @@ def pitmaster_config_getvalues():
     pitconf = dict()
     with configfile_lock:
         Config = ConfigParser.SafeConfigParser()
-        Config.read(configfile)
+        Config.readfp(codecs.open(configfile, 'r', 'utf8'))
     pitconf['on'] = Config.getboolean('ToDo','pit_on')
     pitconf['type'] = Config.get('Pitmaster','pit_type')
     pitconf['inverted'] = Config.getboolean('Pitmaster','pit_inverted')
@@ -773,7 +774,7 @@ def pitmaster_getvalues():
     global logger, pitPath, pitFile
     if os.path.isfile(pitPath + '/' + pitFile):
         logger.debug(_(u'Data from the pitmaster is available to show on the display'))
-        fp = open(pitPath + '/' + pitFile).read()
+        fp = codecs.open(pitPath + '/' + pitFile, 'r', 'utf8').read()
         pitmaster_raw = fp.split(';',4)
         # Es trägt sich zu, das im Lande WLANThermo manchmal nix im Pitmaster File steht
         # Dann einfach munter so tun als ob einfach nix da ist
@@ -1309,7 +1310,7 @@ def config_write(configfile, config):
     # Ein Lock sollte im aufrufenden Programm gehalten werden!
     
     tmp_filename = get_random_filename(configfile)
-    with open(tmp_filename, 'w') as new_ini:
+    with codecs.open(tmp_filename, 'w', 'utf8') as new_ini:
         for section_name in config.sections():
             new_ini.write('[' + section_name + ']\n')
             for (key, value) in config.items(section_name):
@@ -1328,7 +1329,7 @@ def check_recalibration():
 
     with configfile_lock:
         newconfig = ConfigParser.SafeConfigParser()
-        newconfig.read(configfile)
+        newconfig.readfp(codecs.open(configfile, 'r', 'utf8'))
         if newconfig.getboolean('ToDo', 'calibrate_display') == True:
             logger.info(_(u'Calibrating Display'))
             NX_sendcmd('touch_j')
@@ -1377,7 +1378,7 @@ signal.signal(15, stop_all)
 signal.signal(2, stop_all)
 
 #Einlesen der Software-Version
-for line in open('/var/www/header.php'):
+for line in codecs.open('/var/www/header.php', 'r', 'utf8'):
     if 'webGUIversion' in line:
         build = re.match('.*=\s*"(.*)"', line).group(1)
         break
