@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import codecs
 import os
 import pyinotify
 import subprocess
@@ -62,7 +62,7 @@ Config = ConfigParser.ConfigParser()
 for i in range(0,5):
     while True:
         try:
-            Config.read(cf)
+            Config.readfp(codecs.open(cf, 'r', 'utf8'))
         except IndexError:
             time.sleep(1)
             continue
@@ -264,7 +264,7 @@ def read_config():
         #Config = ConfigParser.ConfigParser()
         while True:
             try:
-                Config.read(cf)
+                Config.readfp(codecs.open(cf, 'r', 'utf8'))
             except IndexError:
                 time.sleep(1)
                 continue
@@ -549,7 +549,7 @@ wdd = wm.add_watch('/var/www/conf', mask) #, rec=True)
 
 GPIO.add_event_detect(27, GPIO.RISING, callback=shutdown_button, bouncetime=1000)
 
-Config.read(cf)
+Config.readfp(codecs.open(cf, 'r', 'utf8'))
 check_display()
 check_pitmaster()
 
@@ -561,8 +561,7 @@ except OSError:
 
 while True:
     try:
-        Config.read(cf)
-        #time.sleep(5) 
+        Config.readfp(codecs.open(cf, 'r', 'utf8'))
         notifier.process_events()
         if notifier.check_events():
             notifier.read_events()

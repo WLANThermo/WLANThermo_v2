@@ -60,7 +60,7 @@ while True:
 Config_Sensor = ConfigParser.ConfigParser()
 while True:
     try:
-        Config_Sensor.read('/var/www/conf/sensor.conf')
+        Config_Sensor.readfp(codecs.open('/var/www/conf/sensor.conf', 'r', 'utf8'))
     except IndexError:
         time.sleep(1)
         continue
