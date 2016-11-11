@@ -50,7 +50,7 @@ os.umask (0)
 
 while True:
     try:
-        Config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf8'))
+        Config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
     except IndexError:
         time.sleep(1)
         continue
@@ -60,7 +60,7 @@ while True:
 Config_Sensor = ConfigParser.ConfigParser()
 while True:
     try:
-        Config_Sensor.readfp(codecs.open('/var/www/conf/sensor.conf', 'r', 'utf8'))
+        Config_Sensor.readfp(codecs.open('/var/www/conf/sensor.conf', 'r', 'utf_8'))
     except IndexError:
         time.sleep(1)
         continue
@@ -266,7 +266,7 @@ def create_logfile(filename, log_kanal):
     
     while True:
         try:
-            fw = codecs.open(filename, 'w', 'utf8') #Datei anlegen
+            fw = codecs.open(filename, 'w', 'utf_8') #Datei anlegen
             fw.write(separator.join(kopfzeile) + '\n') # Kopfzeile der CSV-Datei schreiben
             fw.flush()
             os.fsync(fw.fileno())
@@ -418,7 +418,7 @@ try:
             logger.debug(_(u'reading configuration again...'))
             while True:
                 try:
-                    new_config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf8'))
+                    new_config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
                 except IndexError:
                     time.sleep(1)
                     continue
@@ -768,7 +768,7 @@ try:
         
         while True:
             try:
-                fcsv = codecs.open(current_temp  + '_tmp', 'w', 'utf8')
+                fcsv = codecs.open(current_temp  + '_tmp', 'w', 'utf_8')
                 fcsv.write(';'.join(lcsv))
                 fcsv.flush()
                 os.fsync(fcsv.fileno())
@@ -790,7 +790,7 @@ try:
         
         if pit_on:
             try:
-                with codecs.open(pit_tempfile, 'r', 'utf8') as pitfile:
+                with codecs.open(pit_tempfile, 'r', 'utf_8') as pitfile:
                     pit_values = pitfile.readline().split(';')
                     pit_new = pit_values[3].rstrip('%')
                     pit_set = pit_values[1]
@@ -807,7 +807,7 @@ try:
         while True:
             try:
                 # Generierung des Logfiles
-                logfile = codecs.open(name, 'a', 'utf8')
+                logfile = codecs.open(name, 'a', 'utf_8')
                 logfile.write(separator.join(log_line) + '\n')
                 logfile.flush()
                 os.fsync(logfile.fileno())

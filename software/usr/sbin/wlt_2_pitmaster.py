@@ -384,7 +384,7 @@ def main():
             #Aktuellen ist wert auslesen
             while True:
                 try:
-                    tl = codecs.open(current_temp, 'r', 'utf8')
+                    tl = codecs.open(current_temp, 'r', 'utf_8')
                 except IOError:
                     time.sleep(1)
                     continue
@@ -620,7 +620,7 @@ def main():
                 
                 while True:
                     try:          
-                        fp = codecs.open(pitPath + '/' + pitFile + '_tmp', 'w', 'utf8')
+                        fp = codecs.open(pitPath + '/' + pitFile + '_tmp', 'w', 'utf_8')
                         # Schreibe mit Trennzeichen ; 
                         # Zeit;Soll;Ist;%;msg + pitFile,
                         fp.write(str(Uhrzeit_lang) + ';'+ str(pit_set) + ';' + str(pit_now) + ';' + str(pit_new) + '%;' + msg)

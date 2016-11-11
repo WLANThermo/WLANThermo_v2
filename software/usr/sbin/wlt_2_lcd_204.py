@@ -28,6 +28,7 @@ import math
 import pyinotify
 import signal
 import gettext
+import codecs
 
 gettext.install('wlt_2_lcd_204', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -264,7 +265,7 @@ def show_values():
     try:
         if os.path.isfile(curPath + '/wd'):
             logger.debug(_(u'Message from the watchdog available --> overriding the display!'))
-            fwd = open(curPath + '/wd').read()
+            fwd = codecs.open(curPath + '/wd', 'r', 'utf_8').read()
             wd = fwd.split(';')
             lcd_byte(LCD_LINE_1, LCD_CMD)
             lcd_string(wd[0],2)
@@ -282,7 +283,7 @@ def show_values():
             
             if os.path.isfile(curPath + '/' + curFile):
                 logger.debug(_(u'Data from WLANThermo is available to show on the display'))
-                ft = open(curPath + '/' + curFile).read()
+                ft = codecs.open(curPath + '/' + curFile, 'r', 'utf_8').read()
                 temps = []
                 temps_raw = ft.split(';')
                 for i in range (8):
@@ -303,12 +304,12 @@ def show_values():
                 lcd_byte(LCD_LINE_3, LCD_CMD)
                 lcd_string('C4:' +  str_len(alarm[4] + temps[4],sLen,' ') + chr(0xdf) + 'C5:' + str_len(alarm[5] + temps[5],sLen,' ') + chr(0xdf),2) 
                 
-                Config.read('/var/www/conf/WLANThermo.conf')
+                Config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
                 lcd_byte(LCD_LINE_4, LCD_CMD)
                 if (Config.getboolean('ToDo', 'pit_on')):
                     if os.path.isfile(curPath + '/' + pitFile):
                         logger.debug(_(u'Pitmaster is running, showing the values in the 4th line'))
-                        fp = open(curPath + '/' + pitFile).read()
+                        fp = codecs.open(curPath + '/' + pitFile, 'r', 'utf_8').read()
                         pits = fp.split(';')
                         lcd_string('Pit: S:' + str("%.0f" % float(pits[1])) + ' I:' + str("%.0f" % float(pits[2])) + ' ' + pits[3],2)
                 else:
