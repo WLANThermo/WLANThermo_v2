@@ -1006,7 +1006,7 @@ if(isset($_POST["save"])) {
                     <option <?php if($ini['Pitmaster']['pit_ch'] == "2")                {echo " selected";} ?> value="2" ><?php echo gettext("Channel");?>2</option>
                     <option <?php if($ini['Pitmaster']['pit_ch'] == "3")                {echo " selected";} ?> value="3" ><?php echo gettext("Channel");?>3</option>
                     <option <?php if($ini['Pitmaster']['pit_ch'] == "4")                {echo " selected";} ?> value="4" ><?php echo gettext("Channel");?>4</option>
-                    <option <?php if($ini['Pitmaster']['pit_ch'] == "5")                {echo " selected";} ?> value="5" ><?php echo gettext("Channel");?></option>
+                    <option <?php if($ini['Pitmaster']['pit_ch'] == "5")                {echo " selected";} ?> value="5" ><?php echo gettext("Channel");?>5</option>
                     <option <?php if($ini['Pitmaster']['pit_ch'] == "6")                {echo " selected";} ?> value="6" ><?php echo gettext("Channel");?>6</option>
                     <option <?php if($ini['Pitmaster']['pit_ch'] == "7")                {echo " selected";} ?> value="7" ><?php echo gettext("Channel");?>7</option>
                 </select>
