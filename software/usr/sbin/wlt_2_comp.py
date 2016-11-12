@@ -669,9 +669,9 @@ try:
                 Telegram_chat_id = new_config.get('Telegram', 'telegram_chat_id')
                 Telegram_token = new_config.get('Telegram', 'telegram_token')
                 
-                alarm_message2 = urllib.quote(alarm_message)
-                url = Telegram_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
-                body = Telegram_Body.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
+                alarm_message2 = urllib.quote(alarm_message.encode('utf-8'))
+                url = Telegram_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
+                body = Telegram_Body.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
                 try: 
                     logger.debug(_(u'Telegram POST request, URL: ') + url + _(u'\nbody: ') + body)
                     response = urllib2.urlopen(url, body)
@@ -702,8 +702,8 @@ try:
                 else:
                     App_URL = 'http://weyerstall.de/WlanthermoPush.php?inst_id={inst_id}&device={device}&message={messagetext}'
 
-                alarm_message2 = urllib.quote(alarm_message)
-                url = App_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'), inst_id=App_inst_id, device=App_device, inst_id2=App_inst_id2, device2=App_device2, inst_id3=App_inst_id3, device3=App_device3)
+                alarm_message2 = urllib.quote(alarm_message.encode('utf-8'))
+                url = App_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), inst_id=App_inst_id, device=App_device, inst_id2=App_inst_id2, device2=App_device2, inst_id3=App_inst_id3, device3=App_device3)
                 try: 
                     logger.debug(_(u'App GET request, URL: ') + url)
                     response = urllib2.urlopen(url)
@@ -722,11 +722,11 @@ try:
                 Push_URL = new_config.get('Push', 'push_url')
                 Push_Body = new_config.get('Push', 'push_body')
         
-                alarm_message2 = urllib.quote(alarm_message)
+                alarm_message2 = urllib.quote(alarm_message.encode('utf-8'))
                 
                 try:
-                    url = Push_URL.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'))
-                    body = Push_Body.format(messagetext=urllib.quote(alarm_message).replace('\n', '<br/>'))
+                    url = Push_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
+                    body = Push_Body.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
                 except KeyError, key:
                     logger.error(u'Key "' + str(key) + u'" is undefined!')
                 else:
