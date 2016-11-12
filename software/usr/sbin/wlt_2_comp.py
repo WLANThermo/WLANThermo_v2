@@ -32,6 +32,7 @@ import signal
 import traceback
 import gettext
 import codecs
+import subprocess
 
 gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -660,8 +661,8 @@ try:
             if WhatsApp_alert:
                 # Wenn konfiguriert, Alarm per WhatsApp schicken
                 WhatsApp_number = new_config.get('WhatsApp','whatsapp_number')
-                cmd="/usr/sbin/sende_whatsapp.sh " + WhatsApp_number + " '" + alarm_message + "'"
-                os.system(cmd)
+                cmd="/usr/sbin/sende_whatsapp.sh"
+                subprocess.call(cmd, WhatsApp_number, alarm_message)
                 
             if Telegram_alert:
                 Telegram_URL = 'https://api.telegram.org/bot{token}/sendMessage'
