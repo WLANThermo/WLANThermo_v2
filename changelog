@@ -1,4 +1,4 @@
-wlanthermo (2.5.0-0rc1) unstable; urgency=medium
+wlanthermo (2.5.0-0rc2) unstable; urgency=medium
 
   * CHANGE: changed startup from SysV-init to systemd units
   * CHANGE: moved sudoers entries to seperate file 
@@ -22,7 +22,7 @@ wlanthermo (2.5.0-0rc1) unstable; urgency=medium
   * ADD: probe type SmokeMAX
   * ADD: probe type Weber_6743
 	
- -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Fri, 11 November 2016 17:55:00 +0100
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Sat, 12 Nov 2016 18:30:00 +0100
 
 wlanthermo (2.4.0-0) stable; urgency=medium
 
