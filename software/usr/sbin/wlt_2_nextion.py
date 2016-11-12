@@ -1312,9 +1312,9 @@ def config_write(configfile, config):
     tmp_filename = get_random_filename(configfile)
     with codecs.open(tmp_filename, 'w', 'utf_8') as new_ini:
         for section_name in config.sections():
-            new_ini.write('[' + section_name + ']\n')
+            new_ini.write(u'[{section_name}]\n'.format(section_name=section_name))
             for (key, value) in config.items(section_name):
-                new_ini.write(str(key) + ' = ' + str(value) + '\n')
+                new_ini.write(u'{key} = {value}\n'.format(key=key, value=value))
             new_ini.write('\n')
         new_ini.flush()
         os.fsync(new_ini.fileno())

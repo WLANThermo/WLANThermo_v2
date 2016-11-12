@@ -612,21 +612,18 @@ def main():
                 bbqpit.set_pit(pit_new)
                 msg += _(u'|New value: ') + str(pit_new)
                 
-                # Export das aktuellen Werte in eine Text datei
-                lt = time.localtime()#  Uhrzeit des Messzyklus
-                jahr, monat, tag, stunde, minute, sekunde = lt[0:6]
-                Uhrzeit = string.zfill(stunde,2) + ':' + string.zfill(minute,2)+ ':' + string.zfill(sekunde,2)
-                Uhrzeit_lang = string.zfill(tag,2) + '.' + string.zfill(monat,2) + '.' + string.zfill((jahr-2000),2) + ' ' + Uhrzeit
+                # Export das aktuellen Werte in eine Textdatei
+                
+                Uhrzeit_lang = time.strftime('%d.%m.%y %H:%M:%S')
                 
                 while True:
                     try:          
-                        fp = codecs.open(pitPath + '/' + pitFile + '_tmp', 'w', 'utf_8')
+                        with codecs.open(pitPath + '/' + pitFile + '_tmp', 'w', 'utf_8') as fp:
                         # Schreibe mit Trennzeichen ; 
                         # Zeit;Soll;Ist;%;msg + pitFile,
-                        fp.write(str(Uhrzeit_lang) + ';'+ str(pit_set) + ';' + str(pit_now) + ';' + str(pit_new) + '%;' + msg)
-                        fp.flush()
-                        os.fsync(fp.fileno())
-                        fp.close()
+                            fp.write(u'{};{};{};{}%;{}'.format(Uhrzeit_lang, pit_set, pit_now, pit_new, msg))
+                            fp.flush()
+                            os.fsync(fp.fileno())
                         os.rename(pitPath + '/' + pitFile + '_tmp', pitPath + '/' + pitFile)
                     except IndexError:
                         time.sleep(1)

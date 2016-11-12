@@ -135,23 +135,28 @@ def get_random_filename(filename):
     return filename + '_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(12))
 
 
+def config_write(configfile, config):
+    # Schreibt das Configfile
+    # Ein Lock sollte im aufrufenden Programm gehalten werden!
+    
+    tmp_filename = get_random_filename(configfile)
+    with codecs.open(tmp_filename, 'w', 'utf_8') as new_ini:
+        for section_name in config.sections():
+            new_ini.write(u'[{section_name}]\n'.format(section_name=section_name))
+            for (key, value) in config.items(section_name):
+                new_ini.write(u'{key} = {value}\n'.format(key=key, value=value))
+            new_ini.write('\n')
+        new_ini.flush()
+        os.fsync(new_ini.fileno())
+        new_ini.close()
+        os.rename(tmp_filename, configfile)
+
+
 def reboot_pi():
     logger.info(_(u'rebooting'))
     
-    tmp_filename = get_random_filename(cf)
-    while True:
-        try:
-            cfgfile = open(tmp_filename,'w')
-            Config.set('ToDo', 'raspi_reboot', 'False')
-            Config.write(cfgfile)
-            cfgfile.flush()
-            os.fsync(cfgfile.fileno())
-            cfgfile.close()
-            os.rename(tmp_filename, cf)
-        except IndexError:
-            time.sleep(1)
-            continue
-        break
+    Config.set('ToDo', 'raspi_reboot', 'False')
+    config_write(cf, Config)
     
     # Setze Flag
     try:
@@ -275,53 +280,23 @@ def read_config():
             handle_service('WLANThermo', 'restart')
             time.sleep(3)
             logger.info(_(u'Changing restart_thermo to False again!'))
-            while True:
-                try:
-                    cfgfile = open(tmp_filename,'w')
-                    Config.set('ToDo', 'restart_thermo', 'False')
-                    Config.write(cfgfile)
-                    cfgfile.flush()
-                    os.fsync(cfgfile.fileno())
-                    cfgfile.close()
-                    os.rename(tmp_filename, cf)
-                except IndexError:
-                    time.sleep(1)
-                    continue
-                break
+            
+            Config.set('ToDo', 'restart_thermo', 'False')
+            config_write(cf, Config)
         
         if (Config.getboolean('ToDo', 'restart_pitmaster')):
             logger.info(_(u'Restart pitmaster!'))
             handle_service('WLANThermoPIT', 'restart')
             time.sleep(3)
             logger.info(_(u'Changing restart_pitmaster to False again!'))
-            while True:
-                try:
-                    cfgfile = open(tmp_filename,'w')
-                    Config.set('ToDo', 'restart_pitmaster', 'False')
-                    Config.write(cfgfile)
-                    cfgfile.flush()
-                    os.fsync(cfgfile.fileno())
-                    cfgfile.close()
-                    os.rename(tmp_filename, cf)
-                except IndexError:
-                    time.sleep(1)
-                    continue
-                break
+
+            Config.set('ToDo', 'restart_pitmaster', 'False')
+            config_write(cf, Config)
+
         
         if (Config.getboolean('ToDo', 'raspi_shutdown')):
-            while True:
-                try:
-                    cfgfile = open(tmp_filename, 'w')
-                    Config.set('ToDo', 'raspi_shutdown', 'False')
-                    Config.write(cfgfile)
-                    cfgfile.flush()
-                    os.fsync(cfgfile.fileno())
-                    cfgfile.close()
-                    os.rename(tmp_filename, cf)
-                except IndexError:
-                    time.sleep(1)
-                    continue
-                break
+            Config.set('ToDo', 'raspi_shutdown', 'False')
+            config_write(cf, Config)
             if Config.get('Hardware', 'version') in ['v3']:
                 halt_v3_pi()
             else:
@@ -334,90 +309,39 @@ def read_config():
         
         if (Config.getboolean('ToDo', 'backup')):
             logger.info(_(u'Create backup!'))
-            while True:
-                try:
-                    cfgfile = open(tmp_filename, 'w')
-                    Config.set('ToDo', 'backup', 'False')
-                    Config.write(cfgfile)
-                    cfgfile.flush()
-                    os.fsync(cfgfile.fileno())
-                    cfgfile.close()
-                    os.rename(tmp_filename, cf)
-                except IndexError:
-                    time.sleep(1)
-                    continue
-                break
+            Config.set('ToDo', 'backup', 'False')
+            config_write(cf, Config)
             ret = os.popen("/usr/sbin/wlt_2_backup.sh").read()
             logger.debug(ret)
         if (Config.getboolean('ToDo', 'update_gui')):
             logger.info(_(u'update_gui!'))
-            while True:
-                try:
-                    cfgfile = open(tmp_filename, 'w')
-                    Config.set('ToDo', 'update_gui', 'False')
-                    Config.write(cfgfile)
-                    cfgfile.flush()
-                    os.fsync(cfgfile.fileno())
-                    cfgfile.close()
-                    os.rename(tmp_filename, cf)
-                except IndexError:
-                    time.sleep(1)
-                    continue
-                break
+            Config.set('ToDo', 'update_gui', 'False')
+            config_write(cf, Config)
             ret = os.popen("/usr/sbin/wlt_2_update_gui.sh").read()
             logger.debug(ret)
 
         if (Config.getboolean('ToDo', 'start_update')):
             logger.info(_(u'Update software!'))
-            while True:
-                try:
-                    cfgfile = open(tmp_filename,'w')
-                    Config.set('ToDo', 'start_update', 'False')
-                    Config.write(cfgfile)
-                    cfgfile.flush()
-                    os.fsync(cfgfile.fileno())
-                    cfgfile.close()
-                    os.rename(tmp_filename, cf)
-                except IndexError:
-                    time.sleep(1)
-                    continue
-                break
+            Config.set('ToDo', 'start_update', 'False')
+            config_write(cf, Config)
             ret = os.popen("/usr/sbin/wlt_2_update.sh").read()
             logger.debug(ret)
 
             
         if (Config.getboolean('ToDo', 'create_new_log')):
+            
             logger.info(_(u'Create new log!'))
-            while True:
-                try:
-                    cfgfile = open(tmp_filename,'w')
-                    Config.set('ToDo', 'create_new_log', 'False')
-                    Config.set('Logging', 'write_new_log_on_restart', 'True')
-                    Config.write(cfgfile)
-                    cfgfile.flush()
-                    os.fsync(cfgfile.fileno())
-                    cfgfile.close()
-                    os.rename(tmp_filename, cf)
-                except IndexError:
-                    time.sleep(1)
-                    continue
-                break
+            Config.set('ToDo', 'create_new_log', 'False')
+            Config.set('Logging', 'write_new_log_on_restart', 'True')
+            config_write(cf, Config)
+            
             time.sleep(2)
             handle_service('WLANThermo', 'restart')
             time.sleep(10)
-            while True:
-                try:
-                    cfgfile = open(tmp_filename,'w')
-                    Config.set('Logging', 'write_new_log_on_restart', 'False')
-                    Config.write(cfgfile)
-                    cfgfile.flush()
-                    os.fsync(cfgfile.fileno())
-                    cfgfile.close()
-                    os.rename(tmp_filename, cf)
-                except IndexError:
-                    time.sleep(1)
-                    continue
-                break
+            
+            Config.set('Logging', 'write_new_log_on_restart', 'False')
+            config_write(cf, Config)
+            
             logger.info(_(u'Finished creation of new logfile'))
 
         if (Config.getboolean('ToDo', 'pit_on')):
@@ -482,18 +406,8 @@ def check_display():
         if Config.getboolean('ToDo', 'restart_display'):
             tmp_filename = get_random_filename(cf)
             logger.info(_(u'Changing restart_display to False'))
-            for i in range(0,5):
-                try:
-                    cfgfile = open(tmp_filename,'w')
-                    Config.set('ToDo', 'restart_display', 'False')
-                    Config.write(cfgfile)
-                    cfgfile.flush()
-                    os.fsync(cfgfile.fileno())
-                    cfgfile.close()
-                    os.rename(tmp_filename, cf)
-                    break
-                except IndexError:
-                    time.sleep(1)
+            Config.set('ToDo', 'restart_display', 'False')
+            config_write(cf, Config)
     else:
         # Display deaktiviert
         if display_proc != None:
