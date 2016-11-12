@@ -42,7 +42,7 @@ if(isset($_POST["shutdown"])) {
 			<table align="center" width="80%">
 				<tr>
 					<td width="20%"></td>
-					<td align="center"> <input type="submit" class=button_yes name="shutdown"  value="shutdown"><input type="submit" class=button_back name="back"  value=""> </td>
+					<td align="center"> <input type="submit" class=button_yes name="shutdown"  value=""><input type="submit" class=button_back name="back"  value=""> </td>
 					<td width="20%"></td>
 				</tr>
 			</table>
