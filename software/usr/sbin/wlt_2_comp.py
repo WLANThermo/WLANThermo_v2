@@ -662,7 +662,7 @@ try:
                 # Wenn konfiguriert, Alarm per WhatsApp schicken
                 WhatsApp_number = new_config.get('WhatsApp','whatsapp_number')
                 cmd="/usr/sbin/sende_whatsapp.sh"
-                subprocess.call(cmd, WhatsApp_number, alarm_message.encode('utf-8'))
+                subprocess.call((cmd, WhatsApp_number, alarm_message.encode('utf-8')))
                 
             if Telegram_alert:
                 Telegram_URL = 'https://api.telegram.org/bot{token}/sendMessage'
