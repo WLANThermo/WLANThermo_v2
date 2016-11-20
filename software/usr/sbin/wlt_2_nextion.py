@@ -1287,7 +1287,7 @@ def NX_display():
             
         elif time.time() > hwclock_nextupdate:
             if check_ntp():
-                logger.debug(_(u'Setting RTC'))
+                logger.info(_(u'Setting RTC'))
                 set_hwclock()
                 # Update time again in 1h
                 hwclock_nextupdate = time.time() + 3600
