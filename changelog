@@ -1,14 +1,15 @@
-wlanthermo (2.5.0-0rc2) unstable; urgency=medium
+wlanthermo (2.5.0-0) stable; urgency=medium
 
   * CHANGE: changed startup from SysV-init to systemd units
   * CHANGE: moved sudoers entries to seperate file 
   * CHANGE: i18n of the source code
   * CHANGE: new display HMI version with icons
   * CHANGE: split alert messages to push/ telegram/ app
-  * CHANGE: changed valid adc values from x > 60 to 60 < x < 4080
+  * CHANGE: changed valid adc values from x > 60 to 15 < x < 4080
   * CHANGE: Nextion HMI Version 2.0
   * FIX: Poweroff on shutdown
   * FIX: Handle configuration file as UTF-8
+  * ADD: probe documentation in Markdown format
   * ADD: function to recalibrate the NEXTION touchscreen
   * ADD: translation to english
   * ADD: temperature unit selectable between celsius and fahrenheit
@@ -22,7 +23,7 @@ wlanthermo (2.5.0-0rc2) unstable; urgency=medium
   * ADD: probe type SmokeMAX
   * ADD: probe type Weber_6743
 	
- -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Sat, 12 Nov 2016 18:30:00 +0100
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Mon, 21 Nov 2016 14:10:00 +0100
 
 wlanthermo (2.4.0-0) stable; urgency=medium
 
