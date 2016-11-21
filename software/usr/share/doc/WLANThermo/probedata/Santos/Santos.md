@@ -11,11 +11,11 @@ Resistance at 0°C | R<sub>25</sub> | 728.04k
 Resistance at 25°C | R<sub>25</sub> | 200.48k
 Resistance at 85°C | R<sub>25</sub> | 17.44k
 Beta 25°C to 85°C | B<sub>25/85</sub>| 4346K
-Minimum measurable temperature | | 264.7°C
-Minimum high-res temperature | | 125.3°C
+Minimum measurable temperature | | -43.4°C
+Minimum high-res temperature | | -5.9°C
 Highest resolution || 2.42e-02°C/step at 51.7°C
-Maximum high-res temperature | | -5.9°C
-Maximum measurable temperature | | -40.4°C
+Maximum high-res temperature | | 125.3°C
+Maximum measurable temperature | | 274.6°C
 
 ### Probe curve data
 ![Probe fit chart](Santos_curve.png)

@@ -11,11 +11,11 @@ Resistance at 0°C | R<sub>25</sub> | 167.21k
 Resistance at 25°C | R<sub>25</sub> | 50.24k
 Resistance at 85°C | R<sub>25</sub> | 5.14k
 Beta 25°C to 85°C | B<sub>25/85</sub>| 4058K
-Minimum measurable temperature | | 209.9°C
-Minimum high-res temperature | | 90.2°C
+Minimum measurable temperature | | -65.3°C
+Minimum high-res temperature | | -33.3°C
 Highest resolution || 2.17e-02°C/step at 20.7°C
-Maximum high-res temperature | | -33.3°C
-Maximum measurable temperature | | -62.6°C
+Maximum high-res temperature | | 90.2°C
+Maximum measurable temperature | | 218.6°C
 
 ### Probe curve data
 ![Probe fit chart](ACURITE_curve.png)

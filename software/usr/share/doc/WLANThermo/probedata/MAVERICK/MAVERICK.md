@@ -11,11 +11,11 @@ Resistance at 0°C | R<sub>25</sub> | 3903.35k
 Resistance at 25°C | R<sub>25</sub> | 1001.96k
 Resistance at 85°C | R<sub>25</sub> | 73.65k
 Beta 25°C to 85°C | B<sub>25/85</sub>| 4646K
-Minimum measurable temperature | | 322.6°C
-Minimum high-res temperature | | 168.1°C
+Minimum measurable temperature | | -18.2°C
+Minimum high-res temperature | | 28.0°C
 Highest resolution || 2.72e-02°C/step at 90.3°C
-Maximum high-res temperature | | 28.0°C
-Maximum measurable temperature | | -14.7°C
+Maximum high-res temperature | | 168.1°C
+Maximum measurable temperature | | 333.0°C
 
 ### Probe curve data
 ![Probe fit chart](MAVERICK_curve.png)

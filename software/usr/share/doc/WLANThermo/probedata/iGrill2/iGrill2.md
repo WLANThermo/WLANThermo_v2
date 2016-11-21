@@ -11,11 +11,11 @@ Resistance at 0°C | R<sub>25</sub> | 329.32k
 Resistance at 25°C | R<sub>25</sub> | 99.40k
 Resistance at 85°C | R<sub>25</sub> | 10.18k
 Beta 25°C to 85°C | B<sub>25/85</sub>| 4056K
-Minimum measurable temperature | | 247.1°C
-Minimum high-res temperature | | 109.3°C
+Minimum measurable temperature | | -57.2°C
+Minimum high-res temperature | | -20.8°C
 Highest resolution || 2.38e-02°C/step at 36.2°C
-Maximum high-res temperature | | -20.8°C
-Maximum measurable temperature | | -54.2°C
+Maximum high-res temperature | | 109.3°C
+Maximum measurable temperature | | 256.9°C
 
 ### Probe curve data
 ![Probe fit chart](iGrill2_curve.png)

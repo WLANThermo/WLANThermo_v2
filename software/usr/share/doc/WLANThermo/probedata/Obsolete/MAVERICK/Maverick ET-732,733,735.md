@@ -11,11 +11,11 @@ Resistance at 0°C | R<sub>25</sub> | 3819.00k
 Resistance at 25°C | R<sub>25</sub> | 990.02k
 Resistance at 85°C | R<sub>25</sub> | 74.45k
 Beta 25°C to 85°C | B<sub>25/85</sub>| 4605K
-Minimum measurable temperature | | 328.0°C
-Minimum high-res temperature | | 168.8°C
+Minimum measurable temperature | | -18.6°C
+Minimum high-res temperature | | 27.9°C
 Highest resolution || 2.75e-02°C/step at 90.6°C
-Maximum high-res temperature | | 27.9°C
-Maximum measurable temperature | | -15.1°C
+Maximum high-res temperature | | 168.8°C
+Maximum measurable temperature | | 338.8°C
 
 ### Probe curve data
 ![Probe fit chart](Maverick ET-732,733,735_curve.png)

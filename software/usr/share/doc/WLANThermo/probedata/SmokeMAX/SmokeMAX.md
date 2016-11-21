@@ -11,11 +11,11 @@ Resistance at 0°C | R<sub>25</sub> | 327.14k
 Resistance at 25°C | R<sub>25</sub> | 99.45k
 Resistance at 85°C | R<sub>25</sub> | 10.40k
 Beta 25°C to 85°C | B<sub>25/85</sub>| 4018K
-Minimum measurable temperature | | 252.1°C
-Minimum high-res temperature | | 109.8°C
+Minimum measurable temperature | | -57.4°C
+Minimum high-res temperature | | -21.0°C
 Highest resolution || 2.40e-02°C/step at 36.1°C
-Maximum high-res temperature | | -21.0°C
-Maximum measurable temperature | | -54.4°C
+Maximum high-res temperature | | 109.8°C
+Maximum measurable temperature | | 262.3°C
 
 ### Probe curve data
 ![Probe fit chart](SmokeMAX_curve.png)
