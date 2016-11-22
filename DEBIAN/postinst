@@ -47,7 +47,7 @@ chmod 0440 /etc/sudoers.d/WLANThermo
 systemctl daemon-reload
 
 # Restart services
-systemctl restart lighttpd
-systemctl restart WLANThermo
-systemctl restart WLANThermoWD
+systemctl restart lighttpd.service
+systemctl restart WLANThermo.service
 systemctl start pigpiod.service
+systemctl restart WLANThermoWD.service
