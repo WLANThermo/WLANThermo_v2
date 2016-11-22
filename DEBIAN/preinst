@@ -4,14 +4,14 @@
 if [ -f /usr/sbin/wlt_2_comp.py ]
 then
   sudo service WLANThermo stop
-  sudo service WLANThermoWD stop
+  # sudo service WLANThermoWD stop
   # Vor 2.4.0-0
   sudo service pigpiod stop
   # danach
+  sudo systemctl stop WLANThermo.service
   sudo systemctl stop pigpiod.service
+  pkill -f wlt_2_nextion.py
 fi
-
-killall python
 
 if [ -f /var/www/conf/WLANThermo.conf ]
 then
