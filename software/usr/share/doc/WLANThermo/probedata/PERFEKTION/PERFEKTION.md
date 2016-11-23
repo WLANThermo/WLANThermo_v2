@@ -7,9 +7,9 @@ Values based on 47k measurement resistor.
 
 Property | Symbol | Value
 -------- | -------- | --------
-Resistance at 0°C | R<sub>25</sub> | 690.16k
+Resistance at 0°C | R<sub>0</sub> | 690.16k
 Resistance at 25°C | R<sub>25</sub> | 199.69k
-Resistance at 85°C | R<sub>25</sub> | 18.29k
+Resistance at 85°C | R<sub>85</sub> | 18.29k
 Beta 25°C to 85°C | B<sub>25/85</sub>| 4254K
 Minimum measurable temperature | | -46.3°C
 Minimum high-res temperature | | -6.2°C
