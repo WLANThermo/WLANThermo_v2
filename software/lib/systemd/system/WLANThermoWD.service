@@ -3,6 +3,8 @@ Description=WLANThermo watchdog service
 
 [Service]
 ExecStart=/usr/sbin/wlt_2_watchdog.py
+KillMode=mixed
+TimeoutStopSec=120
 
 [Install]
 WantedBy=multi-user.target
