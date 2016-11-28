@@ -491,7 +491,7 @@ function to_numeric($value) {
 }
 
 function from_float($value) {
-	return rtrim(sprintf('%F', floatval($value)), '0.');
+	return rtrim(rtrim(sprintf('%F', floatval($value)), '0'), '.');
 }
 
 ?>
