@@ -1419,19 +1419,34 @@ if NX_init(display['serialdevice'], display['serialspeed']):
     logger.debug(_(u'Starting reader thread'))
     NX_reader_thread = threading.Thread(target=NX_reader)
     NX_reader_thread.daemon = True
-    NX_reader_thread.start()
+    try:
+        NX_reader_thread.start()
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except:
+        sys.excepthook(*sys.exc_info())
     
     logger.debug(_(u'Starting display thread'))
     NX_display_thread = threading.Thread(target=NX_display)
     NX_display_thread.daemon = True
-    NX_display_thread.start()
+    try:
+        NX_display_thread.start()
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except:
+        sys.excepthook(*sys.exc_info())
     
     logger.debug(_(u'Starting file watcher'))
     wm = pyinotify.WatchManager()
     mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
     notifier = pyinotify.ThreadedNotifier(wm, FileEvent())
-    notifier.start()
-    
+    try:
+        notifier.start()
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except:
+        sys.excepthook(*sys.exc_info())
+        
     wdd = wm.add_watch(curPath, mask)
     wdd2 = wm.add_watch(pitPath, mask)
     wdd3 = wm.add_watch(confPath, mask)
