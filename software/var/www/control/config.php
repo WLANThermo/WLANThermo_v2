@@ -44,38 +44,47 @@ if(isset($_POST["save"])) {
 						$ini['Sensoren']['ch'.$i] = $_POST['fuehler'.$i];
 					}
 					// Überprüfen ob sich der Messwiderstand geändert hat (Restart)
-					if($ini['Messen']['messwiderstand'.$i] !== $_POST['measuring_resistance'.$i]){ 
-						$ini['Messen']['messwiderstand'.$i] = floatval($_POST['measuring_resistance'.$i]);
+					if($ini['Messen']['messwiderstand'.$i] !== to_numeric($_POST['measuring_resistance'.$i])){ 
+						$ini['Messen']['messwiderstand'.$i] = to_numeric($_POST['measuring_resistance'.$i]);
 					}
 					// Farben für den Plotter ändern --------------------------------
 					$ini['plotter']['color_ch'.$i] = $_POST['plot_color'.$i];
 
 					// Kanalbezeichnung ändern --------------------------------------
 					$ini['ch_name']['ch_name'.$i] = $_POST['tch'.$i];
-
+					
 					// Temp "min" prüfen und Speichern ------------------------------
-					if($_POST['temp_min'.$i] > "-40" && $_POST['temp_min'.$i] < "380"){
-						$ini['temp_min']['temp_min'.$i] = $_POST['temp_min'.$i];
+					$temp_min = to_numeric($_POST['temp_min'.$i]);
+					if($temp_min > -40 && $temp_min < 380){
+						$ini['temp_min']['temp_min'.$i] = $temp_min;
 					}else{
-						$ini['temp_min']['temp_min'.$i] = "0";
-						$error .= "Die \"min\" Temperatur f&uuml;r \"".$_POST['tch'.$i]."\" liegt ausserhalb des G&uuml;ltigen Bereichs! ==> G&uuml;ltige Werte: -20 - 380Grad<br>";
+						$ini['temp_min']['temp_min'.$i] = 0;
+						$error .= "Die \"min\" Temperatur f&uuml;r \"".$_POST['tch'.$i]."\" liegt ausserhalb des G&uuml;ltigen Bereichs! ==> G&uuml;ltige Werte: -40 - 380Grad<br>";
 					}
-
+					
 					// Temp "max" prüfen und Speichern ------------------------------
-					if($_POST['temp_max'.$i] > "-20" && $_POST['temp_max'.$i] < "380"){
-						$ini['temp_max']['temp_max'.$i] = $_POST['temp_max'.$i];
+					$temp_max = to_numeric($_POST['temp_max'.$i]);
+					if ($temp_max > -20 && $temp_max < 380) {
+						$ini['temp_max']['temp_max'.$i] = $temp_max;
 					}else{
 						$ini['temp_max']['temp_max'.$i] = "200";
 						$error .= "Die \"max\" Temperatur f&uuml;r \"".$_POST['tch'.$i]."\" liegt ausserhalb des G&uuml;ltigen Bereichs! ==> G&uuml;ltige Werte: -20 - 380Grad<br>";
 					}						
 					
 					// Alarmierung prüfen und Speichern -----------------------------
-					if(isset ($_POST['alert'.$i])) { $ini['web_alert']['ch'.$i] = "True"; } else { $ini['web_alert']['ch'.$i] = "False";}
-					
-				}				
+					if(isset ($_POST['alert'.$i])) {
+						$ini['web_alert']['ch'.$i] = "True";
+					} else {
+						$ini['web_alert']['ch'.$i] = "False";
+					}
+				}
 				
 				// ch_show prüfen und Speichern -------------------------------------
-				if(isset ($_POST['ch_show'.$i])) { $ini['ch_show']['ch'.$i] = "True"; } else { $ini['ch_show']['ch'.$i] = "False";}
+				if(isset ($_POST['ch_show'.$i])) {
+					$ini['ch_show']['ch'.$i] = "True";
+				} else {
+					$ini['ch_show']['ch'.$i] = "False";
+				}
 			}
 			
 			// ######################################################################
@@ -151,14 +160,14 @@ if(isset($_POST["save"])) {
 			}
 			// Intervall für Statusmeldungen
 			if (isset($_POST['status_interval'])) {
-				if($ini['Alert']['status_interval'] !== $_POST['status_interval']){
-					$ini['Alert']['status_interval'] = floatval($_POST['status_interval']);
+				if($ini['Alert']['status_interval'] !== intval($_POST['status_interval'])){
+					$ini['Alert']['status_interval'] = intval($_POST['status_interval']);
 				}
 			}
 			// Intervall für Alarmmeldungen
 			if (isset($_POST['alarm_interval'])) {
-				if($ini['Alert']['alarm_interval'] !== $_POST['alarm_interval']){
-					$ini['Alert']['alarm_interval'] = floatval($_POST['alarm_interval']);
+				if($ini['Alert']['alarm_interval'] !== intval($_POST['alarm_interval'])){
+					$ini['Alert']['alarm_interval'] = intval($_POST['alarm_interval']);
 				}
 			}
 			// ######################################################################
@@ -441,12 +450,13 @@ if(isset($_POST["save"])) {
 				//$ini['ToDo']['restart_pitmaster'] = "True";
 			}
 			// Pitmaster manuell einstellen
+			$pit_man = to_numeric($_POST['pit_man']);
 			if (isset($_POST['pit_man'])) {
-				if($ini['Pitmaster']['pit_man'] !== $_POST['pit_man']){
-					$ini['Pitmaster']['pit_man'] = $_POST['pit_man'];
+				if($ini['Pitmaster']['pit_man'] != $pit_man){
+					$ini['Pitmaster']['pit_man'] = $pit_man;
 				}
 			}
-			// Pitmaster bei Ã„nderung neu starten
+			// Pitmaster bei Änderung neu starten
 			if (isset($_POST['pit_curve'])) {
 				//if($ini['Pitmaster']['pit_curve'] !== $_POST['pit_curve']){
 				//	$ini['ToDo']['restart_pitmaster'] = "True";
@@ -469,42 +479,42 @@ if(isset($_POST["save"])) {
 				//if($ini['Pitmaster']['pit_kp'] !== $_POST['pit_kp']){
 				//	$ini['ToDo']['restart_pitmaster'] = "True";
 				//}
-				$ini['Pitmaster']['pit_kp'] = $_POST['pit_kp'];
+				$ini['Pitmaster']['pit_kp'] = to_numeric($_POST['pit_kp']);
 			}
 			//Pitmaster PID ki
 			if (isset($_POST['pit_ki'])) {
 				//if($ini['Pitmaster']['pit_ki'] !== $_POST['pit_ki']){
 				//	$ini['ToDo']['restart_pitmaster'] = "True";
 				//}
-				$ini['Pitmaster']['pit_ki'] = $_POST['pit_ki'];
+				$ini['Pitmaster']['pit_ki'] = to_numeric($_POST['pit_ki']);
 			}
 			//Pitmaster PID kd
 			if (isset($_POST['pit_kd'])) {
 				//if($ini['Pitmaster']['pit_kd'] !== $_POST['pit_kd']){
 				//	$ini['ToDo']['restart_pitmaster'] = "True";
 				//}
-				$ini['Pitmaster']['pit_kd'] = $_POST['pit_kd'];
+				$ini['Pitmaster']['pit_kd'] = to_numeric($_POST['pit_kd']);
 			}
 			//Pitmaster PID kp_a
 			if (isset($_POST['pit_kp_a'])) {
 				//if($ini['Pitmaster']['pit_kp_a'] !== $_POST['pit_kp_a']){
 				//	$ini['ToDo']['restart_pitmaster'] = "True";
 				//}
-				$ini['Pitmaster']['pit_kp_a'] = $_POST['pit_kp_a'];
+				$ini['Pitmaster']['pit_kp_a'] = to_numeric($_POST['pit_kp_a']);
 			}
 			//Pitmaster PID ki_a
 			if (isset($_POST['pit_ki_a'])) {
 				//if($ini['Pitmaster']['pit_ki_a'] !== $_POST['pit_ki_a']){
 				//	$ini['ToDo']['restart_pitmaster'] = "True";
 				//}
-				$ini['Pitmaster']['pit_ki_a'] = $_POST['pit_ki_a'];
+				$ini['Pitmaster']['pit_ki_a'] = to_numeric($_POST['pit_ki_a']);
 			}
 			//Pitmaster PID kd_a
 			if (isset($_POST['pit_kd_a'])) {
 				//if($ini['Pitmaster']['pit_kd_a'] !== $_POST['pit_kd_a']){
 				//	$ini['ToDo']['restart_pitmaster'] = "True";
 				//}
-				$ini['Pitmaster']['pit_kd_a'] = $_POST['pit_kd_a'];
+				$ini['Pitmaster']['pit_kd_a'] = to_numeric($_POST['pit_kd_a']);
 			}
 			//Pitmaster IO GPIO
 			if (isset($_POST['pit_io_gpio'])) {
@@ -519,46 +529,49 @@ if(isset($_POST["save"])) {
 			}
 			// Pitmaster Temperatur 
 			if (isset($_POST['pit_set'])) {
-				$ini['Pitmaster']['pit_set'] = $_POST['pit_set'];
+				$ini['Pitmaster']['pit_set'] = to_numeric($_POST['pit_set']);
 			}
 			// Pitmaster Temperatur
 			if (isset($_POST['pit_pause'])) {
-				$ini['Pitmaster']['pit_pause'] = $_POST['pit_pause'];
+				$ini['Pitmaster']['pit_pause'] = to_numeric($_POST['pit_pause']);
 			}
 			// Pitmaster PWM min 
 			if (isset($_POST['pit_pwm_min'])) {
-				if($_POST['pit_pwm_min'] < 0){
-					$ini['Pitmaster']['pit_pwm_min'] = "0";
+				if(to_numeric($_POST['pit_pwm_min']) < 0){
+					$ini['Pitmaster']['pit_pwm_min'] = 0;
 				}else{
-					$ini['Pitmaster']['pit_pwm_min'] = $_POST['pit_pwm_min'];
+					$ini['Pitmaster']['pit_pwm_min'] = to_numeric($_POST['pit_pwm_min']);
 				}
 			}
 			// Pitmaster PWM max 
 			if (isset($_POST['pit_pwm_max'])) {
-				if($_POST['pit_pwm_max'] > 100){
-					$ini['Pitmaster']['pit_pwm_max'] = "100";
+				if(to_numeric($_POST['pit_pwm_max']) > 100){
+					$ini['Pitmaster']['pit_pwm_max'] = 100;
 				}else{
-					$ini['Pitmaster']['pit_pwm_max'] = $_POST['pit_pwm_max'];
+					$ini['Pitmaster']['pit_pwm_max'] = to_numeric($_POST['pit_pwm_max']);
 				}
 			}
+			
 			// Pitmaster Servo min
 			if (isset($_POST['pit_servo_min'])) {
-				if($_POST['pit_servo_min'] < 500){
+				$pit_servo_min = to_numeric($_POST['pit_servo_min']);
+				if($pit_servo_min < 500){
 					$ini['Pitmaster']['pit_servo_min'] = "500";
-				}elseif($_POST['pit_servo_min'] > 2500){
+				}elseif($pit_servo_min > 2500){
 					$ini['Pitmaster']['pit_servo_min'] = "2500";
 				}else{
-					$ini['Pitmaster']['pit_servo_min'] = $_POST['pit_servo_min'];
+					$ini['Pitmaster']['pit_servo_min'] = $pit_servo_min;
 				}
 			}
 			// Pitmaster Servo max 
 			if (isset($_POST['pit_servo_max'])) {
-				if($_POST['pit_servo_max'] < 500){
+				$pit_servo_max = to_numeric($_POST['pit_servo_max']);
+				if($pit_servo_max < 500){
 					$ini['Pitmaster']['pit_servo_max'] = "500";
-				}elseif($_POST['pit_servo_max'] > 2500){
+				}elseif($pit_servo_max > 2500){
 					$ini['Pitmaster']['pit_servo_max'] = "2500";
 				}else{
-					$ini['Pitmaster']['pit_servo_max'] = $_POST['pit_servo_max'];
+					$ini['Pitmaster']['pit_servo_max'] = $pit_servo_max;
 				}				
 			}
 			
@@ -614,12 +627,6 @@ if(isset($_POST["save"])) {
 	// Flag setzen ####################################################################################################################
 	// --------------------------------------------------------------------------------------------------------------------------------	
 	exec("/usr/bin/touch /var/www/tmp/flag",$output);
-	// --------------------------------------------------------------------------------------------------------------------------------
-	// Schreiben der "temperaturen.csv" ###############################################################################################
-	// --------------------------------------------------------------------------------------------------------------------------------	
-	
-	$tmp_min_max_value =  $ini['temp_max']['temp_max0']."\n".$ini['temp_max']['temp_max1']."\n".$ini['temp_max']['temp_max2']."\n".$ini['temp_max']['temp_max3']."\n".$ini['temp_max']['temp_max4']."\n".$ini['temp_max']['temp_max5']."\n".$ini['temp_max']['temp_max6']."\n".$ini['temp_max']['temp_max7']."\n".$ini['temp_min']['temp_min0']."\n".$ini['temp_min']['temp_min1']."\n".$ini['temp_min']['temp_min2']."\n".$ini['temp_min']['temp_min3']."\n".$ini['temp_min']['temp_min4']."\n".$ini['temp_min']['temp_min5']."\n".$ini['temp_min']['temp_min6']."\n".$ini['temp_min']['temp_min7']."\n";
-	writeTmpMinMaxFile($tmp_min_max_value, $tmpFile);
 		
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Einstellungen werden gespeichert...</h2></body>";	
@@ -632,17 +639,17 @@ if(isset($_POST["save"])) {
 // Zurück Button auswerten ----------------------------------------------------------
 // ##################################################################################
 
-}elseif(isset($_POST["back"])) {
+} elseif(isset($_POST["back"])) {
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Verlassen der Seite ohne Speichern!...</h2></body>";
 	echo "</div>";
-}elseif(isset($_GET["alert-test"]) && $_GET["alert-test"] == "true") {
+} elseif(isset($_GET["alert-test"]) && $_GET["alert-test"] == "true") {
 	touch( __DIR__ . '/../alert.test' );
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
 			<body> <h2>Testalarm wird gesendet...</h2></body>";
 	echo "</div>";
-}else{
+} else {
 
 // ##################################################################################
 // Formular ausgeben ----------------------------------------------------------------

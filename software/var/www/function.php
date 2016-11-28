@@ -24,9 +24,14 @@ function getConfig ($filename, $commentchar) {
 					//...with a value
 					$key = trim(substr($dataline, 0, $delimiter));
 					$value = trim(substr($dataline, $delimiter + 1));
-					if (substr($value, 1, 1) == '"' && substr($value, -1, 1) == '"') { 
+					if (substr($value, 1, 1) == '"' && substr($value, -1, 1) == '"') {
+						// Strip double slashes
 						$value = substr($value, 1, -1); 
+					}  elseif (is_numeric($value)) {
+						// Convert numeric values
+						$value = $value + 0;
 					}
+					
 					$config[$section][$key] = stripcslashes($value);
 				}else{
 				//...without a value
@@ -126,19 +131,6 @@ function getLogfiles() {
 		}
 	}
 	return $readFiles;
-}
-//----------------------------------------------------------------------------------- 
-// Funktion um Temperaturen.csv zu erstellen ########################################
-//-----------------------------------------------------------------------------------
-
-function writeTmpMinMaxFile($tmp_min_max_value, $tmpFile) {
-
-	$fp = @fopen($tmpFile . '_phptmp', "w+");
-	if(!$fp) die("Temperaturen.csv konnte nicht erstellt werden!");
-	fwrite($fp, $tmp_min_max_value);
-	fflush($fp);
-	fclose ($fp);
-	rename($tmpFile . '_phptmp', $tmpFile);
 }
 //----------------------------------------------------------------------------------- 
 // Funktion um SESSION Variablen neu zu laden #######################################
@@ -351,6 +343,10 @@ function write_ini($inipath, $ini) {
 	foreach($ini AS $section_name => $section_values){
 		fwrite($new_ini, "[$section_name]\n");
 		foreach($section_values AS $key => $value){
+			# Convert float locale independent (with . as separator)
+			if (is_float($value)) {
+				$value = from_float($value);
+			}
 			fwrite($new_ini, "$key = $value\n");
 		}
 		fwrite($new_ini, "\n");
@@ -484,6 +480,18 @@ function get_cputemp(){
 	}else{
 		return "n/a";
 	}
+}
+
+function to_float($value) {
+	return floatval(str_replace(',', '.', $value));
+}
+
+function to_numeric($value) {
+	return 0 + str_replace(',', '.', $value);
+}
+
+function from_float($value) {
+	return rtrim(sprintf('%F', floatval($value)), '0.');
 }
 
 ?>
