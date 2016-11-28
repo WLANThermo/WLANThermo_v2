@@ -395,7 +395,13 @@ def NX_sendvalues(values):
         logger.debug(_(u'Sending {key} to the display: {value}').format(key=key, value=str(value).decode('iso-8859-1')))
         try:
             if key[-3:] == 'txt':
-                ser.write(str(key) + '="' + str(value)[:length] + '"\xff\xff\xff')
+                try:
+                    value = str(float(value))
+                    if '.' in value:
+                        value = value.rstrip('0').rstrip('.')
+                except ValueError:
+                    value = str(value)
+                ser.write(str(key) + '="' + value[:length] + '"\xff\xff\xff')
             elif key[-3:]  == 'val' or key in systemvars:
                 ser.write(str(key) + '=' + str(value) + '\xff\xff\xff')
             else:
@@ -729,8 +735,8 @@ def channels_getvalues():
         channel['web_alert'] = Config.getboolean('web_alert', 'ch' + str(i))
         channel['name'] = Config.get('ch_name', 'ch_name' + str(i))
         channel['show'] = Config.getboolean('ch_show', 'ch' + str(i))
-        channel['temp_min'] = Config.getint('temp_min', 'temp_min' + str(i))
-        channel['temp_max'] = Config.getint('temp_max', 'temp_max' + str(i))
+        channel['temp_min'] = Config.getfloat('temp_min', 'temp_min' + str(i))
+        channel['temp_max'] = Config.getfloat('temp_max', 'temp_max' + str(i))
         channels[i] = channel
     return channels
 
@@ -992,8 +998,8 @@ def NX_display():
         else:
             values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value'] + temp_unit
         values['main.alert' + str(i) + '.txt:10'] = temps[i]['alert']
-        values['main.al' + str(i) + 'minist.txt:10'] = int(round(channels[i]['temp_min']))
-        values['main.al' + str(i) + 'maxist.txt:10'] = int(round(channels[i]['temp_max']))
+        values['main.al' + str(i) + 'minist.txt:10'] = channels[i]['temp_min']
+        values['main.al' + str(i) + 'maxist.txt:10'] = channels[i]['temp_max']
         values['main.sensor_type' + str(i) + '.val'] = channels[i]['sensor']
         values['main.name' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
     for interface in interfaces:
