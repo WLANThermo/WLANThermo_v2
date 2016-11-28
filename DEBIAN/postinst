@@ -24,15 +24,22 @@ mv /var/www/conf/lighttpd.conf /etc/lighttpd/lighttpd.conf
 # check if new web password has been set
 if [ -f /var/www/tmp/update ]
 then
-    echo 'Passwort gefunden!'
+    echo 'Password found!'
     passwort=`cat /var/www/tmp/update`
     echo "$passwort"
     htpasswd -c -b /etc/lighttpd/htpasswd wlanthermo $passwort
     rm /var/www/tmp/update # Updateflag zuruecksetzen
 else
-    echo 'Kein Passwort gefunden!'
-    echo 'Jetzt das Passwort für den Benutzer >wlanthermo< des geschützten Bereichs eingeben!'
-    htpasswd -c /etc/lighttpd/htpasswd wlanthermo
+    if [ -t 0 ]
+    then
+        echo 'No password found!'
+        echo 'Please enter the new password for user >wlanthermo< of the protected area!'
+        htpasswd -c /etc/lighttpd/htpasswd wlanthermo
+    else
+        echo 'No password found!'
+        echo 'Setting default password'
+        htpasswd -c -b /etc/lighttpd/htpasswd wlanthermo raspberry
+    fi
 fi
 
 ln -s /var/log/WLAN_Thermo /var/www/thermolog
@@ -40,8 +47,8 @@ ln -s /var/log/WLANThermo.log /var/www/log/WLANThermo.log
 chown -Rv www-data:www-data /var/www 1>/dev/null
 chown -Rv www-data:www-data /var/log/WLAN_Thermo 1>/dev/null
 
-chown -v root:root /etc/sudoers.d/WLANThermo
-chmod 0440 /etc/sudoers.d/WLANThermo
+chown -v root:root /etc/sudoers.d/WLANThermo 1>/dev/null
+chmod 0440 /etc/sudoers.d/WLANThermo 1>/dev/null
 
 # Reload new unit files
 systemctl daemon-reload
@@ -50,4 +57,4 @@ systemctl daemon-reload
 systemctl restart lighttpd.service
 systemctl restart WLANThermo.service
 systemctl start pigpiod.service
-systemctl restart WLANThermoWD.service
+# systemctl restart WLANThermoWD.service
