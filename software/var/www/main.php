@@ -59,8 +59,8 @@ if (file_exists(dirname(__FILE__).'/tmp/update')) {
 	session("./conf/WLANThermo.conf");
 	if (file_exists(dirname(__FILE__).'/tmp/update.log')) {
 		$lines = file('tmp/update.log');
-		$last_lines = array_slice($lines , -5);
-		echo '<div id="info_site"><p><b>'.gettext('WLANThermo update').':</b><br> '.nl2br($last_line).'</p></div>';
+		$last_line = $lines[count($lines)-1];
+		echo '<div id="info_site"><p><b>'.gettext('WLANThermo update').':</b> '.$last_line.'</p></div>';
 	}else{
 		echo '<div id="info_site"><b>'.gettext('The update is currently being installed').'...</b></div>';
 	}
