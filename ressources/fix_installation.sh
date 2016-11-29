@@ -7,7 +7,7 @@ startline=$((lines + 1))
 program=wlanthermo
 
 echo "Extract the package"
-tail -n +$startline $0 > /tmp/${program}.deb
+tail -n +$startline WLANThermo_install-2.5.0-0.run > /tmp/${program}.deb
 rm WLANThermo_install-2.5.0-0.run
 sleep 2
 
