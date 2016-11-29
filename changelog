@@ -1,3 +1,9 @@
+wlanthermo (2.5.2-0) stable; urgency=medium
+
+  * FIX: start update as an extra service
+
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Tue, 29 Nov 2016 22:30:00 +0100
+
 wlanthermo (2.5.1-0) stable; urgency=medium
 
   * FIX: added missing probe documentation
@@ -7,7 +13,7 @@ wlanthermo (2.5.1-0) stable; urgency=medium
   * FIX: wrong names in probe reports
   * FIX: restore broken updates
   * CHANGE: remove superfluous decimals from values
-	
+
  -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Tue, 29 Nov 2016 08:44:00 +0100
 
 wlanthermo (2.5.0-0) stable; urgency=medium
@@ -34,7 +40,7 @@ wlanthermo (2.5.0-0) stable; urgency=medium
   * ADD: probe type Santos
   * ADD: probe type SmokeMAX
   * ADD: probe type Weber_6743
-	
+
  -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Mon, 21 Nov 2016 14:10:00 +0100
 
 wlanthermo (2.4.0-0) stable; urgency=medium
