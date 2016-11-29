@@ -1,3 +1,15 @@
+wlanthermo (2.5.1-0) stable; urgency=medium
+
+  * FIX: added missing probe documentation
+  * FIX: Pitmaster: Reversed fan control doesn´t work
+  * FIX: max and min alerts weren´t handled as float
+  * FIX: display stops working on special chars in channel name
+  * FIX: wrong names in probe reports
+  * FIX: restore broken updates
+  * CHANGE: remove superfluous decimals from values
+	
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Tue, 29 Nov 2016 08:44:00 +0100
+
 wlanthermo (2.5.0-0) stable; urgency=medium
 
   * CHANGE: changed startup from SysV-init to systemd units
