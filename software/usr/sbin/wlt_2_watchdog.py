@@ -324,7 +324,7 @@ def read_config():
             logger.info(_(u'Update software!'))
             Config.set('ToDo', 'start_update', 'False')
             config_write(cf, Config)
-            ret = os.popen("/usr/sbin/wlt_2_update.sh").read()
+            ret = os.popen("/usr/bin/systemd-run /usr/sbin/wlt_2_update.sh").read()
             logger.debug(ret)
 
             
