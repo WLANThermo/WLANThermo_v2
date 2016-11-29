@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 dpkg --configure -a
 wget https://github.com/WLANThermo/WLANThermo_v2/releases/download/v2.5.0/WLANThermo_install-2.5.0-0.run
 
