@@ -46,10 +46,6 @@ if  [ $RD != 0 ]; then
   echo -e "[\033[42m\033[30m OK \033[0m] RAM Drive already exists"
 fi
 
-
-echo "Fixing broken installation (fix for broken installation in 2.5.0)"
-dpkg --configure -a
-
 echo "Install depencies:"
 sudo apt-get update
 aptitude --safe-resolver -y install gnuplot-nox lighttpd apache2-utils python-dev python-serial php5-cgi php5-gd php5-intl python-pyinotify sudo python-psutil vim htop php5-curl iftop iotop python-urllib3 fswebcam imagemagick pigpio python-pigpio python3 python3-serial ntpstat
@@ -57,11 +53,8 @@ aptitude --safe-resolver -y install gnuplot-nox lighttpd apache2-utils python-de
 echo "Extract the package"
 tail -n +$startline $0 > /tmp/${program}.deb
 sleep 2
-echo 'install /tmp/${programm}.deb'
+echo 'install /tmp/${program}.deb'
 dpkg -i /tmp/${program}.deb
-
-echo "Trying dependencies again... (fix for broken installation in 2.5.0)"
-aptitude --safe-resolver -y install gnuplot-nox lighttpd apache2-utils python-dev python-serial php5-cgi php5-gd php5-intl python-pyinotify sudo python-psutil vim htop php5-curl iftop iotop python-urllib3 fswebcam imagemagick pigpio python-pigpio python3 python3-serial ntpstat
 
 url=$(cat /etc/hostname)
 echo " "

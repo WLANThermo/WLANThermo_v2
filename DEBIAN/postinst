@@ -42,13 +42,13 @@ else
     fi
 fi
 
-ln -s /var/log/WLAN_Thermo /var/www/thermolog
-ln -s /var/log/WLANThermo.log /var/www/log/WLANThermo.log
-chown -Rv www-data:www-data /var/www 1>/dev/null
-chown -Rv www-data:www-data /var/log/WLAN_Thermo 1>/dev/null
+ln -s /var/log/WLAN_Thermo /var/www/thermolog &> /dev/null
+ln -s /var/log/WLANThermo.log /var/www/log/WLANThermo.log &> /dev/null
+chown -R www-data:www-data /var/www &> /dev/null
+chown -R www-data:www-data /var/log/WLAN_Thermo &> /dev/null
 
-chown -v root:root /etc/sudoers.d/WLANThermo 1>/dev/null
-chmod 0440 /etc/sudoers.d/WLANThermo 1>/dev/null
+chown root:root /etc/sudoers.d/WLANThermo &> /dev/null
+chmod 0440 /etc/sudoers.d/WLANThermo &> /dev/null
 
 # Reload new unit files
 systemctl daemon-reload
