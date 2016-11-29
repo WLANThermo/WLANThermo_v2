@@ -30,9 +30,11 @@ function getConfig ($filename, $commentchar) {
 					}  elseif (is_numeric($value)) {
 						// Convert numeric values
 						$value = $value + 0;
+					} else {
+						$value = stripcslashes($value);
 					}
 					
-					$config[$section][$key] = stripcslashes($value);
+					$config[$section][$key] = $value;
 				}else{
 				//...without a value
 					$config[$section][trim($dataline)]='';
