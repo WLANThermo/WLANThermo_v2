@@ -694,17 +694,17 @@ try:
                 App_device2 = new_config.get('App', 'app_device2')
                 App_inst_id3 = new_config.get('App', 'app_inst_id3')
                 App_device3 = new_config.get('App', 'app_device3')
-                App_sound = new_config.get('App', 'app_device3')
+                App_sound = new_config.get('App', 'app_sound')
                 
                 if App_inst_id3 != '':
-                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?inst_id={inst_id}&device={device}&inst_id2={inst_id2}&device2={device2}&inst_id3={inst_id3}&device3={device3}&message={messagetext}'
+                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?inst_id={inst_id}&device={device}&inst_id2={inst_id2}&device2={device2}&inst_id3={inst_id3}&device3={device3}&sound={sound}&message={messagetext}'
                 elif App_inst_id2 != '':
-                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?inst_id={inst_id}&device={device}&inst_id2={inst_id2}&device2={device2}&message={messagetext}'
+                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?inst_id={inst_id}&device={device}&inst_id2={inst_id2}&device2={device2}&sound={sound}&message={messagetext}'
                 else:
-                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?inst_id={inst_id}&device={device}&message={messagetext}'
+                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?inst_id={inst_id}&device={device}&sound={sound}&message={messagetext}'
 
                 alarm_message2 = urllib.quote(alarm_message.encode('utf-8'))
-                url = App_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), inst_id=App_inst_id, device=App_device, inst_id2=App_inst_id2, device2=App_device2, inst_id3=App_inst_id3, device3=App_device3)
+                url = App_URL.format(sound=App_sound, messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), inst_id=App_inst_id, device=App_device, inst_id2=App_inst_id2, device2=App_device2, inst_id3=App_inst_id3, device3=App_device3)
                 try: 
                     logger.debug(_(u'App GET request, URL: ') + url)
                     response = urllib2.urlopen(url)
