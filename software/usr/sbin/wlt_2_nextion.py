@@ -595,8 +595,13 @@ def temp_getvalues():
         temps_raw = ft.split(';')
         temps = dict()
         temps['timestamp'] = time.mktime(time.strptime(temps_raw[0],'%d.%m.%y %H:%M:%S'))
-        for count in range(8):
-            temps[count] = {'value': str(round(float(temps_raw[count+1]),1)), 'alert': temps_raw[count+9]}
+        for count in range(10):
+            alert = temps_raw[count+11]
+            if temps_raw[count+1] == '':
+                value = None
+            else:
+                value = str(round(float(temps_raw[count+1]),1))
+            temps[count] = {'alert': alert, 'value': value}
     else:
         return None
     
@@ -728,7 +733,7 @@ def channels_getvalues():
     with configfile_lock:
         Config = ConfigParser.SafeConfigParser()
         Config.readfp(codecs.open(configfile, 'r', 'utf_8'))
-    for i in range(8):
+    for i in range(10):
         channel = {}
         channel['sensor'] = Config.getint('Sensoren', 'ch' + str(i))
         channel['logging'] = Config.getboolean('Logging', 'ch' + str(i))
@@ -910,7 +915,7 @@ def NX_display():
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
-    nextion_versions = ['v2.0', 'v1.8', 'v1.7', 'v1.6']    
+    nextion_versions = ['v2.1', 'v2.0', 'v1.8', 'v1.7', 'v1.6']    
     
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
@@ -992,8 +997,8 @@ def NX_display():
         except KeyError:
             logger.error(_(u'Sensor {} not defined!'.format(i)))
             values['main.sensor_name' + str(i) + '.txt:10'] = '- - -'
-    for i in range(8):
-        if temps[i]['value'] == '999.9':
+    for i in range(10):
+        if temps[i]['value'] is None:
             values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
         else:
             values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value'] + temp_unit
@@ -1193,9 +1198,9 @@ def NX_display():
                 else:
                     logger.error(_(u'Unknown unit of measurement'))
                     temp_unit = ''
-                for i in range(8):
+                for i in range(10):
                     if temps[i]['value'] != new_temps[i]['value']:
-                        if new_temps[i]['value'] == '999.9':
+                        if new_temps[i]['value'] is None:
                             values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
                         else:
                             values['main.kanal' + str(i) + '.txt:10'] = new_temps[i]['value'] + temp_unit
@@ -1267,7 +1272,7 @@ def NX_display():
             channels_event.clear()
             new_channels = channels_getvalues()
             
-            for i in range(8):
+            for i in range(10):
                 if channels[i]['temp_min'] != new_channels[i]['temp_min']:
                     values['main.al' + str(i) + 'minist.txt:10'] = new_channels[i]['temp_min']
                 if channels[i]['temp_max'] != new_channels[i]['temp_max']:
@@ -1276,7 +1281,7 @@ def NX_display():
                     values['main.sensor_type' + str(i) + '.val'] = new_channels[i]['sensor']
                 if channels[i]['name'] != new_channels[i]['name']:
                     values['main.name' + str(i) + '.txt:10'] = new_channels[i]['name'].encode('latin-1')
-                    if new_temps[i]['value'] == '999.9\xb0C':
+                    if new_temps[i]['value'] == '':
                         values['main.kanal' + str(i) + '.txt:10'] = new_channels[i]['name'].encode('latin-1')
             
             if NX_sendvalues(values):

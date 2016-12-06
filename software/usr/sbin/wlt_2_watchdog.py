@@ -292,7 +292,15 @@ def read_config():
 
             Config.set('ToDo', 'restart_pitmaster', 'False')
             config_write(cf, Config)
+            
+        if (Config.getboolean('ToDo', 'restart_pitmaster2')):
+            logger.info(_(u'Restart pitmaster 2!'))
+            handle_service('WLANThermoPIT2', 'restart')
+            time.sleep(3)
+            logger.info(_(u'Changing restart_pitmaster2 to False again!'))
 
+            Config.set('ToDo', 'restart_pitmaster2', 'False')
+            config_write(cf, Config)
         
         if (Config.getboolean('ToDo', 'raspi_shutdown')):
             Config.set('ToDo', 'raspi_shutdown', 'False')
@@ -345,8 +353,10 @@ def read_config():
             logger.info(_(u'Finished creation of new logfile'))
 
         if (Config.getboolean('ToDo', 'pit_on')):
-            check_pitmaster() 
-
+            check_pitmaster()
+        if (Config.getboolean('ToDo', 'pit2_on')):
+            check_pitmaster2()
+            
     except:
         logger.info(_(u'Unexpected error: ') +str(sys.exc_info()[0]))
         raise
@@ -419,24 +429,47 @@ def check_display():
 
 def check_pitmaster():
     logger.debug(_(u'Checking pitmaster'))
-    pitmasterPID = os.popen("ps aux|grep wlt_2_pitmaster.py|grep -v grep|awk '{print $2}'").read()
+    pitmasterStatus = subprocess.call('/bin/systemctl status WLANThermoPIT.service'.split())
     bashCommandPit = ''
     if (Config.getboolean('ToDo', 'pit_on')):
-        if (len(pitmasterPID) < 1):
+        if pitmasterStatus != 0:
             logger.info(_(u'Start pitmaster'))
-            bashCommandPit = 'sudo systemctl restart WLANThermoPIT.service'
+            bashCommandPit = '/usr/bin/systemd-run --unit WLANThermoPIT /usr/sbin/wlt_2_pitmaster.py 0'
         else:
             logger.info(_(u'Pitmaster already running'))
     else:
-        if (len(pitmasterPID) > 0):
+        if pitmasterStatus == 0:
             logger.info(_(u'Stopping pitmaster'))
-            #obsolet
+            bashCommandPit = '/bin/systemctl stop WLANThermoPIT.service'
         else:
             logger.info(_(u'Pitmaster already stopped'))
     if (len(bashCommandPit) > 0):
-        retcodeO = subprocess.Popen(bashCommandPit.split())
-        retcodeO.wait()
+        retcodeO = subprocess.call(bashCommandPit.split())
         if retcodeO < 0:
+            logger.info(_(u'Terminated by signal'))
+        else:
+            logger.info(_(u'Child returned: ') + str(retcodeO))
+
+
+def check_pitmaster2():
+    logger.debug(_(u'Checking pitmaster 2'))
+    pitmasterStatus = subprocess.call('/bin/systemctl status WLANThermoPIT2.service'.split())
+    bashCommandPit = ''
+    if (Config.getboolean('ToDo', 'pit2_on')):
+        if pitmasterStatus != 0:
+            logger.info(_(u'Start pitmaster2'))
+            bashCommandPit = '/usr/bin/systemd-run --unit WLANThermoPIT2 /usr/sbin/wlt_2_pitmaster.py 1'
+        else:
+            logger.info(_(u'Pitmaster 2 already running'))
+    else:
+        if pitmasterStatus == 0:
+            logger.info(_(u'Stopping Pitmaster 2'))
+            bashCommandPit = '/bin/systemctl stop WLANThermoPIT2.service'
+        else:
+            logger.info(_(u'Pitmaster 2 already stopped'))
+    if (len(bashCommandPit) > 0):
+        retcodeO = subprocess.call(bashCommandPit.split())
+        if retcodeO == 0:
             logger.info(_(u'Terminated by signal'))
         else:
             logger.info(_(u'Child returned: ') + str(retcodeO))
@@ -466,6 +499,7 @@ GPIO.add_event_detect(27, GPIO.RISING, callback=shutdown_button, bouncetime=1000
 Config.readfp(codecs.open(cf, 'r', 'utf_8'))
 check_display()
 check_pitmaster()
+check_pitmaster2()
 
 # Lösche Rebootflag
 try:
