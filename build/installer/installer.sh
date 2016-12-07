@@ -54,7 +54,7 @@ echo "Install additional Python packages"
 pip install bitstring
 
 echo "Updating pigpiod"
-rm /tmp/pigpio.tar
+rm -f /tmp/pigpio.tar
 sudo rm -rf /tmp/PIGPIO
 cd /tmp
 wget abyz.co.uk/rpi/pigpio/pigpio.tar
