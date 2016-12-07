@@ -1,3 +1,10 @@
+wlanthermo (2.5.3-0) stable; urgency=medium
+
+  * FIX: Pitmaster: fixed calculation of fan values
+  * FIX: Sound setting is not sent to app
+
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Tue, 7 Dec 2016 20:25:00 +0100
+
 wlanthermo (2.5.2-0) stable; urgency=medium
 
   * FIX: start update as an extra service
