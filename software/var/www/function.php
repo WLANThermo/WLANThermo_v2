@@ -298,16 +298,18 @@ function getPlotConfig($plot,$temp_unit){
 	$plot_setting .= "set y2range [".$_SESSION["plotbereich_min"].":".$_SESSION["plotbereich_max"]."];";
 	$plot_setting .= "set xtics nomirror;";
 	$plot_setting .= "set y2tics nomirror;";
-	if ($_SESSION["plot_pit"] == "True") {
+	if ($_SESSION["plot_pit"] == "True" || $_SESSION["plot_pit2"] == "True") {
 		$plot_setting .= "set ylabel \\\"Pitmaster %\\\";";
 		$plot_setting .= 'set yrange ["0":"105"];';
 		$plot_setting .= "set ytics nomirror;";	
+	if ($_SESSION["plot_pit"] == "True") {
 		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 3)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pitsoll"]."' t 'Pitmaster Sollwert'  axes x1y2";
 		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 2)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pit"]."' t 'Pitmaster %' axes x1y1";
-		if ($_SESSION["plot_pit2"] && $_SESSION["pitmaster_count"] == 2) {
-			$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 5)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pit2soll"]."' t 'Pitmaster Sollwert'  axes x1y2";
-			$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 4)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pit2"]."' t 'Pitmaster %' axes x1y1";
-		}
+	}
+	if ($_SESSION["plot_pit2"] && $_SESSION["pitmaster_count"] > 1) {
+		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 5)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pit2soll"]."' t 'Pitmaster 2 Sollwert'  axes x1y2";
+		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 4)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pit2"]."' t 'Pitmaster 2 %' axes x1y1";
+	}
 	}else{
 		$plot_setting .= "set ylabel \\\"Temperatur [°C]\\\";";
 		$plot_setting .= "set yrange [".$_SESSION["plotbereich_min"].":".$_SESSION["plotbereich_max"]."];";
