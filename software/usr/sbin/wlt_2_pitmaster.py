@@ -211,7 +211,7 @@ class BBQpit:
                 # Zerocut
                     width = 0
                 else:
-                    width = int(round(self.pit_min + ((self.pit_max - self.pit_min) * (control_out / 100.0)) * 2.55))
+                    width = int(round((self.pit_min + (self.pit_max - self.pit_min) * (control_out / 100.0)) * 2.55))
             else:
                 width = int(round((self.pit_max - (self.pit_max - self.pit_min) * (control_out / 100.0)) * 2.55))
             self.pi.set_PWM_dutycycle(self.pit_gpio, width)
