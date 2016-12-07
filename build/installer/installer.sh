@@ -48,7 +48,20 @@ fi
 
 echo "Install depencies:"
 sudo apt-get update
-aptitude --safe-resolver -y install gnuplot-nox lighttpd apache2-utils python-dev python-serial php5-cgi php5-gd php5-intl python-pyinotify sudo python-psutil vim htop php5-curl iftop iotop python-urllib3 fswebcam imagemagick pigpio python-pigpio python3 python3-serial ntpstat
+aptitude --safe-resolver -y install gnuplot-nox lighttpd apache2-utils python-dev python-serial php5-cgi php5-gd php5-intl python-pyinotify sudo python-psutil vim htop php5-curl iftop iotop python-urllib3 fswebcam imagemagick pigpio python-pigpio python3 python3-serial ntpstat python-pip
+
+echo "Install additional Python packages"
+pip install bitstring
+
+echo "Updating pigpiod"
+rm /tmp/pigpio.tar
+sudo rm -rf /tmp/PIGPIO
+cd /tmp
+wget abyz.co.uk/rpi/pigpio/pigpio.tar
+tar xf pigpio.tar
+cd PIGPIO
+make -j4
+make prefix=/usr install
 
 echo "Extract the package"
 tail -n +$startline $0 > /tmp/${program}.deb
