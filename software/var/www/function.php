@@ -165,10 +165,6 @@ function session($configfile) {
 	$_SESSION["plotbereich_max"] = $ini['plotter']['plotbereich_max'];
 	$_SESSION["keybox"] = $ini['plotter']['keybox'];
 	$_SESSION["keyboxframe"] = $ini['plotter']['keyboxframe'];
-	$_SESSION["pit_on"] = $ini['ToDo']['pit_on'];
-	$_SESSION["pit_ch"] = $ini['Pitmaster']['pit_ch'];
-	$_SESSION["pit2_on"] = $ini['ToDo']['pit2_on'];
-	$_SESSION["pit2_ch"] = $ini['Pitmaster2']['pit_ch'];
 	$_SESSION["webcam_start"] = $ini['webcam']['webcam_start'];
 	$_SESSION["webcam_name"] = $ini['webcam']['webcam_name'];
 	$_SESSION["webcam_size"] = $ini['webcam']['webcam_size'];
@@ -177,8 +173,6 @@ function session($configfile) {
 	$_SESSION["raspicam_size"] = $ini['webcam']['raspicam_size'];
 	$_SESSION["raspicam_exposure"] = $ini['webcam']['raspicam_exposure'];
 	$_SESSION["current_temp"] = $ini['filepath']['current_temp'];
-	$_SESSION["pitmaster"] = $ini['filepath']['pitmaster'];
-	$_SESSION["pitmaster2"] = $ini['filepath']['pitmaster2'];
 	$_SESSION["showcpulast"] = $ini['Hardware']['showcpulast'];
 	$_SESSION["hardware_version"] = $ini['Hardware']['version'];
 	$_SESSION["checkUpdate"] = $ini['update']['checkupdate'];
@@ -203,6 +197,13 @@ function session($configfile) {
 		$_SESSION["channel_count"] = 8;
 		$_SESSION["pitmaster_count"] = 1;
 	}
+	for ($i = 0; $i < $_SESSION["pitmaster_count"]; $i++){
+		$pitmaster_str = $i == 0 ? '' : strval($i +1);
+		$_SESSION["pitmaster" . $pitmaster_str] = $ini['filepath']['pitmaster' . $pitmaster_str];
+		$_SESSION["pit" . $pitmaster_str . "_on"] = $ini['ToDo']['pit' . $pitmaster_str . '_on'];
+		$_SESSION["pit" . $pitmaster_str . "_ch"] = $ini['Pitmaster' . $pitmaster_str]['pit_ch'];
+	}
+
 }
 //-----------------------------------------------------------------------------------
 // Überprüfen ob SessionVariablen existieren ########################################

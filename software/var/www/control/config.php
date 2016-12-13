@@ -17,6 +17,7 @@ $plotcolors = array('green', 'red', 'blue', 'olive', 'magenta', 'yellow', 'viole
 $app_sounds=array('None', 'Standard', 'Bell', 'Firepager', 'Police_kurz', 'Police_lang',
 	 'Sirene', 'SmokeAlarm', 'TempleBell', 'Tornado_kurz', 'Tornado_lang');
 $app_devices=array('iOS' => '0', 'Android' => '1');
+$log_levels = array('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL');
 
 // ##################################################################################
 // Config-Files einlesen ------------------------------------------------------------
@@ -405,13 +406,9 @@ if(isset($_POST["save"])) {
 								
 			// Hardware Version				
 			if($ini['Hardware']['version'] !== $_POST['hardware_version']){
-				if(($_POST['hardware_version'] == "v3") or ($ini['Hardware']['version'] == "v3")) {
-					if($ini['ToDo']['pit_on'] == "True"){
-						$ini['ToDo']['restart_pitmaster'] = "True";
-					}
-					if($ini['ToDo']['pit2_on'] == "True"){
-						$ini['ToDo']['restart_pitmaster2'] = "True";
-					}
+				for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
+					$pitmaster_str = $pitmaster == 0 ? '' : strval($pitmaster +1);
+					$ini['ToDo']['restart_pitmaster' . $pitmaster_str] = 'True';
 				}
 				$ini['Hardware']['version'] = $_POST['hardware_version'];
 				$restart = "1";
@@ -438,305 +435,159 @@ if(isset($_POST["save"])) {
 			}
 			
 			//#######################################################################
-			// Pitmaster Einstellungen ----------------------------------------------
-			//#######################################################################
-			
-			// Pitmaster EIN/AUS
-			if(isset ($_POST['pit_on'])) {$_POST['pit_on'] = "True"; }else{ $_POST['pit_on'] = "False";}
-			if($ini['ToDo']['pit_on'] !== $_POST['pit_on']){
-				$ini['ToDo']['pit_on'] = $_POST['pit_on'];
-			}
-			// Pit invertierung EIN/AUS
-			if(isset ($_POST['pit_inverted'])) {$_POST['pit_inverted'] = "True"; }else{ $_POST['pit_inverted'] = "False";}
-			if($ini['Pitmaster']['pit_inverted'] !== $_POST['pit_inverted']){
-				$ini['Pitmaster']['pit_inverted'] = $_POST['pit_inverted'];
-			}
-			// Pitmaster PID EIN/AUS
-			if(isset ($_POST['pit_controller_type'])) {$_POST['pit_controller_type'] = "PID"; }else{ $_POST['pit_controller_type'] = "False";}
-			if($ini['Pitmaster']['pit_controller_type'] !== $_POST['pit_controller_type']){
-				$ini['Pitmaster']['pit_controller_type'] = $_POST['pit_controller_type'];
-			}
-			// Open Lid detection EIN/AUS
-			if(isset ($_POST['pit_open_lid_detection'])) {$_POST['pit_open_lid_detection'] = "True"; }else{ $_POST['pit_open_lid_detection'] = "False";}
-			if($ini['Pitmaster']['pit_open_lid_detection'] !== $_POST['pit_open_lid_detection']){
-				$ini['Pitmaster']['pit_open_lid_detection'] = $_POST['pit_open_lid_detection'];
-				//$ini['ToDo']['restart_pitmaster'] = "True";
-			}
-			// Pitmaster manuell einstellen
-			$pit_man = to_numeric($_POST['pit_man']);
-			if (isset($_POST['pit_man'])) {
-				if($ini['Pitmaster']['pit_man'] != $pit_man){
-					$ini['Pitmaster']['pit_man'] = $pit_man;
-				}
-			}
-			// Pitmaster bei Änderung neu starten
-			if (isset($_POST['pit_curve'])) {
-				//if($ini['Pitmaster']['pit_curve'] !== $_POST['pit_curve']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster']['pit_curve'] = $_POST['pit_curve'];
-			}
-			if (isset($_POST['pit_type'])) {
-				//if($ini['Pitmaster']['pit_type'] !== $_POST['pit_type']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster']['pit_type'] = $_POST['pit_type'];
-			}
-			//if (isset($_POST['pit_controller_type'])) {
-			//	if($ini['Pitmaster']['pit_controller_type'] !== $_POST['pit_controller_type']){
-			//		$ini['ToDo']['restart_pitmaster'] = "True";
-			//	}			
-			//}
-			//Pitmaster PID kp
-			if (isset($_POST['pit_kp'])) {
-				//if($ini['Pitmaster']['pit_kp'] !== $_POST['pit_kp']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster']['pit_kp'] = to_numeric($_POST['pit_kp']);
-			}
-			//Pitmaster PID ki
-			if (isset($_POST['pit_ki'])) {
-				//if($ini['Pitmaster']['pit_ki'] !== $_POST['pit_ki']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster']['pit_ki'] = to_numeric($_POST['pit_ki']);
-			}
-			//Pitmaster PID kd
-			if (isset($_POST['pit_kd'])) {
-				//if($ini['Pitmaster']['pit_kd'] !== $_POST['pit_kd']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster']['pit_kd'] = to_numeric($_POST['pit_kd']);
-			}
-			//Pitmaster PID kp_a
-			if (isset($_POST['pit_kp_a'])) {
-				//if($ini['Pitmaster']['pit_kp_a'] !== $_POST['pit_kp_a']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster']['pit_kp_a'] = to_numeric($_POST['pit_kp_a']);
-			}
-			//Pitmaster PID ki_a
-			if (isset($_POST['pit_ki_a'])) {
-				//if($ini['Pitmaster']['pit_ki_a'] !== $_POST['pit_ki_a']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster']['pit_ki_a'] = to_numeric($_POST['pit_ki_a']);
-			}
-			//Pitmaster PID kd_a
-			if (isset($_POST['pit_kd_a'])) {
-				//if($ini['Pitmaster']['pit_kd_a'] !== $_POST['pit_kd_a']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster']['pit_kd_a'] = to_numeric($_POST['pit_kd_a']);
-			}
-			//Pitmaster IO GPIO
-			if (isset($_POST['pit_io_gpio'])) {
-				//if($ini['Pitmaster']['pit_io_gpio'] !== $_POST['pit_io_gpio']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster']['pit_io_gpio'] = $_POST['pit_io_gpio'];
-			}						
-			// Pitmaster Kanal
-			if (isset($_POST['pit_ch'])) {
-				$ini['Pitmaster']['pit_ch'] = $_POST['pit_ch'];
-			}
-			// Pitmaster Temperatur 
-			if (isset($_POST['pit_set'])) {
-				$ini['Pitmaster']['pit_set'] = to_numeric($_POST['pit_set']);
-			}
-			// Pitmaster Temperatur
-			if (isset($_POST['pit_pause'])) {
-				$ini['Pitmaster']['pit_pause'] = to_numeric($_POST['pit_pause']);
-			}
-			// Pitmaster PWM min 
-			if (isset($_POST['pit_pwm_min'])) {
-				if(to_numeric($_POST['pit_pwm_min']) < 0){
-					$ini['Pitmaster']['pit_pwm_min'] = 0;
-				}else{
-					$ini['Pitmaster']['pit_pwm_min'] = to_numeric($_POST['pit_pwm_min']);
-				}
-			}
-			// Pitmaster PWM max 
-			if (isset($_POST['pit_pwm_max'])) {
-				if(to_numeric($_POST['pit_pwm_max']) > 100){
-					$ini['Pitmaster']['pit_pwm_max'] = 100;
-				}else{
-					$ini['Pitmaster']['pit_pwm_max'] = to_numeric($_POST['pit_pwm_max']);
-				}
-			}
-			
-			// Pitmaster Servo min
-			if (isset($_POST['pit_servo_min'])) {
-				$pit_servo_min = to_numeric($_POST['pit_servo_min']);
-				if($pit_servo_min < 500){
-					$ini['Pitmaster']['pit_servo_min'] = "500";
-				}elseif($pit_servo_min > 2500){
-					$ini['Pitmaster']['pit_servo_min'] = "2500";
-				}else{
-					$ini['Pitmaster']['pit_servo_min'] = $pit_servo_min;
-				}
-			}
-			// Pitmaster Servo max 
-			if (isset($_POST['pit_servo_max'])) {
-				$pit_servo_max = to_numeric($_POST['pit_servo_max']);
-				if($pit_servo_max < 500){
-					$ini['Pitmaster']['pit_servo_max'] = "500";
-				}elseif($pit_servo_max > 2500){
-					$ini['Pitmaster']['pit_servo_max'] = "2500";
-				}else{
-					$ini['Pitmaster']['pit_servo_max'] = $pit_servo_max;
-				}				
-			}
-			
-			//#######################################################################
 			// Pitmaster2 Einstellungen ----------------------------------------------
 			//#######################################################################
-			
-			// Pitmaster EIN/AUS
-			if(isset ($_POST['pit2_on'])) {$_POST['pit2_on'] = "True"; }else{ $_POST['pit2_on'] = "False";}
-			if($ini['ToDo']['pit2_on'] !== $_POST['pit2_on']){
-				$ini['ToDo']['pit2_on'] = $_POST['pit2_on'];
-			}
-			// Pit invertierung EIN/AUS
-			if(isset ($_POST['pit2_inverted'])) {$_POST['pit2_inverted'] = "True"; }else{ $_POST['pit2_inverted'] = "False";}
-			if($ini['Pitmaster2']['pit_inverted'] !== $_POST['pit2_inverted']){
-				$ini['Pitmaster2']['pit_inverted'] = $_POST['pit2_inverted'];
-			}
-			// Pitmaster PID EIN/AUS
-			if(isset ($_POST['pit2_controller_type'])) {$_POST['pit2_controller_type'] = "PID"; }else{ $_POST['pit2_controller_type'] = "False";}
-			if($ini['Pitmaster2']['pit_controller_type'] !== $_POST['pit2_controller_type']){
-				$ini['Pitmaster2']['pit_controller_type'] = $_POST['pit2_controller_type'];
-			}
-			// Open Lid detection EIN/AUS
-			if(isset ($_POST['pit2_open_lid_detection'])) {$_POST['pit2_open_lid_detection'] = "True"; }else{ $_POST['pit2_open_lid_detection'] = "False";}
-			if($ini['Pitmaster2']['pit_open_lid_detection'] !== $_POST['pit2_open_lid_detection']){
-				$ini['Pitmaster2']['pit_open_lid_detection'] = $_POST['pit2_open_lid_detection'];
-				//$ini['ToDo']['restart_pitmaster'] = "True";
-			}
-			// Pitmaster manuell einstellen
-			$pit2_man = to_numeric($_POST['pit2_man']);
-			if (isset($_POST['pit2_man'])) {
-				if($ini['Pitmaster2']['pit_man'] != $pit2_man){
-					$ini['Pitmaster2']['pit_man'] = $pit2_man;
+			for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
+				$pitmaster_str = $pitmaster == 0 ? '' : strval($pitmaster +1);
+				$post_prefix = 'pit' . $pitmaster_str;
+				$config_section = 'Pitmaster' . $pitmaster_str;
+				// Pitmaster EIN/AUS
+				if(isset ($_POST[$post_prefix . '_on'])) {$_POST[$post_prefix . '_on'] = "True"; }else{ $_POST[$post_prefix . '_on'] = "False";}
+				if($ini['ToDo'][$post_prefix . '_on'] !== $_POST[$post_prefix . '_on']){
+					$ini['ToDo'][$post_prefix . '_on'] = $_POST[$post_prefix . '_on'];
 				}
-			}
-			// Pitmaster bei Änderung neu starten
-			if (isset($_POST['pit2_curve'])) {
-				//if($ini['Pitmaster2']['pit_curve'] !== $_POST['pit2_curve']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster2']['pit_curve'] = $_POST['pit2_curve'];
-			}
-			if (isset($_POST['pit2_type'])) {
-				//if($ini['Pitmaster2']['pit_type'] !== $_POST['pit2_type']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster2']['pit_type'] = $_POST['pit2_type'];
-			}
-			//if (isset($_POST['pit2_controller_type'])) {
-			//	if($ini['Pitmaster2']['pit_controller_type'] !== $_POST['pit2_controller_type']){
-			//		$ini['ToDo']['restart_pitmaster'] = "True";
-			//	}			
-			//}
-			//Pitmaster PID kp
-			if (isset($_POST['pit2_kp'])) {
-				//if($ini['Pitmaster2']['pit_kp'] !== $_POST['pit2_kp']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster2']['pit_kp'] = to_numeric($_POST['pit2_kp']);
-			}
-			//Pitmaster PID ki
-			if (isset($_POST['pit2_ki'])) {
-				//if($ini['Pitmaster2']['pit_ki'] !== $_POST['pit2_ki']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster2']['pit_ki'] = to_numeric($_POST['pit2_ki']);
-			}
-			//Pitmaster PID kd
-			if (isset($_POST['pit2_kd'])) {
-				//if($ini['Pitmaster2']['pit_kd'] !== $_POST['pit2_kd']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster2']['pit_kd'] = to_numeric($_POST['pit2_kd']);
-			}
-			//Pitmaster PID kp_a
-			if (isset($_POST['pit2_kp_a'])) {
-				//if($ini['Pitmaster2']['pit_kp_a'] !== $_POST['pit2_kp_a']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster2']['pit_kp_a'] = to_numeric($_POST['pit2_kp_a']);
-			}
-			//Pitmaster PID ki_a
-			if (isset($_POST['pit2_ki_a'])) {
-				//if($ini['Pitmaster2']['pit_ki_a'] !== $_POST['pit2_ki_a']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster2']['pit_ki_a'] = to_numeric($_POST['pit2_ki_a']);
-			}
-			//Pitmaster PID kd_a
-			if (isset($_POST['pit2_kd_a'])) {
-				//if($ini['Pitmaster2']['pit_kd_a'] !== $_POST['pit2_kd_a']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster2']['pit_kd_a'] = to_numeric($_POST['pit2_kd_a']);
-			}
-			//Pitmaster IO GPIO
-			if (isset($_POST['pit2_io_gpio'])) {
-				//if($ini['Pitmaster2']['pit_io_gpio'] !== $_POST['pit2_io_gpio']){
-				//	$ini['ToDo']['restart_pitmaster'] = "True";
-				//}
-				$ini['Pitmaster2']['pit_io_gpio'] = $_POST['pit2_io_gpio'];
-			}						
-			// Pitmaster Kanal
-			if (isset($_POST['pit2_ch'])) {
-				$ini['Pitmaster2']['pit_ch'] = $_POST['pit2_ch'];
-			}
-			// Pitmaster Temperatur 
-			if (isset($_POST['pit2_set'])) {
-				$ini['Pitmaster2']['pit_set'] = to_numeric($_POST['pit2_set']);
-			}
-			// Pitmaster Temperatur
-			if (isset($_POST['pit2_pause'])) {
-				$ini['Pitmaster2']['pit_pause'] = to_numeric($_POST['pit2_pause']);
-			}
-			// Pitmaster PWM min 
-			if (isset($_POST['pit2_pwm_min'])) {
-				if(to_numeric($_POST['pit2_pwm_min']) < 0){
-					$ini['Pitmaster2']['pit_pwm_min'] = 0;
-				}else{
-					$ini['Pitmaster2']['pit_pwm_min'] = to_numeric($_POST['pit2_pwm_min']);
+				// Pit invertierung EIN/AUS
+				if(isset ($_POST[$post_prefix . '_inverted'])) {$_POST[$post_prefix . '_inverted'] = "True"; }else{ $_POST[$post_prefix . '_inverted'] = "False";}
+				if($ini[$config_section]['pit_inverted'] !== $_POST[$post_prefix . '_inverted']){
+					$ini[$config_section]['pit_inverted'] = $_POST[$post_prefix . '_inverted'];
 				}
-			}
-			// Pitmaster PWM max 
-			if (isset($_POST['pit2_pwm_max'])) {
-				if(to_numeric($_POST['pit2_pwm_max']) > 100){
-					$ini['Pitmaster2']['pit_pwm_max'] = 100;
-				}else{
-					$ini['Pitmaster2']['pit_pwm_max'] = to_numeric($_POST['pit2_pwm_max']);
+				// Pitmaster PID EIN/AUS
+				if(isset ($_POST[$post_prefix . '_controller_type'])) {$_POST[$post_prefix . '_controller_type'] = "PID"; }else{ $_POST[$post_prefix . '_controller_type'] = "False";}
+				if($ini[$config_section]['pit_controller_type'] !== $_POST[$post_prefix . '_controller_type']){
+					$ini[$config_section]['pit_controller_type'] = $_POST[$post_prefix . '_controller_type'];
 				}
-			}
-			
-			// Pitmaster Servo min
-			if (isset($_POST['pit2_servo_min'])) {
-				$pit_servo_min = to_numeric($_POST['pit2_servo_min']);
-				if($pit_servo_min < 500){
-					$ini['Pitmaster2']['pit_servo_min'] = "500";
-				}elseif($pit_servo_min > 2500){
-					$ini['Pitmaster2']['pit_servo_min'] = "2500";
-				}else{
-					$ini['Pitmaster2']['pit_servo_min'] = $pit_servo_min;
+				// Open Lid detection EIN/AUS
+				if(isset ($_POST[$post_prefix . '_open_lid_detection'])) {$_POST[$post_prefix . '_open_lid_detection'] = "True"; }else{ $_POST[$post_prefix . '_open_lid_detection'] = "False";}
+				if($ini[$config_section]['pit_open_lid_detection'] !== $_POST[$post_prefix . '_open_lid_detection']){
+					$ini[$config_section]['pit_open_lid_detection'] = $_POST[$post_prefix . '_open_lid_detection'];
+					//$ini['ToDo']['restart_pitmaster'] = "True";
 				}
-			}
-			// Pitmaster Servo max 
-			if (isset($_POST['pit2_servo_max'])) {
-				$pit_servo_max = to_numeric($_POST['pit2_servo_max']);
-				if($pit_servo_max < 500){
-					$ini['Pitmaster2']['pit_servo_max'] = "500";
-				}elseif($pit_servo_max > 2500){
-					$ini['Pitmaster2']['pit_servo_max'] = "2500";
-				}else{
-					$ini['Pitmaster2']['pit_servo_max'] = $pit_servo_max;
-				}				
+				// Pitmaster manuell einstellen
+	
+				if (isset($_POST[$post_prefix . '_man'])) {
+					$pit2_man = to_numeric($_POST[$post_prefix . '_man']);
+					if($ini[$config_section]['pit_man'] != $pit2_man){
+						$ini[$config_section]['pit_man'] = $pit2_man;
+					}
+				}
+				// Pitmaster bei Änderung neu starten
+				if (isset($_POST[$post_prefix . '_curve'])) {
+					//if($ini[$config_section]['pit_curve'] !== $_POST[$post_prefix . '_curve']){
+					//	$ini['ToDo']['restart_pitmaster'] = "True";
+					//}
+					$ini[$config_section]['pit_curve'] = $_POST[$post_prefix . '_curve'];
+				}
+				if (isset($_POST[$post_prefix . '_type'])) {
+					//if($ini[$config_section]['pit_type'] !== $_POST[$post_prefix . '_type']){
+					//	$ini['ToDo']['restart_pitmaster'] = "True";
+					//}
+					$ini[$config_section]['pit_type'] = $_POST[$post_prefix . '_type'];
+				}
+				//if (isset($_POST[$post_prefix . '_controller_type'])) {
+				//	if($ini[$config_section]['pit_controller_type'] !== $_POST[$post_prefix . '_controller_type']){
+				//		$ini['ToDo']['restart_pitmaster'] = "True";
+				//	}			
+				//}
+				//Pitmaster PID kp
+				if (isset($_POST[$post_prefix . '_kp'])) {
+					//if($ini[$config_section]['pit_kp'] !== $_POST[$post_prefix . '_kp']){
+					//	$ini['ToDo']['restart_pitmaster'] = "True";
+					//}
+					$ini[$config_section]['pit_kp'] = to_numeric($_POST[$post_prefix . '_kp']);
+				}
+				//Pitmaster PID ki
+				if (isset($_POST[$post_prefix . '_ki'])) {
+					//if($ini[$config_section]['pit_ki'] !== $_POST[$post_prefix . '_ki']){
+					//	$ini['ToDo']['restart_pitmaster'] = "True";
+					//}
+					$ini[$config_section]['pit_ki'] = to_numeric($_POST[$post_prefix . '_ki']);
+				}
+				//Pitmaster PID kd
+				if (isset($_POST[$post_prefix . '_kd'])) {
+					//if($ini[$config_section]['pit_kd'] !== $_POST[$post_prefix . '_kd']){
+					//	$ini['ToDo']['restart_pitmaster'] = "True";
+					//}
+					$ini[$config_section]['pit_kd'] = to_numeric($_POST[$post_prefix . '_kd']);
+				}
+				//Pitmaster PID kp_a
+				if (isset($_POST[$post_prefix . '_kp_a'])) {
+					//if($ini[$config_section]['pit_kp_a'] !== $_POST[$post_prefix . '_kp_a']){
+					//	$ini['ToDo']['restart_pitmaster'] = "True";
+					//}
+					$ini[$config_section]['pit_kp_a'] = to_numeric($_POST[$post_prefix . '_kp_a']);
+				}
+				//Pitmaster PID ki_a
+				if (isset($_POST[$post_prefix . '_ki_a'])) {
+					//if($ini[$config_section]['pit_ki_a'] !== $_POST[$post_prefix . '_ki_a']){
+					//	$ini['ToDo']['restart_pitmaster'] = "True";
+					//}
+					$ini[$config_section]['pit_ki_a'] = to_numeric($_POST[$post_prefix . '_ki_a']);
+				}
+				//Pitmaster PID kd_a
+				if (isset($_POST[$post_prefix . '_kd_a'])) {
+					//if($ini[$config_section]['pit_kd_a'] !== $_POST[$post_prefix . '_kd_a']){
+					//	$ini['ToDo']['restart_pitmaster'] = "True";
+					//}
+					$ini[$config_section]['pit_kd_a'] = to_numeric($_POST[$post_prefix . '_kd_a']);
+				}
+				//Pitmaster IO GPIO
+				if (isset($_POST[$post_prefix . '_io_gpio'])) {
+					//if($ini[$config_section]['pit_io_gpio'] !== $_POST[$post_prefix . '_io_gpio']){
+					//	$ini['ToDo']['restart_pitmaster'] = "True";
+					//}
+					$ini[$config_section]['pit_io_gpio'] = $_POST[$post_prefix . '_io_gpio'];
+				}						
+				// Pitmaster Kanal
+				if (isset($_POST[$post_prefix . '_ch'])) {
+					$ini[$config_section]['pit_ch'] = $_POST[$post_prefix . '_ch'];
+				}
+				// Pitmaster Temperatur 
+				if (isset($_POST[$post_prefix . '_set'])) {
+					$ini[$config_section]['pit_set'] = to_numeric($_POST[$post_prefix . '_set']);
+				}
+				// Pitmaster Temperatur
+				if (isset($_POST[$post_prefix . '_pause'])) {
+					$ini[$config_section]['pit_pause'] = to_numeric($_POST[$post_prefix . '_pause']);
+				}
+				// Pitmaster PWM min 
+				if (isset($_POST[$post_prefix . '_pwm_min'])) {
+					if(to_numeric($_POST[$post_prefix . '_pwm_min']) < 0){
+						$ini[$config_section]['pit_pwm_min'] = 0;
+					}else{
+						$ini[$config_section]['pit_pwm_min'] = to_numeric($_POST[$post_prefix . '_pwm_min']);
+					}
+				}
+				// Pitmaster PWM max 
+				if (isset($_POST[$post_prefix . '_pwm_max'])) {
+					if(to_numeric($_POST[$post_prefix . '_pwm_max']) > 100){
+						$ini[$config_section]['pit_pwm_max'] = 100;
+					}else{
+						$ini[$config_section]['pit_pwm_max'] = to_numeric($_POST[$post_prefix . '_pwm_max']);
+					}
+				}
+				
+				// Pitmaster Servo min
+				if (isset($_POST[$post_prefix . '_servo_min'])) {
+					$pit_servo_min = to_numeric($_POST[$post_prefix . '_servo_min']);
+					if($pit_servo_min < 500){
+						$ini[$config_section]['pit_servo_min'] = "500";
+					}elseif($pit_servo_min > 2500){
+						$ini[$config_section]['pit_servo_min'] = "2500";
+					}else{
+						$ini[$config_section]['pit_servo_min'] = $pit_servo_min;
+					}
+				}
+				// Pitmaster Servo max 
+				if (isset($_POST[$post_prefix . '_servo_max'])) {
+					$pit_servo_max = to_numeric($_POST[$post_prefix . '_servo_max']);
+					if($pit_servo_max < 500){
+						$ini[$config_section]['pit_servo_max'] = "500";
+					}elseif($pit_servo_max > 2500){
+						$ini[$config_section]['pit_servo_max'] = "2500";
+					}else{
+						$ini[$config_section]['pit_servo_max'] = $pit_servo_max;
+					}				
+				}
 			}
 			
 			//#######################################################################
@@ -776,9 +627,24 @@ if(isset($_POST["save"])) {
 			}
 			//#######################################################################
 		
-		
+			// Logging level pitmaster
+			if (isset($_POST['loglevel_pit'])) {
+				$ini['daemon_logging']['level_pit'] = $_POST['loglevel_pit'];
+			}
+			// Logging level watchdog
+			if (isset($_POST['loglevel_wd'])) {
+				$ini['daemon_logging']['level_wd'] = $_POST['loglevel_wd'];
+			}
+			// Logging level compy
+			if (isset($_POST['loglevel_compy'])) {
+				$ini['daemon_logging']['level_compy'] = $_POST['loglevel_compy'];
+			}
+			// Logging level display
+			if (isset($_POST['loglevel_display'])) {
+				$ini['daemon_logging']['level_display'] = $_POST['loglevel_display'];
+			}
 	// Alle POST Variablen Anzeigen ###################################################################################################
-	//	echo nl2br(print_r($_POST,true));
+	// echo nl2br(print_r($_POST,true));
 	// --------------------------------------------------------------------------------------------------------------------------------
 	
 	// --------------------------------------------------------------------------------------------------------------------------------
@@ -1169,160 +1035,94 @@ if(isset($_POST["save"])) {
 			</div>
 			
 		</div>
-
 <?php
 // ##################################################################################
 // Formular Pitmaster Einstellungen -------------------------------------------------
 // ##################################################################################
-?>			
+for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
+	$pitmaster_str = $pitmaster == 0 ? '' : strval($pitmaster +1);
+	$post_prefix = 'pit' . $pitmaster_str;
+	$config_section = 'Pitmaster' . $pitmaster_str;?>	
         <div class="config big">
-            <div class="headline"><?php echo gettext("Pitmaster Settings");?></div>
+            <div class="headline"><?php echo gettext(sprintf("Pitmaster %u Settings", $pitmaster +1));?></div>
             <div class="headicon"><img src="../images/icons16x16/pitmaster.png" alt=""></div>
             <div class="config_text row_1 col_1"><?php echo gettext("Temperature");?>:</div>
             <div class="config_text row_3 col_1"><?php echo gettext("Control Curve");?>:</div>
             <div class="config_text row_4 col_1"><?php echo gettext("Duty Cycle (%)");?></div>
 			<div class="config_text row_4 col_2"><?php echo gettext("min");?>:</div>
             <div class="config_text row_1 col_6"><?php echo gettext("Enable Pitmaster");?>:</div>
-            <div class="config_text row_1 col_7"><input type="checkbox" name="pit_on" id="pit_on" value="True" <?php if($ini['ToDo']['pit_on'] == "True") {echo "checked=\"checked\"";}?> ></div>
+            <div class="config_text row_1 col_7"><input type="checkbox" name="<?php echo $post_prefix;?>_on" id="<?php echo $post_prefix;?>_on" value="True" <?php if(isset($ini['ToDo'][$post_prefix . '_on']) && $ini['ToDo'][$post_prefix . '_on'] == "True") {echo "checked=\"checked\"";}?> ></div>
             <div class="config_text row_3 col_6"><?php echo gettext("Type");?>:</div>
             <div class="config_text row_3 col_7">
-                <select name="pit_type" id="pit_type" size="1">
-                    <option <?php if($ini['Pitmaster']['pit_type'] == "servo")            	{echo " selected";} ?> value="servo"><?php echo gettext("Servo");?></option>
-                    <option <?php if($ini['Pitmaster']['pit_type'] == "fan_pwm")            {echo " selected";} ?> value="fan_pwm"><?php echo gettext("PWM Fan");?></option>
-                    <option <?php if($ini['Pitmaster']['pit_type'] == "fan")            	{echo " selected";} ?> value="fan"><?php echo gettext("Fan");?></option>
-                    <option <?php if($ini['Pitmaster']['pit_type'] == "io")                	{echo " selected";} ?> value="io"><?php echo gettext("IO");?></option>
-                    <option <?php if($ini['Pitmaster']['pit_type'] == "io_pwm")         	{echo " selected";} ?> value="io_pwm"><?php echo gettext("IO with PWM");?></option>
+                <select name="<?php echo $post_prefix;?>_type" id="<?php echo $post_prefix;?>_type" size="1">
+                    <option <?php if(isset($ini[$config_section]['pit_type']) && $ini[$config_section]['pit_type'] == "servo")            	{echo " selected";} ?> value="servo"><?php echo gettext("Servo");?></option>
+                    <option <?php if(isset($ini[$config_section]['pit_type']) && $ini[$config_section]['pit_type'] == "fan_pwm")            {echo " selected";} ?> value="fan_pwm"><?php echo gettext("PWM Fan");?></option>
+                    <option <?php if(isset($ini[$config_section]['pit_type']) && $ini[$config_section]['pit_type'] == "fan")            	{echo " selected";} ?> value="fan"><?php echo gettext("Fan");?></option>
+                    <option <?php if(isset($ini[$config_section]['pit_type']) && $ini[$config_section]['pit_type'] == "io")                	{echo " selected";} ?> value="io"><?php echo gettext("IO");?></option>
+                    <option <?php if(isset($ini[$config_section]['pit_type']) && $ini[$config_section]['pit_type'] == "io_pwm")         	{echo " selected";} ?> value="io_pwm"><?php echo gettext("IO with PWM");?></option>
                 </select>
             </div>
-            <div class="config_text row_3 col_5"><input type="text" name="pit2_curve" id="pit2_curve" size="35" maxlength="50" value="<?php echo $ini['Pitmaster']['pit_curve'];?>"></div>
+            <div class="config_text row_3 col_5"><input type="text" name="<?php echo $post_prefix;?>_curve" id="<?php echo $post_prefix;?>_curve" size="35" maxlength="50" value="<?php if (isset($ini[$config_section]['pit_curve']))  echo $ini[$config_section]['pit_curve'];?>"></div>
             
             <div class="config_text row_2 col_6"><?php echo gettext("Channel");?>:</div>
 			<div class="config_text row_2 col_7">
-				<select name="pit_ch" id="pit_ch" size="1">
+				<select name="<?php echo $post_prefix;?>_ch" id="<?php echo $post_prefix;?>_ch" size="1">
 				    <?php for ($i = 0; $i < $_SESSION["channel_count"]; $i++) {?>
-                    <option <?php if($ini['Pitmaster']['pit_ch'] == $i) {echo " selected";} ?> value="<?php echo $i; ?>"><?php echo gettext("Channel") . ' ' . $i;?></option>
+                    <option <?php if(isset($ini[$config_section]['pit_ch']) && $ini[$config_section]['pit_ch'] == $i) {echo " selected";} ?> value="<?php echo $i; ?>"><?php echo gettext("Channel") . ' ' . $i;?></option>
                     <?php } ?>
                 </select>
             </div>
-            <div class="config_text row_1 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="pit_set" id="pit_set" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_set'];?>"></div>
+            <div class="config_text row_1 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="<?php echo $post_prefix;?>_set" id="<?php echo $post_prefix;?>_set" size="5" maxlength="5" value="<?php if (isset($ini[$config_section]['pit_set'])) echo $ini[$config_section]['pit_set'];?>"></div>
             <div class="config_text row_1 col_4"><?php echo gettext("Delay");?>: </div>
-            <div class="config_text row_2 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="pit_man" id="pit_man" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_man'];?>"></div>
+            <div class="config_text row_2 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="<?php echo $post_prefix;?>_man" id="<?php echo $post_prefix;?>_man" size="5" maxlength="5" value="<?php if (isset($ini[$config_section]['pit_man'])) echo $ini[$config_section]['pit_man'];?>"></div>
             <div class="config_text row_2 col_1"><?php echo gettext("Manual Control");?>: </div>
-            <div class="config_text row_1 col_5"><input type="text" onkeyup="this.value=this.value.replace(/[^\d\.]/g, '');" name="pit_pause" id="pit_pause" size="5" maxlength="4" value="<?php echo $ini['Pitmaster']['pit_pause'];?>"></div>
+            <div class="config_text row_1 col_5"><input type="text" onkeyup="this.value=this.value.replace(/[^\d\.]/g, '');" name="<?php echo $post_prefix;?>_pause" id="<?php echo $post_prefix;?>_pause" size="5" maxlength="4" value="<?php if (isset($ini[$config_section]['pit_pause'])) echo $ini[$config_section]['pit_pause'];?>"></div>
             <div class="config_text row_4 col_2"></div>
-            <div class="config_text row_4 col_3"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit_pwm_min" id="pit_pwm_min" size="5" maxlength="3" value="<?php echo $ini['Pitmaster']['pit_pwm_min'];?>"></div>      
+            <div class="config_text row_4 col_3"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="<?php echo $post_prefix;?>_pwm_min" id="<?php echo $post_prefix;?>_pwm_min" size="5" maxlength="3" value="<?php if (isset($ini[$config_section]['pit_pwm_min'])) echo $ini[$config_section]['pit_pwm_min'];?>"></div>      
             <div class="config_text row_4 col_4"><?php echo gettext("max");?>:</div>
-            <div class="config_text row_4 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit_pwm_max" id="pit_pwm_max" size="5" maxlength="3" value="<?php echo $ini['Pitmaster']['pit_pwm_max'];?>" ></div>  
+            <div class="config_text row_4 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="<?php echo $post_prefix;?>_pwm_max" id="<?php echo $post_prefix;?>_pwm_max" size="5" maxlength="3" value="<?php if (isset($ini[$config_section]['pit_pwm_max'])) echo $ini[$config_section]['pit_pwm_max'];?>" ></div>  
             <div class="config_text row_5 col_1"><?php echo gettext("Servo Pulse (µs) min");?>:</div>
-            <div class="config_text row_5 col_3"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit_servo_min" id="pit_servo_min" size="5" maxlength="4" value="<?php echo $ini['Pitmaster']['pit_servo_min'];?>"></div>      
+            <div class="config_text row_5 col_3"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="<?php echo $post_prefix;?>_servo_min" id="<?php echo $post_prefix;?>_servo_min" size="5" maxlength="4" value="<?php if (isset($ini[$config_section]['pit_servo_min'])) echo $ini[$config_section]['pit_servo_min'];?>"></div>      
             <div class="config_text row_7 col_6"><?php echo gettext("PID Control");?>:</div>
-			<div class="config_text row_7 col_7"><input type="checkbox" name="pit_controller_type" id="pit_controller_type" value="True" <?php if($ini['Pitmaster']['pit_controller_type'] == "PID") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_7 col_7"><input type="checkbox" name="<?php echo $post_prefix;?>_controller_type" id="<?php echo $post_prefix;?>_controller_type" value="True" <?php if($ini[$config_section]['pit_controller_type'] == "PID") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_6 col_6"><?php echo gettext("Open Lid detection");?>:</div>
-			<div class="config_text row_6 col_7"><input type="checkbox" name="pit_open_lid_detection" id="pit_open_lid_detection" value="True" <?php if($ini['Pitmaster']['pit_open_lid_detection'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_6 col_7"><input type="checkbox" name="<?php echo $post_prefix;?>_open_lid_detection" id="<?php echo $post_prefix;?>_open_lid_detection" value="True" <?php if($ini[$config_section]['pit_open_lid_detection'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_5 col_4"><?php echo gettext("max");?>:</div>
-            <div class="config_text row_5 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit_servo_max" id="pit_servo_max" size="5" maxlength="4" value="<?php echo $ini['Pitmaster']['pit_servo_max'];?>"></div>  
+            <div class="config_text row_5 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="<?php echo $post_prefix;?>_servo_max" id="<?php echo $post_prefix;?>_servo_max" size="5" maxlength="4" value="<?php if (isset($ini[$config_section]['pit_servo_max'])) echo $ini[$config_section]['pit_servo_max'];?>"></div>  
 			<div class="config_text row_5 col_6"><?php echo gettext("Reverse Drive");?>:</div>
-            <div class="config_text row_5 col_7"><input type="checkbox" name="pit_inverted" id="pit_inverted" value="True" <?php if($ini['Pitmaster']['pit_inverted'] == "True") {echo "checked=\"checked\"";}?> ></div>
+            <div class="config_text row_5 col_7"><input type="checkbox" name="<?php echo $post_prefix;?>_inverted" id="<?php echo $post_prefix;?>_inverted" value="True" <?php if(isset($ini[$config_section]['pit_inverted']) && $ini[$config_section]['pit_inverted'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_6 col_1"><?php echo gettext("Kp");?>:</div>
-			<div class="config_text row_6 col_1_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_kp" id="pit_kp" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_kp'];?>"></div>
+			<div class="config_text row_6 col_1_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="<?php echo $post_prefix;?>_kp" id="<?php echo $post_prefix;?>_kp" size="5" maxlength="5" value="<?php if (isset($ini[$config_section]['pit_kp'])) echo $ini[$config_section]['pit_kp'];?>"></div>
 			<div class="config_text row_6 col_2"><?php echo gettext("Ki");?>:</div>
-			<div class="config_text row_6 col_3"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_ki" id="pit_ki" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_ki'];?>"></div>
+			<div class="config_text row_6 col_3"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="<?php echo $post_prefix;?>_ki" id="<?php echo $post_prefix;?>_ki" size="5" maxlength="5" value="<?php if (isset($ini[$config_section]['pit_ki'])) echo $ini[$config_section]['pit_ki'];?>"></div>
 			<div class="config_text row_6 col_4"><?php echo gettext("Kd");?>:</div>
-			<div class="config_text row_6 col_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_kd" id="pit_kd" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_kd'];?>"></div>
+			<div class="config_text row_6 col_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="<?php echo $post_prefix;?>_kd" id="<?php echo $post_prefix;?>_kd" size="5" maxlength="5" value="<?php if (isset($ini[$config_section]['pit_kd'])) echo $ini[$config_section]['pit_kd'];?>"></div>
 			<div class="config_text row_7 col_1"><?php echo gettext("Kp_a");?>:</div>
-			<div class="config_text row_7 col_1_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_kp_a" id="pit_kp_a" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_kp_a'];?>"></div>
+			<div class="config_text row_7 col_1_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="<?php echo $post_prefix;?>_kp_a" id="<?php echo $post_prefix;?>_kp_a" size="5" maxlength="5" value="<?php if (isset($ini[$config_section]['pit_kp_a'])) echo $ini[$config_section]['pit_kp_a'];?>"></div>
 			<div class="config_text row_7 col_2"><?php echo gettext("Ki_a");?>:</div>
-			<div class="config_text row_7 col_3"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_ki_a" id="pit_ki_a" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_ki_a'];?>"></div>
+			<div class="config_text row_7 col_3"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="<?php echo $post_prefix;?>_ki_a" id="<?php echo $post_prefix;?>_ki_a" size="5" maxlength="5" value="<?php if (isset($ini[$config_section]['pit_ki_a'])) echo $ini[$config_section]['pit_ki_a'];?>"></div>
 			<div class="config_text row_7 col_4"><?php echo gettext("Kd_a");?>:</div>
-			<div class="config_text row_7 col_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit_kd_a" id="pit_kd_a" size="5" maxlength="5" value="<?php echo $ini['Pitmaster']['pit_kd_a'];?>"></div>
+			<div class="config_text row_7 col_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="<?php echo $post_prefix;?>_kd_a" id="<?php echo $post_prefix;?>_kd_a" size="5" maxlength="5" value="<?php if (isset($ini[$config_section]['pit_kd_a'])) echo $ini[$config_section]['pit_kd_a'];?>"></div>
 			<div class="config_text row_4 col_6"></div>
 			<div class="config_text row_4 col_7"></div>
 		</div>
-<?php
-// ##################################################################################
-// Formular Pitmaster 2 Einstellungen -------------------------------------------------
-// ##################################################################################
-if ($_SESSION["pitmaster_count"] == 2) {
-?>			
-        <div class="config big">
-            <div class="headline"><?php echo gettext("Pitmaster 2 Settings");?></div>
-            <div class="headicon"><img src="../images/icons16x16/pitmaster.png" alt=""></div>
-            <div class="config_text row_1 col_1"><?php echo gettext("Temperature");?>:</div>
-            <div class="config_text row_3 col_1"><?php echo gettext("Control Curve");?>:</div>
-            <div class="config_text row_4 col_1"><?php echo gettext("Duty Cycle (%)");?></div>
-			<div class="config_text row_4 col_2"><?php echo gettext("min");?>:</div>
-            <div class="config_text row_1 col_6"><?php echo gettext("Enable Pitmaster");?>:</div>
-            <div class="config_text row_1 col_7"><input type="checkbox" name="pit2_on" id="pit2_on" value="True" <?php if($ini['ToDo']['pit2_on'] == "True") {echo "checked=\"checked\"";}?> ></div>
-            <div class="config_text row_3 col_6"><?php echo gettext("Type");?>:</div>
-            <div class="config_text row_3 col_7">
-                <select name="pit2_type" id="pit2_type" size="1">
-                    <option <?php if($ini['Pitmaster2']['pit_type'] == "servo")            	{echo " selected";} ?> value="servo"><?php echo gettext("Servo");?></option>
-                    <option <?php if($ini['Pitmaster2']['pit_type'] == "fan_pwm")            {echo " selected";} ?> value="fan_pwm"><?php echo gettext("PWM Fan");?></option>
-                    <option <?php if($ini['Pitmaster2']['pit_type'] == "fan")            	{echo " selected";} ?> value="fan"><?php echo gettext("Fan");?></option>
-                    <option <?php if($ini['Pitmaster2']['pit_type'] == "io")                	{echo " selected";} ?> value="io"><?php echo gettext("IO");?></option>
-                    <option <?php if($ini['Pitmaster2']['pit_type'] == "io_pwm")         	{echo " selected";} ?> value="io_pwm"><?php echo gettext("IO with PWM");?></option>
-                </select>
-            </div>
-            <div class="config_text row_3 col_5"><input type="text" name="pit2_curve" id="pit2_curve" size="35" maxlength="50" value="<?php echo $ini['Pitmaster2']['pit_curve'];?>"></div>
-            
-            <div class="config_text row_2 col_6"><?php echo gettext("Channel");?>:</div>
-			<div class="config_text row_2 col_7">
-				<select name="pit2_ch" id="pit2_ch" size="1">
-				    <?php for ($i = 0; $i < $_SESSION["channel_count"]; $i++) {?>
-                    <option <?php if($ini['Pitmaster2']['pit_ch'] == $i) {echo " selected";} ?> value="<?php echo $i; ?>"><?php echo gettext("Channel") . ' ' . $i;?></option>
-                    <?php } ?>
-                </select>
-            </div>
-            <div class="config_text row_1 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="pit2_set" id="pit2_set" size="5" maxlength="5" value="<?php echo $ini['Pitmaster2']['pit_set'];?>"></div>
-            <div class="config_text row_1 col_4"><?php echo gettext("Delay");?>: </div>
-            <div class="config_text row_2 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="pit2_man" id="pit2_man" size="5" maxlength="5" value="<?php echo $ini['Pitmaster2']['pit_man'];?>"></div>
-            <div class="config_text row_2 col_1"><?php echo gettext("Manual Control");?>: </div>
-            <div class="config_text row_1 col_5"><input type="text" onkeyup="this.value=this.value.replace(/[^\d\.]/g, '');" name="pit2_pause" id="pit2_pause" size="5" maxlength="4" value="<?php echo $ini['Pitmaster2']['pit_pause'];?>"></div>
-            <div class="config_text row_4 col_2"></div>
-            <div class="config_text row_4 col_3"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit2_pwm_min" id="pit2_pwm_min" size="5" maxlength="3" value="<?php echo $ini['Pitmaster2']['pit_pwm_min'];?>"></div>      
-            <div class="config_text row_4 col_4"><?php echo gettext("max");?>:</div>
-            <div class="config_text row_4 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit2_pwm_max" id="pit2_pwm_max" size="5" maxlength="3" value="<?php echo $ini['Pitmaster2']['pit_pwm_max'];?>" ></div>  
-            <div class="config_text row_5 col_1"><?php echo gettext("Servo Pulse (µs) min");?>:</div>
-            <div class="config_text row_5 col_3"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit2_servo_min" id="pit2_servo_min" size="5" maxlength="4" value="<?php echo $ini['Pitmaster2']['pit_servo_min'];?>"></div>      
-            <div class="config_text row_7 col_6"><?php echo gettext("PID Control");?>:</div>
-			<div class="config_text row_7 col_7"><input type="checkbox" name="pit2_controller_type" id="pit2_controller_type" value="True" <?php if($ini['Pitmaster2']['pit_controller_type'] == "PID") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_6 col_6"><?php echo gettext("Open Lid detection");?>:</div>
-			<div class="config_text row_6 col_7"><input type="checkbox" name="pit2_open_lid_detection" id="pit2_open_lid_detection" value="True" <?php if($ini['Pitmaster2']['pit_open_lid_detection'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_5 col_4"><?php echo gettext("max");?>:</div>
-            <div class="config_text row_5 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="pit2_servo_max" id="pit2_servo_max" size="5" maxlength="4" value="<?php echo $ini['Pitmaster2']['pit_servo_max'];?>"></div>  
-			<div class="config_text row_5 col_6"><?php echo gettext("Reverse Drive");?>:</div>
-            <div class="config_text row_5 col_7"><input type="checkbox" name="pit2_inverted" id="pit2_inverted" value="True" <?php if($ini['Pitmaster2']['pit_inverted'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_6 col_1"><?php echo gettext("Kp");?>:</div>
-			<div class="config_text row_6 col_1_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit2_kp" id="pit2_kp" size="5" maxlength="5" value="<?php echo $ini['Pitmaster2']['pit_kp'];?>"></div>
-			<div class="config_text row_6 col_2"><?php echo gettext("Ki");?>:</div>
-			<div class="config_text row_6 col_3"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit2_ki" id="pit2_ki" size="5" maxlength="5" value="<?php echo $ini['Pitmaster2']['pit_ki'];?>"></div>
-			<div class="config_text row_6 col_4"><?php echo gettext("Kd");?>:</div>
-			<div class="config_text row_6 col_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit2_kd" id="pit2_kd" size="5" maxlength="5" value="<?php echo $ini['Pitmaster2']['pit_kd'];?>"></div>
-			<div class="config_text row_7 col_1"><?php echo gettext("Kp_a");?>:</div>
-			<div class="config_text row_7 col_1_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit2_kp_a" id="pit2_kp_a" size="5" maxlength="5" value="<?php echo $ini['Pitmaster2']['pit_kp_a'];?>"></div>
-			<div class="config_text row_7 col_2"><?php echo gettext("Ki_a");?>:</div>
-			<div class="config_text row_7 col_3"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit2_ki_a" id="pit2_ki_a" size="5" maxlength="5" value="<?php echo $ini['Pitmaster2']['pit_ki_a'];?>"></div>
-			<div class="config_text row_7 col_4"><?php echo gettext("Kd_a");?>:</div>
-			<div class="config_text row_7 col_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="pit2_kd_a" id="pit2_kd_a" size="5" maxlength="5" value="<?php echo $ini['Pitmaster2']['pit_kd_a'];?>"></div>
-			<div class="config_text row_4 col_6"></div>
-			<div class="config_text row_4 col_7"></div>
-		</div>
-		
 <?php
 }
 // ##################################################################################
 // Formular Allgemeine Einstellungen ------------------------------------------------
 // ##################################################################################
 ?>
-		<div class="config five_lines">
+		<div class="config big">
 			<div class="headline"><?php echo gettext("General Settings");?></div>		
 			<div class="headicon"><img src="../images/icons16x16/settings.png" alt=""></div>
 			<div class="config_text row_1 col_1"><?php echo gettext("Hardware Version");?>:</div>
 			<div class="config_text row_1 col_4">
-			<input type="radio" name="hardware_version" value="v1" <?php if($ini['Hardware']['version'] == "v1") {echo "checked=\"checked\"";}?> >v1</input>
-			<input type="radio" name="hardware_version" value="v2" <?php if($ini['Hardware']['version'] == "v2") {echo "checked=\"checked\"";}?> >v2</input>
-			<input type="radio" name="hardware_version" value="v3" <?php if($ini['Hardware']['version'] == "v3") {echo "checked=\"checked\"";}?> >v3 / mini</input>
-			<input type="radio" name="hardware_version" value="miniV2" <?php if($ini['Hardware']['version'] == "miniV2") {echo "checked=\"checked\"";}?> > miniV2</input>
+			<select name="hardware_version" id="hardware_version" size="1">
+			<option value="v1" <?php if($ini['Hardware']['version'] == "v1") {echo "selected=\"selected\"";}?> >v1</option>
+			<option  value="v2" <?php if($ini['Hardware']['version'] == "v2") {echo "selected=\"selected\"";}?> >v2</option>
+			<option  value="v3" <?php if($ini['Hardware']['version'] == "v3") {echo "selected=\"selected\"";}?> >v3 / mini</option>
+			<option  value="miniV2" <?php if($ini['Hardware']['version'] == "miniV2") {echo "selected=\"selected\"";}?> > miniV2</option>
+			</select>
 			</div>
 			<div class="config_text row_1 col_6"><?php echo gettext("Language");?>:</div>
 			<div class="config_text row_1 col_7">
@@ -1349,12 +1149,16 @@ if ($_SESSION["pitmaster_count"] == 2) {
 			<div class="config_text row_3 col_4"><input type="checkbox" name="checkUpdate" value="True" <?php if($ini['update']['checkupdate'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_3 col_6"><?php echo gettext("Show CPU Usage");?>:</div>
 			<div class="config_text row_3 col_7"><input type="checkbox" name="showcpulast" value="True" <?php if($ini['Hardware']['showcpulast'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_5 col_1"><?php echo gettext("View Channels");?>:</div>
 			<div class="config_text row_4 col_1"><?php echo gettext("Enable Sound");?>:</div>
 			<div class="config_text row_4 col_4"><input type="checkbox" name="beeper_enabled" value="True" <?php if($ini['Sound']['beeper_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_4 col_6"><?php echo gettext("Beep at Start");?>:</div>
 			<div class="config_text row_4 col_7"><input type="checkbox" name="beeper_on_start" value="True" <?php if($ini['Sound']['beeper_on_start'] == "True") {echo "checked=\"checked\"";}?> ></div>
-			<div class="config_text row_5 col_7"><?php for ($i = 0; $i < $_SESSION["channel_count"]; $i++) {?>
+			<div class="config_text row_6 col_1"><?php echo gettext("View Channels");?>:</div>
+			<div class="config_text row_6 col_4"><?php for ($i = 0; $i < $_SESSION["channel_count"] / 2; $i++) {?>
+            ch<?php echo $i;?>&nbsp;<input type="checkbox" name="ch_show<?php echo $i;?>" id="show_ch<?php echo $i;?>" value="True" <?php if($ini['ch_show']['ch' . $i] == "True") {echo "checked=\"checked\"";}?> >&nbsp;&nbsp;
+            <?php } ?>
+            </div>
+            <div class="config_text row_7 col_4"><?php for ($i = $_SESSION["channel_count"] / 2; $i < $_SESSION["channel_count"]; $i++) {?>
             ch<?php echo $i;?>&nbsp;<input type="checkbox" name="ch_show<?php echo $i;?>" id="show_ch<?php echo $i;?>" value="True" <?php if($ini['ch_show']['ch' . $i] == "True") {echo "checked=\"checked\"";}?> >&nbsp;&nbsp;
             <?php } ?>
 			</div>
@@ -1383,6 +1187,48 @@ if ($_SESSION["pitmaster_count"] == 2) {
                     <option <?php if($ini['Display']['start_page'] == "temp") {echo " selected";} ?> value="temp"><?php echo gettext("Temperature");?></option>
                 </select>
             </div>						
+		</div>
+<?php
+// ##################################################################################
+// Formular Logging Einstellungen ----------------------------------------------------
+// ##################################################################################
+?>	
+		<div class="config middle">
+			<div class="headline"><?php echo gettext("Logging settings");?></div>
+			<div class="headicon"><img src="../images/icons16x16/log.png" alt=""></div>
+			<div class="config_text row_1 col_1"><?php echo gettext("Logging level pitmaster");?>:</div>
+			<div class="config_text row_1 col_4">
+				<select name="loglevel_pit" id="loglevel_pit" size="1">
+					<?php foreach($log_levels as $log_level) {?>
+                    <option<?php if($ini['daemon_logging']['level_pit'] == $log_level) {echo " selected";}; echo " value=\"$log_level\">$log_level"; ?></option>
+                    <?php } ?>
+                </select>
+			</div>
+			<div class="config_text row_2 col_1"><?php echo gettext("Logging level watch dog");?>:</div>
+			<div class="config_text row_2 col_4">
+				<select name="loglevel_wd" id="loglevel_wd" size="1">
+					<?php foreach($log_levels as $log_level) {?>
+                    <option<?php if($ini['daemon_logging']['level_wd'] == $log_level) {echo " selected";}; echo " value=\"$log_level\">$log_level"; ?></option>
+                    <?php } ?>
+                </select>
+			</div>					
+			<div class="config_text row_3 col_1"><?php echo gettext("Logging level main program");?>:</div>
+			<div class="config_text row_3 col_4">
+				<select name="loglevel_compy" id="loglevel_compy" size="1">
+					<?php foreach($log_levels as $log_level) {?>
+                    <option<?php if($ini['daemon_logging']['level_compy'] == $log_level) {echo " selected";}; echo " value=\"$log_level\">$log_level"; ?></option>
+                    <?php } ?>
+                </select>
+			</div>
+			<div class="config_text row_4 col_1"><?php echo gettext("Logging level display");?>:</div>
+			<div class="config_text row_4 col_4">
+				<select name="loglevel_display" id="startpage" size="1">
+					<?php foreach($log_levels as $log_level) {?>
+                    <option<?php if($ini['daemon_logging']['level_display'] == $log_level) {echo " selected";}; echo " value=\"$log_level\">$log_level"; ?></option>
+                    <?php } ?>
+                </select>       
+			</div>
+			<div class="config_text row_4 col_6"><a href="../log/WLANThermo.log"><?php echo gettext("Show logfile")?></a></div>
 		</div>
 <?php
 // ##################################################################################

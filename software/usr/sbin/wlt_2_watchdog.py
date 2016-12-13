@@ -38,13 +38,7 @@ GPIO.setmode(GPIO.BCM)
 
 GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-# Timing Konstanten
-E_PULSE = 0.00005
-E_DELAY = 0.00005
-
-
 display_proc = None
-
 
 HIGH = True  # HIGH-Pegel
 LOW  = False # LOW-Pegel
@@ -352,10 +346,9 @@ def read_config():
             
             logger.info(_(u'Finished creation of new logfile'))
 
-        if (Config.getboolean('ToDo', 'pit_on')):
-            check_pitmaster()
-        if (Config.getboolean('ToDo', 'pit2_on')):
-            check_pitmaster2()
+        for id in xrange(pitmaster_count):
+            logger.info(_(u'Check Pitmaster {}!'.format(id + 1)))
+            check_pitmaster(id)
             
     except:
         logger.info(_(u'Unexpected error: ') +str(sys.exc_info()[0]))
@@ -427,53 +420,33 @@ def check_display():
             display_proc = None
 
 
-def check_pitmaster():
-    logger.debug(_(u'Checking pitmaster'))
-    pitmasterStatus = subprocess.call('/bin/systemctl status WLANThermoPIT.service'.split())
-    bashCommandPit = ''
-    if (Config.getboolean('ToDo', 'pit_on')):
+def check_pitmaster(id):
+    if id == 0:
+        id_string = ''
+    else:
+        id_string = str(id + 1)
+    logger.debug(_(u'Checking pitmaster {}'.format(id + 1)))
+    
+    pitmasterStatus = subprocess.call(('/bin/systemctl', 'status',  'WLANThermoPIT{}.service'.format(id + 1)))
+    bashCommandPit = tuple()
+    if (Config.getboolean('ToDo', 'pit{}_on'.format(id_string))):
         if pitmasterStatus != 0:
-            logger.info(_(u'Start pitmaster'))
-            bashCommandPit = '/usr/bin/systemd-run --unit WLANThermoPIT /usr/sbin/wlt_2_pitmaster.py 0'
+            logger.info(_(u'Start pitmaster {}'.format(id + 1)))
+            bashCommandPit = ('/usr/bin/systemd-run', '--unit', 'WLANThermoPIT{}.service'.format(id_string), '/usr/sbin/wlt_2_pitmaster.py', str(id))
         else:
-            logger.info(_(u'Pitmaster already running'))
+            logger.info(_(u'Pitmaster {} already running'.format(id + 1)))
     else:
         if pitmasterStatus == 0:
-            logger.info(_(u'Stopping pitmaster'))
-            bashCommandPit = '/bin/systemctl stop WLANThermoPIT.service'
+            logger.info(_(u'Stopping pitmaster {}'.format(id + 1)))
+            bashCommandPit = ('/bin/systemctl', 'stop', 'WLANThermoPIT{}.service'.format(id_string))
         else:
-            logger.info(_(u'Pitmaster already stopped'))
+            logger.info(_(u'Pitmaster {} already stopped'.format(id + 1)))
     if (len(bashCommandPit) > 0):
-        retcodeO = subprocess.call(bashCommandPit.split())
+        retcodeO = subprocess.call(bashCommandPit)
         if retcodeO < 0:
-            logger.info(_(u'Terminated by signal'))
+            logger.info(_(u'Pitmaster {} terminated by signal'.format(id + 1)))
         else:
             logger.info(_(u'Child returned: ') + str(retcodeO))
-
-
-def check_pitmaster2():
-    logger.debug(_(u'Checking pitmaster 2'))
-    pitmasterStatus = subprocess.call('/bin/systemctl status WLANThermoPIT2.service'.split())
-    bashCommandPit = ''
-    if (Config.getboolean('ToDo', 'pit2_on')):
-        if pitmasterStatus != 0:
-            logger.info(_(u'Start pitmaster2'))
-            bashCommandPit = '/usr/bin/systemd-run --unit WLANThermoPIT2 /usr/sbin/wlt_2_pitmaster.py 1'
-        else:
-            logger.info(_(u'Pitmaster 2 already running'))
-    else:
-        if pitmasterStatus == 0:
-            logger.info(_(u'Stopping Pitmaster 2'))
-            bashCommandPit = '/bin/systemctl stop WLANThermoPIT2.service'
-        else:
-            logger.info(_(u'Pitmaster 2 already stopped'))
-    if (len(bashCommandPit) > 0):
-        retcodeO = subprocess.call(bashCommandPit.split())
-        if retcodeO == 0:
-            logger.info(_(u'Terminated by signal'))
-        else:
-            logger.info(_(u'Child returned: ') + str(retcodeO))
-
 
 def raise_keyboard(signum, frame):
     logger.debug(_(u'Caught signal: ') + str(signum))
@@ -485,8 +458,12 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical('{0}: {1}'.format(ex_cls, ex))
 
 
-sys.excepthook = log_uncaught_exceptions
+if Config.get('Hardware', 'version') in ['miniV2']:
+    pitmaster_count = 2
+else:
+    pitmaster_count = 1
 
+sys.excepthook = log_uncaught_exceptions
 
 signal.signal(15, raise_keyboard)
 
@@ -498,8 +475,9 @@ GPIO.add_event_detect(27, GPIO.RISING, callback=shutdown_button, bouncetime=1000
 
 Config.readfp(codecs.open(cf, 'r', 'utf_8'))
 check_display()
-check_pitmaster()
-check_pitmaster2()
+    
+for id in xrange(pitmaster_count):
+    check_pitmaster(id)
 
 # Lösche Rebootflag
 try:

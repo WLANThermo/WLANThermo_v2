@@ -128,41 +128,36 @@ if (isset($_SESSION["to_update"])){
 			${"temp_$i"} = floatval($temp[$i + 1]);
 		}
 		$_SESSION["currentlogfilename"] = $temp[2 * $_SESSION["channel_count"] + 2];
-		
-		$pit_file = $_SESSION["pitmaster"].'';
-		if (file_exists($pit_file)) {
-			$currentpit = file_get_contents($_SESSION["pitmaster"]);
-			$pits = explode(";",$currentpit);
-			$pit_time_stamp = DateTime::createFromFormat($log_dateformat, $pits[0]);
-			$pit_set = floatval($pits[1]);
-			$pit_val = floatval($pits[3]);
-		}
-		
-		if ($_SESSION["pitmaster_count"] > 1) {
-			$pit2_file = $_SESSION["pitmaster2"].'';
-			if (file_exists($pit2_file)) {
-				$currentpit2 = file_get_contents($_SESSION["pitmaster2"]);
-				$pit2s = explode(";",$currentpit2);
-				$pit2_time_stamp = DateTime::createFromFormat($log_dateformat, $pit2s[0]);
-				$pit2_set = floatval($pit2s[1]);
-				$pit2_val = floatval($pit2s[3]);
+		for ($i = 0; $i < $_SESSION["pitmaster_count"]; $i++){
+			$pitmaster_str = $i == 0 ? '' : strval($i +1);
+			$pit_file = $_SESSION["pitmaster" . $pitmaster_str];
+			if (file_exists($pit_file)) {
+				$currentpit = file_get_contents($_SESSION["pitmaster" . $pitmaster_str]);
+				$pits = explode(";",$currentpit);
+				${'pit' . $pitmaster_str . '_time_stamp'} = DateTime::createFromFormat($log_dateformat, $pits[0]);
+				${'pit' . $pitmaster_str . '_set'} = floatval($pits[1]);
+				${'pit' . $pitmaster_str . '_val'} = floatval($pits[3]);
 			}
 		}
 
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	// Anzeige Letzte Messung #############################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
-
-	if ($_SESSION["pit_on"] == "True" or $_SESSION["pit2_on"] == "True"){?>
-		<div class="last_regulation_view">
-		<?php if ($_SESSION["pit_on"] == "True"){
-		echo gettext("Last regulation (1) on");?> <b><?php echo IntlDateFormatter::formatObject($pit_time_stamp, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ?></b><br />
-	<?php }
-	if ($_SESSION["pit2_on"] == "True"){
-		echo gettext("Last regulation (2) on");?> <b><?php echo IntlDateFormatter::formatObject($pit2_time_stamp, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ?></b>
-	<?php } ?>
-	</div>
-	<?php } ?>
+	$first = true;
+	for ($i = 0; $i < $_SESSION["pitmaster_count"]; $i++){
+		$pitmaster_str = $i == 0 ? '' : strval($i +1);
+		if ($_SESSION["pit" . $pitmaster_str . "_on"] == "True") {
+			if ($first == true) {
+				echo '<div class="last_regulation_view">';
+				$first = false;
+			}
+			echo gettext("Last regulation on");?> <b><?php echo IntlDateFormatter::formatObject(${'pit' . $pitmaster_str . '_time_stamp'}, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ?></b><br />
+			<?php
+		}
+	}
+	if ($first != true) {
+		echo '</div>';
+	} ?>
 	<div class="last_measure_view"><?php echo gettext("Last measurement on");?> <b><?php echo IntlDateFormatter::formatObject($time_stamp, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ?></b>
 	<?php if($_SESSION["showcpulast"] == "True"){
 	echo "<br>";
