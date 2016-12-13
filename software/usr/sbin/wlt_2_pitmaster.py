@@ -452,7 +452,7 @@ def main(instance):
                 pit_ch = Config.getint('Pitmaster' + instance_string,'pit_ch')
                 pit_pause = Config.getfloat('Pitmaster' + instance_string,'pit_pause')
                 
-                pit_man = Config.getint('Pitmaster' + instance_string,'pit_man')
+                pit_man = Config.getfloat('Pitmaster' + instance_string,'pit_man')
                 
                 #PID Begin Parameter fuer PID einlesen
                 pit_Kp = Config.getfloat('Pitmaster' + instance_string,'pit_kp')
