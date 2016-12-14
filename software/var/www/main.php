@@ -144,13 +144,16 @@ if (isset($_SESSION["to_update"])){
 	// Anzeige Letzte Messung #############################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	$first = true;
-	for ($i = 0; $i < $_SESSION["pitmaster_count"]; $i++){
-		$pitmaster_str = $i == 0 ? '' : strval($i +1);
+	for ($pit = 0; $pit < $_SESSION["pitmaster_count"]; $pit++){
+		$pitmaster_str = $pit == 0 ? '' : strval($pit +1);
 		if ($_SESSION["pit" . $pitmaster_str . "_on"] == "True") {
 			if ($first == true) {
 				echo '<div class="last_regulation_view">';
 				$first = false;
 			}
+			?>
+			<img src="../images/icons16x16/pitmaster.png" alt=""> <img src="../images/icons16x16/number-<?php echo $pit + 1;?>.png" alt="">
+			<?php
 			echo gettext("Last regulation on");?> <b><?php echo IntlDateFormatter::formatObject(${'pit' . $pitmaster_str . '_time_stamp'}, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ?></b><br />
 			<?php
 		}
@@ -199,7 +202,6 @@ if (isset($_SESSION["to_update"])){
 	//-------------------------------------------------------------------------------------------------------------------------------------
 
 		for ($i = 0; $i < $_SESSION["channel_count"]; $i++){
-			
 			if((${"temp_$i"} != "") AND ($ch_show[$i] == "True")){
 				if (${"temp_$i"} <= $temp_min[$i]) {
 					$temperature_indicator_color = "temperature_indicator_blue";
@@ -234,20 +236,14 @@ if (isset($_SESSION["to_update"])){
 							}?>
 						</div>
 						<?php
-						if (($_SESSION["pit_ch"] == "$i") && ($_SESSION["pit_on"] == "True")){
+						for ($pit = 0; $pit < $_SESSION["pitmaster_count"]; $pit++){
+							$pitmaster_str = $pit == 0 ? '' : strval($pit +1);
+							if ($_SESSION["pit" . $pitmaster_str . "_ch"] == $i && $_SESSION["pit" . $pitmaster_str . "_on"] == "True") {
 						?>
-							<div class="headicon_left"><img src="../images/icons16x16/pitmaster.png" alt=""></div>
-							<div class="pitmaster_left"> <?php printf('%.1f%%',$pit_val); ?> / <?php printf('%.1f%s',$pit_set, $temp_unit_short); ?></div>
-						<?php 
-						}
-						?>
-												<?php
-						if (($_SESSION["pit2_ch"] == "$i") && ($_SESSION["pit2_on"] == "True")){
-						?>
-							<div class="headicon_left"><img src="../images/icons16x16/pitmaster.png" alt=""> 2</div>
-							<div class="pitmaster_left"> <?php printf('%.1f%%',$pit2_val); ?> / <?php printf('%.1f%s',$pit2_set, $temp_unit_short); ?></div>
-						<?php 
-						}
+							<div class="headicon_left"><img src="../images/icons16x16/pitmaster.png" alt=""> <img src="../images/icons16x16/number-<?php echo $pit + 1;?>.png" alt=""></div>
+							<div class="pitmaster_left"> <?php printf('%.1f%%',${'pit' . $pitmaster_str . '_val'}); ?> / <?php printf('%.1f%s',${'pit' . $pitmaster_str . '_set'}, $temp_unit_short); ?></div>
+							<?php }
+							}
 						?>
 					</div>
 				<?php

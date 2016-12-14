@@ -1,8 +1,8 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
-$_SESSION["webGUIversion"] = "V2.5.3-0";
-$title = "WLAN Thermometer";
+$_SESSION["webGUIversion"] = "V2.6.0-beta";
+$title = "WLANThermo";
 $document_root = getenv('DOCUMENT_ROOT');
 include("gettext.php");
 if (isset($_SESSION["locale"])){	

@@ -142,7 +142,7 @@ function session($configfile) {
 	if(get_magic_quotes_runtime()) set_magic_quotes_runtime(0); 
 	$ini = getConfig("".$configfile."", ";");  // dabei ist ; das zeichen für einen kommentar. kann geändert werden.
 	// Always read all channels in config file
-	for ($i = 0; $i < 10; $i++){
+	for ($i = 0; $i < 12; $i++){
 		$_SESSION["color_ch".$i] = $ini['plotter']['color_ch'.$i];
 		$_SESSION["temp_min".$i] = $ini['temp_min']['temp_min'.$i];  
 		$_SESSION["temp_max".$i] = $ini['temp_max']['temp_max'.$i];
@@ -191,10 +191,10 @@ function session($configfile) {
 		$_SESSION["websoundalert"] = "True";
 	}
 	if ($_SESSION["hardware_version"] == 'miniV2') {
-		$_SESSION["channel_count"] = 10;
+		$_SESSION["channel_count"] = 12;
 		$_SESSION["pitmaster_count"] = 2;
 	} else {
-		$_SESSION["channel_count"] = 8;
+		$_SESSION["channel_count"] = 10;
 		$_SESSION["pitmaster_count"] = 1;
 	}
 	for ($i = 0; $i < $_SESSION["pitmaster_count"]; $i++){

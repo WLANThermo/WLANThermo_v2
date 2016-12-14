@@ -435,7 +435,7 @@ if(isset($_POST["save"])) {
 			}
 			
 			//#######################################################################
-			// Pitmaster2 Einstellungen ----------------------------------------------
+			// Pitmaster Einstellungen ----------------------------------------------
 			//#######################################################################
 			for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 				$pitmaster_str = $pitmaster == 0 ? '' : strval($pitmaster +1);
@@ -590,6 +590,19 @@ if(isset($_POST["save"])) {
 				}
 			}
 			
+			//#######################################################################
+			// Maverick Einstellungen -------------------------------------------------
+			//#######################################################################
+			
+			if(isset ($_POST['maverick_enabled']))
+				{$_POST['maverick_enabled'] = "True";
+			} else {
+				$_POST['maverick_enabled'] = "False";
+			}
+			if ($ini['ToDo']['maverick_enabled'] !== $_POST['maverick_enabled']){
+				$ini['ToDo']['maverick_enabled'] = $_POST['maverick_enabled'];
+					
+			}
 			//#######################################################################
 			// Webcam Einstellungen -------------------------------------------------
 			//#######################################################################
@@ -1153,6 +1166,8 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 			<div class="config_text row_4 col_4"><input type="checkbox" name="beeper_enabled" value="True" <?php if($ini['Sound']['beeper_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>
 			<div class="config_text row_4 col_6"><?php echo gettext("Beep at Start");?>:</div>
 			<div class="config_text row_4 col_7"><input type="checkbox" name="beeper_on_start" value="True" <?php if($ini['Sound']['beeper_on_start'] == "True") {echo "checked=\"checked\"";}?> ></div>
+			<div class="config_text row_5 col_1"><?php echo gettext("Enable Maverick receiver");?>:</div>
+			<div class="config_text row_5 col_4"><input type="checkbox" name="maverick_enabled" value="True" <?php if($ini['ToDo']['maverick_enabled'] == "True") {echo "checked=\"checked\"";}?> ></div>			
 			<div class="config_text row_6 col_1"><?php echo gettext("View Channels");?>:</div>
 			<div class="config_text row_6 col_4"><?php for ($i = 0; $i < $_SESSION["channel_count"] / 2; $i++) {?>
             ch<?php echo $i;?>&nbsp;<input type="checkbox" name="ch_show<?php echo $i;?>" id="show_ch<?php echo $i;?>" value="True" <?php if($ini['ch_show']['ch' . $i] == "True") {echo "checked=\"checked\"";}?> >&nbsp;&nbsp;

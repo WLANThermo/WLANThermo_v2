@@ -349,6 +349,8 @@ def read_config():
         for id in xrange(pitmaster_count):
             logger.info(_(u'Check Pitmaster {}!'.format(id + 1)))
             check_pitmaster(id)
+        
+        check_maverick()
             
     except:
         logger.info(_(u'Unexpected error: ') +str(sys.exc_info()[0]))
@@ -448,6 +450,32 @@ def check_pitmaster(id):
         else:
             logger.info(_(u'Child returned: ') + str(retcodeO))
 
+
+def check_maverick():
+    logger.debug(_(u'Checking Maverick'))
+    
+    pitmasterStatus = subprocess.call(('/bin/systemctl', 'status',  'WLANThermoMAVERICK.service'))
+    bashCommandPit = tuple()
+    if (Config.getboolean('ToDo', 'maverick_enabled')):
+        if pitmasterStatus != 0:
+            logger.info(_(u'Start Maverick'))
+            bashCommandPit = ('/usr/bin/systemd-run', '--unit', 'WLANThermoMAVERICK.service', '/usr/bin/maverick.py',  '--json',  '/var/www/tmp/maverick.json' , '--noappend')
+        else:
+            logger.info(_(u'Maverick already running'))
+    else:
+        if pitmasterStatus == 0:
+            logger.info(_(u'Stopping Maverick'))
+            bashCommandPit = ('/bin/systemctl', 'stop', 'WLANThermoMAVERICK.service')
+        else:
+            logger.info(_(u'Maverick already stopped'))
+    if (len(bashCommandPit) > 0):
+        retcodeO = subprocess.call(bashCommandPit)
+        if retcodeO < 0:
+            logger.info(_(u'Maverick terminated by signal'))
+        else:
+            logger.info(_(u'Child returned: ') + str(retcodeO))
+
+
 def raise_keyboard(signum, frame):
     logger.debug(_(u'Caught signal: ') + str(signum))
     raise KeyboardInterrupt(_(u'Received SIGTERM'))
@@ -475,7 +503,8 @@ GPIO.add_event_detect(27, GPIO.RISING, callback=shutdown_button, bouncetime=1000
 
 Config.readfp(codecs.open(cf, 'r', 'utf_8'))
 check_display()
-    
+check_maverick()
+
 for id in xrange(pitmaster_count):
     check_pitmaster(id)
 

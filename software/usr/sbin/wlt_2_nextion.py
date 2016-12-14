@@ -586,7 +586,7 @@ def sensors_getvalues():
     return sensors
 
 
-def temp_getvalues():
+def temp_getvalues(channel_count):
     global logger, curPath, curFile
     temps = dict()
     if os.path.isfile(curPath + '/' + curFile):
@@ -595,29 +595,41 @@ def temp_getvalues():
         temps_raw = ft.split(';')
         temps = dict()
         temps['timestamp'] = time.mktime(time.strptime(temps_raw[0],'%d.%m.%y %H:%M:%S'))
-        for count in range(10):
-            alert = temps_raw[count+11]
-            if temps_raw[count+1] == '':
+        for count in range(channel_count):
+            try:
+                alert = temps_raw[count + channel_count + 1]
+            except IndexError:
+                alert = 'er'
+            try:
+                if temps_raw[count+1] == '':
+                    value = None
+                else:
+                    try:
+                        value = str(round(float(temps_raw[count+1]),1))
+                    except ValueError:
+                        value = None
+            except IndexError:
                 value = None
-            else:
-                value = str(round(float(temps_raw[count+1]),1))
             temps[count] = {'alert': alert, 'value': value}
     else:
         return None
     
     return temps
 
-def language_getvalues():
+
+def config_getvalues():
     global configfile, configfile_lock
-    locale = {}
+    options = {}
     with configfile_lock:
         config = ConfigParser.SafeConfigParser()
         config.readfp(codecs.open(configfile, 'r', 'utf_8'))
     
-    locale['locale'] = config.get('locale','locale')
-    locale['temp_unit'] = config.get('locale','temp_unit')
+    options['hw_version'] = config.get('Hardware','version')
+    options['maverick_enabled'] = config.getboolean('ToDo','maverick_enabled')
+    options['locale'] = config.get('locale','locale')
+    options['temp_unit'] = config.get('locale','temp_unit')
     
-    return locale
+    return options
 
 
 def set_tempflag():
@@ -733,7 +745,7 @@ def channels_getvalues():
     with configfile_lock:
         Config = ConfigParser.SafeConfigParser()
         Config.readfp(codecs.open(configfile, 'r', 'utf_8'))
-    for i in range(10):
+    for i in range(12):
         channel = {}
         channel['sensor'] = Config.getint('Sensoren', 'ch' + str(i))
         channel['logging'] = Config.getboolean('Logging', 'ch' + str(i))
@@ -915,7 +927,7 @@ def NX_display():
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
-    nextion_versions = ['v2.1', 'v2.0', 'v1.8', 'v1.7', 'v1.6']    
+    nextion_versions = ['v2.1']
     
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
@@ -937,6 +949,28 @@ def NX_display():
         open('/var/www/tmp/nextionupdate', 'w').close()
         stop_event.wait()
         return False
+    
+    logger.debug(_(u'Get common options...'))
+    
+    options = config_getvalues()
+    if options['temp_unit'] == 'celsius':
+        temp_unit = '\xb0C'
+    elif options['temp_unit'] == 'fahrenheit':
+        temp_unit = '\xb0F'
+    else:
+        logger.error('Unknown unit of measurement')
+        temp_unit = ''
+    
+    # language = gettext.translation('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/', languages=[options['locale'] + '.UTF-8'])
+    # language.install()
+    
+    channel_count = 8
+    hwchannel_count = 10
+    if options['hw_version'] == 'miniV2':
+        channel_count += 2
+        hwchannel_count += 2
+    if options['maverick_enabled'] == True:
+        channel_count += 2
 
     NX_sendvalues({'boot.text.txt:35':_(u'Loading temperature data')})
     NX_switchpage('boot')
@@ -945,11 +979,11 @@ def NX_display():
     temps_event.clear()
     channels_event.clear()
     logger.debug(_(u'Get temperature data...'))
-    temps = temp_getvalues()
+    temps = temp_getvalues(hwchannel_count)
     while temps is None:
         logger.info(_(u'Waiting on temperature data'))
         temps_event.wait(0.1)
-        temps = temp_getvalues()
+        temps = temp_getvalues(hwchannel_count)
     
     NX_sendvalues({'boot.text.txt:35':_(u'Loading configuration')})
     
@@ -965,19 +999,11 @@ def NX_display():
     logger.debug(_(u'Get pitmaster configuration...'))
     pitconf = pitmaster_config_getvalues()
     
-    logger.debug(_(u'Get locale configuration...'))
-    language = language_getvalues()
+    NX_sendvalues({'boot.text.txt:35':_(u'Loading LAN configuration')})
     
+    logger.debug(_(u'Get LAN configuration...'))
     interfaces = lan_getvalues()
     
-    if language['temp_unit'] == 'celsius':
-        temp_unit = '\xb0C'
-    elif language['temp_unit'] == 'fahrenheit':
-        temp_unit = '\xb0F'
-    else:
-        logger.error('Unknown unit of measurement')
-        temp_unit = ''
-                    
     # Leere Liste da der Scan etwas dauert...
     ssids = []
     # Zahl des aktuell gewählen Eintrages
@@ -991,13 +1017,15 @@ def NX_display():
         pitmaster = {'timestamp': 0, 'set': 0, 'now': 0,'new': 0,'msg': ''}
     
     values = dict()
+    values['main.chmax.val'] = channel_count
+    
     for i in range(1, 11):
         try:
             values['main.sensor_name' + str(i) + '.txt:10'] = sensors[i]['name'].encode('latin-1')
         except KeyError:
             logger.error(_(u'Sensor {} not defined!'.format(i)))
             values['main.sensor_name' + str(i) + '.txt:10'] = '- - -'
-    for i in range(10):
+    for i in range(hwchannel_count):
         if temps[i]['value'] is None:
             values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
         else:
@@ -1188,25 +1216,30 @@ def NX_display():
         elif temps_event.is_set():
             logger.debug(_(u'Temperature event'))
             values = dict()
-            new_temps = temp_getvalues()
+            new_temps = temp_getvalues(hwchannel_count)
             if new_temps is not None:
                 temps_event.clear()
-                if language['temp_unit'] == 'celsius':
+                if options['temp_unit'] == 'celsius':
                     temp_unit = '\xb0C'
-                elif language['temp_unit'] == 'fahrenheit':
+                elif options['temp_unit'] == 'fahrenheit':
                     temp_unit = '\xb0F'
                 else:
                     logger.error(_(u'Unknown unit of measurement'))
                     temp_unit = ''
-                for i in range(10):
-                    if temps[i]['value'] != new_temps[i]['value']:
-                        if new_temps[i]['value'] is None:
-                            values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
-                        else:
-                            values['main.kanal' + str(i) + '.txt:10'] = new_temps[i]['value'] + temp_unit
-                    
-                    if temps[i]['alert'] != new_temps[i]['alert']:
-                        values['main.alert' + str(i) + '.txt:10'] = new_temps[i]['alert']
+                for i in range(hwchannel_count):
+                    try:
+                        if temps[i]['value'] != new_temps[i]['value']:
+                            if new_temps[i]['value'] is None:
+                                values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
+                            else:
+                                values['main.kanal' + str(i) + '.txt:10'] = new_temps[i]['value'] + temp_unit
+                        
+                        if temps[i]['alert'] != new_temps[i]['alert']:
+                            values['main.alert' + str(i) + '.txt:10'] = new_temps[i]['alert']
+                    except KeyError:
+                        temps[i] = dict()
+                        temps[i]['value'] = None
+                        temps[i]['alert'] = ''
                 
                 if NX_sendvalues(values):
                     temps = new_temps
@@ -1272,7 +1305,7 @@ def NX_display():
             channels_event.clear()
             new_channels = channels_getvalues()
             
-            for i in range(10):
+            for i in range(12):
                 if channels[i]['temp_min'] != new_channels[i]['temp_min']:
                     values['main.al' + str(i) + 'minist.txt:10'] = new_channels[i]['temp_min']
                 if channels[i]['temp_max'] != new_channels[i]['temp_max']:
@@ -1281,8 +1314,11 @@ def NX_display():
                     values['main.sensor_type' + str(i) + '.val'] = new_channels[i]['sensor']
                 if channels[i]['name'] != new_channels[i]['name']:
                     values['main.name' + str(i) + '.txt:10'] = new_channels[i]['name'].encode('latin-1')
-                    if new_temps[i]['value'] == '':
-                        values['main.kanal' + str(i) + '.txt:10'] = new_channels[i]['name'].encode('latin-1')
+                    try:
+                        if new_temps[i]['value'] == '':
+                            values['main.kanal' + str(i) + '.txt:10'] = new_channels[i]['name'].encode('latin-1')
+                    except IndexError:
+                        pass
             
             if NX_sendvalues(values):
                 channels = new_channels
@@ -1294,7 +1330,28 @@ def NX_display():
             logger.debug(_(u'Config event'))
             config_event.clear()
             check_recalibration()
-            language = language_getvalues()
+            
+            values = dict()
+            
+            options = config_getvalues()
+            
+            new_channel_count = 8
+            new_hwchannel_count = 10
+            if options['hw_version'] == 'miniV2':
+                new_channel_count += 2
+                new_hwchannel_count += 2
+            if options['maverick_enabled'] == True:
+                new_channel_count += 2
+                
+            if channel_count != new_channel_count:
+                values['main.chmax.val'] = new_channel_count
+                channel_count = new_channel_count
+                
+            if hwchannel_count != new_hwchannel_count:
+                hwchannel_count = new_hwchannel_count
+            
+            if not NX_sendvalues(values):
+                channels_event.set()
             
         elif time.time() > hwclock_nextupdate:
             if check_ntp():

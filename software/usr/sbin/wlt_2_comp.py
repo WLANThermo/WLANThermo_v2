@@ -36,6 +36,7 @@ import subprocess
 from bitstring import BitArray
 import pigpio
 from struct import pack, unpack
+import json
 
 gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -90,7 +91,7 @@ handler.setLevel(logging.DEBUG)
 handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
 
-logger.info(_(u'WLANThermo started'))
+logger.info(u'WLANThermo started')
 
 #ueberpruefe ob der Dienst schon laeuft
 pid = str(os.getpid())
@@ -110,15 +111,15 @@ if os.access(pidfilename, os.F_OK):
     old_pid = int(pidfile.readline())
     if check_pid(old_pid):
         print(_(u'%s already exists, Process is running, exiting') % pidfilename)
-        logger.error(_(u'%s already exists, Process is running, exiting') % pidfilename)
+        logger.error(u'%s already exists, Process is running, exiting' % pidfilename)
         sys.exit()
     else:
-        logger.info(_(u'%s already exists, Process is NOT running, resuming operation') % pidfilename)
+        logger.info(u'%s already exists, Process is NOT running, resuming operation' % pidfilename)
         pidfile.seek(0)
         open(pidfilename, 'w').write(pid)
     
 else:
-    logger.debug(_(u"%s written") % pidfilename)
+    logger.debug(u"%s written" % pidfilename)
     open(pidfilename, 'w').write(pid)
 
 
@@ -140,7 +141,7 @@ def safe_format(template, args):
     return message
 
 def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
-    logger.info(_(u'Send mail!'))
+    logger.info(u'Send mail!')
     
     from smtplib import SMTP 
     from smtplib import SMTPException 
@@ -166,13 +167,13 @@ def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
 
         s.sendmail(FROM,TO, m.as_string())
         s.quit()
-        logger.debug(_(u'Alert Email has been sent!'))
+        logger.debug(u'Alert Email has been sent!')
     except SMTPException as error:
-        sendefehler = _(u'Error: unable to send email: {err}').format(err=error)
+        sendefehler = u'Error: unable to send email: {err}'.format(err=error)
         logger.error(sendefehler)
     except:
         #TODO err undefined!
-        sendefehler = _(u'Error: unable to resolve host (no internet connection?) :  {err}')
+        sendefehler = u'Error: unable to resolve host (no internet connection?) :  {err}'
         logger.error(sendefehler)
         
                    
@@ -279,7 +280,7 @@ def create_logfile(filename, log_kanal):
     os.symlink(filename, '/var/log/WLAN_Thermo/TEMPLOG.csv')
     
     kopfzeile = []
-    kopfzeile.append(_(u'Datum_Uhrzeit'))
+    kopfzeile.append(_(u'Date_Time'))
     for kanal in xrange(channel_count):
         if (log_kanal[kanal]):
             kopfzeile.append('Kanal ' + str(kanal))
@@ -320,6 +321,20 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical(''.join(traceback.format_tb(tb)))
     logger.critical('{0}: {1}'.format(ex_cls, ex))
 
+def read_maverick():
+    try:
+        with codecs.open('/var/www/tmp/maverick.json', 'r', 'utf_8') as maverick_json:
+            values = json.load(maverick_json)
+    except ValueError:
+        logger.error(u'Maverick file is no valid JSON')
+        return None
+    except IOError:
+        logger.info(u'Maverick file could not be read')
+        return None
+    
+    return values
+    
+    
 sys.excepthook = log_uncaught_exceptions
 
 # Variablendefinition und GPIO Pin-Definition
@@ -343,7 +358,10 @@ version = Config.get('Hardware','version')
 current_temp = Config.get('filepath','current_temp')
 
 # Kanalvariablen-Initialisierung
-channel_count = 10
+if version == u'miniV2':
+    channel_count = 12
+else:
+    channel_count = 10
 
 sensortyp = [0 for i in xrange(channel_count)]
 log_kanal = [0 for i in xrange(channel_count)]
@@ -430,19 +448,20 @@ try:
         CPU_usage = psutil.cpu_percent(interval=1, percpu=True)
         ram = psutil.virtual_memory()
         ram_free = ram.free / 2**20
-        logger.debug(_(u'CPU: ') + str(CPU_usage) + _(u' RAM free: ') + str(ram_free))
+        logger.debug(u'CPU: {} RAM free: {}'.format(CPU_usage, ram_free))
         alarm_irgendwo = False
         alarm_neu = False
         alarm_repeat = False
         alarme = []
         statusse = []
+        maverick = read_maverick()
         
         Temperatur_string = [None for i in xrange(channel_count)]
         Temperatur_alarm = ['er' for i in xrange(channel_count)]
 
         new_config_mtime = os.path.getmtime('/var/www/conf/WLANThermo.conf')
         if new_config_mtime > config_mtime:
-            logger.debug(_(u'reading configuration again...'))
+            logger.debug(u'reading configuration again...')
             while True:
                 try:
                     new_config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
@@ -459,19 +478,19 @@ try:
             try:
                 temp_max[kanal] = new_config.getfloat('temp_max','temp_max' + str(kanal))
             except ValueError:
-                logger.error(_(u'Error reading upper limit on channel ') + str(kanal))
+                logger.error(u'Error reading upper limit on channel ' + str(kanal))
                 temp_max[kanal] = 200
             
             try:
                 temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
             except ValueError:
-                logger.error(_(u'Error reading lower limit on channel ') + str(kanal))
+                logger.error(u'Error reading lower limit on channel ' + str(kanal))
                 temp_max[kanal] = -20
             
             try:
                 messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
             except ValueError:
-                logger.error(_(u'Error reading measurement resistor on channel ') + str(kanal))
+                logger.error(u'Error reading measurement resistor on channel ' + str(kanal))
                 messwiderstand[kanal] = 47    
             
             sensortyp[kanal] = new_config.get('Sensoren','CH' + str(kanal))
@@ -495,13 +514,13 @@ try:
         try:
             status_interval = new_config.getint('Alert', 'status_interval')
         except ValueError:
-            logger.error(_(u'Error reading status interval from config'))
+            logger.error(u'Error reading status interval from config')
             status_interval = 0
             
         try:
             alarm_interval = new_config.getint('Alert', 'alarm_interval')
         except ValueError:
-            logger.error(_(u'Error reading alarm interval from config'))
+            logger.error(u'Error reading alarm interval from config')
             alarm_interval = 0
 
         # Einlesen welche Alarmierungsart aktiv ist
@@ -517,24 +536,24 @@ try:
             logger.info('alert.ack vorhanden')
             for kanal in range (channel_count):
                 if alarm_state[kanal] == 'hi':
-                    logger.debug(_(u'Acknowledging temperature over upper limit on channel ') + str(kanal))
+                    logger.debug(u'Acknowledging temperature over upper limit on channel ' + str(kanal))
                     alarm_state[kanal] = 'hi_ack'
                 elif alarm_state[kanal] == 'lo':
-                    logger.debug(_(u'Acknowledging temperature under lower limit on channel ') + str(kanal))
+                    logger.debug(u'Acknowledging temperature under lower limit on channel ' + str(kanal))
                     alarm_state[kanal] = 'lo_ack'
             os.unlink('/var/www/alert.ack')
         
         if os.path.isfile('/var/www/alert.test'):
-            logger.info(_(u'alert.test exists'))
+            logger.info(u'alert.test exists')
             test_alarm = True
             os.unlink('/var/www/alert.test')
         
-        
-        for kanal in xrange(10):
+        logger.debug(u'Measuring {} channels'.format(channel_count))
+        for kanal in xrange(channel_count):
             sensorname = Config_Sensor.get(sensortyp[kanal],'Name')
             Temp = 0.0
             WerteArray = []
-            if not kanal in (8, 9):
+            if not kanal > 7:
                 for i in xrange(iterations):
                     # Anzahl iterations Werte messen und Durchschnitt bilden
                     if version == 'v1' or sensorname == 'KTYPE':
@@ -546,11 +565,7 @@ try:
                         
                     if (Wert > 15) and (Wert < 4080) and (sensorname != 'KTYPE'):
                         # sinnvoller Wertebereich
-                        Rtheta = messwiderstand[kanal]*((4096.0/Wert) - 1)
-                        Tempvar = temperatur_sensor(Rtheta, sensortyp[kanal], temp_unit)
-                        if Tempvar is not None:
-                            # normale Messung, keine Sensorprobleme
-                            WerteArray.append(Tempvar)
+                        WerteArray.append(Wert)
                     elif sensorname == 'KTYPE':
                         # AD595 = 10mV/Â°C
                         if temp_unit == 'celsius':
@@ -565,7 +580,9 @@ try:
                     if (gute > (iterations * 0.6)):
                         # Messwerte nur gültig wenn x% OK sind
                         # Medianfilter anwenden
-                        Temperatur[kanal] = median_filter(WerteArray)
+                        median_value = median_filter(WerteArray)
+                        Rtheta = messwiderstand[kanal]*((4096.0/median_value) - 1)
+                        Temperatur[kanal] = temperatur_sensor(Rtheta, sensortyp[kanal], temp_unit)
                         #else:
                         #    # Behalte alten Wert 
                         #    Temperatur[kanal] = Temperatur[kanal] 
@@ -574,9 +591,20 @@ try:
                 if (gute <> iterations) and (gute > 0):
                     warnung = 'Channel:{kanal} could only measure {gute} out of {iterations}!'.format(kanal=kanal, gute=gute, iterations=iterations)
                     logger.warning(warnung)
-            else:
+                logger.debug(u'Channel {}, MCP3128 {}, temperature {}'.format(kanal, kanal, Temperatur[kanal]))
+            elif version == u'miniV2' and kanal <= 9:
                 Temperatur[kanal] = get_channel_max31855(kanal - 8)
-                
+                logger.debug(u'Channel {}, MAX31855 {}, temperature {}'.format(kanal, kanal - 8, Temperatur[kanal]))
+            else:
+                if maverick is None:
+                    Temperatur_alarm[kanal] = 'no'
+                else:
+                    logger.debug(u'Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - channel_count + 3, Temperatur[kanal]))
+                    maverick_value = maverick['temperature_' + str(kanal - channel_count + 3)]
+                    if maverick_value == '':
+                        Temperatur[kanal] = None
+                    else:
+                        Temperatur[kanal] = maverick_value
             alarm_values = dict()
             if temp_unit == 'celsius':
                 alarm_values['temp_unit'] = 'Â°C'
@@ -667,13 +695,13 @@ try:
             alarm_time = time.time()
             
             if alarm_neu:
-                logger.debug(_(u'new alert, sending messages'))
+                logger.debug(u'new alert, sending messages')
             if test_alarm:
-                logger.debug(_(u'test alert, sending messages'))
+                logger.debug(u'test alert, sending messages')
                 test_alarm = False
                 alarm_message = _(u'test message\n') + alarm_message
             if alarm_repeat:
-                logger.info(_(u'repeated alert, sending messages'))
+                logger.info(u'repeated alert, sending messages')
                 
             if Email_alert:
                 # Wenn konfiguriert, Email schicken
@@ -704,12 +732,12 @@ try:
                 url = Telegram_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
                 body = Telegram_Body.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
                 try: 
-                    logger.debug(_(u'Telegram POST request, URL: ') + url + _(u'\nbody: ') + body)
+                    logger.debug(u'Telegram POST request, URL: ' + url + _(u'\nbody: ') + body)
                     response = urllib2.urlopen(url, body)
                     
-                    logger.info(_(u'Telegram HTTP return code: ') + str(response.getcode()))
-                    logger.debug(_(u'Telegram URL: ') + response.geturl())
-                    logger.debug(_(u'Telegram result: ') + response.read(500))
+                    logger.info(u'Telegram HTTP return code: ' + str(response.getcode()))
+                    logger.debug(u'Telegram URL: ' + response.geturl())
+                    logger.debug(u'Telegram result: ' + response.read(500))
 
                 except urllib2.HTTPError, e:
                     logger.error(u'Telegram HTTP error: ' + str(e.code) + u' - ' + e.read(500))
@@ -736,12 +764,12 @@ try:
                 alarm_message2 = urllib.quote(alarm_message.encode('utf-8'))
                 url = App_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), sound=App_sound, inst_id=App_inst_id, device=App_device, inst_id2=App_inst_id2, device2=App_device2, inst_id3=App_inst_id3, device3=App_device3)
                 try: 
-                    logger.debug(_(u'App GET request, URL: ') + url)
+                    logger.debug(u'App GET request, URL: ' + url)
                     response = urllib2.urlopen(url)
                     
-                    logger.info(_(u'App HTTP return code: ') + str(response.getcode()))
-                    logger.debug(_(u'App URL: ') + response.geturl())
-                    logger.debug(_(u'App result: ') + response.read(500))
+                    logger.info(u'App HTTP return code: ' + str(response.getcode()))
+                    logger.debug(u'App URL: ' + response.geturl())
+                    logger.debug(u'App result: ' + response.read(500))
 
                 except urllib2.HTTPError, e:
                     logger.error(u'App HTTP error: ' + str(e.code) + u' - ' + e.read(500))
@@ -759,19 +787,19 @@ try:
                     url = Push_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
                     body = Push_Body.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
                 except KeyError, key:
-                    logger.error(u'Key "' + str(key) + u'" is undefined!')
+                    logger.error(u'Key "{}" is undefined!'.format(key))
                 else:
                     try: 
                         if Push_Body == '':
-                            logger.debug(_(u'push GET request, URL: ') + url)
+                            logger.debug(u'push GET request, URL: ' + url)
                             response = urllib2.urlopen(url)
                         else:
-                            logger.debug(_(u'push POST request, URL: ') + url + _(u'\nbody: ') + body)
+                            logger.debug(u'push POST request, URL: ' + url + u'\nbody: ' + body)
                             response = urllib2.urlopen(url, body)
                         
-                        logger.info(_(u'push HTTP return code: ') + str(response.getcode()))
-                        logger.debug(_(u'push URL: ') + response.geturl())
-                        logger.debug(_(u'push result: ') + response.read(500))
+                        logger.info(u'push HTTP return code: ' + str(response.getcode()))
+                        logger.debug(u'push URL: ' + response.geturl())
+                        logger.debug(u'push result: ' + response.read(500))
     
                     except urllib2.HTTPError, e:
                         logger.error(u'Push HTTP error: ' + str(e.code) + u' - ' + e.read(500))
@@ -809,7 +837,7 @@ try:
                 os.rename(current_temp + '_tmp', current_temp)
             except IndexError:
                 time.sleep(1)
-                logger.debug(_(u'Error: Could not write to file {file}!').format(file=current_temp))
+                logger.debug(u'Error: Could not write to file {file}!'.format(file=current_temp))
                 continue
             break
             
@@ -873,13 +901,13 @@ try:
         
         time_remaining = time_start + delay - time.time()
         if time_remaining < 0:
-            logger.warning(_(u'measuring loop running longer than {delay}s, remaining time {time_remaining}s').format(delay=delay, time_remaining=time_remaining))
+            logger.warning(u'measuring loop running longer than {delay}s, remaining time {time_remaining}s'.format(delay=delay, time_remaining=time_remaining))
         else:
-            logger.debug(_(u'measuring loop remaining time {time_remaining}s of {delay}s').format(delay=delay, time_remaining=time_remaining))
+            logger.debug(u'measuring loop remaining time {time_remaining}s of {delay}s'.format(delay=delay, time_remaining=time_remaining))
             time.sleep(time_remaining)
 
 except KeyboardInterrupt:
-    logger.info(_(u'WLANThermo stopped!'))
+    logger.info(u'WLANThermo stopped!')
     pi.bb_spi_close(25)
     pi.bb_spi_close(8)
     pi.bb_spi_close(7)

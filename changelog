@@ -1,3 +1,12 @@
+wlanthermo (2.6.0-beta) stable; urgency=medium
+
+  * ADD: Thermocouple support
+  * ADD: Maverick support
+  * ADD: Display variable channel count
+  * ADD: Multiple Pitmaster support
+
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Tue, 14 Dec 2016 20:05:00 +0100
+
 wlanthermo (2.5.3-0) stable; urgency=medium
 
   * FIX: Pitmaster: fixed calculation of fan values
