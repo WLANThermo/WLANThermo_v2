@@ -13,7 +13,9 @@ $inipath = '../conf/WLANThermo.conf';
 
 $plotcolors = array('green', 'red', 'blue', 'olive', 'magenta', 'yellow', 'violet', 'orange',
 	'mediumpurple3', 'aquamarine', 'brown', 'plum', 'skyblue', 'orange-red', 'salmon',
-	'black', 'dark-grey', 'purple', 'turquoise', 'khaki', 'dark-violet', 'seagreen');
+	'black', 'dark-grey', 'purple', 'turquoise', 'khaki', 'dark-violet', 'seagreen', 'web-blue',
+	'steelblue', 'gold', 'dark-green', 'midnight-blue', 'dark-khaki', 'dark-olivegreen',
+	'pink', 'chartreuse', 'gray', 'slategrey');
 $app_sounds=array('None', 'Standard', 'Bell', 'Firepager', 'Police_kurz', 'Police_lang',
 	 'Sirene', 'SmokeAlarm', 'TempleBell', 'Tornado_kurz', 'Tornado_lang');
 $app_devices=array('iOS' => '0', 'Android' => '1');
