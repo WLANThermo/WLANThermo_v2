@@ -90,13 +90,14 @@ def get_state (bitlist):
    state = quart(bitlist[6*4:6*4+4]) << 2
    state |= quart(bitlist[7*4:7*4+4])
    if options.debug:
-      print('state', state)
+      print('state ', state)
    if state == 7:
       return 'init'
    elif state == 2:
       return 'default'
    else:
-      return 'unknown ' + state
+      print('Unknown state:', state)
+      return 'unknown ' + str(state)
 
 def bitlist_to_int (bitlist):
    out = 0
