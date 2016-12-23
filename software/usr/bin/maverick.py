@@ -449,7 +449,7 @@ def worker():
    # Hauptthread, wertet empfangene Pakete aus und verteilt an die anderen Queues
    global unit_list
    if options.fahrenheit:
-      unit = 'F'
+      unit = '°F'
    else:
       unit = '°C'
    while True:
@@ -478,7 +478,7 @@ def json_writer():
    if options.verbose:
        print('Starting JSON writer Task')
    if options.fahrenheit:
-      unit = '° F'
+      unit = '°F'
    else:
       unit = '°C'
    while True:

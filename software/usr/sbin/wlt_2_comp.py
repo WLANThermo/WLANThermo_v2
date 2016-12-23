@@ -331,7 +331,12 @@ def read_maverick():
     except IOError:
         logger.info(u'Maverick file could not be read')
         return None
-    
+
+    age = time.time() - values['time']
+    if age > 30:
+        logger.debug('Maverick values too old, {} sec'.format(age))
+        return None
+
     return values
     
     
@@ -605,12 +610,13 @@ try:
                         Temperatur[kanal] = None
                     else:
                         Temperatur[kanal] = maverick_value
+
             alarm_values = dict()
             if temp_unit == 'celsius':
-                alarm_values['temp_unit'] = 'Â°C'
+                alarm_values['temp_unit'] = '°C'
                 alarm_values['temp_unit_long'] = _(u'degrees Celsius')
             elif temp_unit == 'fahrenheit':
-                alarm_values['temp_unit'] = 'Â°F'
+                alarm_values['temp_unit'] = '°F'
                 alarm_values['temp_unit_long'] = _(u'degrees Fahrenheit')
             alarm_values['kanal'] = kanal
             alarm_values['name'] = kanal_name[kanal]
@@ -732,7 +738,7 @@ try:
                 url = Telegram_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
                 body = Telegram_Body.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
                 try: 
-                    logger.debug(u'Telegram POST request, URL: ' + url + _(u'\nbody: ') + body)
+                    logger.debug(u'Telegram POST request, URL: {}\nbody: {}'.format(url, body))
                     response = urllib2.urlopen(url, body)
                     
                     logger.info(u'Telegram HTTP return code: ' + str(response.getcode()))
