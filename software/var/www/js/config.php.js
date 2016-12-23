@@ -1,5 +1,6 @@
 	// Eingabefelder für PID Regelung deaktivieren
 	function pit_settings_disable() {
+		/* TODO: implement multiple Pitmaster
 		document.getElementById("pit_curve").disabled=true;
 		document.getElementById("pit_kp").disabled=true;
 		document.getElementById("pit_ki").disabled=true;
@@ -19,6 +20,7 @@
 		document.getElementById("pit_pwm_max").disabled=true;
 		document.getElementById("pit_pwm_min").disabled=true;
 		document.getElementById("pit_io_gpio").disabled=true;
+		*/
 	}
 	
 	function pit_settings_enable() {
@@ -44,22 +46,26 @@
 	}
 	
 	function pid_settings_disable() {
+		/* TODO: implement multiple Pitmaster
 		document.getElementById("pit_kp").disabled=true;
 		document.getElementById("pit_ki").disabled=true;
 		document.getElementById("pit_kd").disabled=true;
 		document.getElementById("pit_kp_a").disabled=true;
 		document.getElementById("pit_ki_a").disabled=true;
 		document.getElementById("pit_kd_a").disabled=true;
+		*/
 	}
 	
 	// Eingabefelder für PID Regelung aktivieren
 	function pid_settings_enable() {
+		/* TODO: implement multiple Pitmaster
 		document.getElementById("pit_kp").disabled=false;
 		document.getElementById("pit_ki").disabled=false;
 		document.getElementById("pit_kd").disabled=false;
 		document.getElementById("pit_kp_a").disabled=false;
 		document.getElementById("pit_ki_a").disabled=false;
 		document.getElementById("pit_kd_a").disabled=false;
+		*/
 	}
 
 	// Eingabefelder für Plot Dienst deaktivieren
@@ -174,6 +180,7 @@
 		if( $('#pit_on').is(':checked') ) { 
 			pit_settings_enable();
 			check_pid_present();
+			/* TODO: implement multiple Pitmaster
 			if($('select#pit_type').val() == "servo"){
 				document.getElementById("pit_pwm_min").disabled=true;
 				document.getElementById("pit_pwm_max").disabled=true;
@@ -188,6 +195,7 @@
 				document.getElementById("pit_servo_min").disabled=true;
 				document.getElementById("pit_servo_max").disabled=true;
 			}
+			*/
 
 		}else{
 			pit_settings_disable();
@@ -196,7 +204,9 @@
 	function check_pid_present(){
 		if( $('#pit_controller_type').is(':checked') ) { 
 			pid_settings_enable();
-			document.getElementById("pit_curve").disabled=true;			
+			/* TODO: implement multiple Pitmaster
+			document.getElementById("pit_curve").disabled=true;
+			*/
 		}else{
 			pid_settings_disable();
 			document.getElementById("pit_curve").disabled=false;
