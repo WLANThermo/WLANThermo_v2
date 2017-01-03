@@ -996,10 +996,13 @@ def NX_display():
     
     # language = gettext.translation('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/', languages=[options['locale'] + '.UTF-8'])
     # language.install()
-    
+
+    pitmaster_count = 1
     channel_count = 8
     hwchannel_count = 10
+
     if options['hw_version'] == 'miniV2':
+        pitmaster_count = 2
         channel_count += 2
         hwchannel_count += 2
     if options['maverick_enabled'] == True:
@@ -1083,6 +1086,8 @@ def NX_display():
         values['wlaninfo.' + interfaces[interface]['name'] + '.txt:20'] = interfaces[interface]['ip']
 
     pit_types = {'fan':0, 'servo':1, 'io':2, 'io_pwm':3, 'fan_pwm':4}
+
+    values['main.pitmaster.val'] = pitmaster_count
 
     # Pitmaster 1
     values['main.pit_ch.val'] = int(pitconf['ch'])
