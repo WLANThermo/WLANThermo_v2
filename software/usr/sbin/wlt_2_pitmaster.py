@@ -358,7 +358,10 @@ def main(instance):
     #Log Dateinamen aus der config lesen
     current_temp = Config.get('filepath','current_temp')
     pitmaster_log = Config.get('filepath','pitmaster' + instance_string)
-    
+    if Config.get('Hardware','version') == u'miniV2':
+        channel_count = 12
+    else:
+        channel_count = 10
     #Pfad aufsplitten
     pitPath,pitFile = os.path.split(pitmaster_log)
     
@@ -473,22 +476,42 @@ def main(instance):
                 pit_ratelimit_lower = Config.getfloat('Pitmaster' + instance_string,'pit_ratelimit_lower')
                 
                 #PID End Paramter fuer PID einlesen
-                
+
+
+                #
+                # Aktuelle Temperatur parsen
+                #
+
                 temps = tline.split(";")
+
+                if temps[pit_ch + 1 + channel_count] in ('er', 'no'):
+                    pit_now = None
+                    logger.info(_(u'No signal on channel ') + pit_ch)
+                    msg += _(u'|no probe connected to channel {}!').format(pit_ch)
+                else:
+                    try:
+                        pit_now = float(checkTemp(temps[(pit_ch + 1)]))
+                    except ValueError:
+                        logger.info(_(u'Error parsing value on channel ') + pit_ch)
+                        msg += _(u'|no valid value on channel {}!').format(pit_ch)
+                        pit_now = None
+
+
+                #
+                # Deckelerkennung
+                #
+
+
                 # Keine Deckelerkennung und kein Fühler für manuelle Einstellung notwendig
                 if pit_man > 0:
                     logger.info(_(u'Setting output to {}% manual value').format(str(pit_man)))
-                    if temps[(pit_ch + 1)] == "Error":
-                        pit_now = 0.0
-                    else:
-                        pit_now = float(checkTemp(temps[(pit_ch + 1)]))
+
                     pit_open_lid_detected = False
-                    
-                elif temps[(pit_ch + 1)] == "Error":
-                    logger.info(_(u'No signal on channel ') + pit_ch)
-                    msg += _(u'|no probe connected to Channel {}!').format(pit_ch)
+
+                elif pit_now is None:
+                    pass
+
                 else:
-                    pit_now = float(checkTemp(temps[(pit_ch + 1)]))
                     #start open lid detection
                     if pit_open_lid_detection:
                         pit_open_lid_ref_temp[0] = pit_open_lid_ref_temp[1]
@@ -525,9 +548,20 @@ def main(instance):
                     msg += _(u'|current: {pit_now}, set: {pit_set}').format(pit_now=pit_now,pit_set=pit_set)
                     calc = 0
                     s = 0
+
+                #
+                # Regelschleife
+                #
+
                 # Manueller Vorgabe des Ausgangswertes
                 if pit_man > 0:
                     pit_new = pit_man
+
+                # Ohne gültigen Eingangswert Ausgang deaktivieren
+                elif pit_now is None:
+                    logger.error(_(u'Invalid input value!, setting output to 0'))
+                    pit_new = 0
+
                 #Suchen und setzen des neuen Reglerwerts Wertekurve
                 elif (controller_type == "False") and (not pit_open_lid_detected): #Bedingung fuer Wertekurve
                     for step, val in pit_steps:
