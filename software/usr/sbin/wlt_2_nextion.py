@@ -710,7 +710,7 @@ def display_setvalues(dim = None, timeout = None):
         return False
 
 
-def todo_setvalues(pi_down = None, pi_reboot = None):
+def todo_setvalues(create_new_log = None, pi_down = None, pi_reboot = None):
     global configfile, configfile_lock
     with configfile_lock:
         newconfig = ConfigParser.SafeConfigParser()
@@ -719,6 +719,8 @@ def todo_setvalues(pi_down = None, pi_reboot = None):
             newconfig.set('ToDo','raspi_shutdown', ['False', 'True'][pi_down])
         if pi_reboot is not None:
             newconfig.set('ToDo','raspi_reboot', ['False', 'True'][pi_reboot])
+        if create_new_log is not None:
+            newconfig.set('ToDo','raspi_reboot', ['False', 'True'][create_new_log])
         config_write(configfile, newconfig)
 
 
@@ -1295,6 +1297,11 @@ def NX_display():
                         if event['data']['action'] == 0:
                             logger.debug(_(u'Alert acknowledged!'))
                             alert_setack()
+                elif event['data']['area'] == 8:
+                    if event['data']['id'] == 0:
+                        if event['data']['action'] == 0:
+                            logger.debug(_(u'Create new logfile!'))
+                            todo_setvalues(create_new_log = 1)
             NX_eventq.task_done()
         elif temps_event.is_set():
             logger.debug(_(u'Temperature event'))
