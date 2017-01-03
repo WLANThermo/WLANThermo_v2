@@ -36,10 +36,15 @@ PORT = '/dev/ttyAMA0'
 BAUDCOMM = 9600
 BAUDUPLOAD = 115200
 
-if len(sys.argv) != 2:
-    sys.exit('usage: python %s directory' % sys.argv[0])
+if len(sys.argv) < 2 or len(sys.argv) > 3:
+    sys.exit('usage: python %s directory [variant]' % sys.argv[0])
 
 file_path = sys.argv[1]
+
+if len(sys.argv) > 2:
+    variant_suffix = '_' + sys.argv[2]
+else:
+    variant_suffix = ''
 
 if not os.path.exists(file_path):
     sys.exit('directory "{}" not found'.format(file_path))
@@ -159,7 +164,8 @@ for BAUDCOMM in (9600, 115200, 2400, 4800, 19200, 38400, 57600):
         print('Serial: ' + serial)
         print('Flash size: ' + flash_size)
         
-        file_name = file_path + model.split('_')[0] + '.tft'
+        file_name = '{file_path}{model}{variant}.tft'.format(file_path=file_path, model=model.split('_')[0], variant=variant_suffix)
+        print 'Now flashing {file}'.format(file=file_name)
         if os.path.isfile(file_name):
             print 'uploading %s (%i bytes)...' % (file_name, os.path.getsize(file_name))
         else:

@@ -193,9 +193,12 @@ function session($configfile) {
 	if ($_SESSION["hardware_version"] == 'miniV2') {
 		$_SESSION["channel_count"] = 12;
 		$_SESSION["pitmaster_count"] = 2;
+		$_SESSION["nextion_variant"] = '180';
 	} else {
 		$_SESSION["channel_count"] = 10;
 		$_SESSION["pitmaster_count"] = 1;
+		$_SESSION["nextion_variant"] = '0';
+		
 	}
 	for ($i = 0; $i < $_SESSION["pitmaster_count"]; $i++){
 		$pitmaster_str = $i == 0 ? '' : strval($i +1);
