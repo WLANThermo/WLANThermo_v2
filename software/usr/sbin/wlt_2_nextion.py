@@ -1103,7 +1103,7 @@ def NX_display():
     values['main.pit_power2.val'] = int(round(pitmaster2['new']))
     values['main.pit_set2.txt:10'] = round(pitconf2['set'],1)
     values['main.pit_lid2.val'] = int(pitconf2['open_lid_detection'])
-    values['main.pit_on2.val'] = int(pitcon2f['on'])
+    values['main.pit_on2.val'] = int(pitconf2['on'])
     values['main.pit_inverted2.val'] = int(pitconf2['inverted'])
     values['main.pit_pid2.val'] = {'False': 0, 'PID': 1}[pitconf2['controller_type']]
     values['main.pit_type2.val'] = pit_types[pitconf2['type']]
@@ -1407,7 +1407,7 @@ def NX_display():
             values = dict()
             
             pitmaster_event.clear()
-            new_pitmaster = pitmaster_getvalues()
+            new_pitmaster = pitmaster_getvalues(0)
             
             if new_pitmaster is not None:
                 if pitmaster['new'] != new_pitmaster['new']:
@@ -1422,7 +1422,28 @@ def NX_display():
                     else:
                         # Im Fehlerfall später wiederholen
                         pitmaster_event.set()
-        
+
+        elif pitmaster2_event.is_set():
+            logger.debug(_(u'Pitmaster 2 data event'))
+            values = dict()
+
+            pitmaster_event.clear()
+            new_pitmaster = pitmaster_getvalues(1)
+
+            if new_pitmaster is not None:
+                if pitmaster2['new'] != new_pitmaster['new']:
+                    if pitconf2['on']:
+                        # Wenn Pitmaster aus, 0-Wert senden.
+                        values['main.pit_power2.val'] = int(round(float(new_pitmaster['new'])))
+                    else:
+                        values['main.pit_power2.val'] = 0
+
+                    if NX_sendvalues(values):
+                        pitmaster2 = new_pitmaster
+                    else:
+                        # Im Fehlerfall später wiederholen
+                        pitmaster2_event.set()
+
         elif channels_event.is_set():
             logger.debug(_(u'Channels data event'))
             values = dict()
