@@ -38,13 +38,7 @@ GPIO.setmode(GPIO.BCM)
 
 GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-# Timing Konstanten
-E_PULSE = 0.00005
-E_DELAY = 0.00005
-
-
 display_proc = None
-
 
 HIGH = True  # HIGH-Pegel
 LOW  = False # LOW-Pegel
@@ -292,7 +286,15 @@ def read_config():
 
             Config.set('ToDo', 'restart_pitmaster', 'False')
             config_write(cf, Config)
+            
+        if (Config.getboolean('ToDo', 'restart_pitmaster2')):
+            logger.info(_(u'Restart pitmaster 2!'))
+            handle_service('WLANThermoPIT2', 'restart')
+            time.sleep(3)
+            logger.info(_(u'Changing restart_pitmaster2 to False again!'))
 
+            Config.set('ToDo', 'restart_pitmaster2', 'False')
+            config_write(cf, Config)
         
         if (Config.getboolean('ToDo', 'raspi_shutdown')):
             Config.set('ToDo', 'raspi_shutdown', 'False')
@@ -344,9 +346,12 @@ def read_config():
             
             logger.info(_(u'Finished creation of new logfile'))
 
-        if (Config.getboolean('ToDo', 'pit_on')):
-            check_pitmaster() 
-
+        for id in xrange(pitmaster_count):
+            logger.info(_(u'Check Pitmaster {}!'.format(id + 1)))
+            check_pitmaster(id)
+        
+        check_maverick()
+            
     except:
         logger.info(_(u'Unexpected error: ') +str(sys.exc_info()[0]))
         raise
@@ -417,27 +422,56 @@ def check_display():
             display_proc = None
 
 
-def check_pitmaster():
-    logger.debug(_(u'Checking pitmaster'))
-    pitmasterPID = os.popen("ps aux|grep wlt_2_pitmaster.py|grep -v grep|awk '{print $2}'").read()
-    bashCommandPit = ''
-    if (Config.getboolean('ToDo', 'pit_on')):
-        if (len(pitmasterPID) < 1):
-            logger.info(_(u'Start pitmaster'))
-            bashCommandPit = 'sudo systemctl restart WLANThermoPIT.service'
-        else:
-            logger.info(_(u'Pitmaster already running'))
+def check_pitmaster(id):
+    if id == 0:
+        id_string = ''
     else:
-        if (len(pitmasterPID) > 0):
-            logger.info(_(u'Stopping pitmaster'))
-            #obsolet
+        id_string = str(id + 1)
+    logger.debug(_(u'Checking pitmaster {}'.format(id + 1)))
+    
+    pitmasterStatus = subprocess.call(('/bin/systemctl', 'status',  'WLANThermoPIT{}.service'.format(id + 1)))
+    bashCommandPit = tuple()
+    if (Config.getboolean('ToDo', 'pit{}_on'.format(id_string))):
+        if pitmasterStatus != 0:
+            logger.info(_(u'Start pitmaster {}'.format(id + 1)))
+            bashCommandPit = ('/usr/bin/systemd-run', '--unit', 'WLANThermoPIT{}.service'.format(id_string), '/usr/sbin/wlt_2_pitmaster.py', str(id))
         else:
-            logger.info(_(u'Pitmaster already stopped'))
+            logger.info(_(u'Pitmaster {} already running'.format(id + 1)))
+    else:
+        if pitmasterStatus == 0:
+            logger.info(_(u'Stopping pitmaster {}'.format(id + 1)))
+            bashCommandPit = ('/bin/systemctl', 'stop', 'WLANThermoPIT{}.service'.format(id_string))
+        else:
+            logger.info(_(u'Pitmaster {} already stopped'.format(id + 1)))
     if (len(bashCommandPit) > 0):
-        retcodeO = subprocess.Popen(bashCommandPit.split())
-        retcodeO.wait()
+        retcodeO = subprocess.call(bashCommandPit)
         if retcodeO < 0:
-            logger.info(_(u'Terminated by signal'))
+            logger.info(_(u'Pitmaster {} terminated by signal'.format(id + 1)))
+        else:
+            logger.info(_(u'Child returned: ') + str(retcodeO))
+
+
+def check_maverick():
+    logger.debug(_(u'Checking Maverick'))
+    
+    pitmasterStatus = subprocess.call(('/bin/systemctl', 'status',  'WLANThermoMAVERICK.service'))
+    bashCommandPit = tuple()
+    if (Config.getboolean('ToDo', 'maverick_enabled')):
+        if pitmasterStatus != 0:
+            logger.info(_(u'Start Maverick'))
+            bashCommandPit = ('/usr/bin/systemd-run', '--unit', 'WLANThermoMAVERICK.service', '/usr/bin/maverick.py',  '--json',  '/var/www/tmp/maverick.json' , '--noappend')
+        else:
+            logger.info(_(u'Maverick already running'))
+    else:
+        if pitmasterStatus == 0:
+            logger.info(_(u'Stopping Maverick'))
+            bashCommandPit = ('/bin/systemctl', 'stop', 'WLANThermoMAVERICK.service')
+        else:
+            logger.info(_(u'Maverick already stopped'))
+    if (len(bashCommandPit) > 0):
+        retcodeO = subprocess.call(bashCommandPit)
+        if retcodeO < 0:
+            logger.info(_(u'Maverick terminated by signal'))
         else:
             logger.info(_(u'Child returned: ') + str(retcodeO))
 
@@ -452,8 +486,12 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical('{0}: {1}'.format(ex_cls, ex))
 
 
-sys.excepthook = log_uncaught_exceptions
+if Config.get('Hardware', 'version') in ['miniV2']:
+    pitmaster_count = 2
+else:
+    pitmaster_count = 1
 
+sys.excepthook = log_uncaught_exceptions
 
 signal.signal(15, raise_keyboard)
 
@@ -465,7 +503,10 @@ GPIO.add_event_detect(27, GPIO.RISING, callback=shutdown_button, bouncetime=1000
 
 Config.readfp(codecs.open(cf, 'r', 'utf_8'))
 check_display()
-check_pitmaster()
+check_maverick()
+
+for id in xrange(pitmaster_count):
+    check_pitmaster(id)
 
 # Lösche Rebootflag
 try:

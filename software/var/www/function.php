@@ -140,8 +140,9 @@ function getLogfiles() {
 
 function session($configfile) {
 	if(get_magic_quotes_runtime()) set_magic_quotes_runtime(0); 
-	$ini = getConfig("".$configfile."", ";");  // dabei ist ; das zeichen für einen kommentar. kann geändert werden.	
-	for ($i = 0; $i <= 7; $i++){
+	$ini = getConfig("".$configfile."", ";");  // dabei ist ; das zeichen für einen kommentar. kann geändert werden.
+	// Always read all channels in config file
+	for ($i = 0; $i < 12; $i++){
 		$_SESSION["color_ch".$i] = $ini['plotter']['color_ch'.$i];
 		$_SESSION["temp_min".$i] = $ini['temp_min']['temp_min'.$i];  
 		$_SESSION["temp_max".$i] = $ini['temp_max']['temp_max'.$i];
@@ -153,16 +154,17 @@ function session($configfile) {
 	$_SESSION["temp_unit"] = $ini['locale']['temp_unit'];
 	$_SESSION["color_pit"] = $ini['plotter']['color_pit'];
 	$_SESSION["color_pitsoll"] = $ini['plotter']['color_pitsoll'];
+	$_SESSION["color_pit2"] = $ini['plotter']['color_pit2'];
+	$_SESSION["color_pit2soll"] = $ini['plotter']['color_pit2soll'];
 	$_SESSION["plot_start"] = $ini['ToDo']['plot_start'];
 	$_SESSION["plotname"] = $ini['plotter']['plotname'];
 	$_SESSION["plotsize"] = $ini['plotter']['plotsize'];
 	$_SESSION["plot_pit"] = $ini['plotter']['plot_pit'];
+	$_SESSION["plot_pit2"] = $ini['plotter']['plot_pit2'];
 	$_SESSION["plotbereich_min"] = $ini['plotter']['plotbereich_min'];
 	$_SESSION["plotbereich_max"] = $ini['plotter']['plotbereich_max'];
 	$_SESSION["keybox"] = $ini['plotter']['keybox'];
 	$_SESSION["keyboxframe"] = $ini['plotter']['keyboxframe'];
-	$_SESSION["pit_on"] = $ini['ToDo']['pit_on'];
-	$_SESSION["pit_ch"] = $ini['Pitmaster']['pit_ch'];
 	$_SESSION["webcam_start"] = $ini['webcam']['webcam_start'];
 	$_SESSION["webcam_name"] = $ini['webcam']['webcam_name'];
 	$_SESSION["webcam_size"] = $ini['webcam']['webcam_size'];
@@ -171,8 +173,8 @@ function session($configfile) {
 	$_SESSION["raspicam_size"] = $ini['webcam']['raspicam_size'];
 	$_SESSION["raspicam_exposure"] = $ini['webcam']['raspicam_exposure'];
 	$_SESSION["current_temp"] = $ini['filepath']['current_temp'];
-	$_SESSION["pitmaster"] = $ini['filepath']['pitmaster'];
 	$_SESSION["showcpulast"] = $ini['Hardware']['showcpulast'];
+	$_SESSION["hardware_version"] = $ini['Hardware']['version'];
 	$_SESSION["checkUpdate"] = $ini['update']['checkupdate'];
 	$_SESSION["check_update_url"] = $ini['update']['check_update_url'];
 	if (isset($_SESSION["webGUIversion"])){
@@ -185,20 +187,44 @@ function session($configfile) {
 	}else{
 		$_SESSION["updateAvailable"] = "";
 	}
-	if(!isset($_SESSION["websoundalert"])){ $_SESSION["websoundalert"] = "True";}	
+	if (!isset($_SESSION["websoundalert"])) {
+		$_SESSION["websoundalert"] = "True";
+	}
+	if ($_SESSION["hardware_version"] == 'miniV2') {
+		$_SESSION["channel_count"] = 12;
+		$_SESSION["pitmaster_count"] = 2;
+		$_SESSION["nextion_variant"] = '180';
+	} else {
+		$_SESSION["channel_count"] = 10;
+		$_SESSION["pitmaster_count"] = 1;
+		$_SESSION["nextion_variant"] = '0';
+		
+	}
+	for ($i = 0; $i < $_SESSION["pitmaster_count"]; $i++){
+		$pitmaster_str = $i == 0 ? '' : strval($i +1);
+		$_SESSION["pitmaster" . $pitmaster_str] = $ini['filepath']['pitmaster' . $pitmaster_str];
+		$_SESSION["pit" . $pitmaster_str . "_on"] = $ini['ToDo']['pit' . $pitmaster_str . '_on'];
+		$_SESSION["pit" . $pitmaster_str . "_ch"] = $ini['Pitmaster' . $pitmaster_str]['pit_ch'];
+	}
+
 }
 //-----------------------------------------------------------------------------------
 // Überprüfen ob SessionVariablen existieren ########################################
 //-----------------------------------------------------------------------------------
 
 function checkSession(){
+	
+	if (!isset($_SESSION["channel_count"])) {
+		$message .= "Variable - Config neu einlesen\n";
+		session("./conf/WLANThermo.conf");
+	}
 
-	for ($i = 0; $i <= 7; $i++){
+	for ($i = 0; $i < $_SESSION["channel_count"]; $i++){
 		if (!isset($_SESSION["color_ch".$i]) or !isset($_SESSION["temp_min".$i]) or !isset($_SESSION["temp_max".$i]) or !isset($_SESSION["ch_name".$i]) or !isset($_SESSION["ch_show".$i]) or !isset($_SESSION["alert".$i])){
 			session("./conf/WLANThermo.conf");
 		}
 	}
-	if (!isset($_SESSION["plotsize"]) OR !isset($_SESSION["plotname"]) OR !isset($_SESSION["keybox"]) OR !isset($_SESSION["plotbereich_min"]) OR !isset($_SESSION["plotbereich_max"]) OR !isset($_SESSION["plot_start"])) {
+	if (!isset($_SESSION["plotsize"]) OR !isset($_SESSION["plotname"]) OR !isset($_SESSION["keybox"]) OR !isset($_SESSION["plotbereich_min"]) OR !isset($_SESSION["plotbereich_max"]) OR !isset($_SESSION["plot_start"]) OR !isset($_SESSION["plot_pit2"]) OR !isset($_SESSION["plot_pit2"])){
 		$message .= "Variable - Config neu einlesen\n";
 		session("./conf/WLANThermo.conf");
 	}
@@ -276,12 +302,18 @@ function getPlotConfig($plot,$temp_unit){
 	$plot_setting .= "set y2range [".$_SESSION["plotbereich_min"].":".$_SESSION["plotbereich_max"]."];";
 	$plot_setting .= "set xtics nomirror;";
 	$plot_setting .= "set y2tics nomirror;";
-	if ($_SESSION["plot_pit"] == "True") {
+	if ($_SESSION["plot_pit"] == "True" || $_SESSION["plot_pit2"] == "True") {
 		$plot_setting .= "set ylabel \\\"Pitmaster %\\\";";
 		$plot_setting .= 'set yrange ["0":"105"];';
 		$plot_setting .= "set ytics nomirror;";	
-		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:11 with lines lw 2 lc rgbcolor '".$_SESSION["color_pitsoll"]."' t 'Pitmaster Sollwert'  axes x1y2";
-		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:10 with lines lw 2 lc rgbcolor '".$_SESSION["color_pit"]."' t 'Pitmaster %' axes x1y1";
+	if ($_SESSION["plot_pit"] == "True") {
+		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 3)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pitsoll"]."' t 'Pitmaster Sollwert'  axes x1y2";
+		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 2)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pit"]."' t 'Pitmaster %' axes x1y1";
+	}
+	if ($_SESSION["plot_pit2"] && $_SESSION["pitmaster_count"] > 1) {
+		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 5)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pit2soll"]."' t 'Pitmaster 2 Sollwert'  axes x1y2";
+		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 4)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pit2"]."' t 'Pitmaster 2 %' axes x1y1";
+	}
 	}else{
 		$plot_setting .= "set ylabel \\\"Temperatur [°C]\\\";";
 		$plot_setting .= "set yrange [".$_SESSION["plotbereich_min"].":".$_SESSION["plotbereich_max"]."];";

@@ -65,8 +65,12 @@ temps_event = threading.Event()
 channels_event = threading.Event()
 # Neue Pitmasterevents
 pitmaster_event = threading.Event()
+# Neue Pitmasterevents
+pitmaster2_event = threading.Event()
 # Neue Pitmasterkonfiguration (= geändertes Konfigfile)
 pitconf_event = threading.Event()
+# Neue Pitmasterkonfiguration (= geändertes Konfigfile)
+pitconf2_event = threading.Event()
 # Neue Localekonfiguration (= geändertes Konfigfile)
 config_event = threading.Event()
 # Event für ein Aufwachen aus dem Sleep-Mode (= geändertes Konfigfile)
@@ -124,6 +128,7 @@ logging.captureWarnings(True)
 # Pfad fuer die Übergabedateien auslesen
 curPath, curFile = os.path.split(Config.get('filepath','current_temp'))
 pitPath, pitFile = os.path.split(Config.get('filepath','pitmaster'))
+pit2Path, pit2File = os.path.split(Config.get('filepath','pitmaster2'))
 confPath, confFile = os.path.split(configfile)
 
 # Wenn das display Verzeichniss im Ram Drive nicht exisitiert erstelle es
@@ -147,6 +152,9 @@ class FileEvent(pyinotify.ProcessEvent):
         elif event.path == pitPath and event.name == pitFile:
             logger.debug(_(u'New pitmaster data available'))
             pitmaster_event.set()
+        elif event.path == pit2Path and event.name == pit2File:
+            logger.debug(_(u'New pitmaster data available'))
+            pitmaster2_event.set()
     
     def process_IN_MOVED_TO(self, event):
         global temps, channels, pitmaster, pitconf, Config, configfile
@@ -159,10 +167,14 @@ class FileEvent(pyinotify.ProcessEvent):
             logger.debug(_(u'New configuration data available'))
             channels_event.set()
             pitconf_event.set()
+            pitconf2_event.set()
             config_event.set()
         elif event.path == pitPath and event.name == pitFile:
             logger.debug(_(u'New pitmaster data available'))
             pitmaster_event.set()
+        elif event.path == pit2Path and event.name == pit2File:
+            logger.debug(_(u'New pitmaster 2 data available'))
+            pitmaster2_event.set()
 
 def NX_reader():
     global logger, ser, NX_returns, NX_events, stop_event, NX_wake_event
@@ -586,7 +598,7 @@ def sensors_getvalues():
     return sensors
 
 
-def temp_getvalues():
+def temp_getvalues(channel_count):
     global logger, curPath, curFile
     temps = dict()
     if os.path.isfile(curPath + '/' + curFile):
@@ -595,24 +607,41 @@ def temp_getvalues():
         temps_raw = ft.split(';')
         temps = dict()
         temps['timestamp'] = time.mktime(time.strptime(temps_raw[0],'%d.%m.%y %H:%M:%S'))
-        for count in range(8):
-            temps[count] = {'value': str(round(float(temps_raw[count+1]),1)), 'alert': temps_raw[count+9]}
+        for count in range(channel_count):
+            try:
+                alert = temps_raw[count + channel_count + 1]
+            except IndexError:
+                alert = 'er'
+            try:
+                if temps_raw[count+1] == '':
+                    value = None
+                else:
+                    try:
+                        value = str(round(float(temps_raw[count+1]),1))
+                    except ValueError:
+                        value = None
+            except IndexError:
+                value = None
+            temps[count] = {'alert': alert, 'value': value}
     else:
         return None
     
     return temps
 
-def language_getvalues():
+
+def config_getvalues():
     global configfile, configfile_lock
-    locale = {}
+    options = {}
     with configfile_lock:
         config = ConfigParser.SafeConfigParser()
         config.readfp(codecs.open(configfile, 'r', 'utf_8'))
     
-    locale['locale'] = config.get('locale','locale')
-    locale['temp_unit'] = config.get('locale','temp_unit')
+    options['hw_version'] = config.get('Hardware','version')
+    options['maverick_enabled'] = config.getboolean('ToDo','maverick_enabled')
+    options['locale'] = config.get('locale','locale')
+    options['temp_unit'] = config.get('locale','temp_unit')
     
-    return locale
+    return options
 
 
 def set_tempflag():
@@ -681,7 +710,7 @@ def display_setvalues(dim = None, timeout = None):
         return False
 
 
-def todo_setvalues(pi_down = None, pi_reboot = None):
+def todo_setvalues(create_new_log = None, pi_down = None, pi_reboot = None):
     global configfile, configfile_lock
     with configfile_lock:
         newconfig = ConfigParser.SafeConfigParser()
@@ -690,30 +719,37 @@ def todo_setvalues(pi_down = None, pi_reboot = None):
             newconfig.set('ToDo','raspi_shutdown', ['False', 'True'][pi_down])
         if pi_reboot is not None:
             newconfig.set('ToDo','raspi_reboot', ['False', 'True'][pi_reboot])
+        if create_new_log is not None:
+            newconfig.set('ToDo','raspi_reboot', ['False', 'True'][create_new_log])
         config_write(configfile, newconfig)
 
 
-def pitmaster_setvalues(pit_ch = None, pit_set = None, pit_lid=  None, pit_on = None, pit_pid = None, pit_type = None, pit_inverted = None):
+def pitmaster_setvalues(id = 0, pit_ch = None, pit_set = None, pit_lid=  None, pit_on = None, pit_pid = None, pit_type = None, pit_inverted = None):
     global configfile, configfile_lock
-    
+
+    if id > 0:
+        instance_string = str(id + 1)
+    else:
+        instance_string = ''
+
     try:
         with configfile_lock:
             newconfig = ConfigParser.SafeConfigParser()
             newconfig.readfp(codecs.open(configfile, 'r', 'utf_8'))
             if pit_ch is not None:
-                newconfig.set('Pitmaster','pit_ch', str(int(pit_ch)))
+                newconfig.set('Pitmaster' + instance_string, 'pit_ch', str(int(pit_ch)))
             if pit_inverted is not None:
-                newconfig.set('Pitmaster','pit_inverted', ['False', 'True'][int(pit_inverted)])
+                newconfig.set('Pitmaster' + instance_string, 'pit_inverted', ['False', 'True'][int(pit_inverted)])
             if pit_set is not None:
-                newconfig.set('Pitmaster','pit_set', str(float(pit_set)))
+                newconfig.set('Pitmaster' + instance_string, 'pit_set', str(float(pit_set)))
             if pit_lid is not None:
-                newconfig.set('Pitmaster','pit_open_lid_detection', ['False', 'True'][int(pit_lid)])
+                newconfig.set('Pitmaster' + instance_string, 'pit_open_lid_detection', ['False', 'True'][int(pit_lid)])
             if pit_on is not None:
-                newconfig.set('ToDo','pit_on', ['False', 'True'][int(pit_on)])
+                newconfig.set('ToDo','pit' + instance_string + '_on', ['False', 'True'][int(pit_on)])
             if pit_pid is not None:
-                newconfig.set('Pitmaster','pit_controller_type', ['False', 'PID'][int(pit_pid)])
+                newconfig.set('Pitmaster' + instance_string, 'pit_controller_type', ['False', 'PID'][int(pit_pid)])
             if pit_type is not None:
-                newconfig.set('Pitmaster','pit_type', ['fan', 'servo', 'io', 'io_pwm', 'fan_pwm'][int(pit_type)])
+                newconfig.set('Pitmaster' + instance_string, 'pit_type', ['fan', 'servo', 'io', 'io_pwm', 'fan_pwm'][int(pit_type)])
                 
             config_write(configfile, newconfig)
     except ValueError:
@@ -728,7 +764,7 @@ def channels_getvalues():
     with configfile_lock:
         Config = ConfigParser.SafeConfigParser()
         Config.readfp(codecs.open(configfile, 'r', 'utf_8'))
-    for i in range(8):
+    for i in range(12):
         channel = {}
         channel['sensor'] = Config.getint('Sensoren', 'ch' + str(i))
         channel['logging'] = Config.getboolean('Logging', 'ch' + str(i))
@@ -741,46 +777,60 @@ def channels_getvalues():
     return channels
 
 
-def pitmaster_config_getvalues():
+def pitmaster_config_getvalues(id = 0):
     global configfile, configfile_lock
+
+    if id > 0:
+        instance_string = str(id + 1)
+    else:
+        instance_string = ''
+
     pitconf = dict()
     with configfile_lock:
         Config = ConfigParser.SafeConfigParser()
         Config.readfp(codecs.open(configfile, 'r', 'utf_8'))
-    pitconf['on'] = Config.getboolean('ToDo','pit_on')
-    pitconf['type'] = Config.get('Pitmaster','pit_type')
-    pitconf['inverted'] = Config.getboolean('Pitmaster','pit_inverted')
-    pitconf['curve'] = Config.get('Pitmaster','pit_curve')
-    pitconf['set'] = Config.getfloat('Pitmaster','pit_set')
-    pitconf['ch'] = Config.getint('Pitmaster','pit_ch')
-    pitconf['pause'] = Config.getfloat('Pitmaster','pit_pause')
-    pitconf['pwm_min'] = Config.getfloat('Pitmaster','pit_pwm_min')
-    pitconf['pwm_max'] = Config.getfloat('Pitmaster','pit_pwm_max')
-    pitconf['man'] = Config.getint('Pitmaster','pit_man')
-    pitconf['Kp'] = Config.getfloat('Pitmaster','pit_kp')
-    pitconf['Kd'] = Config.getfloat('Pitmaster','pit_kd')
-    pitconf['Ki'] = Config.getfloat('Pitmaster','pit_ki')
-    pitconf['Kp_a'] = Config.getfloat('Pitmaster','pit_kp_a')
-    pitconf['Kd_a'] = Config.getfloat('Pitmaster','pit_kd_a')
-    pitconf['Ki_a'] = Config.getfloat('Pitmaster','pit_ki_a')
-    pitconf['switch_a'] = Config.getfloat('Pitmaster','pit_switch_a')
-    pitconf['controller_type'] = Config.get('Pitmaster','pit_controller_type')
-    pitconf['iterm_min'] = Config.getfloat('Pitmaster','pit_iterm_min')
-    pitconf['iterm_max'] = Config.getfloat('Pitmaster','pit_iterm_max')
-    pitconf['open_lid_detection'] = Config.getboolean('Pitmaster','pit_open_lid_detection')
-    pitconf['open_lid_pause'] = Config.getfloat('Pitmaster','pit_open_lid_pause')
-    pitconf['open_lid_falling_border'] = Config.getfloat('Pitmaster','pit_open_lid_falling_border')
-    pitconf['open_lid_rising_border'] = Config.getfloat('Pitmaster','pit_open_lid_rising_border')
+    pitconf['on'] = Config.getboolean('ToDo','pit' + instance_string + '_on')
+    pitconf['type'] = Config.get('Pitmaster' + instance_string,'pit_type')
+    pitconf['inverted'] = Config.getboolean('Pitmaster' + instance_string,'pit_inverted')
+    pitconf['curve'] = Config.get('Pitmaster' + instance_string,'pit_curve')
+    pitconf['set'] = Config.getfloat('Pitmaster' + instance_string,'pit_set')
+    pitconf['ch'] = Config.getint('Pitmaster' + instance_string,'pit_ch')
+    pitconf['pause'] = Config.getfloat('Pitmaster' + instance_string,'pit_pause')
+    pitconf['pwm_min'] = Config.getfloat('Pitmaster' + instance_string,'pit_pwm_min')
+    pitconf['pwm_max'] = Config.getfloat('Pitmaster' + instance_string,'pit_pwm_max')
+    pitconf['man'] = Config.getint('Pitmaster' + instance_string,'pit_man')
+    pitconf['Kp'] = Config.getfloat('Pitmaster' + instance_string,'pit_kp')
+    pitconf['Kd'] = Config.getfloat('Pitmaster' + instance_string,'pit_kd')
+    pitconf['Ki'] = Config.getfloat('Pitmaster' + instance_string,'pit_ki')
+    pitconf['Kp_a'] = Config.getfloat('Pitmaster' + instance_string,'pit_kp_a')
+    pitconf['Kd_a'] = Config.getfloat('Pitmaster' + instance_string,'pit_kd_a')
+    pitconf['Ki_a'] = Config.getfloat('Pitmaster' + instance_string,'pit_ki_a')
+    pitconf['switch_a'] = Config.getfloat('Pitmaster' + instance_string,'pit_switch_a')
+    pitconf['controller_type'] = Config.get('Pitmaster' + instance_string,'pit_controller_type')
+    pitconf['iterm_min'] = Config.getfloat('Pitmaster' + instance_string,'pit_iterm_min')
+    pitconf['iterm_max'] = Config.getfloat('Pitmaster' + instance_string,'pit_iterm_max')
+    pitconf['open_lid_detection'] = Config.getboolean('Pitmaster' + instance_string,'pit_open_lid_detection')
+    pitconf['open_lid_pause'] = Config.getfloat('Pitmaster' + instance_string,'pit_open_lid_pause')
+    pitconf['open_lid_falling_border'] = Config.getfloat('Pitmaster' + instance_string,'pit_open_lid_falling_border')
+    pitconf['open_lid_rising_border'] = Config.getfloat('Pitmaster' + instance_string,'pit_open_lid_rising_border')
     
     return pitconf
     
 
 
-def pitmaster_getvalues():
+def pitmaster_getvalues(id):
     global logger, pitPath, pitFile
-    if os.path.isfile(pitPath + '/' + pitFile):
+
+    if id == 0:
+        filename = pitPath + '/' + pitFile
+    elif id == 1:
+        filename = pit2Path + '/' + pit2File
+    else:
+        return None
+
+    if os.path.isfile(filename):
         logger.debug(_(u'Data from the pitmaster is available to show on the display'))
-        fp = codecs.open(pitPath + '/' + pitFile, 'r', 'utf_8').read()
+        fp = codecs.open(filename, 'r', 'utf_8').read()
         pitmaster_raw = fp.split(';',4)
         # Es trägt sich zu, das im Lande WLANThermo manchmal nix im Pitmaster File steht
         # Dann einfach munter so tun als ob einfach nix da ist
@@ -910,7 +960,7 @@ def NX_display():
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
-    nextion_versions = ['v2.0', 'v1.8', 'v1.7', 'v1.6']    
+    nextion_versions = ['v2.1']
     
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
@@ -932,6 +982,31 @@ def NX_display():
         open('/var/www/tmp/nextionupdate', 'w').close()
         stop_event.wait()
         return False
+    
+    logger.debug(_(u'Get common options...'))
+    
+    options = config_getvalues()
+    if options['temp_unit'] == 'celsius':
+        temp_unit = '\xb0C'
+    elif options['temp_unit'] == 'fahrenheit':
+        temp_unit = '\xb0F'
+    else:
+        logger.error('Unknown unit of measurement')
+        temp_unit = ''
+    
+    # language = gettext.translation('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/', languages=[options['locale'] + '.UTF-8'])
+    # language.install()
+
+    pitmaster_count = 1
+    channel_count = 8
+    hwchannel_count = 10
+
+    if options['hw_version'] == 'miniV2':
+        pitmaster_count = 2
+        channel_count += 2
+        hwchannel_count += 2
+    if options['maverick_enabled'] == True:
+        channel_count += 2
 
     NX_sendvalues({'boot.text.txt:35':_(u'Loading temperature data')})
     NX_switchpage('boot')
@@ -940,11 +1015,11 @@ def NX_display():
     temps_event.clear()
     channels_event.clear()
     logger.debug(_(u'Get temperature data...'))
-    temps = temp_getvalues()
+    temps = temp_getvalues(hwchannel_count)
     while temps is None:
         logger.info(_(u'Waiting on temperature data'))
         temps_event.wait(0.1)
-        temps = temp_getvalues()
+        temps = temp_getvalues(hwchannel_count)
     
     NX_sendvalues({'boot.text.txt:35':_(u'Loading configuration')})
     
@@ -958,42 +1033,47 @@ def NX_display():
     channels = channels_getvalues()
     
     logger.debug(_(u'Get pitmaster configuration...'))
-    pitconf = pitmaster_config_getvalues()
+    pitconf = pitmaster_config_getvalues(0)
+
+    logger.debug(_(u'Get pitmaster 2 configuration...'))
+    pitconf2 = pitmaster_config_getvalues(1)
+
+    NX_sendvalues({'boot.text.txt:35':_(u'Loading LAN configuration')})
     
-    logger.debug(_(u'Get locale configuration...'))
-    language = language_getvalues()
-    
+    logger.debug(_(u'Get LAN configuration...'))
     interfaces = lan_getvalues()
     
-    if language['temp_unit'] == 'celsius':
-        temp_unit = '\xb0C'
-    elif language['temp_unit'] == 'fahrenheit':
-        temp_unit = '\xb0F'
-    else:
-        logger.error('Unknown unit of measurement')
-        temp_unit = ''
-                    
     # Leere Liste da der Scan etwas dauert...
     ssids = []
     # Zahl des aktuell gewählen Eintrages
     ssids_i = 0
     pitmaster = None
-    if pitconf['on'] == True:
+    if pitconf['on']:
         logger.debug(_(u'Get pitmaster data...'))
-        pitmaster = pitmaster_getvalues()
+        pitmaster = pitmaster_getvalues(0)
     # Kann ein wenig dauern, bis valide Daten geliefert werden, daher nicht mehr warten
     if pitmaster is None:
         pitmaster = {'timestamp': 0, 'set': 0, 'now': 0,'new': 0,'msg': ''}
-    
+
+    pitmaster2 = None
+    if pitconf2['on']:
+        logger.debug(_(u'Get pitmaster 2 data...'))
+        pitmaster2 = pitmaster_getvalues(1)
+    # Kann ein wenig dauern, bis valide Daten geliefert werden, daher nicht mehr warten
+    if pitmaster2 is None:
+        pitmaster2 = {'timestamp': 0, 'set': 0, 'now': 0,'new': 0,'msg': ''}
+
     values = dict()
+    values['main.chmax.val'] = channel_count
+    
     for i in range(1, 11):
         try:
             values['main.sensor_name' + str(i) + '.txt:10'] = sensors[i]['name'].encode('latin-1')
         except KeyError:
             logger.error(_(u'Sensor {} not defined!'.format(i)))
             values['main.sensor_name' + str(i) + '.txt:10'] = '- - -'
-    for i in range(8):
-        if temps[i]['value'] == '999.9':
+    for i in range(hwchannel_count):
+        if temps[i]['value'] is None:
             values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
         else:
             values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value'] + temp_unit
@@ -1004,6 +1084,12 @@ def NX_display():
         values['main.name' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
     for interface in interfaces:
         values['wlaninfo.' + interfaces[interface]['name'] + '.txt:20'] = interfaces[interface]['ip']
+
+    pit_types = {'fan':0, 'servo':1, 'io':2, 'io_pwm':3, 'fan_pwm':4}
+
+    values['main.pitmaster.val'] = pitmaster_count
+
+    # Pitmaster 1
     values['main.pit_ch.val'] = int(pitconf['ch'])
     values['main.pit_power.val'] = int(round(pitmaster['new']))
     values['main.pit_set.txt:10'] = round(pitconf['set'],1)
@@ -1011,14 +1097,22 @@ def NX_display():
     values['main.pit_on.val'] = int(pitconf['on'])
     values['main.pit_inverted.val'] = int(pitconf['inverted'])
     values['main.pit_pid.val'] = {'False': 0, 'PID': 1}[pitconf['controller_type']]
+    values['main.pit_type.val'] = pit_types[pitconf['type']]
+    # Pitmaster 2
+    values['main.pit_ch2.val'] = int(pitconf2['ch'])
+    values['main.pit_power2.val'] = int(round(pitmaster2['new']))
+    values['main.pit_set2.txt:10'] = round(pitconf2['set'],1)
+    values['main.pit_lid2.val'] = int(pitconf2['open_lid_detection'])
+    values['main.pit_on2.val'] = int(pitconf2['on'])
+    values['main.pit_inverted2.val'] = int(pitconf2['inverted'])
+    values['main.pit_pid2.val'] = {'False': 0, 'PID': 1}[pitconf2['controller_type']]
+    values['main.pit_type2.val'] = pit_types[pitconf2['type']]
+
     # Displayeinstellungen sollten lokal sein und nur für uns
     # Ansonsten müsste man hier noch mal ran 
     values['main.dim.val'] = int(display['dim'])
     values['main.timeout.val'] = int(display['timeout'])
-    # NX_sendcmd('dims=' + str(values['main.dim.val']))
-    # NX_sendcmd('thsp=' + str(values['main.timeout.val']))
-    pit_types = {'fan':0, 'servo':1, 'io':2, 'io_pwm':3, 'fan_pwm':4}
-    values['main.pit_type.val'] = pit_types[pitconf['type']]
+
     NX_sendvalues({'boot.text.txt:35':_(u'Transferring data')})
     NX_sendvalues(values)
     
@@ -1137,6 +1231,35 @@ def NX_display():
                         NX_sendvalues(values)
                     elif event['data']['id'] == 6:
                         wlan_reconnect()
+                elif event['data']['area'] == 7:
+                    if event['data']['id'] == 0:
+                        # pit_ch
+                        pit_ch = NX_getvalue('main.pit_ch2.val')
+                        pitmaster_setvalues(id = 1, pit_ch = pit_ch)
+                    elif event['data']['id'] == 1:
+                        # pit_set
+                        pit_set = NX_getvalue('main.pit_set2.txt')
+                        pitmaster_setvalues(id = 1, pit_set = pit_set)
+                    elif event['data']['id'] == 2:
+                        # pit_lid
+                        pit_lid = NX_getvalue('main.pit_lid2.val')
+                        pitmaster_setvalues(id = 1, pit_lid = pit_lid)
+                    elif event['data']['id'] == 3:
+                        # pit_on
+                        pit_on = NX_getvalue('main.pit_on2.val')
+                        pitmaster_setvalues(id = 1, pit_on = pit_on)
+                    elif event['data']['id'] == 4:
+                        # pit_pid
+                        pit_pid = NX_getvalue('main.pit_pid2.val')
+                        pitmaster_setvalues(id = 1, pit_pid = pit_pid)
+                    elif event['data']['id'] == 5:
+                        # pit_type
+                        pit_type = NX_getvalue('main.pit_type2.val')
+                        pitmaster_setvalues(id = 1, pit_type = pit_type)
+                    elif event['data']['id'] == 6:
+                        # pit_inverted
+                        pit_inverted = NX_getvalue('main.pit_inverted2.val')
+                        pitmaster_setvalues(id = 1, pit_inverted = pit_inverted)
             elif event['type'] == 'custom_cmd':
                 if event['data']['area'] == 5:
                     if event['data']['id'] == 0:
@@ -1179,29 +1302,39 @@ def NX_display():
                         if event['data']['action'] == 0:
                             logger.debug(_(u'Alert acknowledged!'))
                             alert_setack()
+                elif event['data']['area'] == 8:
+                    if event['data']['id'] == 0:
+                        if event['data']['action'] == 0:
+                            logger.debug(_(u'Create new logfile!'))
+                            todo_setvalues(create_new_log = 1)
             NX_eventq.task_done()
         elif temps_event.is_set():
             logger.debug(_(u'Temperature event'))
             values = dict()
-            new_temps = temp_getvalues()
+            new_temps = temp_getvalues(hwchannel_count)
             if new_temps is not None:
                 temps_event.clear()
-                if language['temp_unit'] == 'celsius':
+                if options['temp_unit'] == 'celsius':
                     temp_unit = '\xb0C'
-                elif language['temp_unit'] == 'fahrenheit':
+                elif options['temp_unit'] == 'fahrenheit':
                     temp_unit = '\xb0F'
                 else:
                     logger.error(_(u'Unknown unit of measurement'))
                     temp_unit = ''
-                for i in range(8):
-                    if temps[i]['value'] != new_temps[i]['value']:
-                        if new_temps[i]['value'] == '999.9':
-                            values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
-                        else:
-                            values['main.kanal' + str(i) + '.txt:10'] = new_temps[i]['value'] + temp_unit
-                    
-                    if temps[i]['alert'] != new_temps[i]['alert']:
-                        values['main.alert' + str(i) + '.txt:10'] = new_temps[i]['alert']
+                for i in range(hwchannel_count):
+                    try:
+                        if temps[i]['value'] != new_temps[i]['value']:
+                            if new_temps[i]['value'] is None:
+                                values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
+                            else:
+                                values['main.kanal' + str(i) + '.txt:10'] = new_temps[i]['value'] + temp_unit
+                        
+                        if temps[i]['alert'] != new_temps[i]['alert']:
+                            values['main.alert' + str(i) + '.txt:10'] = new_temps[i]['alert']
+                    except KeyError:
+                        temps[i] = dict()
+                        temps[i]['value'] = None
+                        temps[i]['alert'] = ''
                 
                 if NX_sendvalues(values):
                     temps = new_temps
@@ -1214,7 +1347,7 @@ def NX_display():
             values = dict()
             
             pitconf_event.clear()
-            new_pitconf = pitmaster_config_getvalues()
+            new_pitconf = pitmaster_config_getvalues(0)
             
             if pitconf['set'] != new_pitconf['set']:
                 values['main.pit_set.txt:10'] = round(new_pitconf['set'],1)
@@ -1232,19 +1365,49 @@ def NX_display():
                 values['main.pit_pid.val'] = {'False': 0, 'PID': 1}[new_pitconf['controller_type']]
             if pitconf['type'] != new_pitconf['type']:
                 values['main.pit_type.val'] = pit_types[new_pitconf['type']]
-            
+
             if NX_sendvalues(values):
                 pitconf = new_pitconf
             else:
                 # Im Fehlerfall später wiederholen
                 pitconf_event.set()
-        
+
+        elif pitconf2_event.is_set():
+            logger.debug(_(u'Pitmaster configuration event'))
+            values = dict()
+
+            pitconf2_event.clear()
+            new_pitconf = pitmaster_config_getvalues(1)
+
+            if pitconf2['set'] != new_pitconf['set']:
+                values['main.pit_set2.txt:10'] = round(new_pitconf['set'], 1)
+            if pitconf2['ch'] != new_pitconf['ch']:
+                values['main.pit_ch2.val'] = int(new_pitconf['ch'])
+            if pitconf2['open_lid_detection'] != new_pitconf['open_lid_detection']:
+                values['main.pit_lid2.val'] = int(new_pitconf['open_lid_detection'])
+            if pitconf2['inverted'] != new_pitconf['inverted']:
+                values['main.pit_inverted2.val'] = int(new_pitconf['inverted'])
+            if pitconf2['on'] != new_pitconf['on']:
+                values['main.pit_on2.val'] = int(new_pitconf['on'])
+                if not new_pitconf['on']:
+                    values['main.pit_power.val'] = 0
+            if pitconf2['controller_type'] != new_pitconf['controller_type']:
+                values['main.pit_pid2.val'] = {'False': 0, 'PID': 1}[new_pitconf['controller_type']]
+            if pitconf2['type'] != new_pitconf['type']:
+                values['main.pit_type2.val'] = pit_types[new_pitconf['type']]
+
+            if NX_sendvalues(values):
+                pitconf2 = new_pitconf
+            else:
+                # Im Fehlerfall später wiederholen
+                pitconf2_event.set()
+
         elif pitmaster_event.is_set():
             logger.debug(_(u'Pitmaster data event'))
             values = dict()
             
             pitmaster_event.clear()
-            new_pitmaster = pitmaster_getvalues()
+            new_pitmaster = pitmaster_getvalues(0)
             
             if new_pitmaster is not None:
                 if pitmaster['new'] != new_pitmaster['new']:
@@ -1259,7 +1422,28 @@ def NX_display():
                     else:
                         # Im Fehlerfall später wiederholen
                         pitmaster_event.set()
-        
+
+        elif pitmaster2_event.is_set():
+            logger.debug(_(u'Pitmaster 2 data event'))
+            values = dict()
+
+            pitmaster_event.clear()
+            new_pitmaster = pitmaster_getvalues(1)
+
+            if new_pitmaster is not None:
+                if pitmaster2['new'] != new_pitmaster['new']:
+                    if pitconf2['on']:
+                        # Wenn Pitmaster aus, 0-Wert senden.
+                        values['main.pit_power2.val'] = int(round(float(new_pitmaster['new'])))
+                    else:
+                        values['main.pit_power2.val'] = 0
+
+                    if NX_sendvalues(values):
+                        pitmaster2 = new_pitmaster
+                    else:
+                        # Im Fehlerfall später wiederholen
+                        pitmaster2_event.set()
+
         elif channels_event.is_set():
             logger.debug(_(u'Channels data event'))
             values = dict()
@@ -1267,7 +1451,7 @@ def NX_display():
             channels_event.clear()
             new_channels = channels_getvalues()
             
-            for i in range(8):
+            for i in range(12):
                 if channels[i]['temp_min'] != new_channels[i]['temp_min']:
                     values['main.al' + str(i) + 'minist.txt:10'] = new_channels[i]['temp_min']
                 if channels[i]['temp_max'] != new_channels[i]['temp_max']:
@@ -1276,8 +1460,11 @@ def NX_display():
                     values['main.sensor_type' + str(i) + '.val'] = new_channels[i]['sensor']
                 if channels[i]['name'] != new_channels[i]['name']:
                     values['main.name' + str(i) + '.txt:10'] = new_channels[i]['name'].encode('latin-1')
-                    if new_temps[i]['value'] == '999.9\xb0C':
-                        values['main.kanal' + str(i) + '.txt:10'] = new_channels[i]['name'].encode('latin-1')
+                    try:
+                        if new_temps[i]['value'] == '':
+                            values['main.kanal' + str(i) + '.txt:10'] = new_channels[i]['name'].encode('latin-1')
+                    except IndexError:
+                        pass
             
             if NX_sendvalues(values):
                 channels = new_channels
@@ -1289,7 +1476,28 @@ def NX_display():
             logger.debug(_(u'Config event'))
             config_event.clear()
             check_recalibration()
-            language = language_getvalues()
+            
+            values = dict()
+            
+            options = config_getvalues()
+            
+            new_channel_count = 8
+            new_hwchannel_count = 10
+            if options['hw_version'] == 'miniV2':
+                new_channel_count += 2
+                new_hwchannel_count += 2
+            if options['maverick_enabled'] == True:
+                new_channel_count += 2
+                
+            if channel_count != new_channel_count:
+                values['main.chmax.val'] = new_channel_count
+                channel_count = new_channel_count
+                
+            if hwchannel_count != new_hwchannel_count:
+                hwchannel_count = new_hwchannel_count
+            
+            if not NX_sendvalues(values):
+                channels_event.set()
             
         elif time.time() > hwclock_nextupdate:
             if check_ntp():

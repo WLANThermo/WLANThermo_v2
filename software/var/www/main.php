@@ -114,7 +114,6 @@ if (isset($_SESSION["to_update"])){
 		$temp_unit_short = '&#176;F';
 	}
 	
-
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	// Temperaturwerte einlesen ###########################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
@@ -125,32 +124,43 @@ if (isset($_SESSION["to_update"])){
 		}
 		$temp = explode(";",$currenttemp);
 		$time_stamp = DateTime::createFromFormat($log_dateformat, $temp[0]);
-		$temp_0 = floatval($temp[1]);
-		$temp_1 = floatval($temp[2]);
-		$temp_2 = floatval($temp[3]);
-		$temp_3 = floatval($temp[4]);
-		$temp_4 = floatval($temp[5]);
-		$temp_5 = floatval($temp[6]);
-		$temp_6 = floatval($temp[7]);
-		$temp_7 = floatval($temp[8]);
-		$_SESSION["currentlogfilename"] = $temp[18];
-		
-		$pit_file = $_SESSION["pitmaster"].'';
-		if (file_exists($pit_file)) {
-			$currentpit = file_get_contents($_SESSION["pitmaster"]);
-			$pits = explode(";",$currentpit);
-			$pit_time_stamp = DateTime::createFromFormat($log_dateformat, $pits[0]);
-			$pit_set = floatval($pits[1]);
-			$pit_val = floatval($pits[3]);
+		for ($i = 0; $i < $_SESSION["channel_count"]; $i++){
+			${"temp_$i"} = floatval($temp[$i + 1]);
+		}
+		$_SESSION["currentlogfilename"] = $temp[2 * $_SESSION["channel_count"] + 2];
+		for ($i = 0; $i < $_SESSION["pitmaster_count"]; $i++){
+			$pitmaster_str = $i == 0 ? '' : strval($i +1);
+			$pit_file = $_SESSION["pitmaster" . $pitmaster_str];
+			if (file_exists($pit_file)) {
+				$currentpit = file_get_contents($_SESSION["pitmaster" . $pitmaster_str]);
+				$pits = explode(";",$currentpit);
+				${'pit' . $pitmaster_str . '_time_stamp'} = DateTime::createFromFormat($log_dateformat, $pits[0]);
+				${'pit' . $pitmaster_str . '_set'} = floatval($pits[1]);
+				${'pit' . $pitmaster_str . '_val'} = floatval($pits[3]);
+			}
 		}
 
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	// Anzeige Letzte Messung #############################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
-
-	if ($_SESSION["pit_on"] == "True"){?>
-		<div class="last_regulation_view"><?php echo gettext("Last regulation on");?> <b><?php echo IntlDateFormatter::formatObject($pit_time_stamp, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ; ?></b></div><?php
-	}?>
+	$first = true;
+	for ($pit = 0; $pit < $_SESSION["pitmaster_count"]; $pit++){
+		$pitmaster_str = $pit == 0 ? '' : strval($pit +1);
+		if ($_SESSION["pit" . $pitmaster_str . "_on"] == "True") {
+			if ($first == true) {
+				echo '<div class="last_regulation_view">';
+				$first = false;
+			}
+			?>
+			<img src="../images/icons16x16/pitmaster.png" alt=""> <img src="../images/icons16x16/number-<?php echo $pit + 1;?>.png" alt="">
+			<?php
+			echo gettext("Last regulation on");?> <b><?php echo IntlDateFormatter::formatObject(${'pit' . $pitmaster_str . '_time_stamp'}, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ?></b><br />
+			<?php
+		}
+	}
+	if ($first != true) {
+		echo '</div>';
+	} ?>
 	<div class="last_measure_view"><?php echo gettext("Last measurement on");?> <b><?php echo IntlDateFormatter::formatObject($time_stamp, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ?></b>
 	<?php if($_SESSION["showcpulast"] == "True"){
 	echo "<br>";
@@ -169,7 +179,7 @@ if (isset($_SESSION["to_update"])){
 	//--------------------------------------------------------------------------------------------------------------------------------- -->
 
 	<?php
-	for ($i = 0; $i <= 7; $i++){
+	for ($i = 0; $i < $_SESSION["channel_count"]; $i++){
 		$color_ch[] = $_SESSION["color_ch".$i];
 		$temp_min[] = $_SESSION["temp_min".$i];  
 		$temp_max[] = $_SESSION["temp_max".$i];
@@ -182,7 +192,7 @@ if (isset($_SESSION["to_update"])){
 	// Variablen für den Plot #############################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
 	$plot = "plot ";
-	for ($i = 0; $i <= 7; $i++){
+	for ($i = 0; $i < $_SESSION["channel_count"]; $i++){
 		$a = $i + 2 ;
 		$chp[$i] = "'/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:$a with lines lw 2 lc rgb \\\"$color_ch[$i]\\\" t '$channel_name[$i]'  axes x1y2";
 	}	
@@ -191,9 +201,8 @@ if (isset($_SESSION["to_update"])){
 	// Ausgabe der Temperaturen ###########################################################################################################
 	//-------------------------------------------------------------------------------------------------------------------------------------
 
-		for ($i = 0; $i <= 7; $i++){
-			
-			if((${"temp_$i"} != "999.9") AND ($ch_show[$i] == "True")){
+		for ($i = 0; $i < $_SESSION["channel_count"]; $i++){
+			if((${"temp_$i"} != "") AND ($ch_show[$i] == "True")){
 				if (${"temp_$i"} <= $temp_min[$i]) {
 					$temperature_indicator_color = "temperature_indicator_blue";
 					if($alert[$i] == "True") { 
@@ -227,12 +236,14 @@ if (isset($_SESSION["to_update"])){
 							}?>
 						</div>
 						<?php
-						if (($_SESSION["pit_ch"] == "$i") && ($_SESSION["pit_on"] == "True")){
+						for ($pit = 0; $pit < $_SESSION["pitmaster_count"]; $pit++){
+							$pitmaster_str = $pit == 0 ? '' : strval($pit +1);
+							if ($_SESSION["pit" . $pitmaster_str . "_ch"] == $i && $_SESSION["pit" . $pitmaster_str . "_on"] == "True") {
 						?>
-							<div class="headicon_left"><img src="../images/icons16x16/pitmaster.png" alt=""></div>
-							<div class="pitmaster_left"> <?php printf('%.1f%%',$pit_val); ?> / <?php printf('%.1f%s',$pit_set, $temp_unit_short); ?></div>
-						<?php 
-						}
+							<div class="headicon_left"><img src="../images/icons16x16/pitmaster.png" alt=""> <img src="../images/icons16x16/number-<?php echo $pit + 1;?>.png" alt=""></div>
+							<div class="pitmaster_left"> <?php printf('%.1f%%',${'pit' . $pitmaster_str . '_val'}); ?> / <?php printf('%.1f%s',${'pit' . $pitmaster_str . '_set'}, $temp_unit_short); ?></div>
+							<?php }
+							}
 						?>
 					</div>
 				<?php
