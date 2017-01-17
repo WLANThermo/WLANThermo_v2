@@ -720,7 +720,7 @@ def todo_setvalues(create_new_log = None, pi_down = None, pi_reboot = None):
         if pi_reboot is not None:
             newconfig.set('ToDo','raspi_reboot', ['False', 'True'][pi_reboot])
         if create_new_log is not None:
-            newconfig.set('ToDo','raspi_reboot', ['False', 'True'][create_new_log])
+            newconfig.set('ToDo','create_new_log', ['False', 'True'][create_new_log])
         config_write(configfile, newconfig)
 
 
