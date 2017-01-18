@@ -7,211 +7,176 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WLANThermo 2.4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-08 09:52+0100\n"
-"PO-Revision-Date: 2016-11-08 09:53+0100\n"
+"POT-Creation-Date: 2017-01-18 19:46+0100\n"
+"PO-Revision-Date: 2017-01-18 19:47+0100\n"
 "Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
 "Language-Team: \n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.9\n"
+"X-Generator: Poedit 1.8.11\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ../../../../../sbin\n"
 "X-Poedit-SearchPath-0: wlt_2_comp.py\n"
 
-#: wlt_2_comp.py:88
-msgid "WLANThermo started"
-msgstr "WLANThermo gestartet"
-
-#: wlt_2_comp.py:107 wlt_2_comp.py:108
+#: wlt_2_comp.py:113
 #, python-format
 msgid "%s already exists, Process is running, exiting"
 msgstr "%s existiert, Prozess läuft bereits, beende Skript"
 
-#: wlt_2_comp.py:111
-#, python-format
-msgid "%s already exists, Process is NOT running, resuming operation"
-msgstr "%s existiert, Prozess läuft nicht, setze Ausführung fort"
+#: wlt_2_comp.py:283
+msgid "Date_Time"
+msgstr "Datum_Uhrzeit"
 
-#: wlt_2_comp.py:116
-#, python-format
-msgid "%s written"
-msgstr "%s geschrieben"
+#: wlt_2_comp.py:288
+msgid "Controller output value"
+msgstr "Regler Ausgangswert"
 
-#: wlt_2_comp.py:138
-msgid "Send mail!"
-msgstr "Mail versenden!"
-
-#: wlt_2_comp.py:164
-msgid "Alert Email has been sent!"
-msgstr "Alarmmail gesendet!"
-
-#: wlt_2_comp.py:166
-#, python-brace-format
-msgid "Error: unable to send email: {err}"
-msgstr "Fehler: kann Email nicht versenden:  {err}"
-
-#: wlt_2_comp.py:170
-#, python-brace-format
-msgid "Error: unable to resolve host (no internet connection?) :  {err}"
-msgstr "Fehler: Konnte Hostnamen nicht auflösen (keine Internetverbindung?): {err}"
-
-#: wlt_2_comp.py:258
-msgid "Datum_Uhrzeit"
-msgstr "date_time"
-
-#: wlt_2_comp.py:263
-msgid "Regulator output value"
-msgstr "Regler Ausgang"
-
-#: wlt_2_comp.py:264
-msgid "Regler set value"
+#: wlt_2_comp.py:289
+msgid "Controller set value"
 msgstr "Regler Sollwert"
 
-#: wlt_2_comp.py:404
-msgid "CPU: "
-msgstr "CPU: "
+#: wlt_2_comp.py:290
+msgid "Controller 2 output value"
+msgstr "Regler 2 Ausgangswert"
 
-#: wlt_2_comp.py:404
-msgid " RAM free: "
-msgstr " Arbeitsspeicher frei: "
+#: wlt_2_comp.py:291
+msgid "Controller 2 set value"
+msgstr "Regler 2 Sollwert"
 
-#: wlt_2_comp.py:417
-msgid "reading configuration again..."
-msgstr "lese Konfiguration neu..."
-
-#: wlt_2_comp.py:433
-msgid "Error reading upper limit on channel "
-msgstr "Fehler beim Lesen der Obergrenze für Kanal"
-
-#: wlt_2_comp.py:439
-msgid "Error reading lower limit on channel "
-msgstr "Fehler beim Lesen der Untergrenze für Kanal"
-
-#: wlt_2_comp.py:445
-msgid "Error reading measurement resistor on channel "
-msgstr "Fehler beim auslesen des Messwiderstandes auf Kanal"
-
-#: wlt_2_comp.py:469
-msgid "Error reading status interval from config"
-msgstr "Fehler beim Lesen des Statusintervalls aus der Konfiguration"
-
-#: wlt_2_comp.py:475
-msgid "Error reading alarm interval from config"
-msgstr "Fehler beim Lesen des Alarmintervalls aus der Konfiguration"
-
-#: wlt_2_comp.py:491
-msgid "Acknowledging temperature over upper limit on channel "
-msgstr "Bestätige Übertemperatur für Kanal "
-
-#: wlt_2_comp.py:494
-msgid "Acknowledging temperature under lower limit on channel "
-msgstr "Bestätige Untertemperatur für Kanal"
-
-#: wlt_2_comp.py:499
-msgid "alert.test exists"
-msgstr "alert.test vorhanden"
-
-#: wlt_2_comp.py:551
+#: wlt_2_comp.py:617
 msgid "degrees Celsius"
 msgstr "Grad Celsius"
 
-#: wlt_2_comp.py:554
+#: wlt_2_comp.py:620
 msgid "degrees Fahrenheit"
 msgstr "Grad Fahrenheit"
 
-#: wlt_2_comp.py:638
-msgid "new alert, sending messages"
-msgstr "Neuer Alarm, versende Nachrichten"
-
-#: wlt_2_comp.py:640
-msgid "test alert, sending messages"
-msgstr "Testalarm, versende Nachrichten"
-
-#: wlt_2_comp.py:642
+#: wlt_2_comp.py:708
 msgid "test message\n"
 msgstr "Testnachricht\n"
 
-#: wlt_2_comp.py:644
-msgid "repeated alert, sending messages"
-msgstr "Wiederholter Alarm, versende Nachrichten"
+#~ msgid "WLANThermo started"
+#~ msgstr "WLANThermo gestartet"
 
-#: wlt_2_comp.py:675
-msgid "Telegram POST request, URL: "
-msgstr "Telegram POST-Request, URL: "
+#~ msgid "%s already exists, Process is NOT running, resuming operation"
+#~ msgstr "%s existiert, Prozess läuft nicht, setze Ausführung fort"
 
-#: wlt_2_comp.py:675 wlt_2_comp.py:737
-msgid ""
-"\n"
-"body: "
-msgstr ""
-"\n"
-"Body: "
+#~ msgid "%s written"
+#~ msgstr "%s geschrieben"
 
-#: wlt_2_comp.py:678
-msgid "Telegram HTTP return code: "
-msgstr "Telegram HTTP-Returncode: "
+#~ msgid "Send mail!"
+#~ msgstr "Mail versenden!"
 
-#: wlt_2_comp.py:679
-msgid "Telegram URL: "
-msgstr "Telegram URL: "
+#~ msgid "Alert Email has been sent!"
+#~ msgstr "Alarmmail gesendet!"
 
-#: wlt_2_comp.py:680
-msgid "Telegram result: "
-msgstr "Telegram Ergebniss: "
+#~ msgid "Error: unable to send email: {err}"
+#~ msgstr "Fehler: kann Email nicht versenden:  {err}"
 
-#: wlt_2_comp.py:707
-msgid "App GET request, URL: "
-msgstr "App GET-Request, URL: "
+#~ msgid "Error: unable to resolve host (no internet connection?) :  {err}"
+#~ msgstr "Fehler: Konnte Hostnamen nicht auflösen (keine Internetverbindung?): {err}"
 
-#: wlt_2_comp.py:710
-msgid "App HTTP return code: "
-msgstr "App HTTP-Returncode: "
+#~ msgid "Datum_Uhrzeit"
+#~ msgstr "date_time"
 
-#: wlt_2_comp.py:711
-msgid "App URL: "
-msgstr "App URL: "
+#~ msgid "CPU: "
+#~ msgstr "CPU: "
 
-#: wlt_2_comp.py:712
-msgid "App result: "
-msgstr "App Ergebniss: "
+#~ msgid " RAM free: "
+#~ msgstr " Arbeitsspeicher frei: "
 
-#: wlt_2_comp.py:734
-msgid "push GET request, URL: "
-msgstr "Push GET-Request, URL: "
+#~ msgid "reading configuration again..."
+#~ msgstr "lese Konfiguration neu..."
 
-#: wlt_2_comp.py:737
-msgid "push POST request, URL: "
-msgstr "Push POST-Request, URL: "
+#~ msgid "Error reading upper limit on channel "
+#~ msgstr "Fehler beim Lesen der Obergrenze für Kanal"
 
-#: wlt_2_comp.py:740
-msgid "push HTTP return code: "
-msgstr "Push HTTP-Returncode: "
+#~ msgid "Error reading lower limit on channel "
+#~ msgstr "Fehler beim Lesen der Untergrenze für Kanal"
 
-#: wlt_2_comp.py:741
-msgid "push URL: "
-msgstr "Push URL: "
+#~ msgid "Error reading measurement resistor on channel "
+#~ msgstr "Fehler beim auslesen des Messwiderstandes auf Kanal"
 
-#: wlt_2_comp.py:742
-msgid "push result: "
-msgstr "Push Ergebniss: "
+#~ msgid "Error reading status interval from config"
+#~ msgstr "Fehler beim Lesen des Statusintervalls aus der Konfiguration"
 
-#: wlt_2_comp.py:778
-#, python-brace-format
-msgid "Error: Could not write to file {file}!"
-msgstr "Fehler: Konnte nicht in die Datei {file} schreiben!"
+#~ msgid "Error reading alarm interval from config"
+#~ msgstr "Fehler beim Lesen des Alarmintervalls aus der Konfiguration"
 
-#: wlt_2_comp.py:823
-#, python-brace-format
-msgid "measuring loop running longer than {delay}s, remaining time {time_remaining}s"
-msgstr "Messchleife lief länger als {delay}s, Restzeit {time_remaining}s"
+#~ msgid "Acknowledging temperature over upper limit on channel "
+#~ msgstr "Bestätige Übertemperatur für Kanal "
 
-#: wlt_2_comp.py:825
-#, python-brace-format
-msgid "measuring loop remaining time {time_remaining}s of {delay}s"
-msgstr "Messchleife Restzeit {time_remaining}s von {delay}s"
+#~ msgid "Acknowledging temperature under lower limit on channel "
+#~ msgstr "Bestätige Untertemperatur für Kanal"
 
-#: wlt_2_comp.py:829
-msgid "WLANThermo stopped!"
-msgstr "WLANThermo angehalten!"
+#~ msgid "alert.test exists"
+#~ msgstr "alert.test vorhanden"
+
+#~ msgid "new alert, sending messages"
+#~ msgstr "Neuer Alarm, versende Nachrichten"
+
+#~ msgid "test alert, sending messages"
+#~ msgstr "Testalarm, versende Nachrichten"
+
+#~ msgid "repeated alert, sending messages"
+#~ msgstr "Wiederholter Alarm, versende Nachrichten"
+
+#~ msgid "Telegram POST request, URL: "
+#~ msgstr "Telegram POST-Request, URL: "
+
+#~ msgid ""
+#~ "\n"
+#~ "body: "
+#~ msgstr ""
+#~ "\n"
+#~ "Body: "
+
+#~ msgid "Telegram HTTP return code: "
+#~ msgstr "Telegram HTTP-Returncode: "
+
+#~ msgid "Telegram URL: "
+#~ msgstr "Telegram URL: "
+
+#~ msgid "Telegram result: "
+#~ msgstr "Telegram Ergebniss: "
+
+#~ msgid "App GET request, URL: "
+#~ msgstr "App GET-Request, URL: "
+
+#~ msgid "App HTTP return code: "
+#~ msgstr "App HTTP-Returncode: "
+
+#~ msgid "App URL: "
+#~ msgstr "App URL: "
+
+#~ msgid "App result: "
+#~ msgstr "App Ergebniss: "
+
+#~ msgid "push GET request, URL: "
+#~ msgstr "Push GET-Request, URL: "
+
+#~ msgid "push POST request, URL: "
+#~ msgstr "Push POST-Request, URL: "
+
+#~ msgid "push HTTP return code: "
+#~ msgstr "Push HTTP-Returncode: "
+
+#~ msgid "push URL: "
+#~ msgstr "Push URL: "
+
+#~ msgid "push result: "
+#~ msgstr "Push Ergebniss: "
+
+#~ msgid "Error: Could not write to file {file}!"
+#~ msgstr "Fehler: Konnte nicht in die Datei {file} schreiben!"
+
+#~ msgid "measuring loop running longer than {delay}s, remaining time {time_remaining}s"
+#~ msgstr "Messchleife lief länger als {delay}s, Restzeit {time_remaining}s"
+
+#~ msgid "measuring loop remaining time {time_remaining}s of {delay}s"
+#~ msgstr "Messchleife Restzeit {time_remaining}s von {delay}s"
+
+#~ msgid "WLANThermo stopped!"
+#~ msgstr "WLANThermo angehalten!"

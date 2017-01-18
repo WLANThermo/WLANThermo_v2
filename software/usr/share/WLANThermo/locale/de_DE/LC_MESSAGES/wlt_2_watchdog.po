@@ -7,178 +7,218 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WLANThermo 2.4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-08 09:53+0100\n"
-"PO-Revision-Date: 2016-11-08 09:53+0100\n"
+"POT-Creation-Date: 2017-01-18 19:44+0100\n"
+"PO-Revision-Date: 2017-01-18 19:46+0100\n"
 "Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
 "Language-Team: \n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.9\n"
+"X-Generator: Poedit 1.8.11\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Basepath: ../../../../../sbin\n"
 "X-Poedit-SearchPath-0: wlt_2_watchdog.py\n"
 
-#: wlt_2_watchdog.py:91
+#: wlt_2_watchdog.py:85
 msgid "WLANThermoWD started"
 msgstr "WLANThermoWD gestartet"
 
-#: wlt_2_watchdog.py:110 wlt_2_watchdog.py:111
+#: wlt_2_watchdog.py:104 wlt_2_watchdog.py:105
 #, python-format
 msgid "%s already exists, Process is running, exiting"
 msgstr "%s existiert, Prozess läuft bereits, beende Skript"
 
-#: wlt_2_watchdog.py:114
+#: wlt_2_watchdog.py:108
 #, python-format
 msgid "%s already exists, Process is NOT running, resuming operation"
 msgstr "%s existiert, Prozess läuft nicht, setze Ausführung fort"
 
-#: wlt_2_watchdog.py:119
+#: wlt_2_watchdog.py:113
 #, python-format
 msgid "%s written"
 msgstr "%s geschrieben"
 
-#: wlt_2_watchdog.py:139
+#: wlt_2_watchdog.py:150
 msgid "rebooting"
 msgstr "Starte neu..."
 
-#: wlt_2_watchdog.py:170
+#: wlt_2_watchdog.py:169
 msgid ""
 "---- ATTENTION!  ----;---- WLANThermo ----;  is now rebooting  ;see you "
 "later..."
 msgstr ""
 "----  ACHTUNG!   ----;---- WLANThermo ----; wird neu gestartet ;bis gleich..."
 
-#: wlt_2_watchdog.py:185 wlt_2_watchdog.py:213 wlt_2_watchdog.py:249
-#: wlt_2_watchdog.py:436 wlt_2_watchdog.py:526
+#: wlt_2_watchdog.py:184 wlt_2_watchdog.py:212 wlt_2_watchdog.py:248
+#: wlt_2_watchdog.py:365
 msgid "Terminated by signal"
 msgstr "Durch Signal beendet"
 
-#: wlt_2_watchdog.py:187 wlt_2_watchdog.py:215 wlt_2_watchdog.py:251
-#: wlt_2_watchdog.py:438 wlt_2_watchdog.py:528
+#: wlt_2_watchdog.py:186 wlt_2_watchdog.py:214 wlt_2_watchdog.py:250
+#: wlt_2_watchdog.py:367 wlt_2_watchdog.py:451 wlt_2_watchdog.py:476
 msgid "Child returned: "
 msgstr "Childprozess Rückgabewert: "
 
-#: wlt_2_watchdog.py:191
+#: wlt_2_watchdog.py:190
 msgid "Shutting down the Raspberry"
 msgstr "Raspberry wird heruntergefahren..."
 
-#: wlt_2_watchdog.py:200 wlt_2_watchdog.py:228
+#: wlt_2_watchdog.py:199 wlt_2_watchdog.py:227
 msgid ""
 "---- ATTENTION!  ----;---- WLANThermo ----;is now shutting down;Bye-bye!"
 msgstr ""
 "----  ACHTUNG!   ----;---- WLANThermo ----; wird runtergefahren;und "
 "Tschuess..."
 
-#: wlt_2_watchdog.py:219
+#: wlt_2_watchdog.py:218
 msgid "Shutting down the Raspberry, Power Off (v3)"
 msgstr "Raspberry wird heruntergefahren, abschalten (v3)"
 
-#: wlt_2_watchdog.py:255
+#: wlt_2_watchdog.py:254
 msgid "Shutting down! (Button pressed)"
 msgstr "Fahre herunter! (Knopf gedrückt)"
 
-#: wlt_2_watchdog.py:261
+#: wlt_2_watchdog.py:260
 msgid "Read Config..."
 msgstr "Lese Konfiguration..."
 
-#: wlt_2_watchdog.py:274
+#: wlt_2_watchdog.py:273
 msgid "Restart WLANThermo process!"
 msgstr "Starte den WLANThermo-Prozess neu!"
 
-#: wlt_2_watchdog.py:277
+#: wlt_2_watchdog.py:276
 msgid "Changing restart_thermo to False again!"
 msgstr "Ändere restart_thermo auf False"
 
-#: wlt_2_watchdog.py:293
+#: wlt_2_watchdog.py:282
 msgid "Restart pitmaster!"
 msgstr "Starte Pitmaster neu!"
 
-#: wlt_2_watchdog.py:296
+#: wlt_2_watchdog.py:285
 msgid "Changing restart_pitmaster to False again!"
 msgstr "Ändere restart_pitmaster auf False"
 
-#: wlt_2_watchdog.py:336
+#: wlt_2_watchdog.py:291
+msgid "Restart pitmaster 2!"
+msgstr "Starte Pitmaster 2 neu!"
+
+#: wlt_2_watchdog.py:294
+msgid "Changing restart_pitmaster2 to False again!"
+msgstr "Ändere restart_pitmaster2 auf False"
+
+#: wlt_2_watchdog.py:313
 msgid "Create backup!"
 msgstr "Erstelle das Backup!"
 
-#: wlt_2_watchdog.py:353
+#: wlt_2_watchdog.py:319
 msgid "update_gui!"
 msgstr "update_gui!"
 
-#: wlt_2_watchdog.py:371
+#: wlt_2_watchdog.py:326
 msgid "Update software!"
 msgstr "Update der Software!"
 
-#: wlt_2_watchdog.py:390
+#: wlt_2_watchdog.py:335
 msgid "Create new log!"
 msgstr "Erzeuge neues Logfile!"
 
-#: wlt_2_watchdog.py:421
+#: wlt_2_watchdog.py:347
 msgid "Finished creation of new logfile"
 msgstr "Erstellung des neuen Logfiles abgeschlossen"
 
-#: wlt_2_watchdog.py:427
+#: wlt_2_watchdog.py:350
+msgid "Check Pitmaster {}!"
+msgstr "Prüfe Pitmaster {}!"
+
+#: wlt_2_watchdog.py:356
 msgid "Unexpected error: "
 msgstr "Unerwarteter Fehler: "
 
-#: wlt_2_watchdog.py:432
+#: wlt_2_watchdog.py:361
 msgid "Handle service: "
 msgstr "Handhabe Service: "
 
-#: wlt_2_watchdog.py:457
+#: wlt_2_watchdog.py:386
 msgid "Checking display..."
 msgstr "Prüfe Display..."
 
-#: wlt_2_watchdog.py:464
+#: wlt_2_watchdog.py:393
 msgid "Starting display..."
 msgstr "Starte Display..."
 
-#: wlt_2_watchdog.py:468
+#: wlt_2_watchdog.py:397
 msgid "Starting display again..."
 msgstr "Starte Display erneut..."
 
-#: wlt_2_watchdog.py:473
+#: wlt_2_watchdog.py:402
 msgid "Stopping display for restart..."
 msgstr "Stoppe Display für Neustart..."
 
-#: wlt_2_watchdog.py:484
+#: wlt_2_watchdog.py:413
 msgid "Changing restart_display to False"
 msgstr "Ändere restart_display auf False"
 
-#: wlt_2_watchdog.py:507
-msgid "Checking pitmaster"
-msgstr "Prüfe Pitmaster"
+#: wlt_2_watchdog.py:430
+msgid "Checking pitmaster {}"
+msgstr "Prüfe Pitmaster {}"
 
-#: wlt_2_watchdog.py:512
-msgid "Start pitmaster"
-msgstr "Starte Pitmaster"
+#: wlt_2_watchdog.py:436
+msgid "Start pitmaster {}"
+msgstr "Starte Pitmaster {}"
 
-#: wlt_2_watchdog.py:515
-msgid "Pitmaster already running"
-msgstr "Pitmaster läuft bereits"
+#: wlt_2_watchdog.py:439
+msgid "Pitmaster {} already running"
+msgstr "Pitmaster {} läuft bereits"
 
-#: wlt_2_watchdog.py:518
-msgid "Stopping pitmaster"
-msgstr "Stoppe Pitmaster"
+#: wlt_2_watchdog.py:442
+msgid "Stopping pitmaster {}"
+msgstr "Stoppe Pitmaster {}"
 
-#: wlt_2_watchdog.py:521
-msgid "Pitmaster already stopped"
-msgstr "Pitmaster ist bereits gestoppt"
+#: wlt_2_watchdog.py:445
+msgid "Pitmaster {} already stopped"
+msgstr "Pitmaster {} ist bereits gestoppt"
 
-#: wlt_2_watchdog.py:532
+#: wlt_2_watchdog.py:449
+msgid "Pitmaster {} terminated by signal"
+msgstr "Pitmaster {} durch Signal beendet"
+
+#: wlt_2_watchdog.py:455
+msgid "Checking Maverick"
+msgstr "Prüfe Maverick"
+
+#: wlt_2_watchdog.py:461
+msgid "Start Maverick"
+msgstr "Starte Maverick"
+
+#: wlt_2_watchdog.py:464
+msgid "Maverick already running"
+msgstr "Maverick läuft bereits"
+
+#: wlt_2_watchdog.py:467
+msgid "Stopping Maverick"
+msgstr "Stoppe Maverick"
+
+#: wlt_2_watchdog.py:470
+msgid "Maverick already stopped"
+msgstr "Maverick ist bereits gestoppt"
+
+#: wlt_2_watchdog.py:474
+msgid "Maverick terminated by signal"
+msgstr "Maverick wurde durch Signal beendet"
+
+#: wlt_2_watchdog.py:480
 msgid "Caught signal: "
 msgstr "Signal empfangen: "
 
-#: wlt_2_watchdog.py:533
+#: wlt_2_watchdog.py:481
 msgid "Received SIGTERM"
 msgstr "SIGTERM empfangen"
 
-#: wlt_2_watchdog.py:573
+#: wlt_2_watchdog.py:527
 msgid "Stopping Display"
 msgstr "Stoppe Display"
 
-#: wlt_2_watchdog.py:577
+#: wlt_2_watchdog.py:531
 msgid "WLANThermoWD stopped"
 msgstr "WLANThermoWD gestoppt"
