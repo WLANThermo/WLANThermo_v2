@@ -895,9 +895,9 @@ def wlan_setpassphrase(ssid, psk):
     tmp_filename = get_random_filename('/etc/wpa_supplicant/wpa_supplicant.conf')
     
     for line in fw:
-        if re.search(r'SSID',line,re.IGNORECASE):
+        if re.search(r'^\s*SSID',line,re.IGNORECASE + re.MULTILINE):
             ssids.append(line.split("=")[1].replace('"','').strip())
-        elif re.search(r'\#psk',line,re.IGNORECASE):
+        elif re.search(r'^\s*\#psk',line,re.IGNORECASE + re.MULTILINE):
             psks.append(line.split("=")[1].replace('"','').strip())
     wpa_file = open(tmp_filename, 'w')
     wpa_file.write('ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\n')
