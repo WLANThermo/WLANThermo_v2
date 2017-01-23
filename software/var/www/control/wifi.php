@@ -155,7 +155,7 @@ Signal Level : <b>' . $strSignalLevel . '</b><br />
 		$ssid = array();
 		$psk = array();
 		foreach($return as $a) {
-			if(preg_match('/SSID/i',$a)) {
+			if(preg_match('/^\s*SSID/i',$a)) {
 				$arrssid = explode("=",$a);
 				$ssid[] = str_replace('"','',$arrssid[1]);
 			}
