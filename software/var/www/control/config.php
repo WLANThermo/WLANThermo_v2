@@ -708,13 +708,12 @@ if(isset($_POST["save"])) {
 // ##################################################################################
 // Formular Fühler/Farbe/Temp min/Temp max/Kanal ------------------------------------
 // ##################################################################################
-
 		for ($i = 0; $i < $_SESSION["channel_count"]; $i++){ ?>
 			<div id="ch<?php echo $i; ?>" class="config small">
 				<div class="headline"><?php echo htmlentities($ini['ch_name']['ch_name'.$i], ENT_QUOTES, "UTF-8"); ?></div>
 				<div class="headicon"><font color="<?php echo $ini['plotter']['color_ch'.$i];?>">#<?php echo $i?></font></div>
 				<div class="config_text row_1 col_1"><?php echo gettext("Name");?>:</div>
-				<div class="config_text row_1 col_6"><?php echo gettext("Probe Type");?>:</div>
+				<div class="config_text row_1 col_6"<?php if ($i > 7) echo ' style="display: none;"';?>><?php echo gettext("Probe Type");?>:</div>
 				<div class="config_text row_1 col_3"><input type="text" name="tch<?php echo $i;?>" size="25" maxlength="28" value="<?php echo $ini['ch_name']['ch_name'.$i];?>"></div>
 				<div class="config_text row_3 col_1"><?php echo gettext("Probe Thresholds");?></div>
 				<div class="config_text row_3 col_2"><?php echo gettext("min");?>:</div>
@@ -722,9 +721,9 @@ if(isset($_POST["save"])) {
 				<div class="config_text row_3 col_4"><?php echo gettext("max");?>:</div>
 				<div class="config_text row_3 col_5"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="temp_max<?php echo $i;?>" size="6" maxlength="3" value="<?php echo $ini['temp_max']['temp_max'.$i];?>"></div>
 				<div class="config_text row_2 col_6"><?php echo gettext("Plot Color");?>:</div>
-				<div class="config_text row_2 col_1"><?php echo gettext("Measuring Resistance");?>:</div>
-				<div class="config_text row_2 col_3"><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="measuring_resistance<?php echo $i;?>" size="6" maxlength="6" value="<?php echo $ini['Messen']['messwiderstand'.$i];?>"></div>
-				<div class="config_text row_1 col_7">
+				<div class="config_text row_2 col_1"<?php if ($i > 7) echo ' style="display: none;"';?>><?php echo gettext("Measuring Resistance");?>:</div>
+				<div class="config_text row_2 col_3"<?php if ($i > 7) echo ' style="display: none;"';?>><input type="text" onkeyup="this.value=this.value.replace(/[^0-9.]/g,'');" name="measuring_resistance<?php echo $i;?>" size="6" maxlength="6" value="<?php echo $ini['Messen']['messwiderstand'.$i];?>"></div>
+				<div class="config_text row_1 col_7"<?php if ($i > 7) echo ' style="display: none;"';?>>
 					<select name="fuehler<?php echo $i?>" size="1">	
 						<?php
 						foreach($sensor_ini AS $sensor_number => $sensor_name)
