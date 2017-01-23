@@ -1361,6 +1361,7 @@ def NX_display():
                 values['main.pit_on.val'] = int(new_pitconf['on'])
                 if not new_pitconf['on']:
                     values['main.pit_power.val'] = 0
+                    pitmaster['new'] = 0
             if pitconf['controller_type'] != new_pitconf['controller_type']:
                 values['main.pit_pid.val'] = {'False': 0, 'PID': 1}[new_pitconf['controller_type']]
             if pitconf['type'] != new_pitconf['type']:
@@ -1391,6 +1392,7 @@ def NX_display():
                 values['main.pit_on2.val'] = int(new_pitconf['on'])
                 if not new_pitconf['on']:
                     values['main.pit_power.val'] = 0
+                    pitmaster2['new'] = 0
             if pitconf2['controller_type'] != new_pitconf['controller_type']:
                 values['main.pit_pid2.val'] = {'False': 0, 'PID': 1}[new_pitconf['controller_type']]
             if pitconf2['type'] != new_pitconf['type']:
