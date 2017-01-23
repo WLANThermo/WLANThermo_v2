@@ -1429,7 +1429,7 @@ def NX_display():
             logger.debug(_(u'Pitmaster 2 data event'))
             values = dict()
 
-            pitmaster_event.clear()
+            pitmaster2_event.clear()
             new_pitmaster = pitmaster_getvalues(1)
 
             if new_pitmaster is not None:
