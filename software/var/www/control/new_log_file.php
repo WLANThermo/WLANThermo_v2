@@ -15,14 +15,15 @@ session_start(); //Session starten
 	if (!isset($_SESSION["current_temp"])) {
 	$message .= "Variable - Config neu einlesen\n";
 	session("./conf/WLANThermo.conf");
-	}	
+	}
 	
 	$currentlogfilename = file_get_contents($_SESSION["current_temp"]);
 	while (preg_match("/TEMPLOG/i", $currentlogfilename) != "1"){
 		$currentlogfilename = file_get_contents($_SESSION["current_temp"]);
 	}
 	$currentlogfilename = explode(";",$currentlogfilename);
-	$currentlogfilename = $currentlogfilename[18];
+	// currrent.csv contains 2*channel_count and 3 additional fields before the file name
+	$currentlogfilename = $currentlogfilename[$_SESSION["channel_count"] * 2 + 2];
 	//echo $currentlogfilename;
 	
 //-------------------------------------------------------------------------------------------------------------------------------------
