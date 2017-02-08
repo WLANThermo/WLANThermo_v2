@@ -21,7 +21,23 @@
 	} else {
 		$output['pit']['enabled'] = false;
 	}
-
+        
+	$output['pit2'] = array();
+	if ($_SESSION["pit2_on"] == "True") {
+		$output['pit2']['enabled'] = true;
+		$pit_file = $_SESSION["pitmaster2"].'';
+		if (file_exists($pit_file)) {
+			$currentpit = file_get_contents($_SESSION["pitmaster2"]);
+			$pits = explode(";",$currentpit);
+			$output['pit2']['timestamp'] = DateTime::createFromFormat($log_dateformat, $pits[0])->format(DateTime::ATOM);
+			$output['pit2']['setpoint'] = floatval($pits[1]);
+			$output['pit2']['current'] = floatval($pits[2]);
+			$output['pit2']['control_out'] = floatval($pits[3]);
+		}
+	} else {
+		$output['pit2']['enabled'] = false;
+	}
+        
 	$cpuload = new CPULoad();
 	$cpuload->get_load();
 	$output['cpu_load'] = $cpuload->load["cpu"];
@@ -34,11 +50,11 @@
 	}
 	$temp = explode(";",$currenttemp);
 	$output['timestamp'] = DateTime::createFromFormat($log_dateformat, $temp[0])->format(DateTime::ATOM);
-	for ($i = 0; $i <= 7; $i++){
+	for ($i = 0; $i <= $_SESSION["channel_count"]; $i++){
 		$output['channel'][strval($i)] = array();
 		$output['channel'][strval($i)]['temp'] = floatval($temp[$i + 1]);
 		$output['channel'][strval($i)]['color'] = $_SESSION["color_ch".$i];
-		$output['channel'][strval($i)]['state'] = $temp[$i + 9];
+		$output['channel'][strval($i)]['state'] = $temp[$i + 1 + $_SESSION["channel_count"]];
 		$output['channel'][strval($i)]['temp_min'] = floatval($_SESSION["temp_min".$i]);
 		$output['channel'][strval($i)]['temp_max'] = floatval($_SESSION["temp_max".$i]);
 		$output['channel'][strval($i)]['name'] = $_SESSION["ch_name".$i];
