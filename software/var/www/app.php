@@ -50,7 +50,7 @@
 	}
 	$temp = explode(";",$currenttemp);
 	$output['timestamp'] = DateTime::createFromFormat($log_dateformat, $temp[0])->format(DateTime::ATOM);
-	for ($i = 0; $i <= $_SESSION["channel_count"]; $i++){
+	for ($i = 0; $i < $_SESSION["channel_count"]; $i++){
 		$output['channel'][strval($i)] = array();
 		$output['channel'][strval($i)]['temp'] = floatval($temp[$i + 1]);
 		$output['channel'][strval($i)]['color'] = $_SESSION["color_ch".$i];
