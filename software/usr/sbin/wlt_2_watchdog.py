@@ -506,6 +506,11 @@ Config.readfp(codecs.open(cf, 'r', 'utf_8'))
 check_display()
 check_maverick()
 
+if Config.get('Hardware', 'version') in ['miniV2']:
+    pitmaster_count = 2
+else:
+    pitmaster_count = 1
+            
 for id in xrange(pitmaster_count):
     check_pitmaster(id)
 
