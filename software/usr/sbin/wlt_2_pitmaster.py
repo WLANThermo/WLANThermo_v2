@@ -315,13 +315,7 @@ def main(instance):
                 time.sleep(1)
                 continue
             break
-    
-    pitmaster_hwconfig = {'v1':{0:{'io': 4, 'io_pwm': 4, 'servo':4, 'fan_pwm':4}},
-                      'v2':{0:{'io': 4, 'io_pwm': 4, 'servo':4, 'fan_pwm':4}},
-                      'v3':{0:{'io': 4, 'fan': 4, 'io_pwm': 4, 'servo':4, 'fan_pwm':4}},
-                      'miniV2':{0:{'io': 4, 'fan': 4, 'io_pwm': 4, 'servo':6, 'fan_pwm':6},
-                                1:{'io': 5, 'fan': 5, 'io_pwm': 5, 'servo':12, 'fan_pwm':12}}}[Config.get('Hardware','version')][instance]
-    
+        
     if instance > 0:
         instance_string = str(instance + 1)
     else:
@@ -350,6 +344,17 @@ def main(instance):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     
+        
+    try:
+        pitmaster_hwconfig = {'v1':{0:{'io': 4, 'io_pwm': 4, 'servo':4, 'fan_pwm':4}},
+                          'v2':{0:{'io': 4, 'io_pwm': 4, 'servo':4, 'fan_pwm':4}},
+                          'v3':{0:{'io': 4, 'fan': 4, 'io_pwm': 4, 'servo':4, 'fan_pwm':4}},
+                          'miniV2':{0:{'io': 4, 'fan': 4, 'io_pwm': 4, 'servo':6, 'fan_pwm':6},
+                                    1:{'io': 5, 'fan': 5, 'io_pwm': 5, 'servo':12, 'fan_pwm':12}}}[Config.get('Hardware','version')][instance]
+    except KeyError:
+        logger.info(u'Instance {} undefined in hardware configuration "{}"').format(instance, Config.get('Hardware','version'))
+        return False
+        
     logger.info(_(u'WLANThermoPID started'))
     
     #GPIO END

@@ -412,9 +412,14 @@ if(isset($_POST["save"])) {
 					$pitmaster_str = $pitmaster == 0 ? '' : strval($pitmaster +1);
 					$ini['ToDo']['restart_pitmaster' . $pitmaster_str] = 'True';
 				}
+				
 				$ini['Hardware']['version'] = $_POST['hardware_version'];
-				$restart = "1";
+				$new_logfile = "1";
+				$lcd_restart = "1";
+				$restart_pit = "1";
+				$restart_pit2 = "1";
 			}
+			
 			// Allgemeine Einstellungen
 			if (isset($_POST['language'])) {
 				$ini['locale']['locale'] = $_POST['language'];
@@ -434,6 +439,21 @@ if(isset($_POST["save"])) {
 			// LCD-Dienst neu starten 
 			if($lcd_restart == "1"){
 				$ini['ToDo']['restart_display'] = "True";
+			}
+			
+			// Neues Logfile
+			if($new_logfile == "1"){
+				$ini['ToDo']['create_new_log'] = 'True';
+			}
+			
+			// Restart Pitmaster
+			if($restart_pit == "1"){
+				$ini['ToDo']['restart_pitmaster'] = "True";
+			}
+			
+			// Restart Pitmaster 2
+			if($restart_pit2 == "1"){
+				$ini['ToDo']['restart_pitmaster2'] = "True";
 			}
 			
 			//#######################################################################

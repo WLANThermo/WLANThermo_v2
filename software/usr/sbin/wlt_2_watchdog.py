@@ -269,6 +269,13 @@ def read_config():
                 continue
             break
         tmp_filename = get_random_filename(cf)
+        
+        
+        if Config.get('Hardware', 'version') in ['miniV2']:
+            pitmaster_count = 2
+        else:
+            pitmaster_count = 1
+            
         if (Config.getboolean('ToDo', 'restart_thermo')):
             logger.info(_(u'Restart WLANThermo process!'))
             handle_service('WLANThermo', 'restart')
@@ -484,12 +491,6 @@ def raise_keyboard(signum, frame):
 def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical(''.join(traceback.format_tb(tb)))
     logger.critical('{0}: {1}'.format(ex_cls, ex))
-
-
-if Config.get('Hardware', 'version') in ['miniV2']:
-    pitmaster_count = 2
-else:
-    pitmaster_count = 1
 
 sys.excepthook = log_uncaught_exceptions
 
