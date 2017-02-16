@@ -10,7 +10,7 @@ then
   # danach
   sudo systemctl stop WLANThermo.service
   sudo systemctl stop pigpiod.service
-  pkill -f wlt_2_nextion.py
+  kill $(cat /var/run/wlt_2_nextion.pid)
   pkill gnuplot
 fi
 
