@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 echo "Starting WLANThermo installation"
 echo "----------------------------------------------------------"
@@ -23,7 +22,10 @@ echo "Stopping WLANThermo processes"
 echo "----------------------------------------------------------"
 systemctl stop WLANThermo.service
 systemctl stop pigpiod.service
-kill $(cat /var/run/wlt_2_nextion.pid)
+if [ -f /var/run/wlt_2_nextion.pid ]
+then
+ kill $(cat /var/run/wlt_2_nextion.pid)
+fi
 pkill gnuplot
 
 lines=`grep --max-count 1 --line-regexp --line-number --text '# ---- END OF SCRIPT - DON´T CHANGE THIS LINE ----' $0 | cut -d: -f 1`
