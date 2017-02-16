@@ -7,7 +7,7 @@
 	$output = array();
 	$output['temp_unit'] = $_SESSION["temp_unit"];
 	$output['pit'] = array();
-	if ($_SESSION["pit_on"] == "True") {
+	if (isset($_SESSION["pit_on"]) && $_SESSION["pit_on"] == "True") {
 		$output['pit']['enabled'] = true;
 		$pit_file = $_SESSION["pitmaster"].'';
 		if (file_exists($pit_file)) {
@@ -23,7 +23,7 @@
 	}
         
 	$output['pit2'] = array();
-	if ($_SESSION["pit2_on"] == "True") {
+	if (isset($_SESSION["pit2_on"]) && $_SESSION["pit2_on"] == "True") {
 		$output['pit2']['enabled'] = true;
 		$pit_file = $_SESSION["pitmaster2"].'';
 		if (file_exists($pit_file)) {
