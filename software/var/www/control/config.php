@@ -706,13 +706,20 @@ if(isset($_POST["save"])) {
 
 } elseif(isset($_POST["back"])) {
 	echo "<div class=\"infofield\">";
-	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Verlassen der Seite ohne Speichern!...</h2></body>";
+	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"></head>
+			<body> <h2>Verlassen der Seite ohne Speichern!...</h2></body>";
 	echo "</div>";
 } elseif(isset($_GET["alert-test"]) && $_GET["alert-test"] == "true") {
 	touch( __DIR__ . '/../alert.test' );
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
 			<body> <h2>Testalarm wird gesendet...</h2></body>";
+	echo "</div>";
+} elseif(isset($_GET["update-nextion"]) && $_GET["update-nextion"] == "true") {
+	touch( __DIR__ . '/../tmp/nextionupdate' );
+	echo "<div class=\"infofield\">";
+	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
+		<body> <h2>Flag wird gesetzt...</h2></body>";
 	echo "</div>";
 } else {
 
@@ -1222,7 +1229,8 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 					<option <?php if($ini['Display']['start_page'] == "main") {echo " selected";} ?> value="main"><?php echo gettext("Menu");?></option>
                     <option <?php if($ini['Display']['start_page'] == "temp") {echo " selected";} ?> value="temp"><?php echo gettext("Temperature");?></option>
                 </select>
-            </div>						
+            </div>
+            <div class="config_text row_2 col_1"><button type="button" onclick="$.get('config.php?update-nextion=true')"><?php echo gettext("Force update!");?></button></div>					
 		</div>
 <?php
 // ##################################################################################
@@ -1264,6 +1272,7 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
                     <?php } ?>
                 </select>       
 			</div>
+			<div class="config_text row_3 col_6"><a href="../thermolog/update.log"><?php echo gettext("Show update log")?></a></div>
 			<div class="config_text row_4 col_6"><a href="../log/WLANThermo.log"><?php echo gettext("Show logfile")?></a></div>
 		</div>
 <?php
