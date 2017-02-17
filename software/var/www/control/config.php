@@ -38,6 +38,9 @@ if(isset($_POST["save"])) {
 	$error = "";				
 	$restart = "0";
 	$lcd_restart = "0";
+	$restart_pit = "0";
+	$restart_pit2 = "0";
+	$new_logfile = "0";
 
 			for ($i = 0; $i < $_SESSION["channel_count"]; $i++){
 				if($ini['ch_show']['ch'.$i] == "True"){
