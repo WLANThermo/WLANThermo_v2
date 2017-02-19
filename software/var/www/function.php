@@ -528,4 +528,12 @@ function from_float($value) {
 	return rtrim(rtrim(sprintf('%F', floatval($value)), '0'), '.');
 }
 
+function to_css_color($gnuplotcolor) {
+	if ($gnuplotcolor == 'web-blue') {
+		return '#0080ff';
+	} else {
+		return str_replace('-', '', $gnuplotcolor);
+	}
+}
+
 ?>

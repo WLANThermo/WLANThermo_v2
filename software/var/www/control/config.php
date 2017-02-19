@@ -11,11 +11,13 @@ session("../conf/WLANThermo.conf");
 $tmpFile = '../temperaturen.csv';
 $inipath = '../conf/WLANThermo.conf';
 
+// gnuplot color names, to be converted to CSS color names by to_css_color($gnuplotcolor) if needed.
 $plotcolors = array('green', 'red', 'blue', 'olive', 'magenta', 'yellow', 'violet', 'orange',
 	'mediumpurple3', 'aquamarine', 'brown', 'plum', 'skyblue', 'orange-red', 'salmon',
 	'black', 'dark-grey', 'purple', 'turquoise', 'khaki', 'dark-violet', 'seagreen', 'web-blue',
 	'steelblue', 'gold', 'dark-green', 'midnight-blue', 'dark-khaki', 'dark-olivegreen',
 	'pink', 'chartreuse', 'gray', 'slategrey');
+
 $app_sounds=array('None', 'Standard', 'Bell', 'Firepager', 'Police_kurz', 'Police_lang',
 	 'Sirene', 'SmokeAlarm', 'TempleBell', 'Tornado_kurz', 'Tornado_lang');
 $app_devices=array('iOS' => '0', 'Android' => '1');
@@ -738,7 +740,7 @@ if(isset($_POST["save"])) {
 		for ($i = 0; $i < $_SESSION["channel_count"]; $i++){ ?>
 			<div id="ch<?php echo $i; ?>" class="config small">
 				<div class="headline"><?php echo htmlentities($ini['ch_name']['ch_name'.$i], ENT_QUOTES, "UTF-8"); ?></div>
-				<div class="headicon"><font color="<?php echo $ini['plotter']['color_ch'.$i];?>">#<?php echo $i?></font></div>
+				<div class="headicon"><font color="<?php echo to_css_color($ini['plotter']['color_ch'.$i]);?>">#<?php echo $i?></font></div>
 				<div class="config_text row_1 col_1"><?php echo gettext("Name");?>:</div>
 				<div class="config_text row_1 col_6"<?php if ($i > 7) echo ' style="display: none;"';?>><?php echo gettext("Probe Type");?>:</div>
 				<div class="config_text row_1 col_3"><input type="text" name="tch<?php echo $i;?>" size="25" maxlength="28" value="<?php echo $ini['ch_name']['ch_name'.$i];?>"></div>

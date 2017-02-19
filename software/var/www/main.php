@@ -227,7 +227,7 @@ if (isset($_SESSION["to_update"])){
 						<div class="channel_name"><?php echo htmlentities($channel_name[$i], ENT_QUOTES, "UTF-8"); ?></div>
 						<div class="<?php echo $temperature_indicator_color;?>"><?php printf('%.1f%s', ${"temp_$i"}, $temp_unit_short);?></div>
 						<div class="tempmm">Temp min <b><?php echo $temp_min[$i]; echo $temp_unit_short;?></b> / max <b><?php echo $temp_max[$i]; echo $temp_unit_short;?></b></div>
-						<div class="headicon"><font color="<?php echo $color_ch[$i];?>">#<?php echo $i;?></font></div>
+						<div class="headicon"><font color="<?php echo to_css_color($color_ch[$i]);?>">#<?php echo $i;?></font></div>
 						<div class="webalert"><?php 
 							if ($_SESSION["websoundalert"] == "True" && $esound_ == "1"){ 
 								echo "<td><a href=\"#\" id=\"webalert_false\" class=\"webalert_false\" ><img src=\"../images/icons32x32/speaker.png\" border=\"0\" alt=\"Alarm\" title=\"Alarm\"></a></td>\n"; 
