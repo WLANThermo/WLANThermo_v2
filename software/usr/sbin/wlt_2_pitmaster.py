@@ -491,13 +491,13 @@ def main(instance):
 
                 if temps[pit_ch + 1 + channel_count] in ('er', 'no'):
                     pit_now = None
-                    logger.info(_(u'No signal on channel ') + pit_ch)
+                    logger.info(_(u'No signal on channel {}').format(pit_ch))
                     msg += _(u'|no probe connected to channel {}!').format(pit_ch)
                 else:
                     try:
                         pit_now = float(checkTemp(temps[(pit_ch + 1)]))
                     except ValueError:
-                        logger.info(_(u'Error parsing value on channel ') + pit_ch)
+                        logger.info(_(u'Error parsing value on channel {}').format(pit_ch))
                         msg += _(u'|no valid value on channel {}!').format(pit_ch)
                         pit_now = None
 
