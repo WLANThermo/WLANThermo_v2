@@ -38,8 +38,11 @@ $sensor_ini = getConfig("../conf/sensor.conf", ";");  // dabei ist ; das zeichen
 if(isset($_POST["save"])) { 
 
 	$error = "";				
-	$restart = "0";
-	$lcd_restart = "0";
+	$restart = false;
+	$restart_pit = false;
+	$restart_pit2 = false;
+	$new_logfile = false;
+	$lcd_restart = false;
 
 			for ($i = 0; $i < $_SESSION["channel_count"]; $i++){
 				if($ini['ch_show']['ch'.$i] == "True"){
@@ -362,8 +365,8 @@ if(isset($_POST["save"])) {
 			if(isset ($_POST['lcd_show'])) { $_POST['lcd_show'] = "True"; } else { $_POST['lcd_show'] = "False";}	
 			if($ini['Display']['lcd_present'] !== $_POST['lcd_show']){
 				$ini['Display']['lcd_present'] = $_POST['lcd_show'];
-				$restart = "1";
-				$lcd_restart = "1";
+				$restart = true;
+				$lcd_restart = true;
 			}			
 			
 			// LCD Start Seite
@@ -398,14 +401,14 @@ if(isset($_POST["save"])) {
 			if(isset ($_POST['beeper_enabled'])) { $_POST['beeper_enabled'] = "True"; } else { $_POST['beeper_enabled'] = "False";}
 				if($ini['Sound']['beeper_enabled'] !== $_POST['beeper_enabled']){
 					$ini['Sound']['beeper_enabled'] = $_POST['beeper_enabled'];
-					$restart = "1";
+					$restart = true;
 				}
 
 			// Beeper bei start EIN/AUS -------------------------------------------------------
 			if(isset ($_POST['beeper_on_start'])) { $_POST['beeper_on_start'] = "True"; } else { $_POST['beeper_on_start'] = "False";}
 				if($ini['Sound']['beeper_on_start'] !== $_POST['beeper_on_start']){
 					$ini['Sound']['beeper_on_start'] = $_POST['beeper_on_start'];
-					$restart = "1";
+					$restart = true;
 				}
 								
 			// Hardware Version				
@@ -416,10 +419,10 @@ if(isset($_POST["save"])) {
 				}
 				
 				$ini['Hardware']['version'] = $_POST['hardware_version'];
-				$new_logfile = "1";
-				$lcd_restart = "1";
-				$restart_pit = "1";
-				$restart_pit2 = "1";
+				$new_logfile = true;
+				$lcd_restart = true;
+				$restart_pit = true;
+				$restart_pit2 = true;
 			}
 			
 			// Allgemeine Einstellungen
@@ -434,27 +437,27 @@ if(isset($_POST["save"])) {
 			// ######################################################################
 			
 			// wlt_2_comp.py neu starten
-			if($restart == "1"){
+			if($restart == true){
 				$ini['ToDo']['restart_thermo'] = "True";
 			}
 			
 			// LCD-Dienst neu starten 
-			if($lcd_restart == "1"){
+			if($lcd_restart == true){
 				$ini['ToDo']['restart_display'] = "True";
 			}
 			
 			// Neues Logfile
-			if($new_logfile == "1"){
+			if($new_logfile == true){
 				$ini['ToDo']['create_new_log'] = 'True';
 			}
 			
 			// Restart Pitmaster
-			if($restart_pit == "1"){
+			if($restart_pit == true){
 				$ini['ToDo']['restart_pitmaster'] = "True";
 			}
 			
 			// Restart Pitmaster 2
-			if($restart_pit2 == "1"){
+			if($restart_pit2 == true){
 				$ini['ToDo']['restart_pitmaster2'] = "True";
 			}
 			
@@ -697,7 +700,7 @@ if(isset($_POST["save"])) {
 		
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Einstellungen werden gespeichert...</h2></body>";	
-	if($restart == "1"){
+	if($restart == true){
 		echo "<h2>wlt_2_comp.py wird neu gestartet...</h2>";
 	}
 	echo "</div>";
