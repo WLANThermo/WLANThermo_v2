@@ -105,6 +105,9 @@ if(isset($_POST["save"])) {
 			// Pitansteuerung plotten 
 			if(isset ($_POST['plot_pit'])) { $ini['plotter']['plot_pit'] = "True"; } else { $ini['plotter']['plot_pit'] = "False";}
 			
+			// Pitansteuerung 2 plotten
+			if(isset ($_POST['plot_pit2'])) { $ini['plotter']['plot_pit2'] = "True"; } else { $ini['plotter']['plot_pit2'] = "False";}
+			
 			// Farben für den Plotter ändern 
 			if (isset($_POST['color_pit'])) {
 				$ini['plotter']['color_pit'] = $_POST['color_pit'];
