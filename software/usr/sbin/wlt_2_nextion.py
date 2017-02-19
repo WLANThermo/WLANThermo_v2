@@ -837,8 +837,15 @@ def pitmaster_getvalues(id):
         #TODO Fix everything
         if pitmaster_raw[0] == '':
             return None
-        timestamp = time.mktime(time.strptime(pitmaster_raw[0],'%d.%m.%y %H:%M:%S'))
-        pitmaster = {'timestamp': timestamp, 'set': float(pitmaster_raw[1]), 'now': float(pitmaster_raw[2]),'new': float(pitmaster_raw[3].rstrip('%')),'msg': pitmaster_raw[4]}
+        else:
+            timestamp = time.mktime(time.strptime(pitmaster_raw[0],'%d.%m.%y %H:%M:%S'))
+        
+        if pitmaster_raw[2] == '':
+            now = None
+        else:
+            now = float(pitmaster_raw[2])
+            
+        pitmaster = {'timestamp': timestamp, 'set': float(pitmaster_raw[1]), 'now': now, 'new': float(pitmaster_raw[3].rstrip('%')),'msg': pitmaster_raw[4]}
         
     else:
         return None

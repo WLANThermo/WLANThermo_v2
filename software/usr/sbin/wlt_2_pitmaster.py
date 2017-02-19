@@ -656,12 +656,17 @@ def main(instance):
                 
                 Uhrzeit_lang = time.strftime('%d.%m.%y %H:%M:%S')
                 
+                if pit_now is None:
+                    pit_now_str = ''
+                else:
+                    pit_now_str = str(pit_now)
+                    
                 while True:
                     try:          
                         with codecs.open(pitPath + '/' + pitFile + '_tmp', 'w', 'utf_8') as fp:
                         # Schreibe mit Trennzeichen ; 
                         # Zeit;Soll;Ist;%;msg + pitFile,
-                            fp.write(u'{};{};{};{}%;{}'.format(Uhrzeit_lang, pit_set, pit_now, pit_new, msg))
+                            fp.write(u'{};{};{};{}%;{}'.format(Uhrzeit_lang, pit_set, pit_now_str, pit_new, msg))
                             fp.flush()
                             os.fsync(fp.fileno())
                         os.rename(pitPath + '/' + pitFile + '_tmp', pitPath + '/' + pitFile)
