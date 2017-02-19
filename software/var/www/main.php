@@ -154,8 +154,10 @@ if (isset($_SESSION["to_update"])){
 			?>
 			<img src="../images/icons16x16/pitmaster.png" alt=""> <img src="../images/icons16x16/number-<?php echo $pit + 1;?>.png" alt="">
 			<?php
-			echo gettext("Last regulation on");?> <b><?php echo IntlDateFormatter::formatObject(${'pit' . $pitmaster_str . '_time_stamp'}, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ?></b><br />
+			if (${'pit' . $pitmaster_str . '_time_stamp'} instanceof DateTime) {
+				echo gettext("Last regulation on");?> <b><?php echo IntlDateFormatter::formatObject(${'pit' . $pitmaster_str . '_time_stamp'}, array(IntlDateFormatter::SHORT, IntlDateFormatter::MEDIUM),$_SESSION["locale"]); ?></b><br />
 			<?php
+			}
 		}
 	}
 	if ($first != true) {
