@@ -310,7 +310,7 @@ function getPlotConfig($plot,$temp_unit){
 		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 3)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pitsoll"]."' t 'Pitmaster Sollwert'  axes x1y2";
 		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 2)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pit"]."' t 'Pitmaster %' axes x1y1";
 	}
-	if ($_SESSION["plot_pit2"] && $_SESSION["pitmaster_count"] > 1) {
+	if ($_SESSION["plot_pit2"] == "True" && $_SESSION["pitmaster_count"] > 1) {
 		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 5)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pit2soll"]."' t 'Pitmaster 2 Sollwert'  axes x1y2";
 		$plot .= ", '/var/log/WLAN_Thermo/TEMPLOG.csv' every ::1 using 1:".($_SESSION["channel_count"] + 4)." with lines lw 2 lc rgbcolor '".$_SESSION["color_pit2"]."' t 'Pitmaster 2 %' axes x1y1";
 	}
