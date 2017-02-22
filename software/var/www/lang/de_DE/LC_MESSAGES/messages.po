@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WLANThermo 2.6.0\n"
-"POT-Creation-Date: 2017-02-19 01:41+0100\n"
-"PO-Revision-Date: 2017-02-19 01:45+0100\n"
+"POT-Creation-Date: 2017-02-22 07:43+0100\n"
+"PO-Revision-Date: 2017-02-22 07:46+0100\n"
 "Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -248,7 +248,7 @@ msgstr "Rahmen Legende"
 
 #: control/config.php:984
 msgid "Pit out"
-msgstr "Pitmaster Ausgangswert"
+msgstr "Pit Ausgang"
 
 #: control/config.php:997
 msgid "Enable Pitmaster Chart"
@@ -256,11 +256,11 @@ msgstr "Pitmaster plotten"
 
 #: control/config.php:999
 msgid "Pit setpoint"
-msgstr "Pitmaster Sollwert"
+msgstr "Pit Soll"
 
 #: control/config.php:1012
 msgid "Pit 2 out"
-msgstr "Pitmaster 2 Ausgangswert"
+msgstr "Pit 2 Ausgang"
 
 #: control/config.php:1025
 msgid "Enable Pitmaster 2 Chart"
@@ -268,7 +268,7 @@ msgstr "Pitmaster 2 plotten"
 
 #: control/config.php:1027
 msgid "Pit 2 setpoint"
-msgstr "Pitmaster 2 Sollwert"
+msgstr "Pit 2 Soll"
 
 #: control/config.php:1046
 msgid "Webcam Settings"
@@ -420,7 +420,7 @@ msgstr "Beeper bei Start"
 
 #: control/config.php:1205
 msgid "Enable Maverick receiver"
-msgstr "Maverick Empfänger aktivieren"
+msgstr "Maverick Empfänger"
 
 #: control/config.php:1207
 msgid "View Channels"
@@ -619,15 +619,15 @@ msgid "NEXTION Display update"
 msgstr "NEXTION Display update"
 
 # main.php
-#: main.php:157
+#: main.php:158
 msgid "Last regulation on"
 msgstr "Letzte Regelung am"
 
-#: main.php:164
+#: main.php:166
 msgid "Last measurement on"
 msgstr "Letzte Messung am"
 
-#: main.php:170
+#: main.php:172
 msgid "CPU utilization"
 msgstr "CPU Auslastung"
 
