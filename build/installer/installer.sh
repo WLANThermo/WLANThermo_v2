@@ -49,6 +49,13 @@ fi
 sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
 sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
 
+echo "Enabling locales"
+echo "----------------------------------------------------------"
+sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(de_DE.UTF-8 UTF-8.*)$/\2/m"
+sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(en_GB.UTF-8 UTF-8.*)$/\2/m"
+sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(en_US.UTF-8 UTF-8.*)$/\2/m"
+/usr/sbin/locale-gen
+
 program=wlanthermo
 
 echo "Check Ramdrive and create it if it doesn't exist"
