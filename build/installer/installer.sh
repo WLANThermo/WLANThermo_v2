@@ -14,19 +14,25 @@ if [ $? -ne 0 ]; then
   exit
 fi
 
+if [ "$1" == "--image-mode" ]; then
+  IMAGE_MODE=TRUE
+else
+  IMAGE_MODE=FALSE
+fi
+
 #
 # Stop processes to speed up installation
 #
-
-echo "Stopping WLANThermo processes"
-echo "----------------------------------------------------------"
-systemctl stop WLANThermo.service
-systemctl stop pigpiod.service
-if [ -f /var/run/wlt_2_nextion.pid ]
-then
- kill $(cat /var/run/wlt_2_nextion.pid)
+if [ "$IMAGE_MODE" == "FALSE" ]; then
+  echo "Stopping WLANThermo processes"
+  echo "----------------------------------------------------------"
+  systemctl stop WLANThermo.service
+  systemctl stop pigpiod.service
+  if [ -f /var/run/wlt_2_nextion.pid ]; then
+    kill $(cat /var/run/wlt_2_nextion.pid)
+  fi
+  pkill gnuplot
 fi
-pkill gnuplot
 
 lines=`grep --max-count 1 --line-regexp --line-number --text '# ---- END OF SCRIPT - DON´T CHANGE THIS LINE ----' $0 | cut -d: -f 1`
 startline=$((lines + 1))
@@ -43,7 +49,7 @@ fi
 
 echo "Disable shell and kernel messages on the serial connection"
 echo "----------------------------------------------------------"
-if [ $SYSTEMD -eq 0 ]; then
+if [ $SYSTEMD == 0 ]; then
   sed -i /etc/inittab -e "s|^.*:.*:respawn:.*ttyAMA0|#&|"
 fi
 sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
@@ -64,7 +70,9 @@ RD=$(cat /etc/fstab|grep /var/www/tmp|grep -v grep|wc -l)
 
 if  [ $RD == 0 ]; then
   mkdir /var/www/tmp -p
-  mount -t tmpfs -o size=16M,mode=770,uid=www-data,gid=www-data tmpfs /var/www/tmp
+  if [ "$IMAGE_MODE" == "FALSE" ]; then
+    mount -t tmpfs -o size=16M,mode=770,uid=www-data,gid=www-data tmpfs /var/www/tmp
+  fi
   echo "tmpfs           /var/www/tmp    tmpfs   size=16M,mode=770,uid=www-data,gid=www-data     0       0" >> /etc/fstab
   echo -e "[\033[42m\033[30m OK \033[0m] RAM Drive created!"
 fi
