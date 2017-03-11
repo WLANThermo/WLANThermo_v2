@@ -967,7 +967,7 @@ def NX_display():
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
-    nextion_versions = ['v2.3']
+    nextion_versions = ['v2.4']
     
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
