@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import division
 import sys
 import ConfigParser
 import os
@@ -311,11 +312,8 @@ def median_filter(raw):
     # Bereich für Mittelwertbildung festlegen area = 1 + ln(laenge)   Basis 2.7
     area_groesse = 1 + int(round(math.log(laenge) ))
     area = sortiert[index-area_groesse:index+area_groesse+1]
-    summe = sum(area)
-    anzahl = len(area)
     # arithmetisches Mittel
-    wert = round(summe/anzahl , 2)
-    return wert
+    return sum(area) / len(area)
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical(''.join(traceback.format_tb(tb)))
@@ -452,7 +450,7 @@ try:
         time_start = time.time()
         CPU_usage = psutil.cpu_percent(interval=1, percpu=True)
         ram = psutil.virtual_memory()
-        ram_free = ram.free / 2**20
+        ram_free = ram.free // 2**20
         logger.debug(u'CPU: {} RAM free: {}'.format(CPU_usage, ram_free))
         alarm_irgendwo = False
         alarm_neu = False
@@ -587,7 +585,7 @@ try:
                         # Medianfilter anwenden
                         median_value = median_filter(WerteArray)
                         Rtheta = messwiderstand[kanal]*((4096.0/median_value) - 1)
-                        Temperatur[kanal] = temperatur_sensor(Rtheta, sensortyp[kanal], temp_unit)
+                        Temperatur[kanal] = round(temperatur_sensor(Rtheta, sensortyp[kanal], temp_unit), 2)
                         #else:
                         #    # Behalte alten Wert 
                         #    Temperatur[kanal] = Temperatur[kanal] 
