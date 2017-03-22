@@ -81,7 +81,7 @@ stop_event = threading.Event()
 # Konfigurationsdatei einlesen
 configdefaults = {'dim' : '90',
 'timeout': '30',
-'serialdevice': '/dev/ttyAMA0',
+'serialdevice': '/dev/serial0',
 'serialspeed': '115200'}
 
 configfile = '/var/www/conf/WLANThermo.conf'
@@ -678,7 +678,7 @@ def channels_setvalues(channel, high= None, low=None, sensor=None):
 
 def display_getvalues():
     global configfile, configfile_lock
-    defaults = {'dim':'90', 'timeout':'30', 'start_page':'main', 'serialdevice':'/dev/ttyAMA0', 'serialspeed':'9600'}
+    defaults = {'dim':'90', 'timeout':'30', 'start_page':'main', 'serialdevice':'/dev/serial0', 'serialspeed':'9600'}
     display = {}
     with configfile_lock:
         config = ConfigParser.SafeConfigParser(defaults)

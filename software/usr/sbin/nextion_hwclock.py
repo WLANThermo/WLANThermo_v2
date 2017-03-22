@@ -30,7 +30,7 @@ NX_lf = b'\xff\xff\xff'
 
 # Konfigurationsdatei einlesen
 config = {'timeout': '30',
-'serialdevice': '/dev/ttyAMA0',
+'serialdevice': '/dev/serial0',
 'serialspeed': '115200'}
 
 def NX_read():

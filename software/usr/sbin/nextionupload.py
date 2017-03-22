@@ -32,7 +32,7 @@ import os
 import sys
 import serial
 
-PORT = '/dev/ttyAMA0'
+PORT = '/dev/serial0'
 BAUDCOMM = 9600
 BAUDUPLOAD = 115200
 
