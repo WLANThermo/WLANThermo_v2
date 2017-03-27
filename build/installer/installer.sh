@@ -85,6 +85,7 @@ echo "Updating System:"
 echo "----------------------------------------------------------"
 apt-get update
 apt-get upgrade -y
+apt-get -y install raspberrypi-sys-mods
 
 echo "Install depencies:"
 echo "----------------------------------------------------------"
