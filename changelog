@@ -5,7 +5,7 @@ wlanthermo (2.6.1) stable; urgency=medium
 
  -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Mon, 27 Mar 2017 11:50:00 +0200
 
- wlanthermo (2.6.0) stable; urgency=medium
+wlanthermo (2.6.0) stable; urgency=medium
 
   * ADD: Thermocouple support
   * ADD: Maverick support
