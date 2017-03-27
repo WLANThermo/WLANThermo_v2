@@ -65,6 +65,18 @@ sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(fr_FR.UTF-8 UTF-8.*)$/\2/m"
 
 program=wlanthermo
 
+echo "Enable the serial connection"
+echo "----------------------------------------------------------"
+SERIAL=$(grep "^enable_uart=1" /boot/config.txt | wc -l)
+
+if [ $SERIAL == 0 ]; then
+  echo "enable_uart=1" >> /boot/config.txt
+  echo "Serial Port is now enabled, please reboot!"
+else
+    echo "Serial Port was already enabled."
+fi
+  
+
 echo "Check Ramdrive and create it if it doesn't exist"
 echo "----------------------------------------------------------"
 RD=$(cat /etc/fstab|grep /var/www/tmp|grep -v grep|wc -l)
