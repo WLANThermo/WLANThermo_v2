@@ -60,6 +60,7 @@ echo "----------------------------------------------------------"
 sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(de_DE.UTF-8 UTF-8.*)$/\2/m"
 sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(en_GB.UTF-8 UTF-8.*)$/\2/m"
 sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(en_US.UTF-8 UTF-8.*)$/\2/m"
+sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(fr_FR.UTF-8 UTF-8.*)$/\2/m"
 /usr/sbin/locale-gen
 
 program=wlanthermo
@@ -118,7 +119,7 @@ echo "Extract the package"
 echo "----------------------------------------------------------"
 tail -n +$startline $0 > /tmp/${program}.deb
 sleep 2
-echo 'install /tmp/${program}.deb'
+echo "Install /tmp/${program}.deb"
 dpkg -i /tmp/${program}.deb
 
 url=$(cat /etc/hostname)
