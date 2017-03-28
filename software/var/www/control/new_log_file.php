@@ -6,26 +6,12 @@ session_start(); //Session starten
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 	$document_root = getenv('DOCUMENT_ROOT');
-	$home = getenv('HOME');
 	include("".$document_root."/header.php");
 	include("".$document_root."/function.php");
 	$inipath = ''.$document_root.'/conf/WLANThermo.conf';
 	$message = "";
-
-	if (!isset($_SESSION["current_temp"])) {
-	$message .= "Variable - Config neu einlesen\n";
-	session("./conf/WLANThermo.conf");
-	}
-	
-	$currentlogfilename = file_get_contents($_SESSION["current_temp"]);
-	while (preg_match("/TEMPLOG/i", $currentlogfilename) != "1"){
-		$currentlogfilename = file_get_contents($_SESSION["current_temp"]);
-	}
-	$currentlogfilename = explode(";",$currentlogfilename);
-	// currrent.csv contains 2*channel_count and 3 additional fields before the file name
-	$currentlogfilename = $currentlogfilename[$_SESSION["channel_count"] * 2 + 2];
+	$currentlogfilename = getCurrentLogFileName();
 	//echo $currentlogfilename;
-	
 //-------------------------------------------------------------------------------------------------------------------------------------
 // WLANThermo.conf einlesen ###########################################################################################################
 //-------------------------------------------------------------------------------------------------------------------------------------

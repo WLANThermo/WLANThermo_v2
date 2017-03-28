@@ -52,7 +52,13 @@ function getConfig ($filename, $commentchar) {
 //-----------------------------------------------------------------------------------
 
 function getConfigPath(){
-	return "./conf/WLANThermo.conf";
+	if (file_exists("./conf/WLANThermo.conf")) {
+		return "./conf/WLANThermo.conf";
+	}elseif(file_exists("../conf/WLANThermo.conf")) {
+		return "../conf/WLANThermo.conf";
+	}else{
+		return "False";
+	}
 }
 
 //-----------------------------------------------------------------------------------
@@ -61,7 +67,12 @@ function getConfigPath(){
 
 function getCurrentTempPath(){
 	$configPath = getConfigPath();
+	$configPath2 = ".".$configPath."";
 	if (file_exists($configPath)) {
+		if(get_magic_quotes_runtime()) set_magic_quotes_runtime(0);
+		$config = getConfig($configPath , ";");
+		return $config['filepath']['current_temp'];
+	}elseif(file_exists($configPath2)) {
 		if(get_magic_quotes_runtime()) set_magic_quotes_runtime(0);
 		$config = getConfig($configPath , ";");
 		return $config['filepath']['current_temp'];
@@ -82,7 +93,8 @@ function getCurrentLogFileName(){
 			$currenttemp = file_get_contents($currentTempPath);
 		}
 		$temp = explode(";",$currenttemp);
-		$currentlogfilename = "".$temp[18].".csv";
+		$currentlogfilename = array_values($temp);
+		$currentlogfilename = (isset($currentlogfilename[count($currentlogfilename)-1])) ? $currentlogfilename[count($currentlogfilename)-1] : null;
 		return $currentlogfilename;
 	}else{
 		return "False";
@@ -97,6 +109,7 @@ function getLogfiles() {
 	$directory_log = './thermolog/';
 	$directory_plot = './thermoplot/';
 	$currentlogfilename = getCurrentLogFileName();
+	$currentlogfilename = "".$currentlogfilename.".csv";
 	$readFiles = array();
 	$iterator = new DirectoryIterator($directory_log);
 	foreach ($iterator as $fileinfo) {
