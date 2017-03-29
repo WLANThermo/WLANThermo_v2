@@ -1,3 +1,9 @@
+wlanthermo (2.6.2) stable; urgency=medium
+
+  * FIX: Plots weren´t created
+
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Mon, 27 Mar 2017 11:50:00 +0200
+
 wlanthermo (2.6.1) stable; urgency=medium
 
   * FIX: Add missing /dev/serial* devices during installation
