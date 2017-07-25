@@ -37,6 +37,7 @@ from bitstring import BitArray
 import pigpio
 from struct import pack, unpack
 import json
+import statistics
 
 gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -528,6 +529,7 @@ try:
 
             temp_unit = new_config.get('locale', 'temp_unit')
 
+            sensorname = [Config_Sensor.get(sensortyp[kanal], 'Name') for kanal in xrange(channel_count)]
         
         if os.path.isfile('/var/www/alert.ack'):
             logger.info('alert.ack vorhanden')
@@ -546,47 +548,38 @@ try:
             os.unlink('/var/www/alert.test')
         
         logger.debug(u'Measuring {} channels'.format(channel_count))
+
+        samples = [[] for i in xrange(8)]
+
+        for i in xrange(iterations):
+            for kanal in xrange(8):
+                if version == 'v1' or sensorname[kanal] == 'KTYPE':
+                    # Nicht invertiert messen
+                    samples[kanal].append(get_channel_mcp(kanal))
+                else:
+                    # Spannungsteiler ist nach v1 anders herum aufgebaut
+                    samples[kanal].append(4095 - get_channel_mcp(kanal))
+
         for kanal in xrange(channel_count):
-            sensorname = Config_Sensor.get(sensortyp[kanal],'Name')
             Temp = 0.0
             WerteArray = []
             if not kanal > 7:
-                for i in xrange(iterations):
-                    # Anzahl iterations Werte messen und Durchschnitt bilden
-                    if version == 'v1' or sensorname == 'KTYPE':
-                        # Nicht invertiert messen
-                        Wert = get_channel_mcp(kanal)
+                median_value = median_filter(samples[kanal])
+                if (median_value > 15) and (median_value < 4080):
+                    if (sensorname[kanal] != 'KTYPE'):
+                            Rtheta = messwiderstand[kanal]*((4096.0/median_value) - 1)
+                            Temperatur[kanal] = round(temperatur_sensor(Rtheta, sensortyp[kanal], temp_unit), 2)
                     else:
-                        # Spannungsteiler ist nach v1 anders herum aufgebaut
-                        Wert = 4095 - get_channel_mcp(kanal)
-                        
-                    if (Wert > 15) and (Wert < 4080) and (sensorname != 'KTYPE'):
-                        # sinnvoller Wertebereich
-                        WerteArray.append(Wert)
-                    elif sensorname == 'KTYPE':
-                        # AD595 = 10mV/Â°C
+                        # AD595 = 10mV/°C
                         if temp_unit == 'celsius':
-                            Temperatur[kanal] = Wert * 330/4096
+                            Temperatur[kanal] = median_value * 330 / 4096
                         elif temp_unit == 'fahrenheit':
-                            Temperatur[kanal] = (Wert * 330/4096) * 1.8 + 32
-                    else:
-                        Temperatur[kanal] = None
-                            
-                if (sensorname != 'KTYPE'):
-                    gute = len(WerteArray)
-                    if (gute > (iterations * 0.6)):
-                        # Messwerte nur gültig wenn x% OK sind
-                        # Medianfilter anwenden
-                        median_value = median_filter(WerteArray)
-                        Rtheta = messwiderstand[kanal]*((4096.0/median_value) - 1)
-                        Temperatur[kanal] = round(temperatur_sensor(Rtheta, sensortyp[kanal], temp_unit), 2)
-                        #else:
-                        #    # Behalte alten Wert 
-                        #    Temperatur[kanal] = Temperatur[kanal] 
-                    elif (gute <= 0):
-                        Temperatur[kanal] = None               # kein sinnvoller Messwert, Errorwert setzen
-                if (gute <> iterations) and (gute > 0):
-                    warnung = 'Channel:{kanal} could only measure {gute} out of {iterations}!'.format(kanal=kanal, gute=gute, iterations=iterations)
+                            Temperatur[kanal] = (median_value * 330 / 4096) * 1.8 + 32
+                else:
+                    Temperatur[kanal] = None
+                variance = statistics.pvariance(samples[kanal])
+                if variance > 4:
+                    warnung = 'Channel:{kanal} variance: {variance} in {iterations}, median @ {median_value}!'.format(kanal=kanal, variance=variance, iterations=iterations, median_value=median_value)
                     logger.warning(warnung)
                 logger.debug(u'Channel {}, MCP3128 {}, temperature {}'.format(kanal, kanal, Temperatur[kanal]))
             elif version == u'miniV2' and kanal <= 9:
