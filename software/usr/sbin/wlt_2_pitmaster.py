@@ -179,9 +179,9 @@ class BBQpit:
             # Servosteuerung für Damper
             self.pi.set_mode(servo_gpio, pigpio.OUTPUT)
             if not self.pit_servo_inverted:
-                self.pi.set_servo_pulsewidth(servo_gpio, self.pit_min)
+                self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_min)
             else:
-                self.pi.set_servo_pulsewidth(servo_gpio, self.pit_max)
+                self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_max)
             self.pit_gpio = gpio
             self.pit_servo_gpio = servo_gpio
             self.pit_type = pit_type
