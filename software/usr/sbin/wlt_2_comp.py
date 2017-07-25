@@ -467,66 +467,67 @@ try:
                 break
             config_mtime = new_config_mtime
         
-        pit_on = new_config.getboolean('ToDo','pit_on')
-        pit2_on = new_config.getboolean('ToDo','pit2_on')
-        
-        for kanal in xrange (channel_count):
-            try:
-                temp_max[kanal] = new_config.getfloat('temp_max','temp_max' + str(kanal))
-            except ValueError:
-                logger.error(u'Error reading upper limit on channel ' + str(kanal))
-                temp_max[kanal] = 200
-            
-            try:
-                temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
-            except ValueError:
-                logger.error(u'Error reading lower limit on channel ' + str(kanal))
-                temp_max[kanal] = -20
-            
-            try:
-                messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
-            except ValueError:
-                logger.error(u'Error reading measurement resistor on channel ' + str(kanal))
-                messwiderstand[kanal] = 47    
-            
-            sensortyp[kanal] = new_config.get('Sensoren','CH' + str(kanal))
-            kanal_name[kanal] = new_config.get('ch_name','ch_name' + str(kanal))
-            
-        #Soundoption einlesen
-        sound_on = new_config.getboolean('Sound','Beeper_enabled')
+            pit_on = new_config.getboolean('ToDo','pit_on')
+            pit2_on = new_config.getboolean('ToDo','pit2_on')
 
-        #Einlesen, ueber wieviele Messungen integriert wird 
-        iterations = new_config.getint('Messen','Iterations')
+            for kanal in xrange (channel_count):
+                try:
+                    temp_max[kanal] = new_config.getfloat('temp_max','temp_max' + str(kanal))
+                except ValueError:
+                    logger.error(u'Error reading upper limit on channel ' + str(kanal))
+                    temp_max[kanal] = 200
 
-        #delay zwischen jeweils 8 Messungen einlesen 
-        delay = new_config.getfloat('Messen','Delay')
-        
-        # Allgemeine Alarmeinstellungen
-        alarm_high_template = new_config.get('Alert', 'alarm_high_template')
-        alarm_low_template = new_config.get('Alert', 'alarm_low_template')
-        status_template = new_config.get('Alert', 'status_template')
-        message_template = new_config.get('Alert', 'message_template')
-        
-        try:
-            status_interval = new_config.getint('Alert', 'status_interval')
-        except ValueError:
-            logger.error(u'Error reading status interval from config')
-            status_interval = 0
-            
-        try:
-            alarm_interval = new_config.getint('Alert', 'alarm_interval')
-        except ValueError:
-            logger.error(u'Error reading alarm interval from config')
-            alarm_interval = 0
+                try:
+                    temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
+                except ValueError:
+                    logger.error(u'Error reading lower limit on channel ' + str(kanal))
+                    temp_max[kanal] = -20
 
-        # Einlesen welche Alarmierungsart aktiv ist
-        Email_alert = new_config.getboolean('Email','email_alert')
-        WhatsApp_alert = new_config.getboolean('WhatsApp','whatsapp_alert')
-        Push_alert = new_config.getboolean('Push', 'push_on')
-        Telegram_alert = new_config.getboolean('Telegram', 'telegram_alert')
-        App_alert = new_config.getboolean('App', 'app_alert')
-        
-        temp_unit = new_config.get('locale', 'temp_unit')
+                try:
+                    messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
+                except ValueError:
+                    logger.error(u'Error reading measurement resistor on channel ' + str(kanal))
+                    messwiderstand[kanal] = 47
+
+                sensortyp[kanal] = new_config.get('Sensoren','CH' + str(kanal))
+                kanal_name[kanal] = new_config.get('ch_name','ch_name' + str(kanal))
+
+            #Soundoption einlesen
+            sound_on = new_config.getboolean('Sound','Beeper_enabled')
+
+            #Einlesen, ueber wieviele Messungen integriert wird
+            iterations = new_config.getint('Messen','Iterations')
+
+            #delay zwischen jeweils 8 Messungen einlesen
+            delay = new_config.getfloat('Messen','Delay')
+
+            # Allgemeine Alarmeinstellungen
+            alarm_high_template = new_config.get('Alert', 'alarm_high_template')
+            alarm_low_template = new_config.get('Alert', 'alarm_low_template')
+            status_template = new_config.get('Alert', 'status_template')
+            message_template = new_config.get('Alert', 'message_template')
+
+            try:
+                status_interval = new_config.getint('Alert', 'status_interval')
+            except ValueError:
+                logger.error(u'Error reading status interval from config')
+                status_interval = 0
+
+            try:
+                alarm_interval = new_config.getint('Alert', 'alarm_interval')
+            except ValueError:
+                logger.error(u'Error reading alarm interval from config')
+                alarm_interval = 0
+
+            # Einlesen welche Alarmierungsart aktiv ist
+            Email_alert = new_config.getboolean('Email','email_alert')
+            WhatsApp_alert = new_config.getboolean('WhatsApp','whatsapp_alert')
+            Push_alert = new_config.getboolean('Push', 'push_on')
+            Telegram_alert = new_config.getboolean('Telegram', 'telegram_alert')
+            App_alert = new_config.getboolean('App', 'app_alert')
+
+            temp_unit = new_config.get('locale', 'temp_unit')
+
         
         if os.path.isfile('/var/www/alert.ack'):
             logger.info('alert.ack vorhanden')
