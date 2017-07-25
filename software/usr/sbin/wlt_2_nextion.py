@@ -44,7 +44,7 @@ NX_channel = 0
 NX_page = 0
 NX_enhanced = False
 
-version = '0.22'
+version = '0.23'
 
 temps = dict()
 channels = dict()
@@ -749,7 +749,7 @@ def pitmaster_setvalues(id = 0, pit_ch = None, pit_set = None, pit_lid=  None, p
             if pit_pid is not None:
                 newconfig.set('Pitmaster' + instance_string, 'pit_controller_type', ['False', 'PID'][int(pit_pid)])
             if pit_type is not None:
-                newconfig.set('Pitmaster' + instance_string, 'pit_type', ['fan', 'servo', 'io', 'io_pwm', 'fan_pwm'][int(pit_type)])
+                newconfig.set('Pitmaster' + instance_string, 'pit_type', ['fan', 'servo', 'io', 'io_pwm', 'fan_pwm', 'damper'][int(pit_type)])
                 
             config_write(configfile, newconfig)
     except ValueError:
@@ -967,7 +967,7 @@ def NX_display():
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
-    nextion_versions = ['v2.4']
+    nextion_versions = ['v2.5', 'v2.4']
     
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
@@ -1092,7 +1092,7 @@ def NX_display():
     for interface in interfaces:
         values['wlaninfo.' + interfaces[interface]['name'] + '.txt:20'] = interfaces[interface]['ip']
 
-    pit_types = {'fan':0, 'servo':1, 'io':2, 'io_pwm':3, 'fan_pwm':4}
+    pit_types = {'fan':0, 'servo':1, 'io':2, 'io_pwm':3, 'fan_pwm':4, 'damper': 5}
 
     values['main.pitmaster.val'] = pitmaster_count
 
