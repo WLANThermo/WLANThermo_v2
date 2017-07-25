@@ -293,7 +293,10 @@ def get_steps(steps_str):
     retval = []
     for step in steps:
         step_fields = step.split("!")
-        retval.append((step_fields[0], step_fields[1]))
+        try:
+            retval.append((float(step_fields[0]), float(step_fields[1])))
+        except ValueError:
+            logger.error('Illegal step in configuration: ', step_fields[0])
     return retval
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
