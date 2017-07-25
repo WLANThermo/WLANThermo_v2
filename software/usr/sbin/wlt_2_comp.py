@@ -25,7 +25,6 @@ import time
 import math
 import string
 import logging
-import RPi.GPIO as GPIO
 import urllib
 import urllib2
 import psutil
@@ -40,12 +39,6 @@ from struct import pack, unpack
 import json
 
 gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
-
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
-
-HIGH = True  # HIGH-Pegel
-LOW  = False # LOW-Pegel
 
 # Konfigurationsdatei einlesen
 defaults = {'pit_control_out':'True'}
@@ -399,19 +392,19 @@ init_softspi_mcp()
 init_softspi_max31855_1()
 init_softspi_max31855_2()
 # Pin-Programmierung (Pitmaster)
-GPIO.setup(PWM, GPIO.OUT)
-GPIO.setup(IO, GPIO.OUT)
+pi.set_mode(PWM, pigpio.OUTPUT)
+pi.set_mode(IO, pigpio.OUTPUT)
 
 # Pin-Programmierung (Beeper)
-GPIO.setup(BEEPER,  GPIO.OUT)
+pi.set_mode(BEEPER, pigpio.OUTPUT)
 
-GPIO.output(PWM, LOW)
-GPIO.output(IO, LOW)
+pi.write(PWM, 0)
+pi.write(IO, 0)
 
 if sound_on_start:
-    GPIO.output(BEEPER, HIGH)
+    pi.write(BEEPER, 1)
     time.sleep(1)
-    GPIO.output(BEEPER, LOW)
+    pi.write(BEEPER, 0)
 
 # Pfad fuer die uebergabedateien auslesen und auftrennen in Pfad und Dateinamen
 curPath,curFile = os.path.split(current_temp)
@@ -674,17 +667,17 @@ try:
         if alarm_irgendwo:
             if sound_on:
                 logger.debug('BEEPER!!!')
-                GPIO.output (BEEPER, HIGH)
+                pi.write(BEEPER, 1)
                 time.sleep(0.2)
-                GPIO.output (BEEPER, LOW)
+                pi.write(BEEPER, 0)
                 time.sleep(0.2)
-                GPIO.output (BEEPER, HIGH)
+                pi.write(BEEPER, 1)
                 time.sleep(0.2)
-                GPIO.output (BEEPER, LOW)
+                pi.write(BEEPER, 0)
                 time.sleep(0.2)
-                GPIO.output (BEEPER, HIGH)
+                pi.write(BEEPER, 1)
                 time.sleep(0.2)
-                GPIO.output (BEEPER, LOW)
+                pi.write(BEEPER, 0)
             if alarm_interval > 0 and alarm_time + alarm_interval < time.time():
                 # Alarm erneut senden
                 alarm_repeat = True
