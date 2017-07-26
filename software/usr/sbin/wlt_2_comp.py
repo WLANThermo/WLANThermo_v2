@@ -33,11 +33,35 @@ import traceback
 import gettext
 import codecs
 import subprocess
-from bitstring import BitArray
+from bitstring import Bits
 import pigpio
 from struct import pack, unpack
 import json
+import spidev
 import statistics
+
+
+def bl_int(listofbytes):
+    result = 0
+    for byte in listofbytes:
+        result *= 256
+        result += byte
+    return result
+
+
+def bl_bytes(listofbytes):
+    result = ''
+    for byte in listofbytes:
+        result += chr(byte)
+    return result
+
+
+def bytes_bl(bytes):
+    result = []
+    for byte in bytes:
+        result.append(ord(byte))
+    return result
+
 
 gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -173,26 +197,34 @@ def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
         
                    
 def init_softspi_mcp():
-    try:
-        retval = pi.bb_spi_open(CS, MISO, MOSI, SCLK, 250000, 0)
-    except pigpio.error as e:
-        if str(e) == "'GPIO already in use'":
-            retval = 0
-        else:
-            raise
+    global spi_mcp
+    spi_mcp = spidev.SpiDev()
+    spi_mcp.open(32766, 0)
 
 
 def get_channel_mcp(channel):
+    global spi_mcp
     if channel > 7:
         raise ValueError()
-    command = pack('>Hx', (0x18 + channel) << 6)
-    return unpack('>xH', pi.bb_spi_xfer(CS, command)[1])[0] & 0x0FFF
+    # B0: Start byte, single channel + msb from channel
+    # B1: 2 lsb from channel
+    # B2: fill byte for transfer
+    command = [0x06 | ((channel & 0x04) >> 2), (channel & 0x03) << 6, 0x00]
+    return bl_int(spi_mcp.xfer(command)) & 0x0fff
 
 
 def get_channel_max31855(channel):
-    if channel > 1:
+    global spi_max31855_1
+    global spi_max31855_2
+
+    if channel == 0:
+        spi = spi_max31855_1
+    elif channel == 1:
+        spi = spi_max31855_2
+    else:
         raise ValueError()
-    data = BitArray(pi.bb_spi_xfer(8 - channel, '\00\00')[1])
+
+    data = Bits(bytes=bl_bytes(spi.xfer([0, 0])))
     if data[15]:
         return None
     else:
@@ -200,27 +232,18 @@ def get_channel_max31855(channel):
 
 
 def init_softspi_max31855_1():
-    try:
-        retval = pi.bb_spi_open(CS_MAX1, MISO, MOSI, SCLK, 250000, 0)
-    except pigpio.error as e:
-        if str(e) == "'GPIO already in use'":
-            retval = 0
-        else:
-            raise
-        
-    return retval == 0
+    global spi_max31855_1
+
+    spi_max31855_1 = spidev.SpiDev()
+    spi_max31855_1.open(32766, 1)
 
 
 def init_softspi_max31855_2():
-    try:
-        retval = pi.bb_spi_open(CS_MAX2, MISO, MOSI, SCLK, 250000, 0)
-    except pigpio.error as e:
-        if str(e) == "'GPIO already in use'":
-            retval = 0
-        else:
-            raise
-            
-    return retval == 0
+    global spi_max31855_2
+
+    spi_max31855_2 = spidev.SpiDev()
+    spi_max31855_2.open(32766, 2)
+
 
 
 def temperatur_sensor (Rt, typ, unit): #Ermittelt die Temperatur
@@ -899,8 +922,5 @@ try:
 
 except KeyboardInterrupt:
     logger.info(u'WLANThermo stopped!')
-    pi.bb_spi_close(25)
-    pi.bb_spi_close(8)
-    pi.bb_spi_close(7)
     logging.shutdown()
     os.unlink(pidfilename)
