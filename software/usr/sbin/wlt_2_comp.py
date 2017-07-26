@@ -25,7 +25,6 @@ import time
 import math
 import string
 import logging
-import RPi.GPIO as GPIO
 import urllib
 import urllib2
 import psutil
@@ -38,14 +37,9 @@ from bitstring import BitArray
 import pigpio
 from struct import pack, unpack
 import json
+import statistics
 
 gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
-
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
-
-HIGH = True  # HIGH-Pegel
-LOW  = False # LOW-Pegel
 
 # Konfigurationsdatei einlesen
 defaults = {'pit_control_out':'True'}
@@ -399,19 +393,19 @@ init_softspi_mcp()
 init_softspi_max31855_1()
 init_softspi_max31855_2()
 # Pin-Programmierung (Pitmaster)
-GPIO.setup(PWM, GPIO.OUT)
-GPIO.setup(IO, GPIO.OUT)
+pi.set_mode(PWM, pigpio.OUTPUT)
+pi.set_mode(IO, pigpio.OUTPUT)
 
 # Pin-Programmierung (Beeper)
-GPIO.setup(BEEPER,  GPIO.OUT)
+pi.set_mode(BEEPER, pigpio.OUTPUT)
 
-GPIO.output(PWM, LOW)
-GPIO.output(IO, LOW)
+pi.write(PWM, 0)
+pi.write(IO, 0)
 
 if sound_on_start:
-    GPIO.output(BEEPER, HIGH)
+    pi.write(BEEPER, 1)
     time.sleep(1)
-    GPIO.output(BEEPER, LOW)
+    pi.write(BEEPER, 0)
 
 # Pfad fuer die uebergabedateien auslesen und auftrennen in Pfad und Dateinamen
 curPath,curFile = os.path.split(current_temp)
@@ -474,66 +468,68 @@ try:
                 break
             config_mtime = new_config_mtime
         
-        pit_on = new_config.getboolean('ToDo','pit_on')
-        pit2_on = new_config.getboolean('ToDo','pit2_on')
-        
-        for kanal in xrange (channel_count):
-            try:
-                temp_max[kanal] = new_config.getfloat('temp_max','temp_max' + str(kanal))
-            except ValueError:
-                logger.error(u'Error reading upper limit on channel ' + str(kanal))
-                temp_max[kanal] = 200
-            
-            try:
-                temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
-            except ValueError:
-                logger.error(u'Error reading lower limit on channel ' + str(kanal))
-                temp_max[kanal] = -20
-            
-            try:
-                messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
-            except ValueError:
-                logger.error(u'Error reading measurement resistor on channel ' + str(kanal))
-                messwiderstand[kanal] = 47    
-            
-            sensortyp[kanal] = new_config.get('Sensoren','CH' + str(kanal))
-            kanal_name[kanal] = new_config.get('ch_name','ch_name' + str(kanal))
-            
-        #Soundoption einlesen
-        sound_on = new_config.getboolean('Sound','Beeper_enabled')
+            pit_on = new_config.getboolean('ToDo','pit_on')
+            pit2_on = new_config.getboolean('ToDo','pit2_on')
 
-        #Einlesen, ueber wieviele Messungen integriert wird 
-        iterations = new_config.getint('Messen','Iterations')
+            for kanal in xrange (channel_count):
+                try:
+                    temp_max[kanal] = new_config.getfloat('temp_max','temp_max' + str(kanal))
+                except ValueError:
+                    logger.error(u'Error reading upper limit on channel ' + str(kanal))
+                    temp_max[kanal] = 200
 
-        #delay zwischen jeweils 8 Messungen einlesen 
-        delay = new_config.getfloat('Messen','Delay')
-        
-        # Allgemeine Alarmeinstellungen
-        alarm_high_template = new_config.get('Alert', 'alarm_high_template')
-        alarm_low_template = new_config.get('Alert', 'alarm_low_template')
-        status_template = new_config.get('Alert', 'status_template')
-        message_template = new_config.get('Alert', 'message_template')
-        
-        try:
-            status_interval = new_config.getint('Alert', 'status_interval')
-        except ValueError:
-            logger.error(u'Error reading status interval from config')
-            status_interval = 0
-            
-        try:
-            alarm_interval = new_config.getint('Alert', 'alarm_interval')
-        except ValueError:
-            logger.error(u'Error reading alarm interval from config')
-            alarm_interval = 0
+                try:
+                    temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
+                except ValueError:
+                    logger.error(u'Error reading lower limit on channel ' + str(kanal))
+                    temp_max[kanal] = -20
 
-        # Einlesen welche Alarmierungsart aktiv ist
-        Email_alert = new_config.getboolean('Email','email_alert')
-        WhatsApp_alert = new_config.getboolean('WhatsApp','whatsapp_alert')
-        Push_alert = new_config.getboolean('Push', 'push_on')
-        Telegram_alert = new_config.getboolean('Telegram', 'telegram_alert')
-        App_alert = new_config.getboolean('App', 'app_alert')
-        
-        temp_unit = new_config.get('locale', 'temp_unit')
+                try:
+                    messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
+                except ValueError:
+                    logger.error(u'Error reading measurement resistor on channel ' + str(kanal))
+                    messwiderstand[kanal] = 47
+
+                sensortyp[kanal] = new_config.get('Sensoren','CH' + str(kanal))
+                kanal_name[kanal] = new_config.get('ch_name','ch_name' + str(kanal))
+
+            #Soundoption einlesen
+            sound_on = new_config.getboolean('Sound','Beeper_enabled')
+
+            #Einlesen, ueber wieviele Messungen integriert wird
+            iterations = new_config.getint('Messen','Iterations')
+
+            #delay zwischen jeweils 8 Messungen einlesen
+            delay = new_config.getfloat('Messen','Delay')
+
+            # Allgemeine Alarmeinstellungen
+            alarm_high_template = new_config.get('Alert', 'alarm_high_template')
+            alarm_low_template = new_config.get('Alert', 'alarm_low_template')
+            status_template = new_config.get('Alert', 'status_template')
+            message_template = new_config.get('Alert', 'message_template')
+
+            try:
+                status_interval = new_config.getint('Alert', 'status_interval')
+            except ValueError:
+                logger.error(u'Error reading status interval from config')
+                status_interval = 0
+
+            try:
+                alarm_interval = new_config.getint('Alert', 'alarm_interval')
+            except ValueError:
+                logger.error(u'Error reading alarm interval from config')
+                alarm_interval = 0
+
+            # Einlesen welche Alarmierungsart aktiv ist
+            Email_alert = new_config.getboolean('Email','email_alert')
+            WhatsApp_alert = new_config.getboolean('WhatsApp','whatsapp_alert')
+            Push_alert = new_config.getboolean('Push', 'push_on')
+            Telegram_alert = new_config.getboolean('Telegram', 'telegram_alert')
+            App_alert = new_config.getboolean('App', 'app_alert')
+
+            temp_unit = new_config.get('locale', 'temp_unit')
+
+            sensorname = [Config_Sensor.get(sensortyp[kanal], 'Name') for kanal in xrange(channel_count)]
         
         if os.path.isfile('/var/www/alert.ack'):
             logger.info('alert.ack vorhanden')
@@ -552,47 +548,38 @@ try:
             os.unlink('/var/www/alert.test')
         
         logger.debug(u'Measuring {} channels'.format(channel_count))
+
+        samples = [[] for i in xrange(8)]
+
+        for i in xrange(iterations):
+            for kanal in xrange(8):
+                if version == 'v1' or sensorname[kanal] == 'KTYPE':
+                    # Nicht invertiert messen
+                    samples[kanal].append(get_channel_mcp(kanal))
+                else:
+                    # Spannungsteiler ist nach v1 anders herum aufgebaut
+                    samples[kanal].append(4095 - get_channel_mcp(kanal))
+
         for kanal in xrange(channel_count):
-            sensorname = Config_Sensor.get(sensortyp[kanal],'Name')
             Temp = 0.0
             WerteArray = []
             if not kanal > 7:
-                for i in xrange(iterations):
-                    # Anzahl iterations Werte messen und Durchschnitt bilden
-                    if version == 'v1' or sensorname == 'KTYPE':
-                        # Nicht invertiert messen
-                        Wert = get_channel_mcp(kanal)
+                median_value = median_filter(samples[kanal])
+                if (median_value > 15) and (median_value < 4080):
+                    if (sensorname[kanal] != 'KTYPE'):
+                            Rtheta = messwiderstand[kanal]*((4096.0/median_value) - 1)
+                            Temperatur[kanal] = round(temperatur_sensor(Rtheta, sensortyp[kanal], temp_unit), 2)
                     else:
-                        # Spannungsteiler ist nach v1 anders herum aufgebaut
-                        Wert = 4095 - get_channel_mcp(kanal)
-                        
-                    if (Wert > 15) and (Wert < 4080) and (sensorname != 'KTYPE'):
-                        # sinnvoller Wertebereich
-                        WerteArray.append(Wert)
-                    elif sensorname == 'KTYPE':
-                        # AD595 = 10mV/Â°C
+                        # AD595 = 10mV/°C
                         if temp_unit == 'celsius':
-                            Temperatur[kanal] = Wert * 330/4096
+                            Temperatur[kanal] = median_value * 330 / 4096
                         elif temp_unit == 'fahrenheit':
-                            Temperatur[kanal] = (Wert * 330/4096) * 1.8 + 32
-                    else:
-                        Temperatur[kanal] = None
-                            
-                if (sensorname != 'KTYPE'):
-                    gute = len(WerteArray)
-                    if (gute > (iterations * 0.6)):
-                        # Messwerte nur gültig wenn x% OK sind
-                        # Medianfilter anwenden
-                        median_value = median_filter(WerteArray)
-                        Rtheta = messwiderstand[kanal]*((4096.0/median_value) - 1)
-                        Temperatur[kanal] = round(temperatur_sensor(Rtheta, sensortyp[kanal], temp_unit), 2)
-                        #else:
-                        #    # Behalte alten Wert 
-                        #    Temperatur[kanal] = Temperatur[kanal] 
-                    elif (gute <= 0):
-                        Temperatur[kanal] = None               # kein sinnvoller Messwert, Errorwert setzen
-                if (gute <> iterations) and (gute > 0):
-                    warnung = 'Channel:{kanal} could only measure {gute} out of {iterations}!'.format(kanal=kanal, gute=gute, iterations=iterations)
+                            Temperatur[kanal] = (median_value * 330 / 4096) * 1.8 + 32
+                else:
+                    Temperatur[kanal] = None
+                variance = statistics.pvariance(samples[kanal])
+                if variance > 4:
+                    warnung = 'Channel:{kanal} variance: {variance} in {iterations}, median @ {median_value}!'.format(kanal=kanal, variance=variance, iterations=iterations, median_value=median_value)
                     logger.warning(warnung)
                 logger.debug(u'Channel {}, MCP3128 {}, temperature {}'.format(kanal, kanal, Temperatur[kanal]))
             elif version == u'miniV2' and kanal <= 9:
@@ -674,17 +661,17 @@ try:
         if alarm_irgendwo:
             if sound_on:
                 logger.debug('BEEPER!!!')
-                GPIO.output (BEEPER, HIGH)
+                pi.write(BEEPER, 1)
                 time.sleep(0.2)
-                GPIO.output (BEEPER, LOW)
+                pi.write(BEEPER, 0)
                 time.sleep(0.2)
-                GPIO.output (BEEPER, HIGH)
+                pi.write(BEEPER, 1)
                 time.sleep(0.2)
-                GPIO.output (BEEPER, LOW)
+                pi.write(BEEPER, 0)
                 time.sleep(0.2)
-                GPIO.output (BEEPER, HIGH)
+                pi.write(BEEPER, 1)
                 time.sleep(0.2)
-                GPIO.output (BEEPER, LOW)
+                pi.write(BEEPER, 0)
             if alarm_interval > 0 and alarm_time + alarm_interval < time.time():
                 # Alarm erneut senden
                 alarm_repeat = True

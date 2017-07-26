@@ -1,3 +1,11 @@
+wlanthermo (2.7.0) stable; urgency=medium
+
+  * ADD: Damper support
+  * CHANGE: Changed sampling order
+  * FIX: Better supression of ghost values
+
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Tue, 25 Jul 2017 11:50:00 +0200
+
 wlanthermo (2.6.2) stable; urgency=medium
 
   * FIX: Plots weren´t created
