@@ -350,12 +350,13 @@ IO          = 2
 
 #Hardwareversion einlesen
 version = Config.get('Hardware','version')
+enable_max31855 = Config.getboolean('Hardware', 'max31855')
 
 #Log Dateinamen aus der config lesen
 current_temp = Config.get('filepath','current_temp')
 
 # Kanalvariablen-Initialisierung
-if version == u'miniV2':
+if version == u'miniV2' and enable_max31855:
     channel_count = 12
 else:
     channel_count = 10
@@ -582,12 +583,12 @@ try:
                     warnung = 'Channel:{kanal} variance: {variance} in {iterations}, median @ {median_value}!'.format(kanal=kanal, variance=variance, iterations=iterations, median_value=median_value)
                     logger.warning(warnung)
                 logger.debug(u'Channel {}, MCP3128 {}, temperature {}'.format(kanal, kanal, Temperatur[kanal]))
-            elif version == u'miniV2' and kanal <= 9:
+            elif version == u'miniV2'  and enable_max31855 and kanal <= 9:
                 Temperatur[kanal] = get_channel_max31855(kanal - 8)
                 logger.debug(u'Channel {}, MAX31855 {}, temperature {}'.format(kanal, kanal - 8, Temperatur[kanal]))
             else:
                 if maverick is None:
-                    Temperatur_alarm[kanal] = 'no'
+                    Temperatur[kanal] = None
                 else:
                     logger.debug(u'Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - channel_count + 3, Temperatur[kanal]))
                     maverick_value = maverick['temperature_' + str(kanal - channel_count + 3)]
@@ -704,7 +705,6 @@ try:
                 Email_to = new_config.get('Email','email_to')
                 Email_subject = new_config.get('Email','email_subject')
                 Email_STARTTLS = new_config.getboolean ('Email','starttls')
-                
                 alarm_email(Email_server,Email_user,Email_password, Email_STARTTLS, Email_from, Email_to, Email_subject, alarm_message)
                 
             if WhatsApp_alert:
