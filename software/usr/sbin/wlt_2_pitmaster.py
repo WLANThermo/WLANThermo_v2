@@ -651,9 +651,9 @@ def main(instance):
                             msg +=_(u"|dif: ") + str(dif)
                             if (dif <= float(step)):
                                 calc = 1
-                                msg += _(u"|step: ") + step
+                                msg += _(u"|step: ") + str(step)
                                 pit_new = float(val)
-                                msg += _(u"|new: ") + val
+                                msg += _(u"|new: ") + str(val)
                             if (pit_now >= pit_set):
                                 calc = 1
                                 pit_new = 0
