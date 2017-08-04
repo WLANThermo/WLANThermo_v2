@@ -487,13 +487,12 @@ def main(instance):
                     if pit_type != pit_type_new:
                         logger.debug(_(u'Setting pit type to: ') + pit_type_new)
                         # GPIO aus der Config
+                        pit_servo_gpio_new = pitmaster_hwconfig['servo']
                         if pit_type_new == 'damper':
                             # Damper ist immer fan + servo
                             pit_gpio_new = pitmaster_hwconfig['fan']
-                            pit_servo_gpio_new = pitmaster_hwconfig['servo']
                         else:
                             pit_gpio_new = pitmaster_hwconfig[pit_type_new]
-                            pit_servo_gpio_new = None
                         logger.debug(_(u'Setting pit GPIO to: ') + str(pit_gpio_new))
                         logger.debug(_(u'Setting servo GPIO to: ') + str(pit_servo_gpio_new))
                         restart_pit = True
