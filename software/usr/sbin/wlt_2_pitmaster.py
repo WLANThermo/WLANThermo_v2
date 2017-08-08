@@ -556,7 +556,7 @@ def main(instance):
                     pit_open_lid_falling_border = Config.getfloat('Pitmaster' + instance_string,'pit_open_lid_falling_border')
                     pit_open_lid_rising_border = Config.getfloat('Pitmaster' + instance_string,'pit_open_lid_rising_border')
                     pit_ratelimit_rise = Config.getfloat('Pitmaster' + instance_string,'pit_ratelimit_rise')
-                    pit_ratelimit_lower = Config.getfloat('Pitmaster' + instance_string,'pit_ratelimit_lower')
+                    pit_ratelimit_fall = Config.getfloat('Pitmaster' + instance_string, 'pit_ratelimit_fall')
                     #
                     # PID End Paramter fuer PID einlesen
                     #
@@ -718,8 +718,8 @@ def main(instance):
                     if pit_change > max_rise:
                         pit_new = bbqpit.pit_out + max_rise
                         logger.debug(_(u'Limiting raising rate'))
-                elif pit_change < 0 and pit_ratelimit_lower > 0:
-                    max_lower = -100 / pit_ratelimit_lower * pit_pause
+                elif pit_change < 0 and pit_ratelimit_fall > 0:
+                    max_lower = -100 / pit_ratelimit_fall * pit_pause
                     if pit_change < max_lower:
                         pit_new = bbqpit.pit_out + max_lower
                         logger.debug(_(u'Limiting lowering rate'))
