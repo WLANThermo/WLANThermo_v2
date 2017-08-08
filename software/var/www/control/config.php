@@ -584,6 +584,9 @@ if(isset($_POST["save"])) {
 				if (isset($_POST[$post_prefix . '_pause'])) {
 					$ini[$config_section]['pit_pause'] = to_numeric($_POST[$post_prefix . '_pause']);
 				}
+				// Pitmaster Servo Totband
+				if (isset($_POST[$post_prefix . '_servo_deadband'])) {
+					$ini[$config_section]['pit_servo_deadband'] = to_numeric($_POST[$post_prefix . '_servo_deadband']);
 				}
 				// Pitmaster Ratenbegrenzung steigend
 				if (isset($_POST[$post_prefix . '_ratelimit_rise'])) {
@@ -1205,8 +1208,8 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
             <div class="config_text row_4 col_3"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="<?php echo $post_prefix;?>_damper_offset" id="<?php echo $post_prefix;?>_damper_offset" size="5" maxlength="3" value="<?php if (isset($ini[$config_section]['pit_damper_offset'])) echo $ini[$config_section]['pit_damper_offset'];?>"></div>
             <div class="config_text row_4 col_4"><?php echo gettext("pitch");?>:</div>
             <div class="config_text row_4 col_5"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="<?php echo $post_prefix;?>_damper_pitch" id="<?php echo $post_prefix;?>_damper_pitch" size="5" maxlength="3" value="<?php if (isset($ini[$config_section]['pit_damper_pitch'])) echo $ini[$config_section]['pit_damper_pitch'];?>" ></div>
-			<div class="config_text row_4 col_6"></div>
-			<div class="config_text row_4 col_7"></div>
+			<div class="config_text row_4 col_6"><?php echo gettext("Servo deadband (%)");?>:</div>
+			<div class="config_text row_4 col_7"><input type="text" onkeyup="this.value=this.value.replace(/\D/, '');" name="<?php echo $post_prefix;?>_servo_deadband" id="<?php echo $post_prefix;?>_servo_deadband" size="3" maxlength="3" value="<?php if (isset($ini[$config_section]['pit_servo_deadband'])) echo $ini[$config_section]['pit_servo_deadband'];?>"></div>
 			<div class="config_text row_5 col_1"><?php echo gettext("Rate limit (s)");?></div>
 			<div class="config_text row_5 col_2"><?php echo gettext("rise");?>:</div>
             <div class="config_text row_5 col_3"><input type="text" onkeyup="this.value=this.value.replace(/,/, '.');" name="<?php echo $post_prefix;?>_ratelimit_rise" id="<?php echo $post_prefix;?>_ratelimit_rise" size="5" maxlength="3" value="<?php if (isset($ini[$config_section]['pit_ratelimit_rise'])) echo $ini[$config_section]['pit_ratelimit_rise'];?>"></div>
