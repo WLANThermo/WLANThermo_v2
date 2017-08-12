@@ -1,4 +1,4 @@
-wlanthermo (2.7.0) stable; urgency=medium
+wlanthermo (2.7.0-beta3) wlanthermo-dev; urgency=medium
 
   * ADD: Damper support
   * CHANGE: Changed sampling order

@@ -47,93 +47,30 @@ else
   return 1
 fi
 
-echo "Disable shell and kernel messages on the serial connection"
+echo "Adding Repository to apt"
 echo "----------------------------------------------------------"
-if [ $SYSTEMD == 0 ]; then
-  sed -i /etc/inittab -e "s|^.*:.*:respawn:.*ttyAMA0|#&|"
-fi
-sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
-sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
 
-echo "Enabling locales"
-echo "----------------------------------------------------------"
-sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(de_DE.UTF-8 UTF-8.*)$/\2/m"
-sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(en_GB.UTF-8 UTF-8.*)$/\2/m"
-sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(en_US.UTF-8 UTF-8.*)$/\2/m"
-sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(fr_FR.UTF-8 UTF-8.*)$/\2/m"
-/usr/sbin/locale-gen
-
-program=wlanthermo
-
-echo "Enable the serial connection"
-echo "----------------------------------------------------------"
-SERIAL=$(grep "^enable_uart=1" /boot/config.txt | wc -l)
-
-if [ $SERIAL == 0 ]; then
-  echo "enable_uart=1" >> /boot/config.txt
-  echo "Serial Port is now enabled, please reboot!"
+if [ -f /etc/apt/sources.list/wlanthermo.list ]; then
+  IN_APT=0
 else
-    echo "Serial Port was already enabled."
+  wget https://packages.wlanthermo.net/wlanthermo.list -O /etc/apt/sources.list/wlanthermo.list
 fi
-  
 
-echo "Check Ramdrive and create it if it doesn't exist"
+echo "Adding GPG key to apt"
 echo "----------------------------------------------------------"
-RD=$(cat /etc/fstab|grep /var/www/tmp|grep -v grep|wc -l)
 
-if  [ $RD == 0 ]; then
-  mkdir /var/www/tmp -p
-  if [ "$IMAGE_MODE" == "FALSE" ]; then
-    mount -t tmpfs -o size=16M,mode=770,uid=www-data,gid=www-data tmpfs /var/www/tmp
-  fi
-  echo "tmpfs           /var/www/tmp    tmpfs   size=16M,mode=770,uid=www-data,gid=www-data     0       0" >> /etc/fstab
-  echo -e "[\033[42m\033[30m OK \033[0m] RAM Drive created!"
-fi
-if  [ $RD != 0 ]; then
-  echo -e "[\033[42m\033[30m OK \033[0m] RAM Drive already exists"
-fi
+wget -O - https://packages.wlanthermo.net/wlanthermo.gpg.key | sudo apt-key add - 
 
-echo "Updating System:"
+echo "Updating system"
 echo "----------------------------------------------------------"
+
 apt-get update
-apt-get -y dist-upgrade
-apt-get -y install raspberrypi-sys-mods
+apt-get upgrade -y
 
-echo "Install depencies:"
+echo "Now installing wlanthermo package"
 echo "----------------------------------------------------------"
-aptitude --safe-resolver -y install build-essential sudo vim htop iftop iotop gnuplot-nox lighttpd apache2-utils php5-cgi php5-gd php5-intl php5-curl fswebcam imagemagick pigpio python python-dev python-serial python-psutil python-pyinotify python-urllib3 python3 python3-dev python3-serial ntpstat python-pip python3-pip
-aptitude --safe-resolver -y remove python-pigpio python3-pigpio
 
-echo "Install additional Python packages"
-echo "----------------------------------------------------------"
-pip install bitstring
-
-echo "Updating pigpiod"
-echo "----------------------------------------------------------"
-rm -f /tmp/pigpio.tar
-rm -rf /tmp/PIGPIO
-pushd /tmp
-wget abyz.co.uk/rpi/pigpio/pigpio.tar
-tar xf pigpio.tar
-cd PIGPIO
-
-echo "Removing old pigpiod:"
-echo "----------------------------------------------------------"
-make uninstall
-make prefix=/usr uninstall
-
-echo "Installing new pigpiod, this may take some time!"
-echo "----------------------------------------------------------"
-make -j4
-make prefix=/usr install
-popd
-
-echo "Extract the package"
-echo "----------------------------------------------------------"
-tail -n +$startline $0 > /tmp/${program}.deb
-sleep 2
-echo "Install /tmp/${program}.deb"
-dpkg -i /tmp/${program}.deb
+apt-get install wlanthermo
 
 url=$(cat /etc/hostname)
 echo " "

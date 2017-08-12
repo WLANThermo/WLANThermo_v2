@@ -95,9 +95,11 @@ if (file_exists(dirname(__FILE__).'/tmp/nextionupdate')) {
 }
 if (isset($_SESSION["to_update"])){
 	if ($_SESSION["to_update"] == "True"){
+                /* Obsolete, now done by wlt_2_updateconfig.py
 		if (file_exists(dirname(__FILE__).'/conf/WLANThermo.conf') AND file_exists(dirname(__FILE__).'/conf/WLANThermo.conf.old')) {
 			restoreConfig("./conf/WLANThermo.conf","./conf/WLANThermo.conf.old");
 		}
+                */
 		session("./conf/WLANThermo.conf");
 		echo '<script>$(function() { hideUpdate();});</script>';
 		echo '<script>$(function() { hideLoading();});</script>';
