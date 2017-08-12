@@ -1,7 +1,7 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
-$_SESSION["webGUIversion"] = "V2.7.0beta2";
+$_SESSION["webGUIversion"] = "V2.7.0-beta3";
 $title = "WLANThermo";
 $document_root = getenv('DOCUMENT_ROOT');
 include("gettext.php");
