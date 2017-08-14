@@ -38,7 +38,7 @@ except IndexError:
     sys.exit(1)
 
 def get_random_filename(filename):
-    return filename + '_' + ''.join(random.choice(string.ascii_uppercase + stg.digits) for x in range(12))
+    return filename + '_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(12))
 
 def config_write(configfile, config):
     # Schreibt das Configfile
@@ -51,7 +51,7 @@ def config_write(configfile, config):
             for (key, value) in config.items(section_name):
                 try:
                     new_ini.write(u'{key} = {value}\n'.format(key=key, value=config.get(section_name, key)))
-                except (ConfigParser.NoSectionError, ConfigParser.NoOptionErr:
+                except (ConfigParser.NoSectionError, ConfigParser.NoOptionErr):
                     new_ini.write(u'{key} = {value}\n'.format(key=key, value=ue))
             new_ini.write('\n')
         new_ini.flush()

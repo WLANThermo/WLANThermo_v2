@@ -24,17 +24,20 @@ then
     echo "$passwort"
     htpasswd -c -b /etc/lighttpd/htpasswd wlanthermo $passwort
     rm /var/www/tmp/update # Updateflag zuruecksetzen
+elif [ -f /etc/lighttpd/htpasswd ] && egrep -q '^wlanthermo' /etc/lighttpd/htpasswd
+then
+    echo 'Password already set!'
+
+elif [ -t 0 ]
+then
+    echo 'No password found!'
+    echo 'Please enter the new password for user >wlanthermo< of the protected area!'
+    htpasswd -c /etc/lighttpd/htpasswd wlanthermo
 else
-    if [ -t 0 ]
-    then
-        echo 'No password found!'
-        echo 'Please enter the new password for user >wlanthermo< of the protected area!'
-        htpasswd -c /etc/lighttpd/htpasswd wlanthermo
-    else
-        echo 'No password found!'
-        echo 'Setting default password'
+then
+    echo 'No password found!'
+    echo 'Setting default password >raspberry<'
         htpasswd -c -b /etc/lighttpd/htpasswd wlanthermo raspberry
-    fi
 fi
 
 # Update configuration
