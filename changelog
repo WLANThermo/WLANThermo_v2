@@ -1,10 +1,10 @@
-wlanthermo (2.7.0) stable; urgency=medium
+wlanthermo (2.7.0-beta8) wlanthermo-dev; urgency=medium
 
   * ADD: Damper support
   * CHANGE: Changed sampling order
   * FIX: Better supression of ghost values
 
- -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Tue, 25 Jul 2017 11:50:00 +0200
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Mon, 14 Aug 2017 16:50:00 +0200
 
 wlanthermo (2.6.2) stable; urgency=medium
 

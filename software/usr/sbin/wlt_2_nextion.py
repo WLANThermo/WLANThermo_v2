@@ -637,6 +637,7 @@ def config_getvalues():
         config.readfp(codecs.open(configfile, 'r', 'utf_8'))
     
     options['hw_version'] = config.get('Hardware','version')
+    options['max31855'] = config.getboolean('Hardware', 'max31855')
     options['maverick_enabled'] = config.getboolean('ToDo','maverick_enabled')
     options['locale'] = config.get('locale','locale')
     options['temp_unit'] = config.get('locale','temp_unit')
@@ -1010,6 +1011,7 @@ def NX_display():
 
     if options['hw_version'] == 'miniV2':
         pitmaster_count = 2
+    if options['hw_version'] == 'miniV2' and options['max31855']:
         channel_count += 2
         hwchannel_count += 2
     if options['maverick_enabled'] == True:

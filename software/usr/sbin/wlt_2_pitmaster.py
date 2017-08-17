@@ -34,13 +34,14 @@ import sys
 
 gettext.install('wlt_2_pitmaster', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
-#GPIO START
-PIT_PWM  = 4 # Pitmaster PWM
+# GPIO START
+PIT_PWM = 4  # Pitmaster PWM
 
 # Wir laufen als root, auch andere müssen die Config schreiben!
-os.umask (0)
+os.umask(0)
 
 logger = False
+
 
 # Funktionsdefinition
 class BBQpit:
@@ -51,7 +52,7 @@ class BBQpit:
         self.pit_type = None
         self.pit_gpio = None
         self.pit_servo_gpio = None
-        
+
         # public
         self.pit_min = 0
         self.pit_max = 100
@@ -68,19 +69,24 @@ class BBQpit:
         self.pit_damper_offset = 0
         self.pit_damper_pitch = 1
 
+        self.pit_servo_current_width = 0
+        self.pit_servo_deadband = 5  # in 10 µs
+
+        self.pit_servo_move_count = 0
+        self.pit_servo_nomove_count = 0
+
         # Steuergröße
         self.pit_out = 0.0
-        
+
         # Wave-ID
         self.fan_pwm = None
-        
+
         self.pit_io_pwm_thread = None
         self.pit_io_pwm_on = 0.0
         self.pit_io_pwm_off = 0.0
         self.pit_io_pwm_lock = threading.Lock()
         self.pit_io_pwm_end = threading.Event()
-        
-        
+
     # Beendet eine Ausgabe
     def stop_pit(self):
         if self.pit_type == 'fan_pwm':
@@ -107,7 +113,6 @@ class BBQpit:
             self.pi.set_PWM_dutycycle(self.pit_gpio, 0)
         self.pit_type = None
 
-    
     # Startet eine Ausgabe
     def start_pit(self, pit_type, gpio, servo_gpio):
         self.logger.debug(_(u'Starting pit {pit_type} on GPIO {gpio}').format(pit_type=pit_type, gpio=str(gpio)))
@@ -115,8 +120,8 @@ class BBQpit:
             # 25kHz PC-Lüfter
             self.pi.set_mode(gpio, pigpio.OUTPUT)
             fan_pwm_pulses = []
-            fan_pwm_pulses.append(pigpio.pulse(1<<gpio,0,1))
-            fan_pwm_pulses.append(pigpio.pulse(0,1<<gpio,46))
+            fan_pwm_pulses.append(pigpio.pulse(1 << gpio, 0, 1))
+            fan_pwm_pulses.append(pigpio.pulse(0, 1 << gpio, 46))
             self.pi.wave_clear()
             self.pi.wave_add_generic(fan_pwm_pulses)
             self.fan_pwm = self.pi.wave_create()
@@ -136,10 +141,12 @@ class BBQpit:
         elif pit_type == 'servo':
             # Servosteuerung (oder Lüfter über Fahrtenregler)
             self.pi.set_mode(servo_gpio, pigpio.OUTPUT)
+            # Reset limiter
+            self.pit_servo_current_width = 0
             if not self.pit_servo_inverted:
-                self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_min)
+                self.servo_limiter(self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_min))
             else:
-                self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_max)
+                self.servo_limiter(self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_max))
             self.servo_gpio = servo_gpio
             self.pit_type = pit_type
         elif pit_type == 'io_pwm':
@@ -177,17 +184,18 @@ class BBQpit:
                 self.pi.set_PWM_dutycycle(gpio, self.pit_max * 2.55)
 
             # Servosteuerung für Damper
+            # Reset limiter
+            self.pit_servo_current_width = 0
+
             self.pi.set_mode(servo_gpio, pigpio.OUTPUT)
             if not self.pit_servo_inverted:
-                self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_min)
+                self.servo_limiter(self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_min))
             else:
-                self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_max)
+                self.servo_limiter(self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_max))
             self.pit_gpio = gpio
             self.pit_servo_gpio = servo_gpio
             self.pit_type = pit_type
 
-    
-    
     def set_pit(self, control_out):
         self.logger.debug(_(u'Setting pit to {}%').format(control_out))
         if control_out > 100:
@@ -196,7 +204,7 @@ class BBQpit:
         elif control_out < 0:
             self.logger.info(_(u'Control-out below minimum, limiting to 0%'))
             control_out = 0.0
-            
+
         # Startup-Funktion für Lüfteranlauf, startet für 0,5s mit 25%
         if self.pit_type in ['fan_pwm', 'fan', 'servo'] and control_out > 0:
             # Auch bei Servo, falls noch jemand Lüfter an Fahrtenregler betreibt.
@@ -205,27 +213,29 @@ class BBQpit:
                 self.set_pit(self.pit_startup_min)
                 time.sleep(self.pit_startup_time)
                 self.pit_out = self.pit_startup_min
-        
+
         if self.pit_type == 'fan_pwm':
             # 25kHz PC-Lüfter
             # Puls/ Pause berechnen
             pulselength = 47.0
             if not self.pit_inverted:
                 if control_out < 0.1:
-                # Zerocut
+                    # Zerocut
                     width = 0
                 else:
-                    width = int(round(self.pit_min + ((self.pit_max - self.pit_min) * (control_out / 100.0))) / (100 / (pulselength - 1)))
+                    width = int(round(self.pit_min + ((self.pit_max - self.pit_min) * (control_out / 100.0))) / (
+                    100 / (pulselength - 1)))
             else:
-                width = int(round(self.pit_max - ((self.pit_max - self.pit_min) * (control_out / 100.0))) / (100 / (pulselength - 1)))
+                width = int(round(self.pit_max - ((self.pit_max - self.pit_min) * (control_out / 100.0))) / (
+                100 / (pulselength - 1)))
             # Ohne Impuls = 100%, daher minimum 1!
             width = width + 1
             pause = pulselength - width
             self.logger.debug(_(u'fan_pwm pulse width ') + str(width))
             # Wellenform generieren
             fan_pwm_pulses = []
-            fan_pwm_pulses.append(pigpio.pulse(1<<self.pit_gpio,0,width))
-            fan_pwm_pulses.append(pigpio.pulse(0,1<<self.pit_gpio,pause))
+            fan_pwm_pulses.append(pigpio.pulse(1 << self.pit_gpio, 0, width))
+            fan_pwm_pulses.append(pigpio.pulse(0, 1 << self.pit_gpio, pause))
             self.pi.wave_clear()
             self.pi.wave_add_generic(fan_pwm_pulses)
             wave = self.pi.wave_create()
@@ -237,7 +247,7 @@ class BBQpit:
             # Lüftersteuerung v3
             if not self.pit_inverted:
                 if control_out < 0.1:
-                # Zerocut
+                    # Zerocut
                     width = 0
                 else:
                     width = int(round((self.pit_min + (self.pit_max - self.pit_min) * (control_out / 100.0)) * 2.55))
@@ -248,9 +258,9 @@ class BBQpit:
         elif self.pit_type == 'servo':
             # Servosteuerung (oder Lüfter über Fahrtenregler)
             if not self.pit_inverted:
-                width = self.pit_servo_min + ((self.pit_servo_max - self.pit_servo_min) * (control_out / 100.0))
+                width = self.servo_limiter(self.pit_servo_min + ((self.pit_servo_max - self.pit_servo_min) * (control_out / 100.0)))
             else:
-                width = self.pit_servo_max - ((self.pit_servo_max - self.pit_servo_min) * (control_out / 100.0))
+                width = self.servo_limiter(self.pit_servo_max - ((self.pit_servo_max - self.pit_servo_min) * (control_out / 100.0)))
             self.pi.set_servo_pulsewidth(self.pit_servo_gpio, width)
             self.logger.debug(_(u'servo impulse width {}µs').format(str(width)))
         elif self.pit_type == 'io_pwm':
@@ -286,19 +296,20 @@ class BBQpit:
                     self.pi.write(self.pit_gpio, 1)
 
         elif self.pit_type == 'damper':
-            # Servosteuerung (oder Lüfter über Fahrtenregler)
+            # Servosteuerung für Damper
             damper_servo_out = control_out * self.pit_damper_pitch + self.pit_damper_offset
             if not self.pit_servo_inverted:
-                width = self.pit_servo_min + ((self.pit_servo_max - self.pit_servo_min) * (damper_servo_out / 100.0))
+                width = self.servo_limiter(self.pit_servo_min + ((self.pit_servo_max - self.pit_servo_min) * (damper_servo_out / 100.0)))
             else:
-                width = self.pit_servo_max - ((self.pit_servo_max - self.pit_servo_min) * (damper_servo_out / 100.0))
+                width = self.servo_limiter(self.pit_servo_max - ((self.pit_servo_max - self.pit_servo_min) * (damper_servo_out / 100.0)))
+
             self.pi.set_servo_pulsewidth(self.pit_servo_gpio, width)
 
             self.logger.debug(_(u'servo impulse width {}µs').format(str(width)))
             # Lüftersteuerung v3
             if not self.pit_inverted:
                 if control_out < 0.1:
-                # Zerocut
+                    # Zerocut
                     width = 0
                 else:
                     width = int(round((self.pit_min + (self.pit_max - self.pit_min) * (control_out / 100.0)) * 2.55))
@@ -308,8 +319,7 @@ class BBQpit:
             self.logger.debug(_(u'fan PWM {} of 255').format(width))
 
         self.pit_out = control_out
-    
-    
+
     def io_pwm(self, gpio):
         self.logger.debug(_(u'io_pwm - starting thread'))
         while not self.pit_io_pwm_end.is_set():
@@ -323,6 +333,23 @@ class BBQpit:
                 self.pi.write(gpio, 0)
                 time.sleep(off)
         self.logger.debug(_(u'io_pwm - stopping thread'))
+    
+    def servo_limiter(self, width):
+        # self.pit_servo_deadband in %, so calculate time in 10µs
+        pit_servo_deadband = self.pit_servo_deadband * ((self.pit_servo_max - self.pit_servo_min) / 100)
+        if width == self.pit_servo_current_width:
+            # Nothing would have happened, nothing happens
+            pass
+        elif width == self.pit_servo_max or width == self.pit_servo_min \
+                or abs(self.pit_servo_current_width - width) > pit_servo_deadband:
+            self.pit_servo_move_count += 1
+            self.pit_servo_current_width = width
+        else:
+            # Save a servo move, save a servo!
+            self.pit_servo_nomove_count += 1
+
+        self.logger.info(_(format(u'Servo move count: {}, saved {}'), self.pit_servo_move_count, self.pit_servo_nomove_count))
+        return self.pit_servo_current_width
 
 
 def check_temp(temp):
@@ -338,9 +365,9 @@ def check_temp(temp):
 def get_steps(steps_str):
     # Generiert aus einem durch Verkettungszeichen ("|") getrennten String
     # von durch Ausrufezeichen getrennten Wertepaaren eine Liste aus Tupeln
-    
+
     steps = steps_str.split("|")
-    
+
     retval = []
     for step in steps:
         step_fields = step.split("!")
@@ -350,18 +377,20 @@ def get_steps(steps_str):
             logger.error('Illegal step in configuration: ', step_fields[0])
     return retval
 
+
 def log_uncaught_exceptions(ex_cls, ex, tb):
     global logger
     logger.critical(''.join(traceback.format_tb(tb)))
     logger.critical('{0}: {1}'.format(ex_cls, ex))
 
+
 def main(instance):
     global logger
-    
+
     # Konfigurationsdatei einlesen
-    defaults = {'pit_startup_min': '25', 'pit_startup_threshold': '0', 'pit_startup_time':'0.5', 'pit_io_gpio':'2'}
+    defaults = {'pit_startup_min': '25', 'pit_startup_threshold': '0', 'pit_startup_time': '0.5', 'pit_io_gpio': '2'}
     Config = ConfigParser.SafeConfigParser(defaults)
-    for i in range(0,5):
+    for i in range(0, 5):
         while True:
             try:
                 Config.read('/var/www/conf/WLANThermo.conf')
@@ -369,15 +398,15 @@ def main(instance):
                 time.sleep(1)
                 continue
             break
-        
+
     if instance > 0:
         instance_string = str(instance + 1)
     else:
         instance_string = ''
-    
+
     LOGFILE = Config.get('daemon_logging', 'log_file')
     logger = logging.getLogger('WLANthermoPIT' + instance_string)
-    #Define Logging Level by changing >logger.setLevel(logging.LEVEL_YOU_WANT)< available: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    # Define Logging Level by changing >logger.setLevel(logging.LEVEL_YOU_WANT)< available: DEBUG, INFO, WARNING, ERROR, CRITICAL
     log_level = Config.get('daemon_logging', 'level_PIT')
     if log_level == 'DEBUG':
         logger.setLevel(logging.DEBUG)
@@ -391,61 +420,62 @@ def main(instance):
         logger.setLevel(logging.CRITICAL)
     handler = logging.FileHandler(LOGFILE)
     handler.setLevel(logging.DEBUG)
-    
+
     sys.excepthook = log_uncaught_exceptions
-    
+
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    
-        
+
     try:
-        pitmaster_hwconfig = {'v1':{0:{'io': 4, 'io_pwm': 4, 'servo':4, 'fan_pwm':4}},
-                          'v2':{0:{'io': 4, 'io_pwm': 4, 'servo':4, 'fan_pwm':4}},
-                          'v3':{0:{'io': 4, 'fan': 4, 'io_pwm': 4, 'servo':4, 'fan_pwm':4}},
-                          'miniV2':{0:{'io': 4, 'fan': 4, 'io_pwm': 4, 'servo':6, 'fan_pwm':6},
-                                    1:{'io': 5, 'fan': 5, 'io_pwm': 5, 'servo':12, 'fan_pwm':12}}}[Config.get('Hardware','version')][instance]
+        pitmaster_hwconfig = {'v1': {0: {'io': 4, 'io_pwm': 4, 'servo': 4, 'fan_pwm': 4}},
+                              'v2': {0: {'io': 4, 'io_pwm': 4, 'servo': 4, 'fan_pwm': 4}},
+                              'v3': {0: {'io': 4, 'fan': 4, 'io_pwm': 4, 'servo': 4, 'fan_pwm': 4}},
+                              'miniV2': {0: {'io': 4, 'fan': 4, 'io_pwm': 4, 'servo': 6, 'fan_pwm': 6},
+                                         1: {'io': 5, 'fan': 5, 'io_pwm': 5, 'servo': 12, 'fan_pwm': 12}}}[
+            Config.get('Hardware', 'version')][instance]
     except KeyError:
-        logger.info(u'Instance {} undefined in hardware configuration "{}"').format(instance, Config.get('Hardware','version'))
+        logger.info(u'Instance {} undefined in hardware configuration "{}"').format(instance,
+                                                                                    Config.get('Hardware', 'version'))
         return False
-        
+
     logger.info(_(u'WLANThermoPID started'))
-    
-    #GPIO END
+
+    # GPIO END
     logger.info(_(u'Pitmaster start'))
-    
-    #Log Dateinamen aus der config lesen
-    current_temp = Config.get('filepath','current_temp')
-    pitmaster_log = Config.get('filepath','pitmaster' + instance_string)
-    if Config.get('Hardware','version') == u'miniV2':
+
+    # Log Dateinamen aus der config lesen
+    current_temp = Config.get('filepath', 'current_temp')
+    pitmaster_log = Config.get('filepath', 'pitmaster' + instance_string)
+    if Config.get('Hardware', 'version') == u'miniV2':
         channel_count = 12
     else:
         channel_count = 10
-    #Pfad aufsplitten
-    pitPath,pitFile = os.path.split(pitmaster_log)
-    
+    # Pfad aufsplitten
+    pitPath, pitFile = os.path.split(pitmaster_log)
+
     pit_new = 0
-    #Wenn das display Verzeichniss im Ram Drive nicht exisitiert erstelle es
-    
+    # Wenn das display Verzeichniss im Ram Drive nicht exisitiert erstelle es
+
     if not os.path.exists(pitPath):
         os.makedirs(pitPath)
-    
+
     count = 0
-    
-    #PID Begin Variablen fuer PID Regelung
+
+    # PID Begin Variablen fuer PID Regelung
     dif = 0
     dif_sum = 0
     dif_last = 0
     ki_alt = 0
-    
+
     pit_pid_max = 100
     pit_pid_min = 0
     pit_open_lid_detected = False
-    pit_open_lid_ref_temp = [0.0,0.0,0.0,0.0,0.0]
+    pit_open_lid_ref_temp = [0.0, 0.0, 0.0, 0.0, 0.0]
     pit_open_lid_temp = 0
     pit_open_lid_count = 0
-    #PID End Variablen fuer PID Regelung
-    
+    # PID End Variablen fuer PID Regelung
+
     restart_pit = False
     pit_type = None
     pit_gpio_new = None
@@ -459,7 +489,7 @@ def main(instance):
         while True:
             time_start = time.time()
             msg = ""
-            #Aktuellen ist wert auslesen
+            # Aktuellen ist wert auslesen
             while True:
                 try:
                     tl = codecs.open(current_temp, 'r', 'utf_8')
@@ -482,35 +512,36 @@ def main(instance):
 
                     logger.debug(_(u'Loading configuration...'))
 
-                    pit_type_new = Config.get('Pitmaster' + instance_string,'pit_type')
+                    pit_type_new = Config.get('Pitmaster' + instance_string, 'pit_type')
 
                     if pit_type != pit_type_new:
                         logger.debug(_(u'Setting pit type to: ') + pit_type_new)
                         # GPIO aus der Config
+                        pit_servo_gpio_new = pitmaster_hwconfig['servo']
                         if pit_type_new == 'damper':
                             # Damper ist immer fan + servo
                             pit_gpio_new = pitmaster_hwconfig['fan']
-                            pit_servo_gpio_new = pitmaster_hwconfig['servo']
                         else:
                             pit_gpio_new = pitmaster_hwconfig[pit_type_new]
-                            pit_servo_gpio_new = None
                         logger.debug(_(u'Setting pit GPIO to: ') + str(pit_gpio_new))
                         logger.debug(_(u'Setting servo GPIO to: ') + str(pit_servo_gpio_new))
                         restart_pit = True
 
-                    bbqpit.pit_min = Config.getfloat('Pitmaster' + instance_string,'pit_pwm_min')
-                    bbqpit.pit_max = Config.getfloat('Pitmaster' + instance_string,'pit_pwm_max')
-                    bbqpit.pit_servo_min = Config.getfloat('Pitmaster' + instance_string,'pit_servo_min')
-                    bbqpit.pit_servo_max = Config.getfloat('Pitmaster' + instance_string,'pit_servo_max')
+                    bbqpit.pit_min = Config.getfloat('Pitmaster' + instance_string, 'pit_pwm_min')
+                    bbqpit.pit_max = Config.getfloat('Pitmaster' + instance_string, 'pit_pwm_max')
+                    bbqpit.pit_servo_min = Config.getfloat('Pitmaster' + instance_string, 'pit_servo_min')
+                    bbqpit.pit_servo_max = Config.getfloat('Pitmaster' + instance_string, 'pit_servo_max')
 
-                    bbqpit.pit_startup_min = Config.getfloat('Pitmaster' + instance_string,'pit_startup_min')
-                    bbqpit.pit_startup_threshold = Config.getfloat('Pitmaster' + instance_string,'pit_startup_threshold')
-                    bbqpit.pit_startup_time = Config.getfloat('Pitmaster' + instance_string,'pit_startup_time')
+                    bbqpit.pit_startup_min = Config.getfloat('Pitmaster' + instance_string, 'pit_startup_min')
+                    bbqpit.pit_startup_threshold = Config.getfloat('Pitmaster' + instance_string,
+                                                                   'pit_startup_threshold')
+                    bbqpit.pit_startup_time = Config.getfloat('Pitmaster' + instance_string, 'pit_startup_time')
 
-                    pit_inverted_new = Config.getboolean('Pitmaster' + instance_string,'pit_inverted')
+                    pit_inverted_new = Config.getboolean('Pitmaster' + instance_string, 'pit_inverted')
                     pit_servo_inverted_new = Config.getboolean('Pitmaster' + instance_string, 'pit_servo_inverted')
-                    pit_damper_offset_new = Config.getfloat('Pitmaster' + instance_string,'pit_damper_offset')
-                    pit_damper_pitch_new = Config.getfloat('Pitmaster' + instance_string,'pit_damper_pitch')
+                    pit_damper_offset_new = Config.getfloat('Pitmaster' + instance_string, 'pit_damper_offset')
+                    pit_damper_pitch_new = Config.getfloat('Pitmaster' + instance_string, 'pit_servo_deadband')
+                    pit_servo_deadband_new = bbqpit.pit_servo_deadband != pit_servo_deadband_new
 
                     if bbqpit.pit_inverted != pit_inverted_new:
                         bbqpit.pit_inverted = pit_inverted_new
@@ -524,6 +555,9 @@ def main(instance):
                     if bbqpit.pit_damper_pitch != pit_damper_pitch_new:
                         bbqpit.pit_damper_pitch = pit_damper_pitch_new
 
+                    if bbqpit.pit_servo_deadband != pit_servo_deadband_new:
+                        bbqpit.pit_servo_deadband != pit_servo_deadband_new
+
                     if restart_pit:
                         logger.debug(_(u'Restarting pit...'))
                         pit_type = pit_type_new
@@ -533,31 +567,33 @@ def main(instance):
                         bbqpit.start_pit(pit_type, pit_gpio, pit_servo_gpio)
                         restart_pit = False
 
-                    pit_steps = get_steps(Config.get('Pitmaster' + instance_string,'pit_curve'))
+                    pit_steps = get_steps(Config.get('Pitmaster' + instance_string, 'pit_curve'))
 
-                    pit_set = Config.getfloat('Pitmaster' + instance_string,'pit_set')
-                    pit_ch = Config.getint('Pitmaster' + instance_string,'pit_ch')
-                    pit_pause = Config.getfloat('Pitmaster' + instance_string,'pit_pause')
+                    pit_set = Config.getfloat('Pitmaster' + instance_string, 'pit_set')
+                    pit_ch = Config.getint('Pitmaster' + instance_string, 'pit_ch')
+                    pit_pause = Config.getfloat('Pitmaster' + instance_string, 'pit_pause')
 
-                    pit_man = Config.getfloat('Pitmaster' + instance_string,'pit_man')
+                    pit_man = Config.getfloat('Pitmaster' + instance_string, 'pit_man')
 
-                    #PID Begin Parameter fuer PID einlesen
-                    pit_Kp = Config.getfloat('Pitmaster' + instance_string,'pit_kp')
-                    pit_Kd = Config.getfloat('Pitmaster' + instance_string,'pit_kd')
-                    pit_Ki = Config.getfloat('Pitmaster' + instance_string,'pit_ki')
-                    pit_Kp_a = Config.getfloat('Pitmaster' + instance_string,'pit_kp_a')
-                    pit_Kd_a = Config.getfloat('Pitmaster' + instance_string,'pit_kd_a')
-                    pit_Ki_a = Config.getfloat('Pitmaster' + instance_string,'pit_ki_a')
-                    pit_switch_a = Config.getfloat('Pitmaster' + instance_string,'pit_switch_a')
-                    controller_type = Config.get('Pitmaster' + instance_string,'pit_controller_type')
-                    pit_iterm_min = Config.getfloat('Pitmaster' + instance_string,'pit_iterm_min')
-                    pit_iterm_max = Config.getfloat('Pitmaster' + instance_string,'pit_iterm_max')
-                    pit_open_lid_detection = Config.getboolean('Pitmaster' + instance_string,'pit_open_lid_detection')
-                    pit_open_lid_pause= Config.getfloat('Pitmaster' + instance_string,'pit_open_lid_pause')
-                    pit_open_lid_falling_border = Config.getfloat('Pitmaster' + instance_string,'pit_open_lid_falling_border')
-                    pit_open_lid_rising_border = Config.getfloat('Pitmaster' + instance_string,'pit_open_lid_rising_border')
-                    pit_ratelimit_rise = Config.getfloat('Pitmaster' + instance_string,'pit_ratelimit_rise')
-                    pit_ratelimit_lower = Config.getfloat('Pitmaster' + instance_string,'pit_ratelimit_lower')
+                    # PID Begin Parameter fuer PID einlesen
+                    pit_Kp = Config.getfloat('Pitmaster' + instance_string, 'pit_kp')
+                    pit_Kd = Config.getfloat('Pitmaster' + instance_string, 'pit_kd')
+                    pit_Ki = Config.getfloat('Pitmaster' + instance_string, 'pit_ki')
+                    pit_Kp_a = Config.getfloat('Pitmaster' + instance_string, 'pit_kp_a')
+                    pit_Kd_a = Config.getfloat('Pitmaster' + instance_string, 'pit_kd_a')
+                    pit_Ki_a = Config.getfloat('Pitmaster' + instance_string, 'pit_ki_a')
+                    pit_switch_a = Config.getfloat('Pitmaster' + instance_string, 'pit_switch_a')
+                    controller_type = Config.get('Pitmaster' + instance_string, 'pit_controller_type')
+                    pit_iterm_min = Config.getfloat('Pitmaster' + instance_string, 'pit_iterm_min')
+                    pit_iterm_max = Config.getfloat('Pitmaster' + instance_string, 'pit_iterm_max')
+                    pit_open_lid_detection = Config.getboolean('Pitmaster' + instance_string, 'pit_open_lid_detection')
+                    pit_open_lid_pause = Config.getfloat('Pitmaster' + instance_string, 'pit_open_lid_pause')
+                    pit_open_lid_falling_border = Config.getfloat('Pitmaster' + instance_string,
+                                                                  'pit_open_lid_falling_border')
+                    pit_open_lid_rising_border = Config.getfloat('Pitmaster' + instance_string,
+                                                                 'pit_open_lid_rising_border')
+                    pit_ratelimit_rise = Config.getfloat('Pitmaster' + instance_string, 'pit_ratelimit_rise')
+                    pit_ratelimit_fall = Config.getfloat('Pitmaster' + instance_string, 'pit_ratelimit_fall')
                     #
                     # PID End Paramter fuer PID einlesen
                     #
@@ -593,40 +629,41 @@ def main(instance):
                     pass
 
                 else:
-                    #start open lid detection
+                    # start open lid detection
                     if pit_open_lid_detection:
                         pit_open_lid_ref_temp[0] = pit_open_lid_ref_temp[1]
                         pit_open_lid_ref_temp[1] = pit_open_lid_ref_temp[2]
                         pit_open_lid_ref_temp[2] = pit_open_lid_ref_temp[3]
                         pit_open_lid_ref_temp[3] = pit_open_lid_ref_temp[4]
                         pit_open_lid_ref_temp[4] = pit_now
-                        temp_ref = (pit_open_lid_ref_temp[0]+pit_open_lid_ref_temp[1]+pit_open_lid_ref_temp[2]) / 3
-                        
-                        #erkennen ob Temperatur wieder eingependelt oder Timeout
+                        temp_ref = (pit_open_lid_ref_temp[0] + pit_open_lid_ref_temp[1] + pit_open_lid_ref_temp[2]) / 3
+
+                        # erkennen ob Temperatur wieder eingependelt oder Timeout
                         if pit_open_lid_detected:
                             logger.info(_(u'Open lid detected!'))
-                            pit_open_lid_count = pit_open_lid_count - 1  
+                            pit_open_lid_count = pit_open_lid_count - 1
                             if pit_open_lid_count <= 0:
                                 logger.info(_(u'Open lid detection: timeout!'))
-                                pit_open_lid_detected = False 
-                                msg +=  _(u'|timeout open lid detection')
+                                pit_open_lid_detected = False
+                                msg += _(u'|timeout open lid detection')
                             elif pit_now > (pit_open_lid_temp * (pit_open_lid_rising_border / 100)):
                                 logger.info(_(u'Open lid detection: lid closed again!'))
                                 pit_open_lid_detected = False
                                 msg += _(u'|lid closed')
                         elif pit_now < (temp_ref * (pit_open_lid_falling_border / 100)):
-                            #Wenn Temp innerhalb der letzten beiden Messzyklen den falling Wert unterschreitet
+                            # Wenn Temp innerhalb der letzten beiden Messzyklen den falling Wert unterschreitet
                             logger.info(_(u'Opened lid detected!'))
                             pit_open_lid_detected = True
                             pit_new = 0
-                            pit_open_lid_temp = pit_open_lid_ref_temp[0] #war bsiher pit_now, das ist aber schon zu niedrig
+                            pit_open_lid_temp = pit_open_lid_ref_temp[
+                                0]  # war bsiher pit_now, das ist aber schon zu niedrig
                             msg += _(u'|open lid detected')
                             pit_open_lid_count = pit_open_lid_pause / pit_pause
                     else:
                         # Deckelerkennung nicht aktiv, Status zurücksetzen
                         pit_open_lid_detected = False
-                    #end open lid detection
-                    msg += _(u'|current: {pit_now}, set: {pit_set}').format(pit_now=pit_now,pit_set=pit_set)
+                    # end open lid detection
+                    msg += _(u'|current: {pit_now}, set: {pit_set}').format(pit_now=pit_now, pit_set=pit_set)
                     calc = 0
                     s = 0
 
@@ -643,30 +680,30 @@ def main(instance):
                     logger.error(_(u'Invalid input value!, setting output to 0'))
                     pit_new = 0
 
-                #Suchen und setzen des neuen Reglerwerts Wertekurve
-                elif (controller_type == "False") and (not pit_open_lid_detected): #Bedingung fuer Wertekurve
+                # Suchen und setzen des neuen Reglerwerts Wertekurve
+                elif (controller_type == "False") and (not pit_open_lid_detected):  # Bedingung fuer Wertekurve
                     for step, val in pit_steps:
                         if calc == 0:
                             dif = pit_now - pit_set
-                            msg +=_(u"|dif: ") + str(dif)
+                            msg += _(u"|dif: ") + str(dif)
                             if (dif <= float(step)):
                                 calc = 1
-                                msg += _(u"|step: ") + step
+                                msg += _(u"|step: ") + str(step)
                                 pit_new = float(val)
-                                msg += _(u"|new: ") + val
+                                msg += _(u"|new: ") + str(val)
                             if (pit_now >= pit_set):
                                 calc = 1
                                 pit_new = 0
-                                msg +=  _(u"|new overshoot: ") + str(pit_new)
+                                msg += _(u"|new overshoot: ") + str(pit_new)
                         s = s + 1
                     if calc == 0:
                         msg += _(u"|no matching rule, stop pit!")
                         pit_new = 0
-                #PID Begin Block PID Regler Ausgang kann Werte zwischen 0 und 100% annehmen
-                elif (controller_type == "PID") and (not pit_open_lid_detected): #Bedingung fuer PID
+                # PID Begin Block PID Regler Ausgang kann Werte zwischen 0 und 100% annehmen
+                elif (controller_type == "PID") and (not pit_open_lid_detected):  # Bedingung fuer PID
                     dif_last = dif
                     dif = pit_set - pit_now
-                    #Parameter in Abhaengigkeit der Temp setzen
+                    # Parameter in Abhaengigkeit der Temp setzen
                     if pit_now > (pit_switch_a / 100 * pit_set):
                         kp = pit_Kp
                         ki = pit_Ki
@@ -677,7 +714,7 @@ def main(instance):
                         kd = pit_Kd_a
                     # P-Anteil berechnen
                     p_out = kp * dif
-                    #D-Anteil berechnen
+                    # D-Anteil berechnen
                     d_input = dif - dif_last
                     d_out = kd * d_input / pit_pause
                     # I-Anteil berechnen
@@ -702,46 +739,48 @@ def main(instance):
                         dif_sum = 0
                         i_out = 0
                         ki_alt = 0
-                    #PID Berechnung durchfuehren
-                    pit_new  = p_out + i_out + d_out
-                    msg += _(u"|PID values P {p_out}, Iterm {i_out}, d_input {d_input}").format(p_out=p_out, i_out=i_out, d_input=d_input)
-                    #Stellwert begrenzen
-                    if pit_new  > pit_pid_max:
-                        pit_new  = pit_pid_max
-                    elif pit_new  < pit_pid_min:
-                        pit_new  = pit_pid_min
-                    #PID End Block PID Regler
-                
+                    # PID Berechnung durchfuehren
+                    pit_new = p_out + i_out + d_out
+                    msg += _(u"|PID values P {p_out}, Iterm {i_out}, d_input {d_input}").format(p_out=p_out,
+                                                                                                i_out=i_out,
+                                                                                                d_input=d_input)
+                    # Stellwert begrenzen
+                    if pit_new > pit_pid_max:
+                        pit_new = pit_pid_max
+                    elif pit_new < pit_pid_min:
+                        pit_new = pit_pid_min
+                        # PID End Block PID Regler
+
                 pit_change = pit_new - bbqpit.pit_out
-                
+
                 if pit_change > 0 and pit_ratelimit_rise > 0:
                     max_rise = 100 / pit_ratelimit_rise * pit_pause
                     if pit_change > max_rise:
                         pit_new = bbqpit.pit_out + max_rise
                         logger.debug(_(u'Limiting raising rate'))
-                elif pit_change < 0 and pit_ratelimit_lower > 0:
-                    max_lower = -100 / pit_ratelimit_lower * pit_pause
+                elif pit_change < 0 and pit_ratelimit_fall > 0:
+                    max_lower = -100 / pit_ratelimit_fall * pit_pause
                     if pit_change < max_lower:
                         pit_new = bbqpit.pit_out + max_lower
                         logger.debug(_(u'Limiting lowering rate'))
-                    
+
                 bbqpit.set_pit(pit_new)
                 msg += _(u'|New value: ') + str(pit_new)
-                
+
                 # Export das aktuellen Werte in eine Textdatei
-                
+
                 uhrzeit_lang = time.strftime('%d.%m.%y %H:%M:%S')
-                
+
                 if pit_now is None:
                     pit_now_str = ''
                 else:
                     pit_now_str = str(pit_now)
-                    
+
                 while True:
-                    try:          
+                    try:
                         with codecs.open(pitPath + '/' + pitFile + '_tmp', 'w', 'utf_8') as fp:
-                        # Schreibe mit Trennzeichen ; 
-                        # Zeit;Soll;Ist;%;msg + pitFile,
+                            # Schreibe mit Trennzeichen ;
+                            # Zeit;Soll;Ist;%;msg + pitFile,
                             fp.write(u'{};{};{};{}%;{}'.format(uhrzeit_lang, pit_set, pit_now_str, pit_new, msg))
                             fp.flush()
                             os.fsync(fp.fileno())
@@ -750,7 +789,7 @@ def main(instance):
                         time.sleep(1)
                         continue
                     break
-                
+
                 if (Config.getboolean('ToDo', 'pit' + instance_string + '_on') == False):
                     if (count > 0):
                         break
@@ -762,13 +801,14 @@ def main(instance):
             time_remaining = time_start + pit_pause - time.time()
             if time_remaining < 0:
                 logger.warning(
-                    u'pitmaster loop running longer than {delay}s, remaining time {time_remaining}s'.format(delay=pit_pause,
-                                                                                                            time_remaining=time_remaining))
+                    u'pitmaster loop running longer than {delay}s, remaining time {time_remaining}s'.format(
+                        delay=pit_pause,
+                        time_remaining=time_remaining))
             else:
                 logger.debug(u'pitmaster loop remaining time {time_remaining}s of {delay}s'.format(delay=pit_pause,
                                                                                                    time_remaining=time_remaining))
                 time.sleep(time_remaining)
-        
+
     except KeyboardInterrupt:
         pass
     bbqpit.stop_pit()
@@ -790,14 +830,14 @@ def check_pid(pid):
 
 if __name__ == "__main__":
     pid = str(os.getpid())
-    
-    if(len(sys.argv)>1):
+
+    if (len(sys.argv) > 1):
         instance = int(sys.argv[1])
     else:
-        instance = 0    
-       
-    pidfilename = '/var/run/'+os.path.basename(__file__).split('.')[0] + '_' + str(instance) + '.pid'
-     
+        instance = 0
+
+    pidfilename = '/var/run/' + os.path.basename(__file__).split('.')[0] + '_' + str(instance) + '.pid'
+
     if os.access(pidfilename, os.F_OK):
         pidfile = open(pidfilename, "r")
         pidfile.seek(0)
@@ -808,10 +848,10 @@ if __name__ == "__main__":
         else:
             pidfile.seek(0)
             open(pidfilename, 'w').write(pid)
-        
+
     else:
         open(pidfilename, 'w').write(pid)
-    
+
     main(instance)
-    
+
     os.unlink(pidfilename)

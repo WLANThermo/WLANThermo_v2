@@ -1,7 +1,7 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
-$_SESSION["webGUIversion"] = "V2.7.0beta";
+$_SESSION["webGUIversion"] = "V2.7.0-beta8";
 $title = "WLANThermo";
 $document_root = getenv('DOCUMENT_ROOT');
 include("gettext.php");
@@ -17,6 +17,9 @@ if (isset($_SESSION["locale"])){
 <html lang="de">
 <head>
 	<meta charset="utf-8">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-title" content="WlanThermo">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 	<title><?php echo ''.$title.' ('.$_SESSION["webGUIversion"].')';?></title>
 	<link rel="stylesheet" type="text/css" href="../css/style.css">
 	<link rel="stylesheet" href="../css/jquery.fancybox.css" type="text/css" media="screen">

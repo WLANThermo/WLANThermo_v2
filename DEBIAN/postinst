@@ -1,11 +1,6 @@
-#! /bin/sh
-# postinst script for wlanthermo
+#!/bin/bash
 
-# enable all required services
-systemctl enable WLANThermo.service
-systemctl enable WLANThermoWD.service
-systemctl enable pigpiod.service
-systemctl enable nextion_hwclock.service
+# postinst script for wlanthermo
 
 # restart sudo service
 systemctl restart sudo 
@@ -29,18 +24,23 @@ then
     echo "$passwort"
     htpasswd -c -b /etc/lighttpd/htpasswd wlanthermo $passwort
     rm /var/www/tmp/update # Updateflag zuruecksetzen
+elif [ -f /etc/lighttpd/htpasswd ] && egrep -q '^wlanthermo' /etc/lighttpd/htpasswd
+then
+    echo 'Password already set!'
+
+elif [ -t 0 ]
+then
+    echo 'No password found!'
+    echo 'Please enter the new password for user >wlanthermo< of the protected area!'
+    htpasswd -c /etc/lighttpd/htpasswd wlanthermo
 else
-    if [ -t 0 ]
-    then
-        echo 'No password found!'
-        echo 'Please enter the new password for user >wlanthermo< of the protected area!'
-        htpasswd -c /etc/lighttpd/htpasswd wlanthermo
-    else
-        echo 'No password found!'
-        echo 'Setting default password'
+    echo 'No password found!'
+    echo 'Setting default password >raspberry<'
         htpasswd -c -b /etc/lighttpd/htpasswd wlanthermo raspberry
-    fi
 fi
+
+# Update configuration
+/usr/bin/wlt_2_updateconfig.py
 
 ln -s /var/log/WLAN_Thermo /var/www/thermolog &> /dev/null
 ln -s /var/log/WLANThermo.log /var/www/log/WLANThermo.log &> /dev/null
@@ -53,8 +53,14 @@ chmod 0440 /etc/sudoers.d/WLANThermo &> /dev/null
 # Reload new unit files
 systemctl daemon-reload
 
+# enable all required services
+systemctl enable WLANThermo.service
+systemctl enable WLANThermoWD.service
+systemctl enable pigpiod.service
+systemctl enable nextion_hwclock.service
+
 # Restart services
 systemctl restart lighttpd.service
 systemctl restart WLANThermo.service
 systemctl start pigpiod.service
-# systemctl restart WLANThermoWD.service
+systemctl restart WLANThermoWD.service
