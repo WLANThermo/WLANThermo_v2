@@ -50,7 +50,9 @@ fi
 echo "Adding Repository to apt"
 echo "----------------------------------------------------------"
 
-wget https://packages.wlanthermo.net/wlanthermo-dev.list -O /etc/apt/sources.list/wlanthermo.list
+apt-get update
+apt-get -y install apt-transport-https 
+wget -nc https://packages.wlanthermo.net/wlanthermo-dev.list -O /etc/apt/sources.list.d/wlanthermo.list
 
 echo "Adding GPG key to apt"
 echo "----------------------------------------------------------"
@@ -61,7 +63,7 @@ echo "Updating system"
 echo "----------------------------------------------------------"
 
 apt-get update
-apt-get upgrade -y
+apt-get dist-upgrade -y
 
 echo "Now installing wlanthermo package"
 echo "----------------------------------------------------------"

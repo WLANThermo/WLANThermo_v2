@@ -34,7 +34,6 @@ then
     echo 'Please enter the new password for user >wlanthermo< of the protected area!'
     htpasswd -c /etc/lighttpd/htpasswd wlanthermo
 else
-then
     echo 'No password found!'
     echo 'Setting default password >raspberry<'
         htpasswd -c -b /etc/lighttpd/htpasswd wlanthermo raspberry
