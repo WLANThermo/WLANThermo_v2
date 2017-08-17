@@ -37,6 +37,7 @@ fi
 lines=`grep --max-count 1 --line-regexp --line-number --text '# ---- END OF SCRIPT - DON´T CHANGE THIS LINE ----' $0 | cut -d: -f 1`
 startline=$((lines + 1))
 
+
 if command -v systemctl > /dev/null && systemctl | grep -q '\-\.mount'; then
   SYSTEMD=1
 elif [ -f /etc/init.d/cron ] && [ ! -h /etc/init.d/cron ]; then
@@ -46,27 +47,30 @@ else
   return 1
 fi
 
-program=wlanthermo
-
-echo "Updating System:"
+echo "Adding Repository to apt"
 echo "----------------------------------------------------------"
+
+if [ -f /etc/apt/sources.list/wlanthermo.list ]; then
+  IN_APT=0
+else
+  wget https://packages.wlanthermo.net/wlanthermo.list -O /etc/apt/sources.list/wlanthermo.list
+fi
+
+echo "Adding GPG key to apt"
+echo "----------------------------------------------------------"
+
+wget -O - https://packages.wlanthermo.net/wlanthermo.gpg.key | sudo apt-key add - 
+
+echo "Updating system"
+echo "----------------------------------------------------------"
+
 apt-get update
-apt-get -y dist-upgrade
-apt-get -y install raspberrypi-sys-mods
+apt-get upgrade -y
 
-echo "Extract the package"
+echo "Now installing wlanthermo package"
 echo "----------------------------------------------------------"
-tail -n +$startline $0 > /tmp/${program}.deb
-ls -l /tmp/${program}.deb
 
-echo "Install depencies:"
-echo "----------------------------------------------------------"
-aptitude --safe-resolver -y install $(dpkg -I /tmp/${program}.deb | grep 'Depends:' | sed -e 's/,//g' -e 's/ *Depends: *//')
-
-echo "Install /tmp/${program}.deb"
-
-dpkg -i /tmp/${program}.deb
-echo "----------------------------------------------------------"
+apt-get install wlanthermo
 
 url=$(cat /etc/hostname)
 echo " "

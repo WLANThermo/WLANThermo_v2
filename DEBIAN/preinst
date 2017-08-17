@@ -1,5 +1,49 @@
-#! /bin/sh
+#!/bin/bash
 # preinst script for wlanthermo
+
+echo "Check Ramdrive and create it if it doesn't exist"
+echo "----------------------------------------------------------"
+RD=$(cat /etc/fstab|grep /var/www/tmp|grep -v grep|wc -l)
+
+if  [ $RD == 0 ]; then
+  mkdir /var/www/tmp -p
+  if [ "$IMAGE_MODE" == "FALSE" ]; then
+    mount -t tmpfs -o size=16M,mode=770,uid=www-data,gid=www-data tmpfs /var/www/tmp
+  fi
+  echo "tmpfs           /var/www/tmp    tmpfs   size=16M,mode=770,uid=www-data,gid=www-data     0       0" >> /etc/fstab
+  echo -e "[\033[42m\033[30m OK \033[0m] RAM Drive created!"
+fi
+if  [ $RD != 0 ]; then
+  echo -e "[\033[42m\033[30m OK \033[0m] RAM Drive already exists"
+fi
+
+echo "Disable shell and kernel messages on the serial connection"
+echo "----------------------------------------------------------"
+sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
+sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
+
+echo "Enable the serial connection"
+echo "----------------------------------------------------------"
+SERIAL=$(grep "^enable_uart=1" /boot/config.txt | wc -l)
+
+if [ $SERIAL == 0 ]; then
+  echo "enable_uart=1" >> /boot/config.txt
+  echo "Serial Port is now enabled, please reboot!"
+else
+    echo "Serial Port was already enabled."
+fi
+
+echo "Enabling locales"
+echo "----------------------------------------------------------"
+sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(de_DE.UTF-8 UTF-8.*)$/\2/m"
+sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(en_GB.UTF-8 UTF-8.*)$/\2/m"
+sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(en_US.UTF-8 UTF-8.*)$/\2/m"
+sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(fr_FR.UTF-8 UTF-8.*)$/\2/m"
+/usr/sbin/locale-gen
+
+echo "Install additional Python packages"
+echo "----------------------------------------------------------"
+/usr/bin/pip install bitstring statistics
 
 if [ -f /usr/sbin/wlt_2_comp.py ]
 then
