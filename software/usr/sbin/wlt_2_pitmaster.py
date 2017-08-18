@@ -224,10 +224,10 @@ class BBQpit:
                     width = 0
                 else:
                     width = int(round(self.pit_min + ((self.pit_max - self.pit_min) * (control_out / 100.0))) / (
-                    100 / (pulselength - 1)))
+                        100 / (pulselength - 1)))
             else:
                 width = int(round(self.pit_max - ((self.pit_max - self.pit_min) * (control_out / 100.0))) / (
-                100 / (pulselength - 1)))
+                    100 / (pulselength - 1)))
             # Ohne Impuls = 100%, daher minimum 1!
             width = width + 1
             pause = pulselength - width
@@ -258,9 +258,11 @@ class BBQpit:
         elif self.pit_type == 'servo':
             # Servosteuerung (oder Lüfter über Fahrtenregler)
             if not self.pit_inverted:
-                width = self.servo_limiter(self.pit_servo_min + ((self.pit_servo_max - self.pit_servo_min) * (control_out / 100.0)))
+                width = self.servo_limiter(
+                    self.pit_servo_min + ((self.pit_servo_max - self.pit_servo_min) * (control_out / 100.0)))
             else:
-                width = self.servo_limiter(self.pit_servo_max - ((self.pit_servo_max - self.pit_servo_min) * (control_out / 100.0)))
+                width = self.servo_limiter(
+                    self.pit_servo_max - ((self.pit_servo_max - self.pit_servo_min) * (control_out / 100.0)))
             self.pi.set_servo_pulsewidth(self.pit_servo_gpio, width)
             self.logger.debug(_(u'servo impulse width {}µs').format(str(width)))
         elif self.pit_type == 'io_pwm':
@@ -299,9 +301,11 @@ class BBQpit:
             # Servosteuerung für Damper
             damper_servo_out = control_out * self.pit_damper_pitch + self.pit_damper_offset
             if not self.pit_servo_inverted:
-                width = self.servo_limiter(self.pit_servo_min + ((self.pit_servo_max - self.pit_servo_min) * (damper_servo_out / 100.0)))
+                width = self.servo_limiter(
+                    self.pit_servo_min + ((self.pit_servo_max - self.pit_servo_min) * (damper_servo_out / 100.0)))
             else:
-                width = self.servo_limiter(self.pit_servo_max - ((self.pit_servo_max - self.pit_servo_min) * (damper_servo_out / 100.0)))
+                width = self.servo_limiter(
+                    self.pit_servo_max - ((self.pit_servo_max - self.pit_servo_min) * (damper_servo_out / 100.0)))
 
             self.pi.set_servo_pulsewidth(self.pit_servo_gpio, width)
 
@@ -333,7 +337,7 @@ class BBQpit:
                 self.pi.write(gpio, 0)
                 time.sleep(off)
         self.logger.debug(_(u'io_pwm - stopping thread'))
-    
+
     def servo_limiter(self, width):
         # self.pit_servo_deadband in %, so calculate time in 10µs
         pit_servo_deadband = self.pit_servo_deadband * ((self.pit_servo_max - self.pit_servo_min) / 100)
@@ -348,7 +352,8 @@ class BBQpit:
             # Save a servo move, save a servo!
             self.pit_servo_nomove_count += 1
 
-        self.logger.info(_(format(u'Servo move count: {}, saved {}'), self.pit_servo_move_count, self.pit_servo_nomove_count))
+        self.logger.info(
+            _(u'Servo move count: {0}, saved {1}').format(self.pit_servo_move_count, self.pit_servo_nomove_count))
         return self.pit_servo_current_width
 
 
@@ -540,8 +545,8 @@ def main(instance):
                     pit_inverted_new = Config.getboolean('Pitmaster' + instance_string, 'pit_inverted')
                     pit_servo_inverted_new = Config.getboolean('Pitmaster' + instance_string, 'pit_servo_inverted')
                     pit_damper_offset_new = Config.getfloat('Pitmaster' + instance_string, 'pit_damper_offset')
-                    pit_damper_pitch_new = Config.getfloat('Pitmaster' + instance_string, 'pit_servo_deadband')
-                    pit_servo_deadband_new = bbqpit.pit_servo_deadband != pit_servo_deadband_new
+                    pit_damper_pitch_new = Config.getfloat('Pitmaster' + instance_string, 'pit_damper_pitch')
+                    pit_servo_deadband_new = Config.getfloat('Pitmaster' + instance_string, 'pit_servo_deadband')
 
                     if bbqpit.pit_inverted != pit_inverted_new:
                         bbqpit.pit_inverted = pit_inverted_new
@@ -556,7 +561,7 @@ def main(instance):
                         bbqpit.pit_damper_pitch = pit_damper_pitch_new
 
                     if bbqpit.pit_servo_deadband != pit_servo_deadband_new:
-                        bbqpit.pit_servo_deadband != pit_servo_deadband_new
+                        bbqpit.pit_servo_deadband = pit_servo_deadband_new
 
                     if restart_pit:
                         logger.debug(_(u'Restarting pit...'))
@@ -728,7 +733,7 @@ def main(instance):
                         # Keine Erhöhung I-Anteil wenn Regler bereits an der Grenze ist
                         if not p_out + d_out >= pit_pid_max:
                             dif_sum = dif_sum + float(dif) * pit_pause
-                        # Anti-Windup I-Anteil (Limits)                        
+                        # Anti-Windup I-Anteil (Limits)
                         if dif_sum * ki > pit_iterm_max:
                             dif_sum = pit_iterm_max / ki
                         elif dif_sum * ki < pit_iterm_min:
