@@ -1,201 +1,210 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WLANThermo 2.6.0\n"
-"POT-Creation-Date: 2017-02-19 01:37+0100\n"
-"PO-Revision-Date: 2017-02-19 01:39+0100\n"
+"POT-Creation-Date: 2017-08-19 11:18+0200\n"
+"PO-Revision-Date: 2017-08-19 11:21+0200\n"
 "Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
 "Language-Team: \n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.11\n"
+"X-Generator: Poedit 2.0.1\n"
 "X-Poedit-Basepath: ../../../../../sbin\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: wlt_2_pitmaster.py\n"
 
-#: wlt_2_pitmaster.py:104
+#: wlt_2_pitmaster.py:120
 #, python-brace-format
 msgid "Starting pit {pit_type} on GPIO {gpio}"
 msgstr "Starte Pit {pit_type} auf GPIO {gpio}"
 
-#: wlt_2_pitmaster.py:164
+#: wlt_2_pitmaster.py:202
 msgid "Setting pit to {}%"
 msgstr "Setze Pit auf {}%"
 
-#: wlt_2_pitmaster.py:166
+#: wlt_2_pitmaster.py:204
 msgid "Control-out over maximum, limiting to 100%"
 msgstr "Steuergröße über Maximum, begrenze auf 100%"
 
-#: wlt_2_pitmaster.py:169
+#: wlt_2_pitmaster.py:207
 msgid "Control-out below minimum, limiting to 0%"
 msgstr "Steuergröße unter Minimum, begrenze auf 0%"
 
-#: wlt_2_pitmaster.py:176
+#: wlt_2_pitmaster.py:214
 msgid "Fan startup, 0,5s 25%"
 msgstr "Lüfteranlauf, 0,5s 25%"
 
-#: wlt_2_pitmaster.py:196
+#: wlt_2_pitmaster.py:236
 msgid "fan_pwm pulse width "
 msgstr "fan_pwm Pulsweite "
 
-#: wlt_2_pitmaster.py:219
+#: wlt_2_pitmaster.py:259 wlt_2_pitmaster.py:325
 msgid "fan PWM {} of 255"
 msgstr "fan PWM {} von 255"
 
-#: wlt_2_pitmaster.py:227
+#: wlt_2_pitmaster.py:269 wlt_2_pitmaster.py:314
 msgid "servo impulse width {}µs"
 msgstr "servo Impulsbreite {}µs"
 
-#: wlt_2_pitmaster.py:242
+#: wlt_2_pitmaster.py:284
 #, python-brace-format
 msgid "io_pwm impulse width {on}s of {cycletime}s"
 msgstr "io_pwm Impulsbreite {on}s von {cycletime}s"
 
-#: wlt_2_pitmaster.py:247
+#: wlt_2_pitmaster.py:289
 msgid "io switching on!"
 msgstr "io Schalte ein!"
 
-#: wlt_2_pitmaster.py:254
+#: wlt_2_pitmaster.py:296
 msgid "io switching off!"
 msgstr "io Schalte aus!"
 
-#: wlt_2_pitmaster.py:263
+#: wlt_2_pitmaster.py:330
 msgid "io_pwm - starting thread"
 msgstr "io_pwm - Starte Thread"
 
-#: wlt_2_pitmaster.py:274
+#: wlt_2_pitmaster.py:341
 msgid "io_pwm - stopping thread"
 msgstr "io_pwm - Beende Thread"
 
-#: wlt_2_pitmaster.py:358
+#: wlt_2_pitmaster.py:362
+#, python-brace-format
+msgid "Servo move count: {0}, saved {1}"
+msgstr "Servobewegungszähler: {0}, gespart: {1}"
+
+#: wlt_2_pitmaster.py:453
 msgid "WLANThermoPID started"
 msgstr "WLANThermoPID gestartet"
 
-#: wlt_2_pitmaster.py:361
+#: wlt_2_pitmaster.py:456
 msgid "Pitmaster start"
 msgstr "Pitmaster startet"
 
-#: wlt_2_pitmaster.py:414
+#: wlt_2_pitmaster.py:525
 msgid "Loading configuration..."
 msgstr "Konfiguration wird geladen..."
 
-#: wlt_2_pitmaster.py:427
+#: wlt_2_pitmaster.py:530
 msgid "Setting pit type to: "
 msgstr "Setze Pittyp auf: "
 
-#: wlt_2_pitmaster.py:430
+#: wlt_2_pitmaster.py:538
 msgid "Setting pit GPIO to: "
 msgstr "Setze Pit GPIO auf: "
 
-#: wlt_2_pitmaster.py:450
+#: wlt_2_pitmaster.py:539
+msgid "Setting servo GPIO to: "
+msgstr "Setze Servo GPIO auf: "
+
+#: wlt_2_pitmaster.py:574
 msgid "Restarting pit..."
 msgstr "Starte Pit neu..."
 
-#: wlt_2_pitmaster.py:494
+#: wlt_2_pitmaster.py:621
 msgid "No signal on channel {}"
 msgstr "Kein Messwert auf Kanal {}"
 
-#: wlt_2_pitmaster.py:495
+#: wlt_2_pitmaster.py:622
 msgid "|no probe connected to channel {}!"
 msgstr "|Kein Temperaturfühler an Kanal {} angeschlossen!"
 
-#: wlt_2_pitmaster.py:500
+#: wlt_2_pitmaster.py:627
 msgid "Error parsing value on channel {}"
 msgstr "Fehler beim Auswerten des Wertes für Kanal {}"
 
-#: wlt_2_pitmaster.py:501
+#: wlt_2_pitmaster.py:628
 msgid "|no valid value on channel {}!"
 msgstr "|Kein gültiger Wert auf Kanal {}!"
 
-#: wlt_2_pitmaster.py:512
+#: wlt_2_pitmaster.py:636
 msgid "Setting output to {}% manual value"
 msgstr "Setze Ausgang manuell auf {}%"
 
-#: wlt_2_pitmaster.py:531
+#: wlt_2_pitmaster.py:655
 msgid "Open lid detected!"
 msgstr "Offener Deckel erkannt!"
 
-#: wlt_2_pitmaster.py:534
+#: wlt_2_pitmaster.py:658
 msgid "Open lid detection: timeout!"
 msgstr "Deckelöffnung: Timeout!"
 
-#: wlt_2_pitmaster.py:536
+#: wlt_2_pitmaster.py:660
 msgid "|timeout open lid detection"
 msgstr "|Timeout Deckelerkennung"
 
-#: wlt_2_pitmaster.py:538
+#: wlt_2_pitmaster.py:662
 msgid "Open lid detection: lid closed again!"
 msgstr "Deckelöffnung: Deckel wieder geschlossen!"
 
-#: wlt_2_pitmaster.py:540
+#: wlt_2_pitmaster.py:664
 msgid "|lid closed"
 msgstr "|Deckel geschlossen"
 
-#: wlt_2_pitmaster.py:543
+#: wlt_2_pitmaster.py:667
 msgid "Opened lid detected!"
 msgstr "Deckelöffnung erkannt!"
 
-#: wlt_2_pitmaster.py:547
+#: wlt_2_pitmaster.py:672
 msgid "|open lid detected"
 msgstr "|Deckelöffnung erkannt"
 
-#: wlt_2_pitmaster.py:553
+#: wlt_2_pitmaster.py:678
 #, python-brace-format
 msgid "|current: {pit_now}, set: {pit_set}"
 msgstr "|Ist: {pit_now}, Soll: {pit_set}"
 
-#: wlt_2_pitmaster.py:567
+#: wlt_2_pitmaster.py:692
 msgid "Invalid input value!, setting output to 0"
 msgstr "Ungültiger Eingangswert!, setze Ausgang auf 0"
 
-#: wlt_2_pitmaster.py:575
+#: wlt_2_pitmaster.py:700
 msgid "|dif: "
 msgstr "|Diff: "
 
-#: wlt_2_pitmaster.py:578
+#: wlt_2_pitmaster.py:703
 msgid "|step: "
 msgstr "|Schritt: "
 
-#: wlt_2_pitmaster.py:580
+#: wlt_2_pitmaster.py:705
 msgid "|new: "
 msgstr "|Neu: "
 
-#: wlt_2_pitmaster.py:584
+#: wlt_2_pitmaster.py:709
 msgid "|new overshoot: "
 msgstr "|Neuer overshoot: "
 
-#: wlt_2_pitmaster.py:587
+#: wlt_2_pitmaster.py:712
 msgid "|no matching rule, stop pit!"
 msgstr "|Keine Regel zutreffend, Ausschalten!"
 
-#: wlt_2_pitmaster.py:631
+#: wlt_2_pitmaster.py:756
 #, python-brace-format
-msgid "|PID values P {p_out}, Iterm {i_out}, dInput {dInput}"
-msgstr "|PID Werte P {p_out}, Iterm {i_out}, dInput {dInput}"
+msgid "|PID values P {p_out}, Iterm {i_out}, d_input {d_input}"
+msgstr "|PID Werte P {p_out}, Iterm {i_out}, dInput {d_input}"
 
-#: wlt_2_pitmaster.py:645
+#: wlt_2_pitmaster.py:772
 msgid "Limiting raising rate"
 msgstr "Begrenze Anstiegsrate"
 
-#: wlt_2_pitmaster.py:650
+#: wlt_2_pitmaster.py:777
 msgid "Limiting lowering rate"
 msgstr "Begrenze Sinkrate"
 
-#: wlt_2_pitmaster.py:653
+#: wlt_2_pitmaster.py:780
 msgid "|New value: "
 msgstr "|Neuer Wert: "
 
-#: wlt_2_pitmaster.py:688
+#: wlt_2_pitmaster.py:830
 msgid "Error while deleting the pitmaster values"
 msgstr "Fehler beim löschen der Pitmasterwerte"
 
-#: wlt_2_pitmaster.py:689
+#: wlt_2_pitmaster.py:831
 msgid "Shutting down WLANThermoPID"
 msgstr "WLANThermoPID wird heruntergefahren"
 
-#: wlt_2_pitmaster.py:716
+#: wlt_2_pitmaster.py:858
 #, python-format
 msgid "%s already exists, Process is running, exiting"
 msgstr "%s existiert, Prozess läuft bereits, beende Skript"

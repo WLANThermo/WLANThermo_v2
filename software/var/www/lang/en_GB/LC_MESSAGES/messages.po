@@ -1,22 +1,709 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
-"POT-Creation-Date: 2016-07-05 21:15+0200\n"
-"PO-Revision-Date: 2016-07-05 23:02+0200\n"
-"Last-Translator: \n"
+"Project-Id-Version: WLANThermo 2.7.0\n"
+"POT-Creation-Date: 2017-08-19 11:27+0200\n"
+"PO-Revision-Date: 2017-08-19 11:28+0200\n"
+"Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
 "Language-Team: \n"
+"Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.8\n"
-"X-Poedit-Basepath: .\n"
+"X-Generator: Poedit 2.0.1\n"
+"X-Poedit-Basepath: ../../..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Language: en_GB\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-1: control\n"
+
+#: control/config.php:778 header.php:92
+msgid "Settings"
+msgstr ""
+
+#: control/config.php:789 control/config.php:1087 control/config.php:1100
+msgid "Name"
+msgstr ""
+
+#: control/config.php:790
+msgid "Probe Type"
+msgstr ""
+
+#: control/config.php:792
+msgid "Probe Thresholds"
+msgstr ""
+
+#: control/config.php:793 control/config.php:1190 control/config.php:1198
+msgid "min"
+msgstr ""
+
+#: control/config.php:795 control/config.php:1193 control/config.php:1200
+msgid "max"
+msgstr ""
+
+#: control/config.php:797
+msgid "Plot Color"
+msgstr ""
+
+#: control/config.php:798
+msgid "Measuring Resistance"
+msgstr ""
+
+#: control/config.php:823
+msgid "Browser Alarm"
+msgstr ""
+
+#: control/config.php:831
+msgid "Alarm Notification Settings"
+msgstr ""
+
+#: control/config.php:833
+msgid "Alarm Interval (s)"
+msgstr ""
+
+#: control/config.php:835
+msgid "Status Interval (s)"
+msgstr ""
+
+#: control/config.php:837
+msgid "Over Temp"
+msgstr ""
+
+#: control/config.php:838
+msgid "Under Temp"
+msgstr ""
+
+#: control/config.php:839
+msgid "Status"
+msgstr ""
+
+#: control/config.php:840
+msgid "Message"
+msgstr ""
+
+#: control/config.php:845
+msgid "Send Test Message"
+msgstr ""
+
+#: control/config.php:854
+msgid "Email Notification Settings"
+msgstr ""
+
+#: control/config.php:855
+msgid "TLS encryption"
+msgstr ""
+
+#: control/config.php:856
+msgid "Enable Email Notification"
+msgstr ""
+
+#: control/config.php:859
+msgid "Authentication"
+msgstr ""
+
+#: control/config.php:861 control/config.php:945
+msgid "To"
+msgstr ""
+
+#: control/config.php:862
+msgid "From"
+msgstr ""
+
+#: control/config.php:863
+msgid "Subject"
+msgstr ""
+
+#: control/config.php:867
+msgid "Server"
+msgstr ""
+
+#: control/config.php:869
+msgid "Password"
+msgstr ""
+
+#: control/config.php:871
+msgid "Username"
+msgstr ""
+
+#: control/config.php:880
+msgid "App Settings"
+msgstr ""
+
+#: control/config.php:881
+msgid "Enable App Notification"
+msgstr ""
+
+#: control/config.php:884 control/config.php:885 control/config.php:886
+msgid "Device ID"
+msgstr ""
+
+#: control/config.php:887
+msgid "Alarm Sound"
+msgstr ""
+
+#: control/config.php:906 control/config.php:907 control/config.php:908
+msgid "Device Type"
+msgstr ""
+
+#: control/config.php:943
+msgid "WhatsApp Settings"
+msgstr ""
+
+#: control/config.php:947
+msgid "Enable WhatsApp"
+msgstr ""
+
+#: control/config.php:956
+msgid "Telegram Settings"
+msgstr ""
+
+#: control/config.php:958
+msgid "Token"
+msgstr ""
+
+#: control/config.php:960
+msgid "Chat-ID"
+msgstr ""
+
+#: control/config.php:962
+msgid "Enable Telegram"
+msgstr ""
+
+#: control/config.php:971
+msgid "Push Notification Settings"
+msgstr ""
+
+#: control/config.php:972
+msgid "Enable Push Notification"
+msgstr ""
+
+#: control/config.php:975
+msgid "URL"
+msgstr ""
+
+#: control/config.php:976
+msgid "Body"
+msgstr ""
+
+#: control/config.php:987
+msgid "Chart Settings"
+msgstr ""
+
+#: control/config.php:989
+msgid "Chart Name"
+msgstr ""
+
+#: control/config.php:991
+msgid "Enable Chart"
+msgstr ""
+
+#: control/config.php:993
+msgid "Chart Range"
+msgstr ""
+
+#: control/config.php:994
+msgid "from"
+msgstr ""
+
+#: control/config.php:996
+msgid "to"
+msgstr ""
+
+#: control/config.php:998
+msgid "Show Legend"
+msgstr ""
+
+#: control/config.php:1001
+msgid "top left"
+msgstr ""
+
+#: control/config.php:1002
+msgid "top right"
+msgstr ""
+
+#: control/config.php:1003
+msgid "bottom left"
+msgstr ""
+
+#: control/config.php:1004
+msgid "bottom right"
+msgstr ""
+
+#: control/config.php:1005
+msgid "center left"
+msgstr ""
+
+#: control/config.php:1006
+msgid "center right"
+msgstr ""
+
+#: control/config.php:1009
+msgid "Chart Size"
+msgstr ""
+
+#: control/config.php:1021
+msgid "Enable Frame Legend"
+msgstr ""
+
+#: control/config.php:1023
+msgid "Pit out"
+msgstr ""
+
+#: control/config.php:1036
+msgid "Enable Pitmaster Chart"
+msgstr ""
+
+#: control/config.php:1038
+msgid "Pit setpoint"
+msgstr ""
+
+#: control/config.php:1051
+msgid "Pit 2 out"
+msgstr ""
+
+#: control/config.php:1064
+msgid "Enable Pitmaster 2 Chart"
+msgstr ""
+
+#: control/config.php:1066
+msgid "Pit 2 setpoint"
+msgstr ""
+
+#: control/config.php:1085
+msgid "Webcam Settings"
+msgstr ""
+
+#: control/config.php:1089
+msgid "Enable Webcam"
+msgstr ""
+
+#: control/config.php:1091 control/config.php:1104
+msgid "Resolution"
+msgstr ""
+
+#: control/config.php:1102
+msgid "Enable Raspicam"
+msgstr ""
+
+#: control/config.php:1115
+msgid "Exposure"
+msgstr ""
+
+#: control/config.php:1137 control/config.php:1307
+msgid "Temperature"
+msgstr ""
+
+#: control/config.php:1138
+msgid "Control Curve"
+msgstr ""
+
+#: control/config.php:1139
+msgid "Enable Pitmaster"
+msgstr ""
+
+#: control/config.php:1144 control/config.php:1148
+msgid "Channel"
+msgstr ""
+
+#: control/config.php:1153
+msgid "Delay"
+msgstr ""
+
+#: control/config.php:1155
+msgid "Manual Control"
+msgstr ""
+
+#: control/config.php:1157
+msgid "PID Control"
+msgstr ""
+
+#: control/config.php:1159
+msgid "Open Lid detection"
+msgstr ""
+
+#: control/config.php:1161
+msgid "Kp"
+msgstr ""
+
+#: control/config.php:1163
+msgid "Ki"
+msgstr ""
+
+#: control/config.php:1165
+msgid "Kd"
+msgstr ""
+
+#: control/config.php:1167
+msgid "Kp_a"
+msgstr ""
+
+#: control/config.php:1169
+msgid "Ki_a"
+msgstr ""
+
+#: control/config.php:1171
+msgid "Kd_a"
+msgstr ""
+
+#: control/config.php:1176
+msgid "Type"
+msgstr ""
+
+#: control/config.php:1179
+msgid "Servo"
+msgstr ""
+
+#: control/config.php:1180
+msgid "PWM Fan"
+msgstr ""
+
+#: control/config.php:1181
+msgid "Fan"
+msgstr ""
+
+#: control/config.php:1182
+msgid "IO"
+msgstr ""
+
+#: control/config.php:1183
+msgid "IO with PWM"
+msgstr ""
+
+#: control/config.php:1185
+msgid "Servo Damper"
+msgstr ""
+
+#: control/config.php:1189
+msgid "Duty Cycle (%)"
+msgstr ""
+
+#: control/config.php:1197
+msgid "Servo Pulse (µs)"
+msgstr ""
+
+#: control/config.php:1202
+msgid "Reverse Drive"
+msgstr ""
+
+#: control/config.php:1204
+msgid "Reverse Servo"
+msgstr ""
+
+#: control/config.php:1206
+msgid "Damper control"
+msgstr ""
+
+#: control/config.php:1207
+msgid "offset"
+msgstr ""
+
+#: control/config.php:1209
+msgid "pitch"
+msgstr ""
+
+#: control/config.php:1211
+msgid "Servo deadband (%)"
+msgstr ""
+
+#: control/config.php:1213
+msgid "Rate limit (s)"
+msgstr ""
+
+#: control/config.php:1214
+msgid "rise"
+msgstr ""
+
+#: control/config.php:1216
+msgid "fall"
+msgstr ""
+
+#: control/config.php:1230
+msgid "General Settings"
+msgstr ""
+
+#: control/config.php:1232
+msgid "Hardware Version"
+msgstr ""
+
+#: control/config.php:1241
+msgid "Language"
+msgstr ""
+
+#: control/config.php:1253
+msgid "Unit"
+msgstr ""
+
+#: control/config.php:1260
+msgid "New Log File on Start"
+msgstr ""
+
+#: control/config.php:1262
+msgid "Auto-Check for Update"
+msgstr ""
+
+#: control/config.php:1264
+msgid "Show CPU Usage"
+msgstr ""
+
+#: control/config.php:1266
+msgid "Enable Sound"
+msgstr ""
+
+#: control/config.php:1268
+msgid "Beep at Start"
+msgstr ""
+
+#: control/config.php:1270
+msgid "Enable Maverick receiver"
+msgstr ""
+
+#: control/config.php:1273
+msgid "Enable TC add on"
+msgstr ""
+
+#: control/config.php:1276
+msgid "View Channels"
+msgstr ""
+
+#: control/config.php:1292
+msgid "Display Einstellungen"
+msgstr ""
+
+#: control/config.php:1294
+msgid "LCD Display"
+msgstr ""
+
+#: control/config.php:1296
+msgid "LCD Type"
+msgstr ""
+
+#: control/config.php:1303
+msgid "Start Page"
+msgstr ""
+
+#: control/config.php:1306
+msgid "Menu"
+msgstr ""
+
+#: control/config.php:1310
+msgid "Force update!"
+msgstr ""
+
+#: control/config.php:1318
+msgid "Logging settings"
+msgstr ""
+
+#: control/config.php:1320
+msgid "Logging level pitmaster"
+msgstr ""
+
+#: control/config.php:1328
+msgid "Logging level watch dog"
+msgstr ""
+
+#: control/config.php:1336
+msgid "Logging level main program"
+msgstr ""
+
+#: control/config.php:1344
+msgid "Logging level display"
+msgstr ""
+
+#: control/config.php:1352
+msgid "Show update log"
+msgstr ""
+
+#: control/config.php:1353
+msgid "Show logfile"
+msgstr ""
+
+#: control/new_log_file.php:23
+msgid "The configuration file"
+msgstr ""
+
+#: control/new_log_file.php:23
+msgid "does not exist"
+msgstr ""
+
+#: control/new_log_file.php:32
+msgid "Saving current plot image"
+msgstr ""
+
+#: control/new_log_file.php:34
+msgid "Plot image is unavilable"
+msgstr ""
+
+#: control/new_log_file.php:41
+msgid "New log file created"
+msgstr ""
+
+#: control/new_log_file.php:49
+msgid "No new log file has been created"
+msgstr ""
+
+#: control/new_log_file.php:58 header.php:107
+msgid "Create New Log File"
+msgstr ""
+
+#: control/new_log_file.php:61
+msgid "Are you sure you want to create a new log file?"
+msgstr ""
+
+#: control/reboot.php:28 main.php:73
+msgid "Restarting RaspberryPi"
+msgstr ""
+
+#: control/reboot.php:33
+msgid "Cancelling reboot"
+msgstr ""
+
+#: control/reboot.php:38
+msgid "RASPBERRY PI REBOOT"
+msgstr ""
+
+#: control/reboot.php:40
+msgid "Do you want to reboot the RaspberryPi?"
+msgstr ""
+
+#: control/shutdown.php:22
+msgid "RaspberryPi is shutting down"
+msgstr ""
+
+#: control/shutdown.php:30
+msgid "Cancelled shutdown"
+msgstr ""
+
+#: control/shutdown.php:39
+msgid "RASPBERRY PI SHUTDOWN"
+msgstr ""
+
+#: control/shutdown.php:41
+msgid "Do you want to shutdown the RaspberryPi?"
+msgstr ""
+
+#: header.php:78
+msgid "Reboot"
+msgstr ""
+
+#: header.php:79
+msgid "Shutdown"
+msgstr ""
+
+#: header.php:89
+msgid "WiFi Settings"
+msgstr ""
+
+#: header.php:95
+msgid "Log File"
+msgstr ""
+
+#: header.php:104
+msgid "Temperature Graph"
+msgstr ""
+
+#: info.php:19
+msgid "a BBQ-Community project"
+msgstr ""
+
+#: info.php:36
+msgid "Information"
+msgstr ""
+
+#: info.php:37
+msgid "This software is licensed under the"
+msgstr ""
+
+#: info.php:37
+msgid "License"
+msgstr ""
+
+#: info.php:39
+msgid "Software version"
+msgstr ""
+
+#: info.php:45 info.php:49 main.php:63
+msgid "WLANThermo update"
+msgstr ""
+
+#: info.php:46
+msgid "no updates available"
+msgstr ""
+
+#: info.php:50 info.php:71
+msgid "new update available"
+msgstr ""
+
+#: info.php:52
+msgid "Installed version"
+msgstr ""
+
+#: info.php:57
+msgid "Available version"
+msgstr ""
+
+#: info.php:64 info.php:75
+msgid "Update"
+msgstr ""
+
+#: main.php:65
+msgid "The update is currently being installed"
+msgstr ""
+
+#: main.php:87
+msgid "NEXTION Display update"
+msgstr ""
+
+#: main.php:160
+msgid "Last regulation on"
+msgstr ""
+
+#: main.php:168
+msgid "Last measurement on"
+msgstr ""
+
+#: main.php:174
+msgid "CPU utilization"
+msgstr ""
+
+#: thermolog.php:64
+msgid "Logfile Folder"
+msgstr ""
+
+#: thermolog.php:74
+msgid "Filename"
+msgstr ""
+
+#: thermolog.php:75
+msgid "D/L"
+msgstr ""
+
+#: thermolog.php:76
+msgid "Plot"
+msgstr ""
+
+#: thermolog.php:77
+msgid "File Size"
+msgstr ""
+
+#: thermolog.php:78
+msgid "Last Updated"
+msgstr ""
+
+#: thermolog.php:79
+msgid "Delete"
+msgstr ""
+
+#: thermolog.php:103
+msgid "download"
+msgstr ""
+
+#: thermolog.php:104
+msgid "view plot"
+msgstr ""
 
 # Test1
-msgid "This is a text string!"
-msgstr "Das ist der neue Text"
+#~ msgid "This is a text string!"
+#~ msgstr "Das ist der neue Text"
 
 # Test2
-msgid "Test"
-msgstr "TestENUS"
+#~ msgid "Test"
+#~ msgstr "TestENUS"
