@@ -72,6 +72,8 @@ class BBQpit:
         self.pit_servo_current_width = 0
         self.pit_servo_deadband = 5  # in 10 µs
 
+        # statistics
+        self.pit_servo_wouldbe_width = 0
         self.pit_servo_move_count = 0
         self.pit_servo_nomove_count = 0
 
@@ -350,9 +352,11 @@ class BBQpit:
                 or abs(self.pit_servo_current_width - width) > pit_servo_deadband:
             self.pit_servo_move_count += 1
             self.pit_servo_current_width = width
-        else:
+        elif width != self.pit_servo_wouldbe_width:
             # Save a servo move, save a servo!
             self.pit_servo_nomove_count += 1
+
+        self.pit_servo_wouldbe_width = width
 
         self.logger.info(
             _(u'Servo move count: {0}, saved {1}').format(self.pit_servo_move_count, self.pit_servo_nomove_count))
