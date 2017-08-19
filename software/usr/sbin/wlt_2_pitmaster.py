@@ -58,8 +58,8 @@ class BBQpit:
         self.pit_max = 100
         self.pit_inverted = False
 
-        self.pit_servo_min = 100
-        self.pit_servo_max = 200
+        self.pit_servo_min = 1000
+        self.pit_servo_max = 2000
         self.pit_servo_inverted = False
 
         self.pit_startup_min = 25
@@ -264,7 +264,7 @@ class BBQpit:
                 width = self.servo_limiter(
                     self.pit_servo_max - ((self.pit_servo_max - self.pit_servo_min) * (control_out / 100.0)))
             self.pi.set_servo_pulsewidth(self.pit_servo_gpio, width)
-            self.logger.debug(_(u'servo impulse width {}µs').format(str(width)))
+            self.logger.debug(_(u'servo impulse width {}µs').format(width))
         elif self.pit_type == 'io_pwm':
             # PWM-modulierter Schaltausgang (Schwingungspaketsteuerung)
             # Zyklusdauer in s
@@ -339,7 +339,9 @@ class BBQpit:
         self.logger.debug(_(u'io_pwm - stopping thread'))
 
     def servo_limiter(self, width):
-        # self.pit_servo_deadband in %, so calculate time in 10µs
+        # value gets converted to int anyway
+        width = int(width)
+        #  self.pit_servo_deadband in %, so calculate time in µs
         pit_servo_deadband = self.pit_servo_deadband * ((self.pit_servo_max - self.pit_servo_min) / 100)
         if width == self.pit_servo_current_width:
             # Nothing would have happened, nothing happens
