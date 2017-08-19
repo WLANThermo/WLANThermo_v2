@@ -452,7 +452,8 @@ def main(instance):
     # Log Dateinamen aus der config lesen
     current_temp = Config.get('filepath', 'current_temp')
     pitmaster_log = Config.get('filepath', 'pitmaster' + instance_string)
-    if Config.get('Hardware', 'version') == u'miniV2':
+
+    if Config.get('Hardware', 'version') == u'miniV2' and Config.getboolean('Hardware', 'max31855'):
         channel_count = 12
     else:
         channel_count = 10
