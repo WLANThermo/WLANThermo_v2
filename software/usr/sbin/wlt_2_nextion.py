@@ -1491,10 +1491,13 @@ def NX_display():
             values = dict()
             
             options = config_getvalues()
-            
+
+            new_pitmaster_count = 1
             new_channel_count = 8
             new_hwchannel_count = 10
             if options['hw_version'] == 'miniV2':
+                new_pitmaster_count = 2
+            if options['hw_version'] == 'miniV2' and options['max31855']:
                 new_channel_count += 2
                 new_hwchannel_count += 2
             if options['maverick_enabled'] == True:
@@ -1503,10 +1506,16 @@ def NX_display():
             if channel_count != new_channel_count:
                 values['main.chmax.val'] = new_channel_count
                 channel_count = new_channel_count
-                
+
+            if pitmaster_count != new_pitmaster_count:
+                values['main.pitmaster.val'] = pitmaster_count
+                pitmaster_count = new_pitmaster_count
+
             if hwchannel_count != new_hwchannel_count:
                 hwchannel_count = new_hwchannel_count
-            
+
+            values['main.pitmaster.val'] = pitmaster_count
+
             if not NX_sendvalues(values):
                 channels_event.set()
             

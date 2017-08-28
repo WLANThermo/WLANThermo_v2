@@ -105,6 +105,11 @@ logger.info(_(u'Display started!'))
 pid = str(os.getpid())
 pidfilename = '/var/run/'+os.path.basename(__file__).split('.')[0]+'.pid'
 
+if Config.get('Hardware', 'version') == u'miniV2' and Config.getboolean('Hardware', 'max31855'):
+    channel_count = 12
+else:
+    channel_count = 10
+
 def check_pid(pid):
     try:
         os.kill(pid, 0)
@@ -288,13 +293,13 @@ def show_values():
                 temps_raw = ft.split(';')
                 for i in range (8):
                     temps.append('{:0.1f}'.format(float(temps_raw[i+1])))
-                    if temps_raw[i + 9] == 'ok':
+                    if temps_raw[i + 1 + channel_count] == 'ok':
                         alarm.append('')    
-                    if temps_raw[i + 9] == 'hi':
+                    elif temps_raw[i + 1 + channel_count] == 'hi':
                         alarm.append(chr(1))    
-                    if temps_raw[i + 9] == 'lo':
+                    elif temps_raw[i + 1 + channel_count] == 'lo':
                         alarm.append(chr(0))    
-                    if temps_raw[i + 9] == 'er':
+                    elif temps_raw[i + 1 + channel_count] == 'er':
                         alarm.append('')    
                     
                 lcd_byte(LCD_LINE_1, LCD_CMD)
@@ -415,10 +420,6 @@ if LCD:
 
     time.sleep(3) # 3 second delay
 
-
-    
-
-    
     notifier = pyinotify.Notifier(wm, PTmp())
     wdd = wm.add_watch(curPath, mask) #, rec=True)
     
