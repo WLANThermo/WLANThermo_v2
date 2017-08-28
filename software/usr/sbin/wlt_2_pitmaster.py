@@ -42,6 +42,8 @@ os.umask(0)
 
 logger = False
 
+def clamp(value, minimum, maximum):
+    return max(min(maximum, value), minimum)
 
 # Funktionsdefinition
 class BBQpit:
@@ -301,7 +303,7 @@ class BBQpit:
 
         elif self.pit_type == 'damper':
             # Servosteuerung für Damper
-            damper_servo_out = control_out * self.pit_damper_pitch + self.pit_damper_offset
+            damper_servo_out = clamp(control_out * self.pit_damper_pitch + self.pit_damper_offset, 0, 100)
             if not self.pit_servo_inverted:
                 width = self.servo_limiter(
                     self.pit_servo_min + ((self.pit_servo_max - self.pit_servo_min) * (damper_servo_out / 100.0)))
