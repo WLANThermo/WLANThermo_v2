@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: WLANThermo 2.6.0\n"
+"Project-Id-Version: WLANThermo 2.7.0\n"
 "POT-Creation-Date: 2017-08-19 11:22+0200\n"
-"PO-Revision-Date: 2017-08-19 11:24+0200\n"
+"PO-Revision-Date: 2017-08-19 11:45+0200\n"
 "Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -392,11 +392,11 @@ msgstr "Servo umkehren"
 
 #: control/config.php:1206
 msgid "Damper control"
-msgstr "Damper Steuerung"
+msgstr "Damperkurve"
 
 #: control/config.php:1207
 msgid "offset"
-msgstr "Versatz"
+msgstr "Offset"
 
 #: control/config.php:1209
 msgid "pitch"
@@ -408,7 +408,7 @@ msgstr "Servo Totband (%)"
 
 #: control/config.php:1213
 msgid "Rate limit (s)"
-msgstr "Stellratenbegrenzung (s)"
+msgstr "Stellratenlimit (s)"
 
 #: control/config.php:1214
 msgid "rise"
