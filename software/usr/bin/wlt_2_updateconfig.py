@@ -50,7 +50,7 @@ def config_write(configfile, config):
             new_ini.write(u'[{section_name}]\n'.format(section_name=section_name))
             for (key, value) in config.items(section_name):
                 try:
-                    new_ini.write(u'{key} = {value}\n'.format(key=key, value=config.get(section_name, key)))
+                    new_ini.write(u'{key} = {value}\n'.format(key=key, value=oldconfig.get(section_name, key)))
                 except (ConfigParser.NoSectionError, ConfigParser.NoOptionErr):
                     new_ini.write(u'{key} = {value}\n'.format(key=key, value=value))
             new_ini.write('\n')
