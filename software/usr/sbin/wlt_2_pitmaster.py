@@ -151,7 +151,7 @@ class BBQpit:
                 self.servo_limiter(self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_min))
             else:
                 self.servo_limiter(self.pi.set_servo_pulsewidth(servo_gpio, self.pit_servo_max))
-            self.servo_gpio = servo_gpio
+            self.pit_servo_gpio = servo_gpio
             self.pit_type = pit_type
         elif pit_type == 'io_pwm':
             # PWM-modulierter Schaltausgang (Schwingungspaketsteuerung)
@@ -313,7 +313,7 @@ class BBQpit:
 
             self.pi.set_servo_pulsewidth(self.pit_servo_gpio, width)
 
-            self.logger.debug(_(u'servo impulse width {}µs').format(str(width)))
+            self.logger.debug(_(u'servo impulse width {}µs, {}').format(width, damper_servo_out))
             # Lüftersteuerung v3
             if not self.pit_inverted:
                 if control_out < 0.1:
