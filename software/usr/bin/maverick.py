@@ -209,18 +209,10 @@ def pinchange(gpio, level, tick):
    global packet_queue
    global preamblecount
    global traincount
-   global long_high
-   global long_low
-   global short_high
-   global short_low
-   global long_high_min
-   global long_low_min
-   global short_high_min
-   global short_low_min
-   global long_high_max
-   global long_low_max
-   global short_high_max
-   global short_low_max
+   global long_high, long_high_min, long_high_max
+   global long_low, long_low_min, long_low_max
+   global short_high, short_high_min, short_high_max
+   global short_low, short_low_min, short_low_max
 
    if oldlevel is None:
       oldlevel = level
@@ -229,6 +221,7 @@ def pinchange(gpio, level, tick):
    oldlevel = level
    duration = tick - oldtick
    oldtick = tick
+   
    if duration >= 70:
        if options.debug and preamblecount > 0:
           print(duration, ":", level, " ",sep="", end="", flush=False)
@@ -250,36 +243,26 @@ def pinchange(gpio, level, tick):
                      print('train', flush=True)
                  bit = 1
                  packet[:] = []
-                 packet.append(1)
-                 packet.append(0)
-                 packet.append(1)
-                 packet.append(0)
-                 packet.append(1)
-                 packet.append(0)
-                 packet.append(1)
-                 packet.append(0)
-
-                 packet.append(1)
-                 packet.append(0)
-                 packet.append(0)
-                 packet.append(1)
-                 packet.append(1)
-                 packet.append(0)
-                 packet.append(0)
-                 packet.append(1)
-
-                 long_high = 0
+                 # Append preamble byte which we use for training
+                 packet.extend([1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1])
+                 
+                 # First impulse in preamble ist long low
                  long_low = duration
-                 short_high = 0
-                 short_low = 0
-                 long_high_min = 0
                  long_low_min = duration
-                 short_high_min = 0
-                 short_low_min = 0
-                 long_high_max = 0
                  long_low_max = duration
-                 short_high_max = 0
-                 short_low_max = 0
+                  
+                 short_high = 0
+                 short_high_min = None
+                 short_high_max = None
+               
+                 short_low = 0
+                 short_low_min = None
+                 short_low_max = None
+                  
+                 long_high = 0
+                 long_high_min = None
+                 long_high_max = None
+                 
              else:
                  state = 'wait'
                  preamblecount = 0
@@ -300,33 +283,34 @@ def pinchange(gpio, level, tick):
              traincount += 1
              if options.debug :
                  print('train',traincount, flush=True)
-             #L h   L l   L h   L l   L h   L l   L h   L l   S h   S l   L h   S l   S h   L l   S h   S l   L h
-             # 2     3     4     5     6     7     8     9     10    11    12    13    14    15    16    17    18
+             #L l   L h   L l   L h   L l   L h   L l   L h   L l   S h   S l   L h   S l   S h   L l   S h   S l   L h
+             # 1     2     3     4     5     6     7     8     9     10    11    12    13    14    15    16    17    18
+             # First levelchange has already been counted!
              if traincount in (2, 4, 6, 8, 12, 18):
                 # Long high
                  long_high += duration
-                 if long_high_min > duration :
+                 if long_high_min > duration or long_high_min is None:
                      long_high_min = duration
-                 if long_high_max < duration :
-                     long_high_min = duration
+                 if long_high_max < duration or long_high_max is None:
+                     long_high_max = duration
              elif traincount in (3, 5, 7, 9, 15):
                  long_low += duration
-                 if long_low_min > duration :
+                 if long_low_min > duration or long_low_min is None:
                      long_low_min = duration
-                 if long_low_max < duration :
-                     long_low_min = duration
+                 if long_low_max < duration or long_low_max is None:
+                     long_low_max = duration
              elif traincount in (10, 14, 16) :
                  short_high += duration
-                 if short_high_min > duration :
+                 if short_high_min > duration or short_high_min is None:
                      short_high_min = duration
-                 if short_high_max < duration :
-                     short_high_min = duration
+                 if short_high_max < duration or short_high_max is None:
+                     short_high_max = duration
              elif traincount in (11, 13, 17):
                  short_low += duration
-                 if short_low_min > duration :
+                 if short_low_min > duration or short_low_min is None:
                      short_low_min = duration
-                 if short_low_max < duration :
-                     short_low_min = duration
+                 if short_low_max < duration or short_low_max is None:
+                     short_low_max = duration
                      
              if traincount == 18:
                  long_high /= 6
