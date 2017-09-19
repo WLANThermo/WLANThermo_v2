@@ -176,7 +176,7 @@ def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
                    
 def init_softspi_mcp():
     try:
-        retval = pi.bb_spi_open(CS, MISO, MOSI, SCLK, 250000, 0)
+        retval = pi.bb_spi_open(CS, MISO, MOSI, SCLK, 20000, 0)
     except pigpio.error as e:
         if str(e) == "'GPIO already in use'":
             retval = 0
