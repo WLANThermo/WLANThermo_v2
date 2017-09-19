@@ -1,11 +1,12 @@
-wlanthermo (2.7.0-beta11) wlanthermo-dev; urgency=medium
+wlanthermo (2.7.0-beta12) wlanthermo-dev; urgency=medium
 
   * ADD: Damper support
   * ADD: New sensor support (to untested)
   * CHANGE: Changed sampling order
   * FIX: Better supression of ghost values
+  * FIX: Reduce SPI rate for ADC
 
- -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Tue, 29 Aug 2017 11:30:00 +0200
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Tue, 19 Sep 2017 20:10:00 +0200
 
 wlanthermo (2.6.2) stable; urgency=medium
 
