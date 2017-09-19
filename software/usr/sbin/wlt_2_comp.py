@@ -126,13 +126,15 @@ separator = Config.get('Logging','Separator')
 ## Formatierung von Strings auch wenn ein key nicht existiert.
 ##
 def safe_format(template, args):
+    message = ''
     for i in xrange(100):
         try:
             message = template.format(**args)
             break
         except KeyError as e:
-            key = str(e).strip('\'')
-            template = template.replace('{' + key + '}', '!!!' + key + '!!!')
+            key_name = str(e).strip('\'')
+            logger.error(u'Key "{key_name}" not found in template!'.format(key=key))
+            template = template.replace('{' + key_name + '}', '!!' + key_name + '!!')
     return message
 
 def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
