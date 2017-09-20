@@ -103,7 +103,7 @@ logger.info(_(u'Display started!'))
 
 #ueberpruefe ob der Dienst schon laeuft
 pid = str(os.getpid())
-pidfilename = '/var/run/'+os.path.basename(__file__).split('.')[0]+'.pid'
+pidfilename = '/var/run/' + os.path.basename(__file__).split('.')[0] + '.pid'
 
 if Config.get('Hardware', 'version') == u'miniV2' and Config.getboolean('Hardware', 'max31855'):
     channel_count = 12
@@ -182,7 +182,8 @@ def lcd_init():  # Initialisierung Display und Definition Sonderzeichen Pfeil ru
  
   
 
-def lcd_string(message,style):
+def lcd_string(message, style):
+    logger.debug('LCD Zeile: {message}'.format(message=message))
     # Sende String zum  Display
     # style=1 Linksbuendig
     # style=2 Zentriert
@@ -248,12 +249,10 @@ def lcd_byte(bits, mode):
     GPIO.output(LCD_E, False)  
     time.sleep(E_DELAY)   
 
-def str_len(v,l,s):
+def str_len(v, l, s):
     global error_val, sLen
     r = ''
-    if (v == '999.9'):
-        v = error_val.replace('"','')
-    if (len(v) > l):
+    if len(v) > l:
         r = v[:sLen]
     else:
         for char in range(l - len(v)):
@@ -292,15 +291,18 @@ def show_values():
                 temps = []
                 temps_raw = ft.split(';')
                 for i in range (8):
-                    temps.append('{:0.1f}'.format(float(temps_raw[i+1])))
+                    try:
+                        temps.append('{:0.1f}'.format(float(temps_raw[i+1])))
+                    except ValueError:
+                        temps.append(error_val)
                     if temps_raw[i + 1 + channel_count] == 'ok':
-                        alarm.append('')    
+                        alarm.append('')
                     elif temps_raw[i + 1 + channel_count] == 'hi':
-                        alarm.append(chr(1))    
+                        alarm.append(chr(1))
                     elif temps_raw[i + 1 + channel_count] == 'lo':
-                        alarm.append(chr(0))    
+                        alarm.append(chr(0))
                     elif temps_raw[i + 1 + channel_count] == 'er':
-                        alarm.append('')    
+                        alarm.append('')
                     
                 lcd_byte(LCD_LINE_1, LCD_CMD)
                 lcd_string('C0:' +  str_len(alarm[0] + temps[0],sLen,' ') + chr(0xdf) + 'C1:' + str_len(alarm[1] + temps[1],sLen,' ') + chr(0xdf),2)
@@ -434,4 +436,3 @@ if LCD:
             os.unlink(pidfilename)
             break
 logger.info(_(u'Display stopped!'))
-        
