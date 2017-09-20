@@ -37,8 +37,10 @@ try:
 except IndexError:
     sys.exit(1)
 
+
 def get_random_filename(filename):
     return filename + '_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(12))
+
 
 def config_write(configfile, config):
     # Schreibt das Configfile
@@ -51,7 +53,7 @@ def config_write(configfile, config):
             for (key, value) in config.items(section_name):
                 try:
                     new_ini.write(u'{key} = {value}\n'.format(key=key, value=oldconfig.get(section_name, key)))
-                except (ConfigParser.NoSectionError, ConfigParser.NoOptionErr):
+                except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
                     new_ini.write(u'{key} = {value}\n'.format(key=key, value=value))
             new_ini.write('\n')
         new_ini.flush()
@@ -59,6 +61,6 @@ def config_write(configfile, config):
         new_ini.close()
         os.rename(tmp_filename, configfile)
 
+
 config_write(configfile, config)
 os.unlink(configfile + '.old')
-
