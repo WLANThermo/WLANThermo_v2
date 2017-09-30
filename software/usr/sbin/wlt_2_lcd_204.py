@@ -2,6 +2,7 @@
 # coding=utf-8
 
 # Copyright (c) 2013, 2014, 2015 Armin Thinnes
+# Copyright (c) 2017 Björn Schrader
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -62,7 +63,7 @@ E_DELAY = 0.0005
 
 counter = 0
 #String Length
-sLen = 6
+sLen = 7
 
 # Konfigurationsdatei einlesen
 Config = ConfigParser.ConfigParser()
@@ -292,7 +293,7 @@ def show_values():
                 temps_raw = ft.split(';')
                 for i in range (8):
                     try:
-                        temps.append('{:0.1f}'.format(float(temps_raw[i+1])))
+                        temps.append('{:0.1f}\xdf'.format(float(temps_raw[i+1])))
                     except ValueError:
                         temps.append(error_val)
                     if temps_raw[i + 1 + channel_count] == 'ok':
@@ -305,11 +306,11 @@ def show_values():
                         alarm.append('')
                     
                 lcd_byte(LCD_LINE_1, LCD_CMD)
-                lcd_string('C0:' +  str_len(alarm[0] + temps[0],sLen,' ') + chr(0xdf) + 'C1:' + str_len(alarm[1] + temps[1],sLen,' ') + chr(0xdf),2)
+                lcd_string('C0:' +  str_len(alarm[0] + temps[0], sLen, ' ') + 'C1:' + str_len(alarm[1] + temps[1], sLen, ' '), 2)
                 lcd_byte(LCD_LINE_2, LCD_CMD)
-                lcd_string('C2:' +  str_len(alarm[2] + temps[2],sLen,' ') + chr(0xdf) + 'C3:' + str_len(alarm[3] + temps[3],sLen,' ') + chr(0xdf),2)  
+                lcd_string('C2:' +  str_len(alarm[2] + temps[2], sLen, ' ') + 'C3:' + str_len(alarm[3] + temps[3], sLen, ' '), 2)
                 lcd_byte(LCD_LINE_3, LCD_CMD)
-                lcd_string('C4:' +  str_len(alarm[4] + temps[4],sLen,' ') + chr(0xdf) + 'C5:' + str_len(alarm[5] + temps[5],sLen,' ') + chr(0xdf),2) 
+                lcd_string('C4:' +  str_len(alarm[4] + temps[4], sLen, ' ') + 'C5:' + str_len(alarm[5] + temps[5], sLen, ' '), 2)
                 
                 Config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
                 lcd_byte(LCD_LINE_4, LCD_CMD)
@@ -320,7 +321,7 @@ def show_values():
                         pits = fp.split(';')
                         lcd_string('Pit: S:' + str("%.0f" % float(pits[1])) + ' I:' + str("%.0f" % float(pits[2])) + ' ' + pits[3],2)
                 else:
-                    lcd_string('C6:' +  str_len(alarm[6] + temps[6],sLen,' ') + chr(0xdf) + 'C7:' + str_len(alarm[7] + temps[7],sLen,' ') + chr(0xdf),2) 
+                    lcd_string('C6:' +  str_len(alarm[6] + temps[6], sLen, ' ') + 'C7:' + str_len(alarm[7] + temps[7], sLen, ' '), 2)
         counter = counter + 1
     except IndexError: 
         return None
