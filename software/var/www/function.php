@@ -190,6 +190,7 @@ function session($configfile) {
 	$_SESSION["hardware_version"] = $ini['Hardware']['version'];
 	$_SESSION["checkUpdate"] = $ini['update']['checkupdate'];
 	$_SESSION["check_update_url"] = $ini['update']['check_update_url'];
+	$_SESSION["separator"] = $ini['Logging']['separator'];
 	if (isset($_SESSION["webGUIversion"])){
 		if ($_SESSION["checkUpdate"] == "True"){
 			$check_update = updateCheck("".$_SESSION["webGUIversion"]."");
@@ -303,7 +304,7 @@ function getPlotConfig($plot,$temp_unit){
 	$plot_setting .= "set encoding locale;";
 	$plot_setting .= "set terminal png size ".$plotsize." transparent;";
 	$plot_setting .= "set title \\\"".$_SESSION["plotname"]."\\\";";
-	$plot_setting .= "set datafile separator ',';";
+	$plot_setting .= "set datafile separator '".$_SESSION["separator"]."';";
 	$plot_setting .= "set output \\\"/var/www/tmp/temperaturkurve_view.png\\\";";
 	$plot_setting .= "set key ".$_SESSION["keybox"]." ".$keyboxframe_value.";";
 	$plot_setting .= "unset grid;";
