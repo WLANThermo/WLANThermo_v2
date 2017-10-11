@@ -63,7 +63,7 @@ if (isset($_SESSION["locale"])){
 	}
 ?>
 </head>
-<body onload="bildreload();garden()">
+<body onload="bildreload()">
 	<div id="wrapper">
 		<div id="header">
 			<div id="header_logo"><div class="header_link"><a href="../index.php"></a></div></div>
