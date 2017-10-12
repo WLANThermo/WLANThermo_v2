@@ -39,6 +39,5 @@
 
 	function reload_body() {
        bildreload();
-       garden();
 	   raspicam();
     }
