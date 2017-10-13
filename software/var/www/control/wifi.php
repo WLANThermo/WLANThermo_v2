@@ -76,7 +76,7 @@ switch($page) {
 		}else{
 			$strBSSID = "no result";
 		}
-		if (preg_match('/Bit Rate:([0-9+.]+ Mb\/s)/i',$strWlan0,$result)){
+		if (preg_match('/Bit Rate=([0-9+.]+ Mb\/s)/i',$strWlan0,$result)){
 			$strBitrate = $result[1];
 		}else{
 			$strBitrate = "no result";
@@ -86,10 +86,15 @@ switch($page) {
 		}else{
 			$strLinkQuality = "no result";
 		}
-		if (preg_match('/Signal Level=([0-9]+\/[0-9]+)/i',$strWlan0,$result)){
+		if (preg_match('/Signal Level=(-[0-9]+ dBm)/i',$strWlan0,$result)){
 			$strSignalLevel = $result[1];
 		}else{
 			$strSignalLevel = "no result";
+		}
+		if (preg_match('/Tx-Power=([0-9]+ dBm)/i',$strWlan0,$result)){
+			$strTxPower = $result[1];
+		}else{
+			$strTxPower = "no result";
 		}
 		if(strpos($strWlan0, "UP") !== false && strpos($strWlan0, "RUNNING") !== false) {
 			$strStatus = '<span style="color:green">Interface is up</span>';
@@ -144,6 +149,7 @@ AP Mac Address : <b>' . $strBSSID . '</b><br />
 Bitrate : <b>' . $strBitrate . '</b><br />
 Link Quality : <b>' . $strLinkQuality . '</b><br />
 Signal Level : <b>' . $strSignalLevel . '</b><br />
+TX Power: <b>' . $strTxPower . '</b><br />
 
 </div>
 </div>
