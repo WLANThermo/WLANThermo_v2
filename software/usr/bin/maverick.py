@@ -289,27 +289,27 @@ def pinchange(gpio, level, tick):
              if traincount in (2, 4, 6, 8, 12, 18):
                 # Long high
                  long_high += duration
-                 if long_high_min > duration or long_high_min is None:
+                 if long_high_min is None or long_high_min > duration:
                      long_high_min = duration
-                 if long_high_max < duration or long_high_max is None:
+                 if long_high_max is None or long_high_max < duration:
                      long_high_max = duration
              elif traincount in (3, 5, 7, 9, 15):
                  long_low += duration
-                 if long_low_min > duration or long_low_min is None:
+                 if long_low_min is None or long_low_min > duration:
                      long_low_min = duration
-                 if long_low_max < duration or long_low_max is None:
+                 if long_low_max is None or long_low_max < duration:
                      long_low_max = duration
              elif traincount in (10, 14, 16) :
                  short_high += duration
-                 if short_high_min > duration or short_high_min is None:
+                 if short_high_min is None or short_high_min > duration:
                      short_high_min = duration
-                 if short_high_max < duration or short_high_max is None:
+                 if short_high_max is None or short_high_max < duration:
                      short_high_max = duration
              elif traincount in (11, 13, 17):
                  short_low += duration
-                 if short_low_min > duration or short_low_min is None:
+                 if short_low_min is None or short_low_min > duration:
                      short_low_min = duration
-                 if short_low_max < duration or short_low_max is None:
+                 if short_low_max is None or short_low_max < duration:
                      short_low_max = duration
                      
              if traincount == 18:
