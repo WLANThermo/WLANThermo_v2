@@ -304,7 +304,7 @@ def median_filter(raw):
     laenge = len(raw)
     sortiert = sorted(raw)
     # Mitte des Arrays finden
-    index = int(round(laenge * 0.4))
+    index = int(round(laenge * 0.5))
     # Bereich für Mittelwertbildung festlegen area = 1 + ln(laenge)   Basis 2.7
     area_groesse = 1 + int(round(math.log(laenge) ))
     area = sortiert[index-area_groesse:index+area_groesse+1]
