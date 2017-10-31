@@ -1,4 +1,4 @@
-wlanthermo (2.7.0-beta13) wlanthermo-dev; urgency=medium
+wlanthermo (2.7.0) wlanthermo; urgency=medium
 
   * ADD: Damper support
   * ADD: New sensor support (to untested)
@@ -7,7 +7,7 @@ wlanthermo (2.7.0-beta13) wlanthermo-dev; urgency=medium
   * FIX: Reduce SPI rate for ADC
   * FIX: Old style LCD working again
 
- -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Fri, 30 Sep 2017 20:10:00 +0200
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Fue, 31 Oct 2017 17:30:00 +0100
 
 wlanthermo (2.6.2) stable; urgency=medium
 
