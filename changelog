@@ -7,7 +7,7 @@ wlanthermo (2.7.0) wlanthermo; urgency=medium
   * FIX: Reduce SPI rate for ADC
   * FIX: Old style LCD working again
 
- -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Fue, 31 Oct 2017 17:30:00 +0100
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Tue, 31 Oct 2017 17:30:00 +0100
 
 wlanthermo (2.6.2) stable; urgency=medium
 
