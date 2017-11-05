@@ -17,6 +17,9 @@
 			$output['pit']['setpoint'] = floatval($pits[1]);
 			$output['pit']['current'] = floatval($pits[2]);
 			$output['pit']['control_out'] = floatval($pits[3]);
+			$output['pit']['ch'] = $_SESSION['pit_ch'];
+			$output['pit']['type'] = $_SESSION['pit_type'];
+			$output['pit']['open_lid'] = $_SESSION['pit_lid'];
 		}
 	} else {
 		$output['pit']['enabled'] = false;
@@ -33,6 +36,9 @@
 			$output['pit2']['setpoint'] = floatval($pits[1]);
 			$output['pit2']['current'] = floatval($pits[2]);
 			$output['pit2']['control_out'] = floatval($pits[3]);
+			$output['pit2']['ch'] = $_SESSION['pit2_ch'];
+			$output['pit2']['type'] = $_SESSION['pit2_type'];
+			$output['pit2']['open_lid'] = $_SESSION['pit2_lid'];	
 		}
 	} else {
 		$output['pit2']['enabled'] = false;
