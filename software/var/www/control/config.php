@@ -1181,7 +1181,7 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
                     <option <?php if(isset($ini[$config_section]['pit_type']) && $ini[$config_section]['pit_type'] == "fan")            	{echo " selected";} ?> value="fan"><?php echo gettext("Fan");?></option>
                     <option <?php if(isset($ini[$config_section]['pit_type']) && $ini[$config_section]['pit_type'] == "io")                	{echo " selected";} ?> value="io"><?php echo gettext("IO");?></option>
                     <option <?php if(isset($ini[$config_section]['pit_type']) && $ini[$config_section]['pit_type'] == "io_pwm")         	{echo " selected";} ?> value="io_pwm"><?php echo gettext("IO with PWM");?></option>
-                    <?php if ($ini['Hardware']['version'] == "miniV2") { ?>
+                    <?php if ($ini['Hardware']['version'] == "miniV2" or $ini['Hardware']['version'] == "miniplus") { ?>
                     <option <?php if(isset($ini[$config_section]['pit_type']) && $ini[$config_section]['pit_type'] == "damper")         	{echo " selected";} ?> value="damper"><?php echo gettext("Servo Damper");?></option>
                     <?php } ?>
                 </select>
@@ -1236,6 +1236,7 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 			<option  value="v2" <?php if($ini['Hardware']['version'] == "v2") {echo "selected=\"selected\"";}?> >v2</option>
 			<option  value="v3" <?php if($ini['Hardware']['version'] == "v3") {echo "selected=\"selected\"";}?> >v3 / mini</option>
 			<option  value="miniV2" <?php if($ini['Hardware']['version'] == "miniV2") {echo "selected=\"selected\"";}?> > miniV2</option>
+			<option  value="miniplus" <?php if($ini['Hardware']['version'] == "miniplus") {echo "selected=\"selected\"";}?> > miniplus</option>
 			</select>
 			</div>
 			<div class="config_text row_1 col_6"><?php echo gettext("Language");?>:</div>

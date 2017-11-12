@@ -44,7 +44,7 @@ NX_channel = 0
 NX_page = 0
 NX_enhanced = False
 
-version = '0.23'
+version = '0.24'
 
 temps = dict()
 channels = dict()
@@ -968,7 +968,7 @@ def NX_display():
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
-    nextion_versions = ['v2.5', 'v2.4']
+    nextion_versions = ['v2.6', 'v2.5', 'v2.4']
     
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
@@ -1006,11 +1006,16 @@ def NX_display():
     # language.install()
 
     pitmaster_count = 1
+    pitmaster_damper = False
     channel_count = 8
     hwchannel_count = 10
 
     if options['hw_version'] == 'miniV2':
         pitmaster_count = 2
+        pitmaster_damper = True
+    elif options['hw_version'] == 'miniplus':
+        pitmaster_damper = True
+
     if options['hw_version'] == 'miniV2' and options['max31855']:
         channel_count += 2
         hwchannel_count += 2
@@ -1097,6 +1102,7 @@ def NX_display():
     pit_types = {'fan':0, 'servo':1, 'io':2, 'io_pwm':3, 'fan_pwm':4, 'damper': 5}
 
     values['main.pitmaster.val'] = pitmaster_count
+    values['main.pit_damper.val'] = 1 if pitmaster_damper else 0
 
     # Pitmaster 1
     values['main.pit_ch.val'] = int(pitconf['ch'])
@@ -1493,10 +1499,15 @@ def NX_display():
             options = config_getvalues()
 
             new_pitmaster_count = 1
+            new_pitmaster_damper = False
             new_channel_count = 8
             new_hwchannel_count = 10
             if options['hw_version'] == 'miniV2':
                 new_pitmaster_count = 2
+                new_pitmaster_damper = True
+            elif options['hw_version'] == 'miniplus':
+                new_pitmaster_damper = True
+
             if options['hw_version'] == 'miniV2' and options['max31855']:
                 new_channel_count += 2
                 new_hwchannel_count += 2
@@ -1511,10 +1522,12 @@ def NX_display():
                 values['main.pitmaster.val'] = pitmaster_count
                 pitmaster_count = new_pitmaster_count
 
+            if pitmaster_damper != new_pitmaster_damper:
+                values['main.pit_damper.val'] = 1 if pitmaster_damper else 0
+                pitmaster_damper = new_pitmaster_damper
+
             if hwchannel_count != new_hwchannel_count:
                 hwchannel_count = new_hwchannel_count
-
-            values['main.pitmaster.val'] = pitmaster_count
 
             if not NX_sendvalues(values):
                 channels_event.set()

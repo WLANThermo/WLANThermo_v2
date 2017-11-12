@@ -445,7 +445,9 @@ def main(instance):
                               'v2': {0: {'io': 4, 'io_pwm': 4, 'servo': 4, 'fan_pwm': 4}},
                               'v3': {0: {'io': 4, 'fan': 4, 'io_pwm': 4, 'servo': 4, 'fan_pwm': 4}},
                               'miniV2': {0: {'io': 4, 'fan': 4, 'io_pwm': 4, 'servo': 6, 'fan_pwm': 6},
-                                         1: {'io': 5, 'fan': 5, 'io_pwm': 5, 'servo': 12, 'fan_pwm': 12}}}[
+                                         1: {'io': 5, 'fan': 5, 'io_pwm': 5, 'servo': 12, 'fan_pwm': 12}},
+                              'miniplus': {0: {'io': 4, 'fan': 4, 'io_pwm': 4, 'servo': 6, 'fan_pwm': 6}},
+                              }[
             Config.get('Hardware', 'version')][instance]
     except KeyError:
         logger.info(u'Instance {} undefined in hardware configuration "{}"').format(instance,
