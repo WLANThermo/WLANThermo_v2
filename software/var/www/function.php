@@ -219,6 +219,8 @@ function session($configfile) {
 		$_SESSION["pitmaster" . $pitmaster_str] = $ini['filepath']['pitmaster' . $pitmaster_str];
 		$_SESSION["pit" . $pitmaster_str . "_on"] = $ini['ToDo']['pit' . $pitmaster_str . '_on'];
 		$_SESSION["pit" . $pitmaster_str . "_ch"] = $ini['Pitmaster' . $pitmaster_str]['pit_ch'];
+		$_SESSION["pit" . $pitmaster_str . "_type"] = $ini['Pitmaster' . $pitmaster_str]['pit_controller_type'];
+		$_SESSION["pit" . $pitmaster_str . "_lid"] = $ini['Pitmaster' . $pitmaster_str]['pit_open_lid_detection'];
 	}
 
 }
