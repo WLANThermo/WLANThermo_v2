@@ -35,7 +35,7 @@ import bz2
 
 PORT = '/dev/serial0'
 BAUDCOMM = 9600
-BAUDUPLOAD = 115200
+BAUDUPLOAD = 460800
 
 if len(sys.argv) < 2 or len(sys.argv) > 3:
     sys.exit('usage: python %s directory [variant]' % sys.argv[0])
