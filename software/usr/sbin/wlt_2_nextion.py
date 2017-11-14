@@ -1312,16 +1312,15 @@ def NX_display():
                             else:
                                 ssids_i = ssids_i + 1
                             NX_sendvalues({'main.ssid.txt:35': ssids[ssids_i]})
+                    elif event['data']['id'] == 4:
+                        if event['data']['action'] == 0:
+                            logger.debug(_(u'Create new logfile!'))
+                            todo_setvalues(create_new_log = 1)
                 elif event['data']['area'] == 6:
                     if event['data']['id'] == 0:
                         if event['data']['action'] == 0:
                             logger.debug(_(u'Alert acknowledged!'))
                             alert_setack()
-                elif event['data']['area'] == 8:
-                    if event['data']['id'] == 0:
-                        if event['data']['action'] == 0:
-                            logger.debug(_(u'Create new logfile!'))
-                            todo_setvalues(create_new_log = 1)
             NX_eventq.task_done()
         elif temps_event.is_set():
             logger.debug(_(u'Temperature event'))
