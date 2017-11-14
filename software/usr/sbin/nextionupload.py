@@ -31,6 +31,7 @@ import time
 import os
 import sys
 import serial
+import bz2
 
 PORT = '/dev/serial0'
 BAUDCOMM = 9600
@@ -116,7 +117,12 @@ def upload(file_name):
             threader.join(1)
             sys.exit('No ACK. Can´t establish connection!')
     print 'Uploading...'
-    with open(file_name, 'rb') as hmif:
+    if file_name.endswith('.bz2'):
+        open_function = bz2.BZ2File
+    else:
+        open_function = open
+
+    with open_function(file_name, 'rb') as hmif:
         dcount = 0
         while True:
             #time.sleep(.1)
@@ -166,12 +172,18 @@ for BAUDCOMM in (9600, 115200, 2400, 4800, 19200, 38400, 57600):
         
         file_name = '{file_path}{model}{variant}.tft'.format(file_path=file_path, model=model.split('_')[0], variant=variant_suffix)
         print 'Now flashing {file}'.format(file=file_name)
-        if os.path.isfile(file_name):
-            print 'uploading %s (%i bytes)...' % (file_name, os.path.getsize(file_name))
+        if os.path.isfile(file_name + '.bz2'):
+            file_name = file_name + '.bz2'
+            with bz2.BZ2File(file_name, 'r') as data:
+                data.seek(0, os.SEEK_END)
+                fsize = data.tell()
+            print 'uploading %s (%i bytes uncompressed)...' % (file_name, fsize)
+        elif os.path.isfile(file_name):
+            fsize = os.path.getsize(file_name)
+            print 'uploading %s (%i bytes)...' % (file_name, fsize)
         else:
             sys.exit('file {} not found'.format(file_name))
 
-        fsize = os.path.getsize(file_name)
         print('Filesize: ' + str(fsize))
 
         if fsize > flash_size:
