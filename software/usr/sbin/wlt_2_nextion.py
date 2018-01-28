@@ -1088,7 +1088,7 @@ def NX_display():
             values['main.sensor_name' + str(i) + '.txt:10'] = '- - -'
     for i in range(hwchannel_count):
         if temps[i]['value'] is None:
-            values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
+            values['main.kanal' + str(i) + '.txt:10'] = ''.encode('latin-1')
         else:
             values['main.kanal' + str(i) + '.txt:10'] = temps[i]['value'] + temp_unit
         values['main.alert' + str(i) + '.txt:10'] = temps[i]['alert']
@@ -1339,7 +1339,7 @@ def NX_display():
                     try:
                         if temps[i]['value'] != new_temps[i]['value']:
                             if new_temps[i]['value'] is None:
-                                values['main.kanal' + str(i) + '.txt:10'] = channels[i]['name'].encode('latin-1')
+                                values['main.kanal' + str(i) + '.txt:10'] = ''.encode('latin-1')
                             else:
                                 values['main.kanal' + str(i) + '.txt:10'] = new_temps[i]['value'] + temp_unit
                         
@@ -1476,12 +1476,6 @@ def NX_display():
                     values['main.sensor_type' + str(i) + '.val'] = new_channels[i]['sensor']
                 if channels[i]['name'] != new_channels[i]['name']:
                     values['main.name' + str(i) + '.txt:10'] = new_channels[i]['name'].encode('latin-1')
-                    try:
-                        if new_temps[i]['value'] == '':
-                            values['main.kanal' + str(i) + '.txt:10'] = new_channels[i]['name'].encode('latin-1')
-                    except IndexError:
-                        pass
-            
             if NX_sendvalues(values):
                 channels = new_channels
             else:
