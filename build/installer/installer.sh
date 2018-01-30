@@ -8,9 +8,9 @@ if [ `whoami` != root ]; then
     exit
 fi
   
-grep 'VERSION_ID="8"' /etc/os-release &> /dev/null
+grep 'VERSION_ID="9"' /etc/os-release &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "This installer need Raspbian Jessie!"
+  echo "This installer need Raspbian Stretch!"
   exit
 fi
 
@@ -52,7 +52,6 @@ echo "Updating System:"
 echo "----------------------------------------------------------"
 apt-get update
 apt-get -y dist-upgrade
-apt-get -y install raspberrypi-sys-mods
 
 echo "Extract the package"
 echo "----------------------------------------------------------"
