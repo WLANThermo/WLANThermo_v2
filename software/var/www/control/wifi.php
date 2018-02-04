@@ -26,42 +26,42 @@ if(isset($_GET['page'])) {
 switch($page) {
 
 	case "wlan0_info":
-		exec('ifconfig wlan0',$return);
-		exec('iwconfig wlan0',$return);
+		exec('LANG=C ifconfig wlan0',$return);
+		exec('LANG=C iwconfig wlan0',$return);
 		$strWlan0 = implode(" ",$return);
 		$strWlan0 = preg_replace('/\s\s+/', ' ', $strWlan0);
 
-		if ((preg_match('/HWaddr ([0-9a-f:]+)/i',$strWlan0,$result)) or (preg_match('/Hardware Adresse ([0-9a-f:]+)/i',$strWlan0,$result))){
+		if ((preg_match('/ether ([0-9a-f:]+)/i',$strWlan0,$result))){
 			$strHWAddress = $result[1];
 		}else{
 			$strHWAddress = "no result";
 		}
-		if ((preg_match('/inet addr:([0-9.]+)/i',$strWlan0,$result)) or (preg_match('/inet Adresse:([0-9.]+)/i',$strWlan0,$result))){
+		if ((preg_match('/inet ([0-9.]+)/i',$strWlan0,$result))){
 			$strIPAddress = $result[1];
 		}else{
 			$strIPAddress = "no result";
 		}
-		if ((preg_match('/Mask:([0-9.]+)/i',$strWlan0,$result)) or (preg_match('/Maske:([0-9.]+)/i',$strWlan0,$result))){
+		if ((preg_match('/netmask ([0-9.]+)/i',$strWlan0,$result))){
 			$strNetMask = $result[1];
 		}else{
 			$strNetMask = "no result";
 		}
-		if (preg_match('/RX packets:(\d+)/',$strWlan0,$result)){
+		if (preg_match('/RX packets (\d+)/',$strWlan0,$result)){
 			$strRxPackets = $result[1];
 		}else{
 			$strRxPackets = "no result";
 		}
-		if (preg_match('/TX packets:(\d+)/',$strWlan0,$result)){
+		if (preg_match('/TX packets (\d+)/',$strWlan0,$result)){
 			$strTxPackets = $result[1];
 		}else{
 			$strTxPackets = "no result";
 		}
-		if (preg_match('/RX Bytes:(\d+ \(\d+.\d+ [K|M|G]iB\))/i',$strWlan0,$result)){
+		if (preg_match('/RX packets \d+\s+bytes (\d+ \(\d+.\d+ [K|M|G]iB\))/i',$strWlan0,$result)){
 			$strRxBytes = $result[1];
 		}else{
 			$strRxBytes = "no result";
 		}
-		if (preg_match('/TX Bytes:(\d+ \(\d+.\d+ [K|M|G]iB\))/i',$strWlan0,$result)){
+		if (preg_match('/TX packets \d+\s+bytes (\d+ \(\d+.\d+ [K|M|G]iB\))/i',$strWlan0,$result)){
 			$strTxBytes = $result[1];
 		}else{
 			$strTxBytes = "no result";
@@ -76,7 +76,7 @@ switch($page) {
 		}else{
 			$strBSSID = "no result";
 		}
-		if (preg_match('/Bit Rate=([0-9+.]+ Mb\/s)/i',$strWlan0,$result)){
+		if (preg_match('/Bit Rate:([0-9+.]+ Mb\/s)+/i',$strWlan0,$result)){
 			$strBitrate = $result[1];
 		}else{
 			$strBitrate = "no result";
@@ -86,7 +86,7 @@ switch($page) {
 		}else{
 			$strLinkQuality = "no result";
 		}
-		if (preg_match('/Signal Level=(-[0-9]+ dBm)/i',$strWlan0,$result)){
+		if (preg_match('/Signal Level=(\S+)/i',$strWlan0,$result)){
 			$strSignalLevel = $result[1];
 		}else{
 			$strSignalLevel = "no result";
