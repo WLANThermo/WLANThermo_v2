@@ -1,8 +1,11 @@
-wlanthermo (2.7.1-beta2) wlanthermo-dev; urgency=medium
+wlanthermo (2.7.1-beta2) stretch-dev; urgency=medium
 
   * CHANGE: Basis OS support for Raspbian Stretch
+  * FIX: Show network and wlan values again
+  * CHANGE: Get version number from changelog during package build
+  * CHANGE: Distribution name to stretch-dev (stretch for stable version)
 
- -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Mon, 29 Dec 2017 18:00:00 +0100
+ -- Bjoern Schrader <grillsportverein@bjoern-schrader.de>  Mon, 5 Feb 2017 11:30:00 +0100
 
 wlanthermo (2.7.1-beta1) wlanthermo-dev; urgency=medium
 
