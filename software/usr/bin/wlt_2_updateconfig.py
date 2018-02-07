@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding=utf-8
 
-# Copyright (c) 2017 Björn Schrader
+# Copyright (c) 2017, 2018 Björn Schrader
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,32 +17,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-import ConfigParser
+import configparser
 import os
 import codecs
 import random
 import string
-
-configfile = '/var/www/conf/WLANThermo.conf'
-oldconfig = ConfigParser.ConfigParser()
-config = ConfigParser.ConfigParser()
-
-try:
-    config.readfp(codecs.open(configfile, 'r', 'utf_8'))
-except IndexError:
-    sys.exit(1)
-
-try:
-    oldconfig.readfp(codecs.open(configfile + '.old', 'r', 'utf_8'))
-except IndexError:
-    sys.exit(1)
-
+import argparse
 
 def get_random_filename(filename):
     return filename + '_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(12))
 
 
-def config_write(configfile, config):
+def config_write(configfile, config, oldconfig):
     # Schreibt das Configfile
     # Ein Lock sollte im aufrufenden Programm gehalten werden!
 
@@ -61,6 +47,34 @@ def config_write(configfile, config):
         new_ini.close()
         os.rename(tmp_filename, configfile)
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Update current WLANThermo configuration from file')
+    parser.add_argument('oldconfigfile',  metavar='filename', nargs='?',
+                    help='A config file to merge into current configfile, deleted afterwards by default')
+    parser.add_argument('-d', '--dontdelete', action='store_true',
+                    help='Don´t delete file after merge')#
+                    
+    args = parser.parse_args()
+    
+    configfile = '/var/www/conf/WLANThermo.conf'
+    oldconfigfile = args.oldconfigfile if args.oldconfigfile is not None else configfile + '.old'
+    oldconfig = configparser.ConfigParser()
+    config = configparser.ConfigParser()
 
-config_write(configfile, config)
-os.unlink(configfile + '.old')
+    try:
+        config.readfp(codecs.open(configfile, 'r', 'utf_8'))
+    except (FileNotFoundError):
+        print('Current config not found!', file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        oldconfig.readfp(codecs.open(oldconfigfile, 'r', 'utf_8'))
+    except (FileNotFoundError):
+        print('Old config not found!', file=sys.stderr)
+        sys.exit(1)
+
+    config_write(configfile, config, oldconfig)
+    
+    if not args.dontdelete:
+        os.unlink(oldconfigfile)
+
