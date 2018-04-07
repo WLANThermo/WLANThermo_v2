@@ -33,6 +33,12 @@
 
 	$ini['ToDo']['create_new_log'] = "True"; // Parameter für neues Logfile setzen
 	write_ini($inipath, $ini);	// Schreiben der WLANThermo.conf
+	
+	while ($ini['ToDo']['create_new_log'] == "True"){ 	//Wait until its cleared:
+		usleep(1000);
+		if(get_magic_quotes_runtime()) set_magic_quotes_runtime(0); 
+		$ini = getConfig($inipath, ";");  // dabei ist ; das zeichen für einen kommentar. kann geändert werden.
+	}
 
 	echo (true);
 
