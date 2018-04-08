@@ -9,11 +9,11 @@
 	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 	<link rel="apple-touch-icon-precomposed" href="https://raw.githubusercontent.com/WLANThermo-nano/WLANThermo_nano_Logos/master/apple-touch-icon-180x180-precomposed.png" >
 	<!-- <link rel="apple-touch-startup-image" href="startupimagename.png" > -->
-    <title>WLANThermo - Nano</title>
+    <title>WLANThermo - Mini</title>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.7/papaparse.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
-	<script src="	https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.0/moment.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.0/moment.min.js"></script>
 	 <style>
 @font-face {
   font-family: 'nano';
@@ -2631,7 +2631,7 @@
 	const api_get_settings = "get-settings.php";
 	const api_set_data = "set-data.php";
 	const api_set_settings = "set-settings.php";
-	
+	const api_get_newlogfile = "get-newlogfile.php";
 	var byId = function( id ) { return document.getElementById( id ); };
 	var byClass = function( id ) { return document.getElementsByClassName( id ); };
 	var getIcon = function( icon ) { return '<span class="icon-'  + icon + '"></span>'; };
@@ -2918,13 +2918,31 @@
 	}
 	// -----------------------------------------------------------------------------------	
 	function createLogfile(){
+		showLoader('true');	
 		txt = 'Wollen Sie wirklich ein neues Logfile erstellen?';
 		if (confirm(txt) == true) {
-			loadJSON('get-newlogfile.php', '', '60000', function (response) {
-				setTimeout('reloadChart()', 5000);
-			});
-		}		
+			$.ajax({
+				dataType: 'json',
+				url: api_get_newlogfile,
+				error: function(){
+					showLoader('false');
+					alert('Logfile konnte nicht erstellt werden'); 
+				},
+				success: function(response){
+					if(response == true){
+						setTimeout('reloadChart()', 2000);
+					}else{
+						alert('Logfile konnte nicht erstellt werden');
+					}
+					showLoader('false');
+				},
+				timeout: 10000 // sets timeout to 3 seconds
+			});		
+		}else{
+			showLoader('false');
+		}
 	}
+	
 	// -----------------------------------------------------------------------------------	
 	function reloadChart(){
 		nanoChart.destroy();
@@ -2946,7 +2964,7 @@
 		showLoader('true');	
 		$.ajax({
 			dataType: 'json',
-			url: "settings",
+			url: api_get_settings,
 			error: function(){
 				setTimeout(function(){setThermoName(); }, 1000); 
 			},
@@ -3039,7 +3057,7 @@
 			showLoader('false');
 		})
 	}
-	
+	// -----------------------------------------------------------------------------------			
 	function setSystem(){
 		showLoader('true');
 		loadJSON(api_get_settings, '', '3000', function (response) {
@@ -3081,6 +3099,7 @@
 			changePitmasterTyp();
 		})
 	}
+	// -----------------------------------------------------------------------------------		
 	function changePitmasterTyp(){		
 		switch(byId('pitmaster_typ').value) {
 			case 'off':
@@ -3113,6 +3132,7 @@
 				break;
 		} 		
 	}
+	// -----------------------------------------------------------------------------------		
 	function setPitmaster(){
 		showLoader('true');
 		loadJSON(api_get_data, '', '3000', function (response) {
@@ -3247,9 +3267,8 @@
 		};
         xobj.send(data);
     }
-	
+	// -----------------------------------------------------------------------------------			
 	var showBatteryWlanIcon = true;
-	
 	function setshowBatteryWlanIcon(){
 		showBatteryWlanIcon = false;
 		readTemp();
@@ -3257,7 +3276,7 @@
 			showBatteryWlanIcon = true;
         }, 10000);
 	}
-	
+	// -----------------------------------------------------------------------------------			
 	function getBatteryIcon(percent,charge){
 		data = '';
 		if (showBatteryWlanIcon == true){
@@ -3290,7 +3309,7 @@
 			return data + '&nbsp;';
 		}
 	}
-	
+	// -----------------------------------------------------------------------------------			
 	function getRSSIIcon(dbm){
 		data = '';
 		if (showBatteryWlanIcon == true){
@@ -3307,7 +3326,7 @@
 			return data;		
 		}
 	}
-
+	// -----------------------------------------------------------------------------------		
 	function getWifiSecureIcon(data){
 		switch(data) {
 			case 2: //ENC_TYPE_TKIP - WPA / PSK
@@ -3323,13 +3342,12 @@
 				return getIcon('lock');
 		} 
 	}
-
+	// -----------------------------------------------------------------------------------		
 	// Initialized Channels
 	// -----------------------------------------------------------------------------------
 	var channel_init = false;
 	var channel_count = false;
 	var pit_count = 15;
-	
 	function addChannel(number){
 		if(debug === true){console.log('function addChannel number:' + number);}
 		for (i = 0; i < number; i++) {
@@ -3719,7 +3737,7 @@
                 }
             }
         }};
-			
+	// -----------------------------------------------------------------------------------					
 	function addChartDataset(channels){
 		var datasetValue = [];
 		for (var j = 0; j < channels; j++) {    
@@ -3762,7 +3780,7 @@
 		nanoChart.update();	
 		loadChartData();
 	}	
- 
+	// -----------------------------------------------------------------------------------		 
 	function addData(timestamp,jr,update){
 		nanoChart.data.labels.push(timestamp);
 		var i;
@@ -3853,7 +3871,7 @@
 			$(this).text(translate(key,lang));
 		});
 	};
-
+	// -----------------------------------------------------------------------------------		
 	function exportToCsv(filename, rows) {
         
 		var processRow = function (time,row) {
@@ -3894,13 +3912,12 @@
             }
         }
     }
-    
+	// -----------------------------------------------------------------------------------		    
 	function createCSV(){
 		console.log(cloud_token);
 		url = "http://cloud.wlanthermo.de/data2.php?api_token=" + cloud_token + "&chartHistory=true&callback=callback";
 		$.ajax({
-			url: url,
-		 
+			url: url,		 
 			// The name of the callback parameter, as specified by the YQL service
 			jsonp: "callback",
 		 
