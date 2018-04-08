@@ -133,7 +133,7 @@ function getSettings(){
 	$output['iot']['CLint'] = 30;
 	
 	//Hardware: from config.php
-	$output['hardware'] = array('v1','v2','v3 / mini', 'miniV2');
+	$output['hardware'] = array('v1','v2','v3', 'miniV2');
 	
 	$output['api'] = 'version: 2';
 	
