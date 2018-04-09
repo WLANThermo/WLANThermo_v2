@@ -156,7 +156,7 @@ function session($configfile) {
 	$ini = getConfig("".$configfile."", ";");  // dabei ist ; das zeichen für einen kommentar. kann geändert werden.
 	// Always read all channels in config file
 	for ($i = 0; $i < 12; $i++){
-		$_SESSION["color_ch".$i] = $ini['plotter']['color_ch'.$i];
+		$_SESSION["color_ch".$i] = $ini['ch_color']['color_ch'.$i];
 		$_SESSION["temp_min".$i] = $ini['temp_min']['temp_min'.$i];  
 		$_SESSION["temp_max".$i] = $ini['temp_max']['temp_max'.$i];
 		$_SESSION["ch_name".$i] = $ini['ch_name']['ch_name'.$i];

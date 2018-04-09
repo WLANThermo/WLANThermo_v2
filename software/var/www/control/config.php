@@ -797,7 +797,7 @@ if(isset($_POST["save"])) {
 					foreach($plotcolors AS $color)
 					{
 					?>
-						<option <?php if($ini['plotter']['color_ch'.$i] == $color)	{echo " selected";} ?> ><?php echo $color ?></option>
+						<option <?php if($ini['ch_color']['color_ch'.$i] == $color)	{echo " selected";} ?> ><?php echo $color ?></option>
 					<?php
 					}
 					?>

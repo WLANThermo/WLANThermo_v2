@@ -77,7 +77,7 @@ function getData(){
 		$output['channel'][strval($i)]['max'] = floatval($_SESSION["temp_max".strval($i)]);
 		$output['channel'][strval($i)]['alarm'] = $_SESSION["alert".strval($i)] == 'True' ? true : false;
 		//$output['channel'][strval($i)]['show'] = $_SESSION["ch_show".strval($i)] == 'True' ? true : false;
-		$output['channel'][strval($i)]['color'] = substr($_SESSION["color_ch".strval($i)],0,1)=='#' ? $_SESSION["color_ch".strval($i)] : getRGB($_SESSION["color_ch".strval($i)]);
+		$output['channel'][strval($i)]['color'] = $thermoConfig['ch_color']['color_ch'.strval($i)];
 	}
 	
 	//Pitmaster:
@@ -97,8 +97,8 @@ function getData(){
 		}
 	}
 	$output['pitmaster'][0]['typ'] = $typ;
-	$output['pitmaster'][0]['set_color'] = getRGB('yellow');
-	$output['pitmaster'][0]['value_color'] = getRGB('khaki');
+	$output['pitmaster'][0]['set_color'] = '#ffff00';
+	$output['pitmaster'][0]['value_color'] = '#fa8072';
 	
 	$output['pitmaster'][1]['id'] = 1;
 	$output['pitmaster'][1]['channel'] = $thermoConfig['Pitmaster2']['pit_ch'];
@@ -116,8 +116,8 @@ function getData(){
 		}
 	}
 	$output['pitmaster'][1]['typ'] = $typ;
-	$output['pitmaster'][1]['set_color'] = getRGB('gray');
-	$output['pitmaster'][1]['value_color'] = getRGB('dark-grey');
+	$output['pitmaster'][1]['set_color'] = '#808080';
+	$output['pitmaster'][1]['value_color'] = '#191970';
 	
 	//Finish
 	return $output;
@@ -128,12 +128,6 @@ function getRSSI(){
 	exec('iwconfig wlan0',$return);		//This line is slow!
 	preg_match('/Signal Level=(-[0-9]+)/i',$return[5],$result);
 	return intval($result[1]);
-}
-
-function getRGB($colorname){
-	//Converts colorname to RGBhex:
-	$array = array('008000' => 'green', 'ff0000' => 'red', '0000ff' => 'blue', '808000' => 'olive','ff00ff' => 'magenta', 'ffff00' => 'yellow', 'ee82ee' => 'violet', 'ffa500' => 'orange','8968cd' => 'mediumpurple3', '7fffd4' => 'aquamarine', 'a52a2a' => 'brown', 'dda0dd' => 'plum','87ceeb' => 'skyblue', 'ff4500 ' => 'orange-red', 'fa8072' => 'salmon', 'ffffff' => 'black','a9a9a9' => 'dark-grey', '800080' => 'purple', '40e0d0' => 'turquoise', 'f0e68c' => 'khaki','9400d3' => 'dark-violet', '54ff9f ' => 'seagreen', '00b8ff' => 'web-blue', '4682b4' => 'steelblue', 'ffd700' => 'gold', '006400' => 'dark-green','191970' => 'midnight-blue', 'bdb76b' => 'dark-khaki', '556b2f' => 'dark-olivegreen', 'ffc0cb' => 'pink','7fff00' => 'chartreuse', '808080' => 'gray', '708090' => 'slategrey');
-	return '#'.array_search($colorname, $array); 
 }
 
 ?>

@@ -47,7 +47,7 @@ If(empty($input)){
 		$thermoConfig['temp_max']['temp_max'.strval($number)] = $input_JSON['max'];
 		
 		if ($input_JSON['color']!=''){
-			$thermoConfig['plotter']['color_ch'.strval($number)] = $input_JSON['color'];
+			$thermoConfig['ch_color']['color_ch'.strval($number)] = $input_JSON['color'];
 		}
 		
 		write_ini($thermoConfigFile, $thermoConfig);	// write config file
