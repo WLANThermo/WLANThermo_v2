@@ -793,7 +793,8 @@ try:
                         logger.error(u'Push URLError: ' + str(e.reason))
                     except ValueError, e:
                         logger.error(u'Push ValueError: ' + str(e))
-        
+        		
+		
         # Log datei erzeugen
         lcsv = []
         Uhrzeit_lang = time.strftime('%d.%m.%y %H:%M:%S')
@@ -826,7 +827,28 @@ try:
                 logger.debug(u'Error: Could not write to file {file}!'.format(file=current_temp))
                 continue
             break
-            
+		
+	# JSON temp file for get-data.php:
+	jsondata = {'time' : int(time.time())}
+	for kanal in xrange(channel_count):
+		if Temperatur_string[kanal] is None:
+			jsondata['cht_' + str(kanal)] = 0
+		else:
+			jsondata['cht_' + str(kanal)] = str(Temperatur_string[kanal])
+
+	while True:    
+		try:
+			with open(current_temp  + 'j_tmp', 'w') as outfile:
+				json.dump(jsondata, outfile, sort_keys=True)
+			os.rename(current_temp + 'j_tmp', current_temp + 'json')
+		except IndexError:
+			time.sleep(1)
+			logger.debug(u'Error: Could not write to file {file}!'.format(file=current_temp))
+			continue
+		break		
+        
+
+		
         #Messzyklus protokollieren und nur die Kanaele loggen, die in der Konfigurationsdatei angegeben sind
         log_line = []
         log_line.append(Uhrzeit_lang)

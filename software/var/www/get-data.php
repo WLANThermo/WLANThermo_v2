@@ -51,18 +51,16 @@ echo json_encode(getData(), JSON_UNESCAPED_SLASHES);
 function getData(){
 	
 	$thermoConfigFile = './conf/WLANThermo.conf'; 
-	$thermoConfig = getConfig($thermoConfigFile, ";");		//This line is slow!
+	$thermoConfig = getConfig($thermoConfigFile, ";");
 	
 	//Channel Temps:
 	$output = array();
-	$currenttemp = file_get_contents($_SESSION["current_temp"]);
-	while (preg_match("/TEMPLOG/i", $currenttemp) != "1"){
-		$currenttemp = file_get_contents($_SESSION["current_temp"]);
-	}
-	$temp = explode(";",$currenttemp);
+	
+	$currenttemp = file_get_contents($_SESSION["current_temp"].'json');
+	$temp = json_decode($currenttemp, true);
 	
 	//System:
-	$output['system']['time'] = DateTime::createFromFormat('d.m.y H:i:s', $temp[0])->getTimestamp();
+	$output['system']['time'] = $temp['time'];
 	$output['system']['rssi'] = getRSSI();
 	$output['system']['unit'] = strtoupper(substr($_SESSION["temp_unit"],0,1));
 	
@@ -71,7 +69,7 @@ function getData(){
 		$output['channel'][strval($i)] = array();
 		$output['channel'][strval($i)]['number'] = $i+1;
 		$output['channel'][strval($i)]['name'] = $_SESSION["ch_name".strval($i)];
-		$output['channel'][strval($i)]['temp'] = floatval($temp[$i + 1]==0 ? 999 : $temp[$i + 1]);
+		$output['channel'][strval($i)]['temp'] = floatval($temp['cht_'.$i]==0 ? 999 : $temp['cht_'.$i]);
 		$output['channel'][strval($i)]['typ'] = $thermoConfig['Sensoren']['ch'.strval($i).'']-1;
 		$output['channel'][strval($i)]['min'] = floatval($_SESSION["temp_min".strval($i)]);
 		$output['channel'][strval($i)]['max'] = floatval($_SESSION["temp_max".strval($i)]);
