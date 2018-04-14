@@ -8,7 +8,6 @@ session_start();
 include("../header.php");
 include("../function.php");
 session("../conf/WLANThermo.conf");
-$tmpFile = '../temperaturen.csv';
 $inipath = '../conf/WLANThermo.conf';
 
 // gnuplot color names, to be converted to CSS color names by to_css_color($gnuplotcolor) if needed.
@@ -725,7 +724,7 @@ if(isset($_POST["save"])) {
 	exec("/usr/bin/touch /var/www/tmp/flag",$output);
 		
 	echo "<div class=\"infofield\">";
-	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Einstellungen werden gespeichert...</h2></body>";	
+	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.html'\"> </head> <body> <h2>Einstellungen werden gespeichert...</h2></body>";	
 	if($restart == true){
 		echo "<h2>wlt_2_comp.py wird neu gestartet...</h2>";
 	}
@@ -737,7 +736,7 @@ if(isset($_POST["save"])) {
 
 } elseif(isset($_POST["back"])) {
 	echo "<div class=\"infofield\">";
-	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"></head>
+	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.html'\"></head>
 			<body> <h2>Verlassen der Seite ohne Speichern!...</h2></body>";
 	echo "</div>";
 } elseif(isset($_GET["alert-test"]) && $_GET["alert-test"] == "true") {
