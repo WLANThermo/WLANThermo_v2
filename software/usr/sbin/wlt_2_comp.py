@@ -828,87 +828,16 @@ try:
                 time.sleep(1)
                 logger.debug(u'Error: Could not write to file {file}!'.format(file=current_temp))
                 continue
-            break
-		
-	
-	# JSON temp file for get-data.php:
-	jsonsystem = {'time' : int(time.time())}
-	jsonsystem['unit'] = temp_unit[:1].upper()
-	
-	#Channels:
-	jsonch = list()
-	for kanal in xrange(channel_count):
-		jsonchannel = dict()
-		jsonchannel['number'] = kanal
-		jsonchannel['name'] = new_config.get('ch_name', 'ch_name' + str(kanal))
-		if Temperatur_string[kanal] is None:
-			jsonchannel['temp'] = 999
-		else:
-			jsonchannel['temp'] = float(Temperatur_string[kanal])
-		jsonchannel['typ'] = new_config.getint('Sensoren', 'ch' + str(kanal))-1		#+1 due to offset in list
-		jsonchannel['min'] = new_config.getint('temp_min', 'temp_min' + str(kanal))
-		jsonchannel['max'] = new_config.getint('temp_max', 'temp_max' + str(kanal))
-		jsonchannel['alarm'] = new_config.getboolean('web_alert', 'ch' + str(kanal))
-		jsonchannel['color'] = new_config.get('ch_color', 'color_ch' + str(kanal))
-		jsonch.append(jsonchannel)
-	
-	#Pitmasters:
-	jsonpit = list()
-	jsonpit0 = dict()
-	jsonpit0['id'] = 0
-	jsonpit0['channel'] = new_config.getint('Pitmaster', 'pit_ch')
-	jsonpit0['value'] = new_config.getint('Pitmaster', 'pit_man')
-	jsonpit0['set'] = new_config.getint('Pitmaster', 'pit_set')
-	jsonpit0['io'] = new_config.getint('Pitmaster', 'pit_io_gpio')
-	jsonpit0['profil'] = 0
-	if (new_config.get('ToDo', 'pit_on') == 'False'):
-		pittyp = 'off'
-	else:
-		if(new_config.get('Pitmaster', 'pit_man')=='0'):
-			pittyp = 'auto'
-		else:
-			pittyp = 'manual'
-	jsonpit0['typ'] = pittyp
-	jsonpit0['set_color'] = '#ffff00'
-	jsonpit0['value_color'] = '#fa8072'
-	jsonpit.append(jsonpit0)
-	
-	jsonpit1 = dict()
-	jsonpit1['id'] = 1
-	jsonpit1['channel'] = new_config.getint('Pitmaster2', 'pit_ch')
-	jsonpit1['value'] = new_config.getint('Pitmaster2', 'pit_man')
-	jsonpit1['set'] = new_config.getint('Pitmaster2', 'pit_set')
-	jsonpit1['io'] = new_config.getint('Pitmaster2', 'pit_io_gpio')
-	jsonpit1['profil'] = 0
-	if (new_config.get('ToDo', 'pit2_on') == 'False'):
-		pittyp = 'off'
-	else:
-		if(new_config.get('Pitmaster2', 'pit_man')=='0'):
-			pittyp = 'auto'
-		else:
-			pittyp = 'manual'
-	jsonpit1['typ'] = pittyp
-	jsonpit1['set_color'] = '#ffff00'
-	jsonpit1['value_color'] = '#fa8072'
-	jsonpit.append(jsonpit1)
-	
-	#Join all to generate the full json:
-	jsoncomplete = {'system' : jsonsystem, 'channel' : jsonch, 'pitmaster' : jsonpit}
-	
-	while True:    
-		try:
-			with open(current_temp  + 'j_tmp', 'w') as outfile:
-				json.dump(jsoncomplete, outfile, sort_keys=True)
-			os.rename(current_temp + 'j_tmp', current_temp + 'json')
-		except IndexError:
-			time.sleep(1)
-			logger.debug(u'Error: Could not write to file {file}!'.format(file=current_temp))
-			continue
-		break		
+            break	
         
         #Messzyklus protokollieren und nur die Kanaele loggen, die in der Konfigurationsdatei angegeben sind
         log_line = []
         log_line.append(str(int(time.time())))
+		
+	pit_new = new_config.getint('Pitmaster', 'pit_man')		#preload for the json export below
+	if version == u'miniV2':
+		pit2_new = new_config.getint('Pitmaster2', 'pit_man')   #preload for the json export below
+		
         
         for kanal in xrange(channel_count):
             if (log_kanal[kanal]):
@@ -963,6 +892,83 @@ try:
                 time.sleep(1)
                 continue
             break
+			
+	# JSON temp file for get-data.php:
+	jsonsystem = {'time' : int(time.time())}
+	jsonsystem['unit'] = temp_unit[:1].upper()
+	
+	#Channels:
+	jsonch = list()
+	for kanal in xrange(channel_count):
+		jsonchannel = dict()
+		jsonchannel['number'] = kanal
+		jsonchannel['name'] = new_config.get('ch_name', 'ch_name' + str(kanal))
+		if Temperatur_string[kanal] is None:
+			jsonchannel['temp'] = 999
+		else:
+			jsonchannel['temp'] = float(Temperatur_string[kanal])
+		jsonchannel['typ'] = new_config.getint('Sensoren', 'ch' + str(kanal))-1		#+1 due to offset in list
+		jsonchannel['min'] = new_config.getint('temp_min', 'temp_min' + str(kanal))
+		jsonchannel['max'] = new_config.getint('temp_max', 'temp_max' + str(kanal))
+		jsonchannel['alarm'] = new_config.getboolean('web_alert', 'ch' + str(kanal))
+		jsonchannel['color'] = new_config.get('ch_color', 'color_ch' + str(kanal))
+		jsonch.append(jsonchannel)
+	
+	#Pitmasters:
+	jsonpit = list()
+	jsonpit0 = dict()
+	jsonpit0['id'] = 0
+	jsonpit0['channel'] = new_config.getint('Pitmaster', 'pit_ch')
+	jsonpit0['value'] = int(pit_new)
+	jsonpit0['set'] = new_config.getint('Pitmaster', 'pit_set')
+	jsonpit0['io'] = new_config.getint('Pitmaster', 'pit_io_gpio')
+	jsonpit0['profil'] = 0
+	if (new_config.get('ToDo', 'pit_on') == 'False'):
+		pittyp = 'off'
+	else:
+		if(new_config.get('Pitmaster', 'pit_man')=='0'):
+			pittyp = 'auto'
+		else:
+			pittyp = 'manual'
+	jsonpit0['typ'] = pittyp
+	jsonpit0['set_color'] = '#ffff00'
+	jsonpit0['value_color'] = '#fa8072'
+	jsonpit.append(jsonpit0)
+	
+	if version == u'miniV2':	#Pitmaster 1 exists only in miniv2!
+		jsonpit1 = dict()
+		jsonpit1['id'] = 1
+		jsonpit1['channel'] = new_config.getint('Pitmaster2', 'pit_ch')
+		jsonpit1['value'] = int(pit2_new)
+		jsonpit1['set'] = new_config.getint('Pitmaster2', 'pit_set')
+		jsonpit1['io'] = new_config.getint('Pitmaster2', 'pit_io_gpio')
+		jsonpit1['profil'] = 0
+		if (new_config.get('ToDo', 'pit2_on') == 'False'):
+			pittyp = 'off'
+		else:
+			if(new_config.get('Pitmaster2', 'pit_man')=='0'):
+				pittyp = 'auto'
+			else:
+				pittyp = 'manual'
+		jsonpit1['typ'] = pittyp
+		jsonpit1['set_color'] = '#ffff00'
+		jsonpit1['value_color'] = '#fa8072'
+		jsonpit.append(jsonpit1)
+	
+	#Join all to generate the full json:
+	jsoncomplete = {'system' : jsonsystem, 'channel' : jsonch, 'pitmaster' : jsonpit}
+	
+	while True:    
+		try:
+			with open(current_temp  + 'j_tmp', 'w') as outfile:
+				json.dump(jsoncomplete, outfile, sort_keys=True)
+			os.rename(current_temp + 'j_tmp', current_temp + 'json')
+		except IndexError:
+			time.sleep(1)
+			logger.debug(u'Error: Could not write to file {file}!'.format(file=current_temp))
+			continue
+		break	
+			
         # Werte loggen
         logger.debug(separator.join(log_line))
         
