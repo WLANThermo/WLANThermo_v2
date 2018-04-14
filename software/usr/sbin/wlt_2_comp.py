@@ -835,7 +835,8 @@ try:
         log_line.append(str(int(time.time())))
 		
 	pit_new = new_config.getint('Pitmaster', 'pit_man')		#preload for the json export below
-	pit2_new = new_config.getint('Pitmaster2', 'pit_man')   #preload for the json export below
+	if version == u'miniV2':
+		pit2_new = new_config.getint('Pitmaster2', 'pit_man')   #preload for the json export below
 		
         
         for kanal in xrange(channel_count):
@@ -934,24 +935,25 @@ try:
 	jsonpit0['value_color'] = '#fa8072'
 	jsonpit.append(jsonpit0)
 	
-	jsonpit1 = dict()
-	jsonpit1['id'] = 1
-	jsonpit1['channel'] = new_config.getint('Pitmaster2', 'pit_ch')
-	jsonpit1['value'] = int(pit2_new)
-	jsonpit1['set'] = new_config.getint('Pitmaster2', 'pit_set')
-	jsonpit1['io'] = new_config.getint('Pitmaster2', 'pit_io_gpio')
-	jsonpit1['profil'] = 0
-	if (new_config.get('ToDo', 'pit2_on') == 'False'):
-		pittyp = 'off'
-	else:
-		if(new_config.get('Pitmaster2', 'pit_man')=='0'):
-			pittyp = 'auto'
+	if version == u'miniV2':	#Pitmaster 1 exists only in miniv2!
+		jsonpit1 = dict()
+		jsonpit1['id'] = 1
+		jsonpit1['channel'] = new_config.getint('Pitmaster2', 'pit_ch')
+		jsonpit1['value'] = int(pit2_new)
+		jsonpit1['set'] = new_config.getint('Pitmaster2', 'pit_set')
+		jsonpit1['io'] = new_config.getint('Pitmaster2', 'pit_io_gpio')
+		jsonpit1['profil'] = 0
+		if (new_config.get('ToDo', 'pit2_on') == 'False'):
+			pittyp = 'off'
 		else:
-			pittyp = 'manual'
-	jsonpit1['typ'] = pittyp
-	jsonpit1['set_color'] = '#ffff00'
-	jsonpit1['value_color'] = '#fa8072'
-	jsonpit.append(jsonpit1)
+			if(new_config.get('Pitmaster2', 'pit_man')=='0'):
+				pittyp = 'auto'
+			else:
+				pittyp = 'manual'
+		jsonpit1['typ'] = pittyp
+		jsonpit1['set_color'] = '#ffff00'
+		jsonpit1['value_color'] = '#fa8072'
+		jsonpit.append(jsonpit1)
 	
 	#Join all to generate the full json:
 	jsoncomplete = {'system' : jsonsystem, 'channel' : jsonch, 'pitmaster' : jsonpit}
