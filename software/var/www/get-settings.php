@@ -59,8 +59,8 @@ function getSettings(){
 	$output['system']['unit'] = strtoupper(substr($_SESSION["temp_unit"],0,1));
 	//$output['system']['fastmode'] = False;
 	$output['system']['version'] = isset($_SESSION["webGUIversion"]) ? $_SESSION["webGUIversion"]: 'V2.7.0';	//$_SESSION["webGUIversion"] is only set in header.php
-	$output['system']['getupdate'] = $_SESSION["updateAvailable"];
-	$output['system']['autoupd'] = $thermoConfig['update']['update_enabled'];
+	$output['system']['getupdate'] = filter_var($_SESSION["updateAvailable"],FILTER_VALIDATE_BOOLEAN);
+	$output['system']['autoupd'] = filter_var($thermoConfig['update']['update_enabled'],FILTER_VALIDATE_BOOLEAN);
 	$output['system']['hwversion'] = $thermoConfig["Hardware"]["version"];
 	
 	//sensors: 
@@ -83,10 +83,10 @@ function getSettings(){
 		$profil['pause'] = $thermoConfig[$value]['pit_pause'];
 		$profil['DCmin'] = $thermoConfig[$value]['pit_pwm_min'];
 		$profil['DCmax'] = $thermoConfig[$value]['pit_pwm_max'];
-		$profil['DCinv'] = $thermoConfig[$value]['pit_inverted'];
+		$profil['DCinv'] = filter_var($thermoConfig[$value]['pit_inverted'],FILTER_VALIDATE_BOOLEAN);
 		$profil['SPmin'] = $thermoConfig[$value]['pit_servo_min'];
 		$profil['SPmax'] = $thermoConfig[$value]['pit_servo_max'];
-		$profil['SPinv'] = $thermoConfig[$value]['pit_servo_inverted'];
+		$profil['SPinv'] = filter_var($thermoConfig[$value]['pit_servo_inverted'],FILTER_VALIDATE_BOOLEAN);
 
 		$profil['damper_offset'] = $thermoConfig[$value]['pit_damper_offset'];
 		$profil['damper_pitch'] = $thermoConfig[$value]['pit_damper_pitch'];
@@ -111,7 +111,7 @@ function getSettings(){
 		$profil['startup_th'] = $thermoConfig[$value]['pit_startup_threshold'];	
 		$profil['startup_time'] = $thermoConfig[$value]['pit_startup_time'];
 		
-		$profil['OLon'] = $thermoConfig[$value]['pit_open_lid_detection'];
+		$profil['OLon'] = filter_var($thermoConfig[$value]['pit_open_lid_detection'],FILTER_VALIDATE_BOOLEAN);
 		
 		$profil['OLpause'] = $thermoConfig[$value]['pit_open_lid_pause'];
 		$profil['OLfall'] = $thermoConfig[$value]['pit_open_lid_falling_border'];	

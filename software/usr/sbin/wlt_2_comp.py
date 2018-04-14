@@ -323,7 +323,7 @@ def read_maverick():
         logger.error(u'Maverick file is no valid JSON')
         return None
     except IOError:
-        logger.info(u'Maverick file could not be read')
+        logger.debug(u'Maverick file could not be read')
         return None
 
     age = time.time() - values['time']
@@ -441,6 +441,8 @@ alarm_state = [None for i in xrange(channel_count)]
 test_alarm = False
 config_mtime = 0
 alarm_time = 0
+
+write_log_time = 0 #preload the csv creation time with 0 = it will create it
 
 try:
     while True:
@@ -828,18 +830,75 @@ try:
                 continue
             break
 		
+	
 	# JSON temp file for get-data.php:
-	jsondata = {'time' : int(time.time())}
+	jsonsystem = {'time' : int(time.time())}
+	jsonsystem['unit'] = temp_unit[:1].upper()
+	
+	#Channels:
+	jsonch = list()
 	for kanal in xrange(channel_count):
+		jsonchannel = dict()
+		jsonchannel['number'] = kanal
+		jsonchannel['name'] = new_config.get('ch_name', 'ch_name' + str(kanal))
 		if Temperatur_string[kanal] is None:
-			jsondata['cht_' + str(kanal)] = 0
+			jsonchannel['temp'] = 999
 		else:
-			jsondata['cht_' + str(kanal)] = str(Temperatur_string[kanal])
-
+			jsonchannel['temp'] = float(Temperatur_string[kanal])
+		jsonchannel['typ'] = new_config.getint('Sensoren', 'ch' + str(kanal))-1		#+1 due to offset in list
+		jsonchannel['min'] = new_config.getint('temp_min', 'temp_min' + str(kanal))
+		jsonchannel['max'] = new_config.getint('temp_max', 'temp_max' + str(kanal))
+		jsonchannel['alarm'] = new_config.getboolean('web_alert', 'ch' + str(kanal))
+		jsonchannel['color'] = new_config.get('ch_color', 'color_ch' + str(kanal))
+		jsonch.append(jsonchannel)
+	
+	#Pitmasters:
+	jsonpit = list()
+	jsonpit0 = dict()
+	jsonpit0['id'] = 0
+	jsonpit0['channel'] = new_config.getint('Pitmaster', 'pit_ch')
+	jsonpit0['value'] = new_config.getint('Pitmaster', 'pit_man')
+	jsonpit0['set'] = new_config.getint('Pitmaster', 'pit_set')
+	jsonpit0['io'] = new_config.getint('Pitmaster', 'pit_io_gpio')
+	jsonpit0['profil'] = 0
+	if (new_config.get('ToDo', 'pit_on') == 'False'):
+		pittyp = 'off'
+	else:
+		if(new_config.get('Pitmaster', 'pit_man')=='0'):
+			pittyp = 'auto'
+		else:
+			pittyp = 'manual'
+	jsonpit0['typ'] = pittyp
+	jsonpit0['set_color'] = '#ffff00'
+	jsonpit0['value_color'] = '#fa8072'
+	jsonpit.append(jsonpit0)
+	
+	jsonpit1 = dict()
+	jsonpit1['id'] = 1
+	jsonpit1['channel'] = new_config.getint('Pitmaster2', 'pit_ch')
+	jsonpit1['value'] = new_config.getint('Pitmaster2', 'pit_man')
+	jsonpit1['set'] = new_config.getint('Pitmaster2', 'pit_set')
+	jsonpit1['io'] = new_config.getint('Pitmaster2', 'pit_io_gpio')
+	jsonpit1['profil'] = 0
+	if (new_config.get('ToDo', 'pit2_on') == 'False'):
+		pittyp = 'off'
+	else:
+		if(new_config.get('Pitmaster2', 'pit_man')=='0'):
+			pittyp = 'auto'
+		else:
+			pittyp = 'manual'
+	jsonpit1['typ'] = pittyp
+	jsonpit1['set_color'] = '#ffff00'
+	jsonpit1['value_color'] = '#fa8072'
+	jsonpit.append(jsonpit1)
+	
+	#Join all to generate the full json:
+	jsoncomplete = {'system' : jsonsystem, 'channel' : jsonch, 'pitmaster' : jsonpit}
+	
 	while True:    
 		try:
 			with open(current_temp  + 'j_tmp', 'w') as outfile:
-				json.dump(jsondata, outfile, sort_keys=True)
+				json.dump(jsoncomplete, outfile, sort_keys=True)
 			os.rename(current_temp + 'j_tmp', current_temp + 'json')
 		except IndexError:
 			time.sleep(1)
@@ -847,8 +906,6 @@ try:
 			continue
 		break		
         
-
-		
         #Messzyklus protokollieren und nur die Kanaele loggen, die in der Konfigurationsdatei angegeben sind
         log_line = []
         log_line.append(Uhrzeit_lang)
@@ -894,12 +951,14 @@ try:
                 
         while True:
             try:
-                # Generierung des Logfiles
-                logfile = codecs.open(name, 'a', 'utf_8')
-                logfile.write(separator.join(log_line) + '\n')
-                logfile.flush()
-                os.fsync(logfile.fileno())
-                logfile.close()
+				if (time.time() - write_log_time > 15):		#hardcoded 15sec min interval for csv creation (maybe make this a conf?)
+					# Generierung des Logfiles
+					logfile = codecs.open(name, 'a', 'utf_8')
+					logfile.write(separator.join(log_line) + '\n')
+					logfile.flush()
+					os.fsync(logfile.fileno())
+					logfile.close()
+					write_log_time = time.time()
             except IndexError:
                 time.sleep(1)
                 continue

@@ -39,10 +39,10 @@ If(empty($input)){
 		
 		//Modify according to the received json
 		$number = $input_JSON['number'];
-		$number = $number - 1;
+		$number = $number;
 		
 		$thermoConfig['ch_name']['ch_name'.strval($number)] = $input_JSON['name'];
-		$thermoConfig['Sensoren']['ch'.strval($number)] = $input_JSON['typ']+1;		//if its changed, restart_thermo = true!
+		$thermoConfig['Sensoren']['ch'.strval($number)] = $input_JSON['typ']+1;		//+1 due to offset in list
 		$thermoConfig['temp_min']['temp_min'.strval($number)] = $input_JSON['min'];
 		$thermoConfig['temp_max']['temp_max'.strval($number)] = $input_JSON['max'];
 		
