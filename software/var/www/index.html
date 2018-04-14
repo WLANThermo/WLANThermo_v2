@@ -3605,14 +3605,13 @@
 			step: function(row) {	
 				if(inc_row == 10){
 					inc_row = 0;
-					var parseArray = ["Datum_Uhrzeit","Kanal 0","Kanal 1","Kanal 2","Kanal 3","Kanal 4","Kanal 5","Kanal 6","Kanal 7","Kanal 8","Kanal 9","Regler Ausgangswert","Regler Sollwert","Regler 2 Ausgangswert","Regler 2 Sollwert"];
-					if(isset(row.data[0]['Datum_Uhrzeit'])){
-						var timestamp = moment(row.data[0]['Datum_Uhrzeit'].replace(/\./g, '-'), 'DD-MM-YY HH:mm:ss').unix();
-						timestamp = timeConverter(timestamp);
+					var parseArray = ["timestamp","ch0","ch1","ch2","ch3","ch4","ch5","ch6","ch7","ch8","ch9","pit_value","pit_set","pit2_value","pit2_set"];
+					if(isset(row.data[0]['timestamp'])){
+						timestamp = timeConverter(row.data[0]['timestamp']);
 						nanoChart.data.labels.push(timestamp);
 						for(var i=0; i<ch_name_chart.length; i++) {
-							if(isset(row.data[0]['Kanal ' + i]) && row.data[0]['Kanal ' + i].length > 0){
-								nanoChart.data.datasets[i].data.push(row.data[0]['Kanal ' + i]);
+							if(isset(row.data[0]['ch' + i]) && row.data[0]['ch' + i].length > 0){
+								nanoChart.data.datasets[i].data.push(row.data[0]['ch' + i]);
 							}else{
 								nanoChart.data.datasets[i].data.push(null);
 								
