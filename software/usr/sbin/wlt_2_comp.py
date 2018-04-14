@@ -276,21 +276,21 @@ def create_logfile(filename, log_kanal):
     # Symlink TEMPLOG.csv auf die gerade benutzte eindeutige Log-Datei legen.
     os.symlink(filename, '/var/log/WLAN_Thermo/TEMPLOG.csv')
     
-    kopfzeile = []
-    kopfzeile.append(_(u'Date_Time'))
+    header = []
+    header.append(_('timestamp'))
     for kanal in xrange(channel_count):
         if (log_kanal[kanal]):
-            kopfzeile.append('Kanal ' + str(kanal))
+            header.append('ch' + str(kanal))
             
-    kopfzeile.append(_(u'Controller output value'))
-    kopfzeile.append(_(u'Controller set value'))
-    kopfzeile.append(_(u'Controller 2 output value'))
-    kopfzeile.append(_(u'Controller 2 set value'))
+    header.append(_('pit_value'))
+    header.append(_('pit_set'))
+    header.append(_('pit2_value'))
+    header.append(_('pit2_set'))
     
     while True:
         try:
             fw = codecs.open(filename, 'w', 'utf_8') #Datei anlegen
-            fw.write(separator.join(kopfzeile) + '\n') # Kopfzeile der CSV-Datei schreiben
+            fw.write(separator.join(header) + '\n') # Kopfzeile der CSV-Datei schreiben
             fw.flush()
             os.fsync(fw.fileno())
             fw.close()
@@ -908,7 +908,7 @@ try:
         
         #Messzyklus protokollieren und nur die Kanaele loggen, die in der Konfigurationsdatei angegeben sind
         log_line = []
-        log_line.append(Uhrzeit_lang)
+        log_line.append(str(int(time.time())))
         
         for kanal in xrange(channel_count):
             if (log_kanal[kanal]):
