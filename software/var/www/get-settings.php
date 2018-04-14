@@ -57,11 +57,16 @@ function getSettings(){
 	$output['system']['host'] = getCPUID();
 	$output['system']['language'] = substr($_SESSION["locale"],0,2);
 	$output['system']['unit'] = strtoupper(substr($_SESSION["temp_unit"],0,1));
-	//$output['system']['fastmode'] = False;
+	$output['system']['locale'] = $thermoConfig['locale']['locale'];
 	$output['system']['version'] = isset($_SESSION["webGUIversion"]) ? $_SESSION["webGUIversion"]: 'V2.7.0';	//$_SESSION["webGUIversion"] is only set in header.php
 	$output['system']['getupdate'] = filter_var($_SESSION["updateAvailable"],FILTER_VALIDATE_BOOLEAN);
 	$output['system']['autoupd'] = filter_var($thermoConfig['update']['update_enabled'],FILTER_VALIDATE_BOOLEAN);
 	$output['system']['hwversion'] = $thermoConfig["Hardware"]["version"];
+	$output['system']['max31855'] = filter_var($thermoConfig['Hardware']['max31855'],FILTER_VALIDATE_BOOLEAN);
+	$output['system']['max31855'] = filter_var($thermoConfig['Hardware']['max31855'],FILTER_VALIDATE_BOOLEAN);
+	$output['system']['maverick_enabled'] = filter_var($thermoConfig['ToDo']['maverick_enabled'],FILTER_VALIDATE_BOOLEAN);
+	$output['system']['beeper_enabled'] = filter_var($thermoConfig['Sound']['beeper_enabled'],FILTER_VALIDATE_BOOLEAN);
+	$output['system']['beeper_on_start'] = filter_var($thermoConfig['Sound']['beeper_on_start'],FILTER_VALIDATE_BOOLEAN);
 	
 	//sensors: 
 	$sensorConfigFile = './conf/sensor.conf'; 
@@ -74,7 +79,11 @@ function getSettings(){
 	$output['sensors'] = $sensors;
 	
 	//profil:
-	$helper = array('Pitmaster','Pitmaster2');
+	$helper = array('Pitmaster');
+	if ($thermoConfig["Hardware"]["version"] == 'miniV2'){
+		array_push($helper,'Pitmaster2');
+	}
+	
 	foreach ($helper as $key => $value){
 		$profil = array();
 		$profil['id'] = $key;
@@ -135,6 +144,17 @@ function getSettings(){
 	//Hardware: from config.php
 	$output['hardware'] = array('v1','v2','v3', 'miniV2');
 	
+	//LCD:
+	$output['display']['present'] = filter_var($thermoConfig['Display']['lcd_present'],FILTER_VALIDATE_BOOLEAN);
+	$output['display']['error_val'] = $thermoConfig['Display']['error_val'];
+	$output['display']['lcd_type'] = $thermoConfig['Display']['lcd_type'];
+	$output['display']['dim'] = intval($thermoConfig['Display']['dim']);
+	$output['display']['timeout'] = intval($thermoConfig['Display']['error_val']);
+	$output['display']['start_page'] = $thermoConfig['Display']['start_page'];
+	$output['display']['serialspeed'] = intval($thermoConfig['Display']['serialspeed']);
+	$output['display']['serialdevice'] = $thermoConfig['Display']['serialdevice'];
+
+	//API:
 	$output['api'] = 'version: 2';
 	
 	//Finish
