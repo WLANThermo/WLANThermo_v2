@@ -14,6 +14,9 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.7/papaparse.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.0/moment.min.js"></script>
+	
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.0/jquery-confirm.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.0/jquery-confirm.min.js"></script>
 	 <style>
 @font-face {
   font-family: 'nano';
@@ -2006,6 +2009,7 @@
 				<li id="menuPitmaster" class="pure-menu-item"><a href="javascript:showPitmaster()" class="pure-menu-link">Pitmaster</a></li>
 				<li id="menuThingspeak" class="pure-menu-item"><a href="javascript:showThingspeak()" class="pure-menu-link">IoT</a></li>
 				<li id="menuNotification" class="pure-menu-item"><a href="javascript:showPushNotification()" class="pure-menu-link">Push Notification</a></li>
+				<li id="menuShutdown" class="pure-menu-item"><a href="javascript:shutDown()" class="pure-menu-link">Herunterfahren</a></li>
                 <li id="menuAbout" class="pure-menu-item"><a href="javascript:showAbout()" class="pure-menu-link">Über</a></li>
             </ul>
         </div>
@@ -3934,6 +3938,10 @@
 	function isset(variable){
 		return (typeof v === 'undefined');
 	} 
+	
+	function shutDown(){
+	
+	}
 
 	readTemp();	
 	
