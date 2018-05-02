@@ -84,6 +84,9 @@ if (isset($_SESSION["locale"])){
 							<a href="../index.php" class="mainmenu"><img src="../images/icons32x32/home.png" alt="Home" title="Home"></a>
 						</li>				
 						<li>
+							<a href="https://forum.wlanthermo.de" class="mainmenu"><img src="../images/icons32x32/forum.png" alt="Forum" title="Forum"></a>
+						</li>
+						<li>
 							<a href="../info.php" class="mainmenu"><img src="../images/icons32x32/info.png" alt="Info" title="Info"></a>
 						</li>
 						<li>
