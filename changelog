@@ -1,3 +1,9 @@
+wlanthermo (2.8.0-beta1) stretch-dev; urgency=medium
+
+  * CHANGE: Get update from package repository
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Thu, 3 May 2017 17:00:00 +0200
+
 wlanthermo (2.7.1-beta2) stretch-dev; urgency=medium
 
   * CHANGE: Basis OS support for Raspbian Stretch
