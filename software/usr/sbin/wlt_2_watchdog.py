@@ -324,16 +324,16 @@ def read_config():
             logger.debug(ret)
 
         if (Config.getboolean('ToDo', 'start_system_update')):
-            logger.info(_(u'Update software!'))
-            Config.set('ToDo', 'start_update', 'False')
+            logger.info(_(u'Update system software!'))
+            Config.set('ToDo', 'start_system_update', 'False')
             config_write(cf, Config)
             # Start update, hold back package wlanthermo
             ret = os.popen("/usr/bin/systemd-run /usr/bin/wlt_2_update_system.sh").read()
             logger.debug(ret)
             
         if (Config.getboolean('ToDo', 'start_full_update')):
-            logger.info(_(u'Update software!'))
-            Config.set('ToDo', 'start_update', 'False')
+            logger.info(_(u'Update full software!'))
+            Config.set('ToDo', 'start_full_update', 'False')
             config_write(cf, Config)
             ret = os.popen("/usr/bin/systemd-run /usr/bin/wlt_2_update_system.sh --full").read()
             logger.debug(ret)
