@@ -8,9 +8,9 @@ if [ `whoami` != root ]; then
     exit
 fi
   
-grep 'VERSION_ID="8"' /etc/os-release &> /dev/null
+grep 'VERSION_ID="9"' /etc/os-release &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "This installer need Raspbian Jessie!"
+  echo "This installer need Raspbian Stretch!"
   exit
 fi
 
@@ -50,9 +50,9 @@ program=wlanthermo
 
 echo "Updating System:"
 echo "----------------------------------------------------------"
-apt-get update
-apt-get -y dist-upgrade
-apt-get -y install raspberrypi-sys-mods
+apt update
+apt -y dist-upgrade
+apt -y autoremove
 
 echo "Extract the package"
 echo "----------------------------------------------------------"
@@ -61,7 +61,7 @@ ls -l /tmp/${program}.deb
 
 echo "Install depencies:"
 echo "----------------------------------------------------------"
-aptitude --safe-resolver -y install $(dpkg -I /tmp/${program}.deb | grep 'Depends:' | sed -e 's/,//g' -e 's/ *Depends: *//')
+apt -y install $(dpkg -I /tmp/${program}.deb | grep 'Depends:' | sed -e 's/,//g' -e 's/ *Depends: *//')
 
 echo "Install /tmp/${program}.deb"
 

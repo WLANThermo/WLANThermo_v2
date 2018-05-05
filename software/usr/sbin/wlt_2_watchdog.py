@@ -322,20 +322,21 @@ def read_config():
             config_write(cf, Config)
             ret = os.popen("/usr/sbin/wlt_2_backup.sh").read()
             logger.debug(ret)
-        if (Config.getboolean('ToDo', 'update_gui')):
-            logger.info(_(u'update_gui!'))
-            Config.set('ToDo', 'update_gui', 'False')
-            config_write(cf, Config)
-            ret = os.popen("/usr/sbin/wlt_2_update_gui.sh").read()
-            logger.debug(ret)
 
-        if (Config.getboolean('ToDo', 'start_update')):
-            logger.info(_(u'Update software!'))
-            Config.set('ToDo', 'start_update', 'False')
+        if (Config.getboolean('ToDo', 'start_system_update')):
+            logger.info(_(u'Update system software!'))
+            Config.set('ToDo', 'start_system_update', 'False')
             config_write(cf, Config)
-            ret = os.popen("/usr/bin/systemd-run /usr/sbin/wlt_2_update.sh").read()
+            # Start update, hold back package wlanthermo
+            ret = os.popen("/usr/bin/systemd-run /usr/bin/wlt_2_update_system.sh").read()
             logger.debug(ret)
-
+            
+        if (Config.getboolean('ToDo', 'start_full_update')):
+            logger.info(_(u'Update full software!'))
+            Config.set('ToDo', 'start_full_update', 'False')
+            config_write(cf, Config)
+            ret = os.popen("/usr/bin/systemd-run /usr/bin/wlt_2_update_system.sh --full").read()
+            logger.debug(ret)
             
         if (Config.getboolean('ToDo', 'create_new_log')):
             

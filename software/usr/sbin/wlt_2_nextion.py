@@ -858,7 +858,7 @@ def lan_getvalues():
     interfacelist = ['eth0', 'eth1', 'wlan0', 'wlan1']
     interfaces = dict()
     for interface in interfacelist:
-        retvalue = os.popen("LANG=C ifconfig " + interface + " 2>/dev/null | grep 'inet ' | cut -d':' -f2| cut -d' ' -f1").readlines()
+        retvalue = os.popen("LANG=C ifconfig wlan0 2>/dev/null | awk '/inet / {print $2}'").readlines()
         if (len(retvalue)!=0):
             interfaces[interface] = {'name': interface, 'ip': retvalue[0].strip()}
     return interfaces

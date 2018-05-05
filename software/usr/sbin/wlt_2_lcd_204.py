@@ -373,7 +373,7 @@ if LCD:
     time.sleep(3) # 3 second delay 
 
     lcd_byte(LCD_LINE_1, LCD_CMD)
-    lcd_string(_(u'Grillsportverein'),2)
+    lcd_string(_(u'     WLANThermo'),2)
     lcd_byte(LCD_LINE_2, LCD_CMD)
     lcd_string('',2)  
     lcd_byte(LCD_LINE_3, LCD_CMD)

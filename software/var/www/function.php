@@ -189,18 +189,7 @@ function session($configfile) {
 	$_SESSION["showcpulast"] = $ini['Hardware']['showcpulast'];
 	$_SESSION["hardware_version"] = $ini['Hardware']['version'];
 	$_SESSION["checkUpdate"] = $ini['update']['checkupdate'];
-	$_SESSION["check_update_url"] = $ini['update']['check_update_url'];
 	$_SESSION["separator"] = $ini['Logging']['separator'];
-	if (isset($_SESSION["webGUIversion"])){
-		if ($_SESSION["checkUpdate"] == "True"){
-			$check_update = updateCheck("".$_SESSION["webGUIversion"]."");
-			$_SESSION["updateAvailable"] = $check_update;
-		}else{
-			$_SESSION["updateAvailable"] = "False";
-		}
-	}else{
-		$_SESSION["updateAvailable"] = "";
-	}
 	if (!isset($_SESSION["websoundalert"])) {
 		$_SESSION["websoundalert"] = "True";
 	}
@@ -229,7 +218,7 @@ function session($configfile) {
 //-----------------------------------------------------------------------------------
 
 function checkSession(){
-	
+	$message = '';
 	if (!isset($_SESSION["channel_count"])) {
 		$message .= "Variable - Config neu einlesen\n";
 		session("./conf/WLANThermo.conf");
@@ -256,10 +245,6 @@ function checkSession(){
 		$message .= "Variable - Config neu einlesen\n";
 		session("./conf/WLANThermo.conf");
 	}	
-	if (!isset($_SESSION["updateAvailable"])){
-		$message .= "Variable - Config neu einlesen\n";
-		session("./conf/WLANThermo.conf");
-	}		
 	if (!isset($_SESSION["checkUpdate"])){
 		$message .= "Variable - Config neu einlesen\n";
 		session("./conf/WLANThermo.conf");
@@ -356,32 +341,19 @@ function download($url) {
 // Funktion UpdateCheck ###############################################################################################################
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-function updateCheck($version) {
-	$check_update_url = $_SESSION["check_update_url"]; //Update Server
-	$file_headers = @get_headers($check_update_url);
-	if($file_headers[0] == 'HTTP/1.1 404 Not Found') {
-		//echo "Server nicht erreichbar";
-	}else{
-		//echo "File existiert";
-		$check_update_string = download("".$check_update_url."");
-		$check_update_array = parse_ini_string($check_update_string);
-		if (isset($check_update_array['version'])) {
-			$webGUIversion = $check_update_array['version'];
-			if (version_compare("".$webGUIversion."", "".$version."", ">")) {
-				//echo "Update Vorhanden";
-				$update = "True";
-				$_SESSION["newversion"] = $webGUIversion;
-			}else{
-				//echo "Sie sind am Aktuellsten stand";
-				$update = "False";
-			}
-		}else{
-			$update = "False";
+function update_check() {
+	$updates_file = '/var/www/tmp/updates.json';
+	$json_file = @file_get_contents($updates_file);
+	if ($json_file === FALSE) {
+		return FALSE;
+	} else {
+		$json = json_decode($json_file, true);
+		if ($json === NULL) {
+			return FALSE;
+		} else {
+			return $json;
 		}
-		//print_r($check_update_array);
-		//echo $webGUIversion;
 	}
-	return $update;
 } 
 
 //------------------------------------------------------------------------------------------------------------------------------------- 

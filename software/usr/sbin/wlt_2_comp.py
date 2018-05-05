@@ -133,7 +133,7 @@ def safe_format(template, args):
             break
         except KeyError as e:
             key_name = str(e).strip('\'')
-            logger.error(u'Key "{key_name}" not found in template!'.format(key=key))
+            logger.error(u'Key "{key_name}" not found in template!'.format(key_name=key_name))
             template = template.replace('{' + key_name + '}', '!!' + key_name + '!!')
     return message
 
@@ -525,7 +525,6 @@ try:
 
             # Einlesen welche Alarmierungsart aktiv ist
             Email_alert = new_config.getboolean('Email','email_alert')
-            WhatsApp_alert = new_config.getboolean('WhatsApp','whatsapp_alert')
             Push_alert = new_config.getboolean('Push', 'push_on')
             Telegram_alert = new_config.getboolean('Telegram', 'telegram_alert')
             App_alert = new_config.getboolean('App', 'app_alert')
@@ -708,12 +707,6 @@ try:
                 Email_subject = new_config.get('Email','email_subject')
                 Email_STARTTLS = new_config.getboolean ('Email','starttls')
                 alarm_email(Email_server,Email_user,Email_password, Email_STARTTLS, Email_from, Email_to, Email_subject, alarm_message)
-                
-            if WhatsApp_alert:
-                # Wenn konfiguriert, Alarm per WhatsApp schicken
-                WhatsApp_number = new_config.get('WhatsApp','whatsapp_number')
-                cmd="/usr/sbin/sende_whatsapp.sh"
-                subprocess.call((cmd, WhatsApp_number, alarm_message.encode('utf-8')))
                 
             if Telegram_alert:
                 Telegram_URL = 'https://api.telegram.org/bot{token}/sendMessage'

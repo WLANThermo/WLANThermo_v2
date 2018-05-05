@@ -1,7 +1,8 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', TRUE);
-$_SESSION["webGUIversion"] = "V2.7.1-beta1";
+// Version is set by build script
+$_SESSION["webGUIversion"] = "XXX_VERSION_XXX";
 $title = "WLANThermo";
 $document_root = getenv('DOCUMENT_ROOT');
 include("gettext.php");
@@ -82,6 +83,9 @@ if (isset($_SESSION["locale"])){
 						<li>
 							<a href="../index.php" class="mainmenu"><img src="../images/icons32x32/home.png" alt="Home" title="Home"></a>
 						</li>				
+						<li>
+							<a href="https://forum.wlanthermo.de" class="mainmenu"><img src="../images/icons32x32/forum.png" alt="Forum" title="Forum"></a>
+						</li>
 						<li>
 							<a href="../info.php" class="mainmenu"><img src="../images/icons32x32/info.png" alt="Info" title="Info"></a>
 						</li>
