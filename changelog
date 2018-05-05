@@ -1,3 +1,9 @@
+wlanthermo (2.8.0-beta3) stretch-dev; urgency=medium
+
+  * FIX: Make update work
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Sat, 5 May 2017 20:10:00 +0200
+ 
 wlanthermo (2.8.0-beta2) stretch-dev; urgency=medium
 
   * FIX: Crash on wrong keys in alert message
@@ -6,7 +12,7 @@ wlanthermo (2.8.0-beta2) stretch-dev; urgency=medium
 
  -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Sat, 5 May 2017 15:35:00 +0200
 
- wlanthermo (2.8.0-beta1) stretch-dev; urgency=medium
+wlanthermo (2.8.0-beta1) stretch-dev; urgency=medium
 
   * CHANGE: Get update from package repository
 
