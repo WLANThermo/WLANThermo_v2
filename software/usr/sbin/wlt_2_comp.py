@@ -133,7 +133,7 @@ def safe_format(template, args):
             break
         except KeyError as e:
             key_name = str(e).strip('\'')
-            logger.error(u'Key "{key_name}" not found in template!'.format(key=key))
+            logger.error(u'Key "{key_name}" not found in template!'.format(key_name=key_name))
             template = template.replace('{' + key_name + '}', '!!' + key_name + '!!')
     return message
 
