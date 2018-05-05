@@ -35,6 +35,7 @@ import json
 
 
 def check_updates(packages):
+    results = dict()
     process = subprocess.run(
         'LANG=C apt-get -su dist-upgrade',
         stdout=subprocess.PIPE,
@@ -45,13 +46,18 @@ def check_updates(packages):
         output,
         re.MULTILINE)
     updatecount = int(counts.group(1)) + int(counts.group(2))
-    results = {'system': {'available': bool(updatecount), 'count': updatecount}}
+    all_updates = updatecount
     for package in args.package:
-        packageinfo = re.search('^Inst {package} \[(\S*)\] \((\S+)'.format(package=package), output)
+        packageinfo = re.search('^Inst {package} \[(\S*)\] \((\S+)'.format(package=package),
+        output,
+        re.MULTILINE)
         if packageinfo is None:
             results[package] = {'available': False}
         else:
             results[package] = {'available': True, 'oldversion': packageinfo.group(1), 'newversion':packageinfo.group(2)}
+            # Remove checked packages from count
+            updatecount -= 1
+    results['system'] = {'available': bool(updatecount), 'count': updatecount, 'all': all_updates}
 
     return results
 
