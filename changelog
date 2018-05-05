@@ -1,4 +1,12 @@
-wlanthermo (2.8.0-beta1) stretch-dev; urgency=medium
+wlanthermo (2.8.0-beta2) stretch-dev; urgency=medium
+
+  * FIX: Crash on wrong keys in alert message
+  * FIX: IP address not shown on display
+  * CHANGE: enable update check
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Sat, 5 May 2017 15:35:00 +0200
+
+ wlanthermo (2.8.0-beta1) stretch-dev; urgency=medium
 
   * CHANGE: Get update from package repository
 
