@@ -1,0 +1,9 @@
+[Unit]
+Description=Run WLANThermo update check daily and after boot
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1d
+
+[Install]
+WantedBy=timers.target

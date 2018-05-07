@@ -1,0 +1,7 @@
+[Unit]
+Description=WLANThermo update check
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/wlt_2_updatecheck.sh --full

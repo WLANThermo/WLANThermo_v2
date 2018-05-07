@@ -45,7 +45,7 @@
 			$updates_shown = False;
 			if ($updates === False) {
 				echo "<p>&#10026; <b>".gettext("WLANThermo update").":</b> &#10026;</p>";
-				echo "<p>".gettext("Error during update check!")."</p>";
+				echo "<p>".gettext("Error during update check, please wait 5min after boot!")."</p>";
 				echo '<hr class="linie">';
 			} else {
 				if (isset($updates['system']['available']) && $updates['system']['available'] === True) {
