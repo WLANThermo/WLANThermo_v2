@@ -91,27 +91,7 @@
 		document.getElementById("plot_pit").disabled=false;
 		document.getElementById("plot_color_pit").disabled=false;
 	}
-	// Eingabefelder für App Einstellungen aktivieren
-	function app_settings_enable() {
-		document.getElementById("app_inst_id").disabled=false;
-		document.getElementById("app_inst_id2").disabled=false;
-		document.getElementById("app_inst_id3").disabled=false;
-		document.getElementById("app_device_id1").disabled=false;
-		document.getElementById("app_device_id2").disabled=false;
-		document.getElementById("app_device_id3").disabled=false;
-		document.getElementById("app_sound_id").disabled=false;
-	}
-	// Eingabefelder für App Einstellungen deaktivieren
-	function app_settings_disable() {
-		document.getElementById("app_inst_id").disabled=true;
-		document.getElementById("app_inst_id2").disabled=true;
-		document.getElementById("app_inst_id3").disabled=true;
-		document.getElementById("app_device_id1").disabled=true;
-		document.getElementById("app_device_id2").disabled=true;
-		document.getElementById("app_device_id3").disabled=true;
-		document.getElementById("app_sound_id").disabled=true;
-	}	
-	
+		
 	// Eingabefelder für Telegram Einstellungen aktivieren
 	function telegram_settings_enable() {
 		document.getElementById("telegram_token").disabled=false;
@@ -162,13 +142,7 @@
 			nextion_settings_disable();
 		}
 	}	
-	function check_app_present() {
-		if( $('#app_alert').is(':checked') ) { 
-			app_settings_enable();
-		} else{
-			app_settings_disable();
-		}
-	}
+
 	function check_push_present() {
 		if( $('#push_on').is(':checked') ) { 
 			push_settings_enable();
@@ -269,22 +243,6 @@
 			raspicam_settings_enable();
 		}else{
 			raspicam_settings_disable();
-		}
-	}
-
-	function whatsapp_settings_enable() {
-		document.getElementById("whatsapp_number").disabled=false;
-	}
-
-	function whatsapp_settings_disable() {
-		document.getElementById("whatsapp_number").disabled=true;
-	}
-
-	function check_whatsapp() {
-		if( $('#whatsapp_alert').is(':checked') ) { 
-			whatsapp_settings_enable();
-		}else{
-			whatsapp_settings_disable();
 		}
 	}
 
@@ -404,7 +362,6 @@
 		$("input").removeAttr('disabled'); //enable			
 	}
 	
-	check_app_present();
 	check_telegram_present();
 	check_pit_present();
 	check_plot_present();
@@ -417,7 +374,6 @@
 	check_channel_ch6();
 	check_channel_ch7();
 	check_email_present();
-	check_whatsapp();
 	check_webcam();
 	check_raspicam();
 	check_lcd_present();
@@ -432,9 +388,7 @@
     $("#telegram_alert").change(function () {
         check_telegram_present();
     });
-	$("#app_alert").change(function () {
-        check_app_present();
-    });
+
 	$( "#pit_on" ).change(function() {
 		check_pit_present();
 	});	
@@ -482,9 +436,6 @@
 	});
 	$( "#raspicam_start" ).change(function() {
 		check_raspicam();
-	});
-	$( "#whatsapp_alert" ).change(function() {
-		check_whatsapp();
 	});
 
 	// Funktion aufrufen falls LCD Type umgestellt wird
