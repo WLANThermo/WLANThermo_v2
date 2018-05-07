@@ -8,7 +8,6 @@ session_start();
 include("../header.php");
 include("../function.php");
 session("../conf/WLANThermo.conf");
-$tmpFile = '../temperaturen.csv';
 $inipath = '../conf/WLANThermo.conf';
 
 // gnuplot color names, to be converted to CSS color names by to_css_color($gnuplotcolor) if needed.
