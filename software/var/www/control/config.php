@@ -34,10 +34,11 @@ $sensor_ini = getConfig("../conf/sensor.conf", ";");  // dabei ist ; das zeichen
 if (isset($_POST["upload_file"])) {
 	if ($_FILES["configfile"]["error"] == UPLOAD_ERR_OK && $_FILES['configfile']['size'] != 0) {
 		if (is_uploaded_file($_FILES['configfile']['tmp_name'])) {
-			exec("sudo /usr/bin/wlt_2_updateconfig.py {$_FILES['configfile']['tmp_name']} >> /var/www/tmp/updateconfig.log", $output);
+			exec("/usr/bin/wlt_2_updateconfig.py {$_FILES['configfile']['tmp_name']} &> /var/www/tmp/updateconfig.log", $output);
 			echo "<head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"> </head> <body> <h2>" . gettext("File has been processed...") . "</h2></body>";
     		} else {
 			echo "<head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"> </head> <body> <h2>" . gettext("Error during file processing...") . "</h2></body>";
+            }
 	} else {
 		echo "<head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"> </head> <body> <h2>" . gettext("Error during upload...") . "</h2></body>";
 	}
@@ -1241,12 +1242,25 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 			</table>
 		<br>		
 	</form>
+    <h1><?php echo gettext("File upload");?></h1>
+    <div class="config small">
 	<form enctype="multipart/form-data" action="config.php" method="POST">
 		<input type="hidden" name="upload_file" value="" />
 		<input type="hidden" name="MAX_FILE_SIZE" value="10000" />
-		<?php echo gettext("Upload config file:");?> <input name="configfile" type="file" />
-		<input type="submit" value="<?php echo gettext("Send File");?>" />
+				<div class="headline"><?php echo gettext("Config file upload");?></div>
+				<div class="headicon"></div>
+				<div class="config_text row_1 col_1"><?php echo gettext("Select config file for upload");?></div>
+				<div class="config_text row_2 col_1"><input name="configfile" type="file" /></div>
 	</form>
+    </div>
+    		<br>
+			<table align="center" width="80%"><tr><td width="20%"></td>
+				<td align="center">
+                    <input type="submit" class=button_yes value="" />
+                    <input type="submit" class=button_no name="back"  value=""> </td>
+				<td width="20%"></td></tr>
+			</table>
+		<br>
 </div>
 <?php
 	}
