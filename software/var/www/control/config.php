@@ -23,16 +23,27 @@ $log_levels = array('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL');
 // Config-Files einlesen ------------------------------------------------------------
 // ##################################################################################
 
-if(get_magic_quotes_runtime()) set_magic_quotes_runtime(0); 
+if (get_magic_quotes_runtime()) set_magic_quotes_runtime(0); 
 $ini = getConfig("../conf/WLANThermo.conf", ";");  // dabei ist ; das zeichen für einen kommentar.	
 $sensor_ini = getConfig("../conf/sensor.conf", ";");  // dabei ist ; das zeichen für einen kommentar.
+
+// ##################################################################################
+// Hochgeladenes Config-Files einlesen ----------------------------------------------
+// ##################################################################################
+
+if (isset($_POST["upload_file"])) {
+	if ($_FILES["configfile"]["error"] == UPLOAD_ERR_OK && $_FILES['configfile']['size'] != 0) {
+		exec("sudo /usr/bin/wlt_2_updateconfig.py {$_FILES['configfile']['tmp_name']} >> /var/www/tmp/updateconfig.log", $output);
+		echo "<head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"> </head> <body> <h2>" . gettext("File has been processed...");?></h2></body>";
+    } else {
+		echo "<head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"> </head> <body> <h2>" . gettext("Error during upload...");?></h2></body>";
+	}
 
 // ##################################################################################
 // Formular auswerten ---------------------------------------------------------------
 // ##################################################################################	
 
-if(isset($_POST["save"])) { 
-
+} elseif(isset($_POST["save"])) {
 	$error = "";				
 	$restart = false;
 	$restart_pit = false;
@@ -1226,6 +1237,12 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 				<td width="20%"></td></tr>
 			</table>
 		<br>		
+	</form>
+	<form enctype="multipart/form-data" action="__URL__" method="POST">
+		<input type="hidden" name="upload_file" value="" />
+		<input type="hidden" name="MAX_FILE_SIZE" value="10000" />
+		<?php echo gettext("Upload config file:");?> <input name="configfile" type="file" />
+		<input type="submit" value="<?php echo gettext("Send File");?>" />
 	</form>
 </div>
 <?php
