@@ -2,7 +2,7 @@
 # coding=utf-8
 
 # Copyright (c) 2013, 2014, 2015 Joe16
-# Copyright (c) 2015, 2016 Björn Schrader
+# Copyright (c) 2015 - 2018 Björn Schrader
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
