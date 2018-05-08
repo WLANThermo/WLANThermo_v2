@@ -2,11 +2,23 @@
 	session_start();
 	$message = "";
 	$document_root = getenv('DOCUMENT_ROOT');
+	require_once("function.php");
 	include("".$document_root."/header.php");
-	include("function.php");
 	if (!isset($_SESSION["current_temp"])) {
 		$message .= "Variable - Config neu einlesen\n";
 		session("./conf/WLANThermo.conf");
+	}
+	if (isset($_POST["check_update"])) {
+		$ini = getConfig("conf/WLANThermo.conf", ";");
+		$ini['ToDo']['check_update'] = "True";
+		write_ini("conf/WLANThermo.conf", $ini);
+		echo "
+		<head>
+		  <meta http-equiv=\"refresh\" content=\"1;URL='info.php'\">
+		</head>
+		<body>
+		  <h2>Updates werden gesucht...</h2>
+		</body>";
 	}
 
 // ##################################################################################
@@ -18,19 +30,19 @@
 		<h1><?php echo $title; ?></h1>
 		<p><?php echo gettext("a WLANThermo community project");?></p>
 		<br>
-		<p>Idee, Hardware &amp; Backend (C) 2013-2016 by </p><p>&#10026; <b>Armin Thinnes</b> &#10026;</p>
+		<p>Idee, Hardware &amp; Backend &copy; 2013-2016 by </p><p>&#10026; <b>Armin Thinnes</b> &#10026;</p>
 		<hr class="linie">
-		<p>Web-Frontend (C) 2013-2016 by </p><p>&#10026; <b>Florian Riedl</b> &#10026;</p>
+		<p>Web-Frontend &copy; 2013-2016 by </p><p>&#10026; <b>Florian Riedl</b> &#10026;</p>
 		<hr class="linie">
-		<p>Watchdog &amp; Pitmaster (C) 2013-2015 by</p><p>&#10026; <b>Joe16</b> &#10026;</p>
+		<p>Watchdog &amp; Pitmaster &copy; 2013-2015 by</p><p>&#10026; <b>Joe16</b> &#10026;</p>
 		<hr class="linie">
-		<p>Display &amp; Pitmaster (C) 2015-2018 by</p><p>&#10026; <b>Bj&ouml;rn</b> &#10026;</p>
+		<p>Display &amp; Pitmaster &copy; 2015-2018 by</p><p>&#10026; <b>Bj&ouml;rn</b> &#10026;</p>
 		<hr class="linie">
-		<p>Grafik (C) 2013 by</p><p>&#10026; <b>Michael Spanel</b> &#10026;</p>
+		<p>Grafik &copy; 2013 by</p><p>&#10026; <b>Michael Spanel</b> &#10026;</p>
 		<hr class="linie">
-		<p>PCB Design &amp; Layout (C) 2013-2015 by </p><p>&#10026; <b>Grillprophet</b> &#10026;</p>
+		<p>PCB Design &amp; Layout &copy; 2013-2015 by </p><p>&#10026; <b>Grillprophet</b> &#10026;</p>
 		<hr class="linie">
-		<p>Display Design &amp; PCB v3 Mini(C) 2015-2017 by </p><p>&#10026; <b>Alexander Sch&auml;fer</b> &#10026;</p>
+		<p>Display Design &amp; PCB v3 Mini &copy; 2015-2017 by </p><p>&#10026; <b>Alexander Sch&auml;fer</b> &#10026;</p>
 	</div>
 	<div id="info_site_right">
 		<h1><?php echo gettext("Information");?></h1>
@@ -38,6 +50,11 @@
 		<br>
 		<p><?php echo gettext("Software version");?>: <b><?php if (isset($_SESSION["webGUIversion"])) {echo $_SESSION["webGUIversion"];}?></b></p>
 		<p>&nbsp;</p>
+		<hr class="linie">
+		<form action="./info.php" method="POST" >
+			<h1><?php echo gettext("Update suchen");?></h1>
+			<p><input class="button" type="submit" name="check_update" value="<?php echo gettext('Search update');?>"/></p>
+		</form>
 		<hr class="linie">
 		<?php
 		if ($_SESSION["checkUpdate"] == "True"){

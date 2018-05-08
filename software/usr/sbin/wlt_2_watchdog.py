@@ -2,7 +2,7 @@
 # coding=utf-8
 
 # Copyright (c) 2013, 2014, 2015 Joe16
-# Copyright (c) 2015, 2016 Björn Schrader
+# Copyright (c) 2015 - 2018 Björn Schrader
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -321,6 +321,13 @@ def read_config():
             Config.set('ToDo', 'backup', 'False')
             config_write(cf, Config)
             ret = os.popen("/usr/sbin/wlt_2_backup.sh").read()
+            logger.debug(ret)
+        
+        if (Config.getboolean('ToDo', 'check_update')):
+            logger.info(_(u'Check for software updates...'))
+            Config.set('ToDo', 'check_update', 'False')
+            config_write(cf, Config)
+            ret = os.popen("/bin/systemctl --no-block start WLANThermoUPDATECHECK.service")
             logger.debug(ret)
 
         if (Config.getboolean('ToDo', 'start_system_update')):

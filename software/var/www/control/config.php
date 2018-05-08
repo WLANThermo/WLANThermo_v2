@@ -23,16 +23,31 @@ $log_levels = array('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL');
 // Config-Files einlesen ------------------------------------------------------------
 // ##################################################################################
 
-if(get_magic_quotes_runtime()) set_magic_quotes_runtime(0); 
+if (get_magic_quotes_runtime()) set_magic_quotes_runtime(0); 
 $ini = getConfig("../conf/WLANThermo.conf", ";");  // dabei ist ; das zeichen für einen kommentar.	
 $sensor_ini = getConfig("../conf/sensor.conf", ";");  // dabei ist ; das zeichen für einen kommentar.
+
+// ##################################################################################
+// Hochgeladenes Config-Files einlesen ----------------------------------------------
+// ##################################################################################
+
+if (isset($_POST["upload_file"])) {
+	if ($_FILES["configfile"]["error"] == UPLOAD_ERR_OK && $_FILES['configfile']['size'] != 0) {
+		if (is_uploaded_file($_FILES['configfile']['tmp_name'])) {
+			exec("/usr/bin/wlt_2_updateconfig.py {$_FILES['configfile']['tmp_name']} &> /var/www/tmp/updateconfig.log", $output);
+			echo "<head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"> </head> <body> <h2>" . gettext("File has been processed...") . "</h2></body>";
+    		} else {
+			echo "<head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"> </head> <body> <h2>" . gettext("Error during file processing...") . "</h2></body>";
+            }
+	} else {
+		echo "<head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"> </head> <body> <h2>" . gettext("Error during upload...") . "</h2></body>";
+	}
 
 // ##################################################################################
 // Formular auswerten ---------------------------------------------------------------
 // ##################################################################################	
 
-if(isset($_POST["save"])) { 
-
+} elseif(isset($_POST["save"])) {
 	$error = "";				
 	$restart = false;
 	$restart_pit = false;
@@ -1227,6 +1242,25 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 			</table>
 		<br>		
 	</form>
+    <h1><?php echo gettext("File upload");?></h1>
+    <div class="config small">
+	<form enctype="multipart/form-data" action="config.php" method="POST">
+		<input type="hidden" name="upload_file" value="" />
+		<input type="hidden" name="MAX_FILE_SIZE" value="10000" />
+				<div class="headline"><?php echo gettext("Config file upload");?></div>
+				<div class="headicon"></div>
+				<div class="config_text row_1 col_1"><?php echo gettext("Select config file for upload");?></div>
+				<div class="config_text row_2 col_1"><input name="configfile" type="file" /></div>
+	</form>
+    </div>
+    		<br>
+			<table align="center" width="80%"><tr><td width="20%"></td>
+				<td align="center">
+                    <input type="submit" class=button_yes value="" />
+                    <input type="submit" class=button_no name="back"  value=""> </td>
+				<td width="20%"></td></tr>
+			</table>
+		<br>
 </div>
 <?php
 	}
