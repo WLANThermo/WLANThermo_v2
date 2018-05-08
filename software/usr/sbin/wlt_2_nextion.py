@@ -44,7 +44,8 @@ NX_channel = 0
 NX_page = 0
 NX_enhanced = False
 
-version = '0.24'
+# Version is set by build script
+version = "XXX_VERSION_XXX
 
 temps = dict()
 channels = dict()
@@ -1022,16 +1023,19 @@ def NX_display():
     if options['maverick_enabled'] == True:
         channel_count += 2
 
-    NX_sendvalues({'boot.text.txt:35':_(u'Loading temperature data')})
+    NX_sendvalues({'boot.text.txt:35':_(u'Connection established!')})
+    NX_sendvalues({'boot.version.txt:15':version})
     NX_switchpage('boot')
     
     # Werte initialisieren
     temps_event.clear()
     channels_event.clear()
+    NX_sendvalues({'boot.text.txt:35':_(u'Get temperature data...')})
     logger.debug(_(u'Get temperature data...'))
     temps = temp_getvalues(hwchannel_count)
     while temps is None:
-        logger.info(_(u'Waiting on temperature data'))
+        logger.info(_(u'Waiting on temperature data...'))
+        NX_sendvalues({'boot.text.txt:35':_(u'Waiting on temperature data...')})
         temps_event.wait(0.1)
         temps = temp_getvalues(hwchannel_count)
     
