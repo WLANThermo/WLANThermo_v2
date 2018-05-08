@@ -322,6 +322,13 @@ def read_config():
             config_write(cf, Config)
             ret = os.popen("/usr/sbin/wlt_2_backup.sh").read()
             logger.debug(ret)
+        
+        if (Config.getboolean('ToDo', 'check_update')):
+            logger.info(_(u'Check for software updates...'))
+            Config.set('ToDo', 'check_update', 'False')
+            config_write(cf, Config)
+            ret = os.popen("/usr/bin/systemctl --no-block start WLANThermoUPDATECHECK.service")
+            logger.debug(ret)
 
         if (Config.getboolean('ToDo', 'start_system_update')):
             logger.info(_(u'Update system software!'))
