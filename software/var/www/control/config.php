@@ -1238,7 +1238,7 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 			</table>
 		<br>		
 	</form>
-	<form enctype="multipart/form-data" action="__URL__" method="POST">
+	<form enctype="multipart/form-data" action="config.php" method="POST">
 		<input type="hidden" name="upload_file" value="" />
 		<input type="hidden" name="MAX_FILE_SIZE" value="10000" />
 		<?php echo gettext("Upload config file:");?> <input name="configfile" type="file" />
