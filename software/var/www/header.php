@@ -6,6 +6,7 @@ $_SESSION["webGUIversion"] = "XXX_VERSION_XXX";
 $title = "WLANThermo";
 $document_root = getenv('DOCUMENT_ROOT');
 include("gettext.php");
+require_once("function.php");
 if (isset($_SESSION["locale"])){	
 	set_locale($_SESSION["locale"]);
 }else{
@@ -43,9 +44,9 @@ if (isset($_SESSION["locale"])){
 	$webcam_start = 'style="display:none"';
 	$raspicam_start = 'style="display:none"';
 	$updates = update_check();
-	if ($_SESSION['checkUpdate'] == "True" &&
+	if (($_SESSION['checkUpdate'] == "True" &&
 	   ((isset($updates['wlanthermo']['available']) && $updates['wlanthermo']['available'] === True) ||
-	    (isset($updates['system']['available']) && $updates['system']['available'] === True) ||
+	    (isset($updates['system']['available']) && $updates['system']['available'] === True))) ||
 	    isset($_SESSION["nextionupdate"])
 	   ) {
 		echo '<script>$(function() { showUpdate();});</script>';

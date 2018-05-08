@@ -289,7 +289,7 @@ position:absolute;
 
 
 #info_site_left{
-height: 600px;
+height: 700px;
 float: left;
 width: 50%;
 color:#FFFFFF;
@@ -300,7 +300,7 @@ border-radius: 1px;
 }
 
 #info_site_right{
-height: 600px;
+height: 700px;
 float: right;
 width: 50%;
 margin-left:-2px;

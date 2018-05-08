@@ -2,8 +2,8 @@
 	session_start();
 	$message = "";
 	$document_root = getenv('DOCUMENT_ROOT');
+	require_once("function.php");
 	include("".$document_root."/header.php");
-	include("function.php");
 	if (!isset($_SESSION["current_temp"])) {
 		$message .= "Variable - Config neu einlesen\n";
 		session("./conf/WLANThermo.conf");
