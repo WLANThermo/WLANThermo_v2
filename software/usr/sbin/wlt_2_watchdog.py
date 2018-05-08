@@ -327,7 +327,7 @@ def read_config():
             logger.info(_(u'Check for software updates...'))
             Config.set('ToDo', 'check_update', 'False')
             config_write(cf, Config)
-            ret = os.popen("/usr/bin/systemctl --no-block start WLANThermoUPDATECHECK.service")
+            ret = os.popen("/bin/systemctl --no-block start WLANThermoUPDATECHECK.service")
             logger.debug(ret)
 
         if (Config.getboolean('ToDo', 'start_system_update')):

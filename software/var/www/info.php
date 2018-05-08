@@ -9,9 +9,9 @@
 		session("./conf/WLANThermo.conf");
 	}
 	if (isset($_POST["check_update"])) {
-		$ini = getConfig("../conf/WLANThermo.conf", ";");
+		$ini = getConfig("conf/WLANThermo.conf", ";");
 		$ini['ToDo']['check_update'] = "True";
-		write_ini($inipath, $ini);
+		write_ini("conf/WLANThermo.conf", $ini);
 		echo "
 		<head>
 		  <meta http-equiv=\"refresh\" content=\"1;URL='info.php'\">
@@ -53,7 +53,7 @@
 		<hr class="linie">
 		<form action="./info.php" method="POST" >
 			<h1><?php echo gettext("Update suchen");?></h1>
-			<p><input class="button" type="submit" name="check_update" value="'.gettext('Search update').'"/></p>';
+			<p><input class="button" type="submit" name="check_update" value="<?php echo gettext('Search update');?>"/></p>
 		</form>
 		<hr class="linie">
 		<?php
