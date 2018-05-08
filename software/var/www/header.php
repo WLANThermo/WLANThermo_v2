@@ -42,15 +42,17 @@ if (isset($_SESSION["locale"])){
 	$plot_start = 'style="display:none"';
 	$webcam_start = 'style="display:none"';
 	$raspicam_start = 'style="display:none"';
-	if (isset($_SESSION["updateAvailable"])) {
-		if ((($_SESSION["updateAvailable"] == "True") AND ($_SESSION['checkUpdate'] == "True")) OR (isset($_SESSION["nextionupdate"]))){
-			echo '<script>$(function() { showUpdate();});</script>';
-		}else{		
-			echo '<script>$(function() { hideUpdate();});</script>';
-		}	
-	}else{
+	$updates = update_check();
+	if ($_SESSION['checkUpdate'] == "True" &&
+	   ((isset($updates['wlanthermo']['available']) && $updates['wlanthermo']['available'] === True) ||
+	    (isset($updates['system']['available']) && $updates['system']['available'] === True) ||
+	    isset($_SESSION["nextionupdate"])
+	   ) {
+		echo '<script>$(function() { showUpdate();});</script>';
+	} else {		
 		echo '<script>$(function() { hideUpdate();});</script>';
-	}
+	}	
+
 	if(!strpos($_SERVER["PHP_SELF"], "index.php") === false){
 		if ($_SESSION["plot_start"] == "True"){
 			$plot_start = 'style="display:inline"';
