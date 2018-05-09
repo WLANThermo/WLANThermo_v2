@@ -1,5 +1,6 @@
 #!/bin/bash
 # Fix broken or aborted installations first
+touch /var/www/tmp/update
 if [ $# > 1 ]
 then
     if [[ "$1" = "--full" ]]
@@ -8,33 +9,34 @@ then
     fi
 fi
 
-echo "Fixing broken installations..." > /var/www/tmp/update
-apt -y install --fix-broken &>> /var/www/tmp/update
-echo "Updating package list..." >> /var/www/tmp/update
-apt update &>> /var/www/tmp/update
+echo "Fixing broken installations..." > /var/www/tmp/update.log
+apt -y install --fix-broken &>> /var/www/tmp/update.log
+echo "Updating package list..." >> /var/www/tmp/update.log
+apt update &>> /var/www/tmp/update.log
 
 if [[ -z "$full_upgrade" ]]
 then
-    echo "Hold back wlanthermo..." >> /var/www/tmp/update
-    apt-mark hold wlanthermo &>> /var/www/tmp/update
+    echo "Hold back wlanthermo..." >> /var/www/tmp/update.log
+    apt-mark hold wlanthermo &>> /var/www/tmp/update.log
 fi
 
 # Do full upgrade
-apt -y dist-upgrade &>> /var/www/tmp/update
+apt -y dist-upgrade &>> /var/www/tmp/update.log
 
 if [[ -z "$full_upgrade" ]]
 then
-    echo "Unhold wlanthermo..." >> /var/www/tmp/update
-    apt-mark unhold wlanthermo &>> /var/www/tmp/update
+    echo "Unhold wlanthermo..." >> /var/www/tmp/update.log
+    apt-mark unhold wlanthermo &>> /var/www/tmp/update.log
 fi
 
 # Cleanup afterwards
-echo "Cleaning up..." >> /var/www/tmp/update
-apt -y autoremove &>> /var/www/tmp/update
-apt -y clean &>> /var/www/tmp/update
+echo "Cleaning up..." >> /var/www/tmp/update.log
+apt -y autoremove &>> /var/www/tmp/update.log
+apt -y clean &>> /var/www/tmp/update.log
 
 # Update available updates
 /etc/cron.daily/wlanthermo_updatecheck
 
 # Move log (and clear GUI)
-mv /var/www/tmp/update /var/log/WLAN_Thermo/update-$(date +%Y%M%d).log
+mv /var/www/tmp/update.log /var/log/WLAN_Thermo/update-$(date +%Y%M%d).log
+rm /var/www/tmp/update
