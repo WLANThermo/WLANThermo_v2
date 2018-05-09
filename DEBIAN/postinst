@@ -17,17 +17,9 @@ fi
 mv /var/www/conf/lighttpd.conf /etc/lighttpd/lighttpd.conf
 
 # check if new web password has been set
-if [ -f /var/www/tmp/update ]
-then
-    echo 'Password found!'
-    passwort=`cat /var/www/tmp/update`
-    echo "$passwort"
-    htpasswd -c -b /etc/lighttpd/htpasswd wlanthermo $passwort
-    rm /var/www/tmp/update # Updateflag zuruecksetzen
-elif [ -f /etc/lighttpd/htpasswd ] && egrep -q '^wlanthermo' /etc/lighttpd/htpasswd
+if [ -f /etc/lighttpd/htpasswd ] && egrep -q '^wlanthermo' /etc/lighttpd/htpasswd
 then
     echo 'Password already set!'
-
 elif [ -t 0 ]
 then
     echo 'No password found!'
