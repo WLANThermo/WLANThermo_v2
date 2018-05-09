@@ -1,8 +1,14 @@
+wlanthermo (2.8.0~beta5-0) stretch-dev; urgency=medium
+
+  * FIX: Error in config.php
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Thu, 10 May 2017 00:30:00 +0200
+
 wlanthermo (2.8.0~beta4-0) stretch-dev; urgency=medium
 
   * FIX: Move update job to systemd timer
 
--- Bjoern Schrader <wlanthermo@bjoern-schrader.de> Tue, 8 May 2017 00:10:00 +0200
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Tue, 8 May 2017 00:10:00 +0200
 
 wlanthermo (2.8.0-beta3) stretch-dev; urgency=medium
 
