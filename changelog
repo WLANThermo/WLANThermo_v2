@@ -1,3 +1,10 @@
+wlanthermo (2.8.0~beta6-0) stretch-dev; urgency=medium
+
+  * FIX: Minor bugs in update processing
+  * Test release for update processing
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Thu, 10 May 2017 02:20:00 +0200
+
 wlanthermo (2.8.0~beta5-0) stretch-dev; urgency=medium
 
   * FIX: Error in config.php
