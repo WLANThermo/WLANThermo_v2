@@ -20,7 +20,7 @@ do
         fi
 done
 
-if [[ -n "$full_upgrade" ]]
+if [[ -n "$full_update" ]]
 then
     echo "Updating package list..."
     nice -n 15 apt update
