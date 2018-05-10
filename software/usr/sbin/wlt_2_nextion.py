@@ -353,7 +353,7 @@ def set_hwclock():
 
 def check_ntp():
     ntp = False
-    ntpstat = subprocess.Popen("/usr/bin/timedatectl status", stdout=subprocess.PIPE, universal_newlines=True)
+    ntpstat = subprocess.Popen(["/usr/bin/timedatectl", "status"], stdout=subprocess.PIPE, universal_newlines=True)
     stdoutdata, stderrdata = ntpstat.communicate()
     for line in stdoutdata.splitlines():
         if 'NTP synchronized: yes' in line:
@@ -969,7 +969,7 @@ def NX_display():
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
-    nextion_versions = ['v2.7', 'v2.8']
+    nextion_versions = ['v2.8', 'v2.7']
     
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
