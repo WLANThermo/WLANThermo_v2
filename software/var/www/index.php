@@ -1,6 +1,6 @@
 <?php
 	session_start();
-	include("function.php");
+	require_once("function.php");
 	session("./conf/WLANThermo.conf");
 	include("header.php");
 //-------------------------------------------------------------------------------------------------------------------------------------	

@@ -1,6 +1,6 @@
 <?php
 	session_start();
-	include("function.php");
+	require_once("function.php");
 	session("./conf/WLANThermo.conf");
 	$log_dateformat = 'd.m.y H:i:s';
 	

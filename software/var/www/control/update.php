@@ -2,7 +2,7 @@
 	session_start();
 	$message = "";
 	$document_root = getenv('DOCUMENT_ROOT');
-	include("../function.php");
+	require_once("../function.php");
 	include("../header.php");
 	$inipath = '../conf/WLANThermo.conf';	
 	if (!isset($_SESSION["current_temp"])) {

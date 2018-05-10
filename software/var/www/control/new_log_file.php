@@ -7,7 +7,7 @@ session_start(); //Session starten
 
 	$document_root = getenv('DOCUMENT_ROOT');
 	include("".$document_root."/header.php");
-	include("".$document_root."/function.php");
+	require_once("".$document_root."/function.php");
 	$inipath = ''.$document_root.'/conf/WLANThermo.conf';
 	$message = "";
 	$currentlogfilename = getCurrentLogFileName();

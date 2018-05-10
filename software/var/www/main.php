@@ -11,8 +11,8 @@ if (!file_exists($tmp_dir)) {
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 	$beginn = microtime(true);
-	include("function.php");
-	include("gettext.php");
+	require_once("function.php");
+	require_once("gettext.php");
 	$esound = "0"; // Variable für Soundalarmierung;
 	$esound_ = "0";
 	$message = "\n";

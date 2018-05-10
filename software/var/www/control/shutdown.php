@@ -6,7 +6,7 @@ session_start(); //Session starten
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 	include("../header.php");
-	include("../function.php");
+	require_once("../function.php");
 	$inipath = '../conf/WLANThermo.conf';
 	
 	
