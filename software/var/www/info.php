@@ -52,8 +52,8 @@
 		<p>&nbsp;</p>
 		<hr class="linie">
 		<form action="./info.php" method="POST" >
-			<h1><?php echo gettext("Update suchen");?></h1>
-			<p><input class="button" type="submit" name="check_update" value="<?php echo gettext('Search update');?>"/></p>
+			<h1><?php echo gettext("Search updates");?></h1>
+			<p><input class="button" type="submit" name="check_update" value="<?php echo gettext('Search updates');?>"/></p>
 		</form>
 		<hr class="linie">
 		<?php

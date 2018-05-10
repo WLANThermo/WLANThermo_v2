@@ -5,55 +5,55 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: WLANThermo 2.4.0\n"
+"Project-Id-Version: WLANThermo 2.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-18 19:46+0100\n"
-"PO-Revision-Date: 2017-01-18 19:47+0100\n"
+"POT-Creation-Date: 2018-05-10 23:20+0200\n"
+"PO-Revision-Date: 2018-05-10 23:20+0200\n"
 "Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
-"Language-Team: \n"
+"Language-Team: WLANThermo Team\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.11\n"
+"X-Generator: Poedit 2.0.7\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ../../../../../sbin\n"
 "X-Poedit-SearchPath-0: wlt_2_comp.py\n"
 
-#: wlt_2_comp.py:113
+#: wlt_2_comp.py:108
 #, python-format
 msgid "%s already exists, Process is running, exiting"
 msgstr "%s existiert, Prozess läuft bereits, beende Skript"
 
-#: wlt_2_comp.py:283
+#: wlt_2_comp.py:280
 msgid "Date_Time"
 msgstr "Datum_Uhrzeit"
 
-#: wlt_2_comp.py:288
+#: wlt_2_comp.py:285
 msgid "Controller output value"
 msgstr "Regler Ausgangswert"
 
-#: wlt_2_comp.py:289
+#: wlt_2_comp.py:286
 msgid "Controller set value"
 msgstr "Regler Sollwert"
 
-#: wlt_2_comp.py:290
+#: wlt_2_comp.py:287
 msgid "Controller 2 output value"
 msgstr "Regler 2 Ausgangswert"
 
-#: wlt_2_comp.py:291
+#: wlt_2_comp.py:288
 msgid "Controller 2 set value"
 msgstr "Regler 2 Sollwert"
 
-#: wlt_2_comp.py:617
+#: wlt_2_comp.py:604
 msgid "degrees Celsius"
 msgstr "Grad Celsius"
 
-#: wlt_2_comp.py:620
+#: wlt_2_comp.py:607
 msgid "degrees Fahrenheit"
 msgstr "Grad Fahrenheit"
 
-#: wlt_2_comp.py:708
+#: wlt_2_comp.py:695
 msgid "test message\n"
 msgstr "Testnachricht\n"
 

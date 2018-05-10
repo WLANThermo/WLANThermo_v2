@@ -6,12 +6,12 @@
 	include("../header.php");
 	$inipath = '../conf/WLANThermo.conf';	
 	if (!isset($_SESSION["current_temp"])) {
-		$message .= gettext("Variable - Config neu einlesen\n");
+		$message .= gettext("Variable - Reading config again\n");
 		session("../conf/WLANThermo.conf");
 	}
 	if((file_exists('../tmp/update.log')) OR (file_exists('../tmp/nextionupdatelog'))){
 		echo '<div id="info_site">';
-		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>" . gettext("Das Update wurde bereits gestartet...") . "</h2></body>";
+		echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>" . gettext("The update has already been installed...") . "</h2></body>";
 		echo '</div>';
 		exit;
 	}
@@ -27,14 +27,14 @@
 <?php
 if (isset($_POST["back"])) {
 	echo "<div class=\"infofield\">";
-	 echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>" . gettext("Verlassen der Seite ohne Update zu installieren!...") . "</h2></body>";
+	 echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>" . gettext("Leaving this page without update...") . "</h2></body>";
 	echo "</div>";
 } elseif (isset($_POST["update_step1"])) {
 	?>
 	<form action="./update.php" method="POST" >
 	<div id="info_site">
-		<h1><?php echo gettext("Update Installieren");?></h1>
-		<p><?php echo gettext("Wollen Sie das Update Installieren?");?></p>			
+		<h1><?php echo gettext("Install update");?></h1>
+		<p><?php echo gettext("Do you want to install the update?");?></p>			
 	</div>
 	<br>						
 				<table align="center" width="80%">
@@ -53,13 +53,13 @@ if (isset($_POST["back"])) {
 } elseif (isset($_POST["update_step2"])) {
 	?>
 		<div id="info_site">
-			<h1><?php echo gettext("Update Installieren");?></h1>
+			<h1><?php echo gettext("Install update");?></h1>
 			<br>
 			<?php
 			$ini = getConfig("../conf/WLANThermo.conf", ";");
 			$ini['ToDo']['start_system_update'] = "True";
 			write_ini($inipath, $ini);
-			echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>" . gettext("Das Update wird nun Installiert...") . "</h2></body>";
+			echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>" . gettext("The update will now be installed...") . "</h2></body>";
 			?>
 		</div>
 	<?php
@@ -67,8 +67,8 @@ if (isset($_POST["back"])) {
 	?>
 	<form action="./update.php" method="POST" >
 	<div id="info_site">
-		<h1><?php echo gettext("Update Installieren");?></h1>
-		<p><?php echo gettext("Wollen Sie das Update Installieren?");?></p>			
+		<h1><?php echo gettext("Install update");?></h1>
+		<p><?php echo gettext("Do you want to install the update?");?></p>			
 	</div>
 	<br>						
 				<table align="center" width="80%">
@@ -87,23 +87,23 @@ if (isset($_POST["back"])) {
 } elseif (isset($_POST["wlanthermo_update_step2"])) {
 	?>
 		<div id="info_site">
-			<h1><?php echo gettext("Update Installieren");?></h1>
+			<h1><?php echo gettext("Install update");?></h1>
 			<br>
 			<?php
 			$ini = getConfig("../conf/WLANThermo.conf", ";");
 			$ini['ToDo']['start_full_update'] = "True";
 			write_ini($inipath, $ini);
-			echo "<head><meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>" . gettext("Das Update wird nun Installiert...") . "</h2></body>";
+			echo "<head><meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>" . gettext("The update will now be installed...") . "</h2></body>";
 			?>
 		</div>
 	<?php
 } elseif (isset($_POST["update_nextion"])) {
 	?>
 	<div id="info_site">
-		<h1><?php echo gettext("Update Installieren");?></h1>
-		<p><?php echo gettext("f&uuml;r das NEXTION Display wurde ein neues Update gefunden");?></p>
+		<h1><?php echo gettext("Install update");?></h1>
+		<p><?php echo gettext("A new Update has been found for the NEXTION display.");?></p>
 		<br>
-		<p><?php echo gettext("Wollen Sie das Update installieren?");?></p>	
+		<p><?php echo gettext("Do you want to install the update?");?></p>	
 		<form action="./update.php" method="POST" >							
 				<table align="center" width="80%">
 					<tr>
@@ -121,11 +121,11 @@ if (isset($_POST["back"])) {
 } elseif(isset($_POST["nextion_update_confirm"])) {
 ?>
 		<div id="info_site">
-			<h1><?php echo gettext("Update Installieren");?></h1>
+			<h1><?php echo gettext("Install update");?></h1>
 			<br>
 			<?php
 				exec("sudo /usr/sbin/wlt_2_updatenextion.sh /usr/share/WLANThermo/nextion/ {$_SESSION['nextion_variant']} > /var/www/tmp/error.txt &",$output);
-				echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>" . gettext("Das Update wird nun Installiert...") . "</h2></body>";
+				echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>" . gettext("The update will now be installed...") . "</h2></body>";
 			?>
 		</div>
 		<?php
@@ -138,8 +138,8 @@ if (isset($_POST["back"])) {
 			if ($updates === False){
 				?>
 	<div id="info_site">
-		<h1><?php echo gettext("Update Installieren");?></h1>
-		<p><?php echo gettext("Fehler beim prüfen auf Updates!");?></p>
+		<h1><?php echo gettext("Install update");?></h1>
+		<p><?php echo gettext("Error during check for updates!");?></p>
 	</div>
 				<?php
 			} else {
@@ -147,12 +147,12 @@ if (isset($_POST["back"])) {
 					$updates_shown = True;
 					?>
 	<div id="info_site">
-		<h1><?php echo gettext("Update Installieren");?></h1>
-		<p><?php echo gettext("f&uuml;r das Betriebssystem wurden neue Updates gefunden");?></p>
+		<h1><?php echo gettext("Install update");?></h1>
+		<p><?php echo gettext("New updates have been found for the operating system");?></p>
 		<br>
-		<p><?php echo gettext("Zu aktualisierende Pakete:");?> <b><?php if (isset($updates['system']['count'])) {echo $updates['system']['count'];}?></b></p>
+		<p><?php echo gettext("Updated packages:");?> <b><?php if (isset($updates['system']['count'])) {echo $updates['system']['count'];}?></b></p>
 		<br>
-		<p><?php echo gettext("Wollen Sie das Update installieren?");?></p>	
+		<p><?php echo gettext("Do you want to install the update?");?></p>	
 		<form action="./update.php" method="POST" >							
 				<table align="center" width="80%">
 					<tr>
@@ -172,14 +172,14 @@ if (isset($_POST["back"])) {
 					$updates_shown = True;
 					?>
 	<div id="info_site">
-		<h1><?php echo gettext("Update Installieren");?></h1>
-		<p><?php echo gettext("f&uuml;r das WLANThermometer wurde ein neues Update gefunden");?></p>
+		<h1><?php echo gettext("Install update");?></h1>
+		<p><?php echo gettext("A new update has been found for the WLANThermo");?></p>
 		<br>
-		<p><?php echo gettext("Installierte Version:");?> <b><?php if (isset($updates['wlanthermo']['oldversion'])) {echo $updates['wlanthermo']['oldversion'];}?></b></p>
-		<p><?php echo gettext("Aktuelle Version:");?> <b><?php if (isset($updates['wlanthermo']['newversion'])) {echo $updates['wlanthermo']['newversion'];}?></b></p>
+		<p><?php echo gettext("Installed version:");?> <b><?php if (isset($updates['wlanthermo']['oldversion'])) {echo $updates['wlanthermo']['oldversion'];}?></b></p>
+		<p><?php echo gettext("Current version:");?> <b><?php if (isset($updates['wlanthermo']['newversion'])) {echo $updates['wlanthermo']['newversion'];}?></b></p>
 		<br>
-		<p><?php echo gettext("Wollen Sie das Update installieren?");?></p>
-		<p><?php echo gettext("Dieses Update schließt automatisch das Systemupdate mit ein.");?></p>
+		<p><?php echo gettext("Do you want to install the update?");?></p>
+		<p><?php echo gettext("This update always includes the operating system update.");?></p>
 		<form action="./update.php" method="POST" >							
 				<table align="center" width="80%">
 					<tr>
@@ -199,8 +199,8 @@ if (isset($_POST["back"])) {
 		} else {
 			?>
 	<div id="info_site">
-		<h1><?php echo gettext("Update Installieren");?></h1>
-		<p><?php echo gettext("Updates für das WLANThermo wurden deaktiviert");?></p>
+		<h1><?php echo gettext("Install updates");?></h1>
+		<p><?php echo gettext("Updates have been deactivated");?></p>
 	</div>
 			<?php
 		}
