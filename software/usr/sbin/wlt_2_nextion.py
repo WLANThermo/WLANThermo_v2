@@ -353,10 +353,10 @@ def set_hwclock():
 
 def check_ntp():
     ntp = False
-    ntpstat = subprocess.Popen("/usr/bin/ntpstat", stdout=subprocess.PIPE, universal_newlines=True)
+    ntpstat = subprocess.Popen("/usr/bin/timedatectl status", stdout=subprocess.PIPE, universal_newlines=True)
     stdoutdata, stderrdata = ntpstat.communicate()
     for line in stdoutdata.splitlines():
-        if 'synchronised to NTP server' in line:
+        if 'NTP synchronized: yes' in line:
             return True
     return False
 

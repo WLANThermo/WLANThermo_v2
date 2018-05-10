@@ -276,10 +276,9 @@ else:
     print('Error in NEXTION init')
     
 ntp = False
-with Popen("/usr/bin/ntpstat", stdout=PIPE, universal_newlines=True) as ntpstat:
+with Popen(["/usr/bin/timedatectl", "status"], stdout=PIPE, universal_newlines=True) as ntpstat:
     for line in iter(ntpstat.stdout.readline, ''):
-        if 'synchronised to NTP server' in line:
-            
+        if 'NTP synchronized: yes' in line:
             ntp = True
     
 if ntp:
