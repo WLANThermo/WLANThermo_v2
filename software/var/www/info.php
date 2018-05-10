@@ -30,9 +30,9 @@
 		<h1><?php echo $title; ?></h1>
 		<p><?php echo gettext("a WLANThermo community project");?></p>
 		<br>
-		<p>Idee, Hardware &amp; Backend &copy; 2013-2016 by </p><p>&#10026; <b>Armin Thinnes</b> &#10026;</p>
+		<p>Idee, Hardware &amp; Backend &copy; 2013-2018 by </p><p>&#10026; <b>Armin Thinnes</b> &#10026;</p>
 		<hr class="linie">
-		<p>Web-Frontend &copy; 2013-2016 by </p><p>&#10026; <b>Florian Riedl</b> &#10026;</p>
+		<p>Web-Frontend &copy; 2013-2018 by </p><p>&#10026; <b>Florian Riedl</b> &#10026;</p>
 		<hr class="linie">
 		<p>Watchdog &amp; Pitmaster &copy; 2013-2015 by</p><p>&#10026; <b>Joe16</b> &#10026;</p>
 		<hr class="linie">
@@ -42,7 +42,7 @@
 		<hr class="linie">
 		<p>PCB Design &amp; Layout &copy; 2013-2015 by </p><p>&#10026; <b>Grillprophet</b> &#10026;</p>
 		<hr class="linie">
-		<p>Display Design &amp; PCB v3 Mini &copy; 2015-2017 by </p><p>&#10026; <b>Alexander Sch&auml;fer</b> &#10026;</p>
+		<p>Display Design &amp; PCB v3 Mini &copy; 2015-2018 by </p><p>&#10026; <b>Alexander Sch&auml;fer</b> &#10026;</p>
 	</div>
 	<div id="info_site_right">
 		<h1><?php echo gettext("Information");?></h1>
