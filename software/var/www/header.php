@@ -18,10 +18,14 @@ if (isset($_SESSION["locale"])){
 <!DOCTYPE html>
 <html lang="de">
 <head>
-	<meta charset="utf-8">
+	<meta charset="utf-8">	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-title" content="WlanThermo">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	<link rel="apple-touch-icon-precomposed" href="../apple-touch-icon-180x180-precomposed.png" >
+	
 	<title><?php echo ''.$title.' ('.$_SESSION["webGUIversion"].')';?></title>
 	<link rel="stylesheet" type="text/css" href="../css/style.css">
 	<link rel="stylesheet" href="../css/jquery.fancybox.css" type="text/css" media="screen">
