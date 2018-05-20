@@ -5,3 +5,8 @@ Es können Temperaturschwellen gesetzt werden ab denen eine Warnung per Email/ W
 Per Lüfter oder Servo kann ein Grillgerät automatisch geregelt werden.
 Zur Regelung eines Sous Vide-Bades ist die Ansteuerung eines elektronischen Relais vorgesehen.
 Angezeigt werden die Temperaturen auf einem LCD Display, einem Nextion Touchscreen oder auf einer Weboberfläche.
+
+Forum:
+https://forum.wlanthermo.de/
+Webseite:
+https://wlanthermo.de/
