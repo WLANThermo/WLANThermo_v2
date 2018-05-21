@@ -685,7 +685,7 @@ if (isset($_POST["upload_file"])) {
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Einstellungen werden gespeichert...</h2></body>";	
 	if($restart == true){
-		echo "<h2>wlt_2_comp.py wird neu gestartet...</h2>";
+		echo "<h2>" . gettext("wlt_2_comp.py wird neu gestartet...") . "</h2>";
 	}
 	echo "</div>";
 
@@ -696,25 +696,25 @@ if (isset($_POST["upload_file"])) {
 } elseif(isset($_POST["back"])) {
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"></head>
-			<body> <h2>Verlassen der Seite ohne Speichern!...</h2></body>";
+			<body> <h2>" . gettext("Verlassen der Seite ohne Speichern!...") . "</h2></body>";
 	echo "</div>";
 } elseif(isset($_GET["alert-test"]) && $_GET["alert-test"] == "true") {
 	touch( __DIR__ . '/../alert.test' );
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
-			<body> <h2>Testalarm wird gesendet...</h2></body>";
+			<body> <h2>" . gettext("Testalarm wird gesendet...") . "</h2></body>";
 	echo "</div>";
 } elseif(isset($_GET["update-nextion"]) && $_GET["update-nextion"] == "true") {
 	touch( __DIR__ . '/../tmp/nextionupdate' );
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
-		<body> <h2>Flag wird gesetzt...</h2></body>";
+		<body> <h2>" . gettext("Flag wird gesetzt...") . "</h2></body>";
 	echo "</div>";
 } elseif(isset($_GET["calibrate-display"]) && $_GET["calibrate-display"] == "true") {
 	$ini['ToDo']['calibrate_display'] = 'True';
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
-		<body> <h2>Kalibrierung wird gestartet...</h2></body>";
+		<body> <h2>" . gettext("Kalibrierung wird gestartet...") . "</h2></body>";
 	echo "</div>";
 } else {
 
