@@ -710,6 +710,12 @@ if (isset($_POST["upload_file"])) {
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
 		<body> <h2>Flag wird gesetzt...</h2></body>";
 	echo "</div>";
+} elseif(isset($_GET["calibrate-display"]) && $_GET["calibrate-display"] == "true") {
+	$ini['ToDo']['calibrate_display'] = 'True';
+	echo "<div class=\"infofield\">";
+	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
+		<body> <h2>Kalibrierung wird gestartet...</h2></body>";
+	echo "</div>";
 } else {
 
 // ##################################################################################
@@ -1175,8 +1181,9 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
                     <option <?php if($ini['Display']['start_page'] == "temp") {echo " selected";} ?> value="temp"><?php echo gettext("Temperature");?></option>
                 </select>
             </div>
-            <div class="config_text row_2 col_1"><button type="button" onclick="$.get('config.php?update-nextion=true')"><?php echo gettext("Force update!");?></button></div>					
-		</div>
+            <div class="config_text row_2 col_1"><button type="button" onclick="$.get('config.php?update-nextion=true')"><?php echo gettext("Force update!");?></button></div>
+	    <div class="config_text row_2 col_3"><button type="button" onclick="$.get('config.php?calibrate-display=true')"><?php echo gettext("Calibrate Display!");?></button></div>
+	</div>
 <?php
 // ##################################################################################
 // Formular Logging Einstellungen ----------------------------------------------------
@@ -1217,8 +1224,9 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
                     <?php } ?>
                 </select>       
 			</div>
-			<div class="config_text row_3 col_6"><a href="../thermolog/update.log"><?php echo gettext("Show update log")?></a></div>
-			<div class="config_text row_4 col_6"><a href="../log/WLANThermo.log"><?php echo gettext("Show logfile")?></a></div>
+			<div class="config_text row_2 col_6"><button type="reset" onclick="location.href='../conf/WLANThermo.conf'"><?php echo gettext("Download config")?></button></div>
+			<div class="config_text row_3 col_6"><button type="reset" onclick="location.href='../thermolog/update.log'"><?php echo gettext("Show update log")?></button></div>
+			<div class="config_text row_4 col_6"><button type="reset" onclick="location.href='../log/WLANThermo.log'"><?php echo gettext("Show logfile")?></button></div>
 		</div>
 <?php
 // ##################################################################################
