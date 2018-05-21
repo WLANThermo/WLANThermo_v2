@@ -712,6 +712,7 @@ if (isset($_POST["upload_file"])) {
 	echo "</div>";
 } elseif(isset($_GET["calibrate-display"]) && $_GET["calibrate-display"] == "true") {
 	$ini['ToDo']['calibrate_display'] = 'True';
+	write_ini($inipath, $ini);
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
 		<body> <h2>" . gettext("Kalibrierung wird gestartet...") . "</h2></body>";
