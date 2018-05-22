@@ -38,5 +38,7 @@ apt -y clean &>> /var/www/tmp/update.log
 /etc/cron.daily/wlanthermo_updatecheck
 
 # Move log (and clear GUI)
-mv /var/www/tmp/update.log /var/log/WLAN_Thermo/update-$(date +%Y%M%d).log
+now=$(date +%Y%M%d)
+mv /var/www/tmp/update.log /var/log/WLAN_Thermo/update-$now.log
+ln -srf /var/log/WLAN_Thermo/update-$now.log /var/log/WLAN_Thermo/update.log 
 rm /var/www/tmp/update

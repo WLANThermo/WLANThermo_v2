@@ -683,9 +683,12 @@ if (isset($_POST["upload_file"])) {
 	exec("/usr/bin/touch /var/www/tmp/flag",$output);
 		
 	echo "<div class=\"infofield\">";
-	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"> </head> <body> <h2>Einstellungen werden gespeichert...</h2></body>";	
+	echo "<head><meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"></head>
+          <body>
+            <h2>" . gettext("Settings have been saved...") . "</h2>
+          </body>";	
 	if($restart == true){
-		echo "<h2>wlt_2_comp.py wird neu gestartet...</h2>";
+		echo "<h2>" . gettext("wlt_2_comp.py will be restarted...") . "</h2>";
 	}
 	echo "</div>";
 
@@ -696,19 +699,26 @@ if (isset($_POST["upload_file"])) {
 } elseif(isset($_POST["back"])) {
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='../index.php'\"></head>
-			<body> <h2>Verlassen der Seite ohne Speichern!...</h2></body>";
+			<body> <h2>" . gettext("Leaving the page without saving...") . "</h2></body>";
 	echo "</div>";
 } elseif(isset($_GET["alert-test"]) && $_GET["alert-test"] == "true") {
 	touch( __DIR__ . '/../alert.test' );
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
-			<body> <h2>Testalarm wird gesendet...</h2></body>";
+			<body> <h2>" . gettext("Test alert will be sent...") . "</h2></body>";
 	echo "</div>";
 } elseif(isset($_GET["update-nextion"]) && $_GET["update-nextion"] == "true") {
 	touch( __DIR__ . '/../tmp/nextionupdate' );
 	echo "<div class=\"infofield\">";
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
-		<body> <h2>Flag wird gesetzt...</h2></body>";
+		<body> <h2>" . gettext("Update flag has been set...") . "</h2></body>";
+	echo "</div>";
+} elseif(isset($_GET["calibrate-display"]) && $_GET["calibrate-display"] == "true") {
+	$ini['ToDo']['calibrate_display'] = 'True';
+	write_ini($inipath, $ini);
+	echo "<div class=\"infofield\">";
+	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
+		<body> <h2>" . gettext("Display calibration is started...") . "</h2></body>";
 	echo "</div>";
 } else {
 
@@ -784,7 +794,7 @@ if (isset($_POST["upload_file"])) {
 			<div class="config_text row_2 col_5"><input type="text" name="alarm_low_template" id="alarm_low_template" size="35" maxlength="250" value="<?php echo $ini['Alert']['alarm_low_template'];?>"></div>
 			<div class="config_text row_3 col_5"><input type="text" name="status_template" id="status_template" size="35" maxlength="250" value="<?php echo $ini['Alert']['status_template'];?>"></div>
 			<div class="config_text row_4 col_5"><input type="text" name="message_template" id="message_template" size="35" maxlength="250" value="<?php echo $ini['Alert']['message_template'];?>"></div>
-			<div class="config_text row_4 col_7"><button type="button" onclick="$.get('config.php?alert-test=true')"><?php echo gettext("Send Test Message");?></button></div>
+			<div class="config_text row_4 col_6"><button type="button" onclick="$.get('config.php?alert-test=true')" class="wide"><?php echo gettext("Send Test Message");?></button></div>
 
 		</div>
 <?php
@@ -1175,8 +1185,9 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
                     <option <?php if($ini['Display']['start_page'] == "temp") {echo " selected";} ?> value="temp"><?php echo gettext("Temperature");?></option>
                 </select>
             </div>
-            <div class="config_text row_2 col_1"><button type="button" onclick="$.get('config.php?update-nextion=true')"><?php echo gettext("Force update!");?></button></div>					
-		</div>
+            <div class="config_text row_2 col_3"><button type="button" onclick="$.get('config.php?update-nextion=true')" class="wide"><?php echo gettext("Force update!");?></button></div>
+	    <div class="config_text row_3 col_3"><button type="button" onclick="$.get('config.php?calibrate-display=true')" class="wide"><?php echo gettext("Calibrate Display!");?></button></div>
+	</div>
 <?php
 // ##################################################################################
 // Formular Logging Einstellungen ----------------------------------------------------
@@ -1217,8 +1228,12 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
                     <?php } ?>
                 </select>       
 			</div>
-			<div class="config_text row_3 col_6"><a href="../thermolog/update.log"><?php echo gettext("Show update log")?></a></div>
-			<div class="config_text row_4 col_6"><a href="../log/WLANThermo.log"><?php echo gettext("Show logfile")?></a></div>
+			<div class="config_text row_3 col_6">
+                <button type="reset" onclick="location.href='../thermolog/update.log'" class="wide"><?php echo gettext("Show update log")?></button>
+            </div>
+			<div class="config_text row_4 col_6">
+                <button type="reset" onclick="location.href='../log/WLANThermo.log'" class="wide"><?php echo gettext("Show logfile")?></button>
+            </div>
 		</div>
 <?php
 // ##################################################################################
@@ -1248,9 +1263,12 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 		<input type="hidden" name="upload_file" value="" />
 		<input type="hidden" name="MAX_FILE_SIZE" value="10000" />
 				<div class="headline"><?php echo gettext("Config file upload");?></div>
-				<div class="headicon"></div>
-				<div class="config_text row_1 col_1"><?php echo gettext("Select config file for upload");?></div>
-				<div class="config_text row_2 col_1"><input name="configfile" type="file" /></div>
+				<div class="headicon"><img src="../images/icons16x16/file_save.png" alt=""></div>
+				<div class="config_text row_1 col_1"><?php echo gettext("Config file:");?></div>
+				<div class="config_text row_1 col_4"><input name="configfile" type="file" /></div>
+                <div class="config_text row_2 col_4">
+                    <button type="reset" onclick="location.href='../conf/WLANThermo.conf'" class="wide"><?php echo gettext("Download config")?></button>
+                </div>
 	</form>
     </div>
     		<br>

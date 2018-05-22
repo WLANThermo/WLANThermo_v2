@@ -771,7 +771,7 @@ textarea {
 }
 
 input.button {
-        width:90px;
+        width:150px;
 		height:30px;
 }
 
@@ -785,6 +785,11 @@ input[type=text],input[type=password] {
 	border:1px solid;
 }
 
+input[type=file] {
+	border:1px solid;
+    color: #000000;
+    width: 300px;
+}
 
 input[type=button]:hover {
 	font-weight:bold;
@@ -792,7 +797,10 @@ input[type=button]:hover {
 input[type=submit]:hover {
 	font-weight:bold;
 }
-
+button.wide {
+	font-weight:bold;
+    width: 200px;
+}
 .infoheader {
 	font-size:18px;
 	font-weight:bold;
