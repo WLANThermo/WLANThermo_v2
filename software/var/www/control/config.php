@@ -1265,8 +1265,8 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 				<div class="headline"><?php echo gettext("Config file upload");?></div>
 				<div class="headicon"><img src="../images/icons16x16/file_save.png" alt=""></div>
 				<div class="config_text row_1 col_1"><?php echo gettext("Config file:");?></div>
-				<div class="config_text row_1 col_2"><input name="configfile" type="file" /></div>
-                <div class="config_text row_1 col_6">
+				<div class="config_text row_1 col_4"><input name="configfile" type="file" /></div>
+                <div class="config_text row_2 col_4">
                     <button type="reset" onclick="location.href='../conf/WLANThermo.conf'" class="wide"><?php echo gettext("Download config")?></button>
                 </div>
 	</form>
