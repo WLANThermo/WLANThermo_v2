@@ -1225,9 +1225,12 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
                     <?php } ?>
                 </select>       
 			</div>
-			<div class="config_text row_2 col_6"><button type="reset" onclick="location.href='../conf/WLANThermo.conf'"><?php echo gettext("Download config")?></button></div>
-			<div class="config_text row_3 col_6"><button type="reset" onclick="location.href='../thermolog/update.log'"><?php echo gettext("Show update log")?></button></div>
-			<div class="config_text row_4 col_6"><button type="reset" onclick="location.href='../log/WLANThermo.log'"><?php echo gettext("Show logfile")?></button></div>
+			<div class="config_text row_3 col_6">
+                <button type="reset" onclick="location.href='../thermolog/update.log'"><?php echo gettext("Show update log")?></button>
+            </div>
+			<div class="config_text row_4 col_6">
+                <button type="reset" onclick="location.href='../log/WLANThermo.log'"><?php echo gettext("Show logfile")?></button>
+            </div>
 		</div>
 <?php
 // ##################################################################################
@@ -1257,9 +1260,13 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 		<input type="hidden" name="upload_file" value="" />
 		<input type="hidden" name="MAX_FILE_SIZE" value="10000" />
 				<div class="headline"><?php echo gettext("Config file upload");?></div>
-				<div class="headicon"></div>
-				<div class="config_text row_1 col_1"><?php echo gettext("Select config file for upload");?></div>
-				<div class="config_text row_2 col_1"><input name="configfile" type="file" /></div>
+				<div class="headicon"><img src="../images/icons16x16/file_save.png" alt=""></div>
+				<div class="config_text row_1 col_1"><?php echo gettext("Config file:");?></div>
+				<div class="config_text row_1 col_2"><input name="configfile" type="file" /></div>
+                <div class="config_text row_2 col_2">
+                    <button type="reset" onclick="location.href='../conf/WLANThermo.conf'"><?php echo gettext("Download config")?></button>
+                </div>
+                
 	</form>
     </div>
     		<br>
