@@ -460,8 +460,8 @@ try:
         Temperatur_alarm = ['er' for i in xrange(channel_count)]
 
         new_config_mtime = os.path.getmtime('/var/www/conf/WLANThermo.conf')
-        if new_config_mtime > config_mtime:
-            logger.debug(u'reading configuration again...')
+        if new_config_mtime != config_mtime:
+            logger.info(u'Reading configuration again...')
             while True:
                 try:
                     new_config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
