@@ -771,7 +771,7 @@ textarea {
 }
 
 input.button {
-        width:90px;
+        width:150px;
 		height:30px;
 }
 
@@ -797,7 +797,10 @@ input[type=button]:hover {
 input[type=submit]:hover {
 	font-weight:bold;
 }
-
+button.wide {
+	font-weight:bold;
+    width: 200px;
+}
 .infoheader {
 	font-size:18px;
 	font-weight:bold;

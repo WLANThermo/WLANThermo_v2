@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WLANThermo 2.8.0\n"
-"POT-Creation-Date: 2018-05-10 23:15+0200\n"
-"PO-Revision-Date: 2018-05-10 23:16+0200\n"
+"POT-Creation-Date: 2018-05-22 14:02+0200\n"
+"PO-Revision-Date: 2018-05-22 14:02+0200\n"
 "Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
 "Language-Team: WLANThermo Team\n"
 "Language: en_GB\n"
@@ -28,488 +28,520 @@ msgstr ""
 msgid "Error during upload..."
 msgstr ""
 
-#: control/config.php:720 header.php:99
+#: control/config.php:688
+msgid "Settings have been saved..."
+msgstr ""
+
+#: control/config.php:691
+msgid "wlt_2_comp.py will be restarted..."
+msgstr ""
+
+#: control/config.php:702
+msgid "Leaving the page without saving..."
+msgstr ""
+
+#: control/config.php:708
+msgid "Test alert will be sent..."
+msgstr ""
+
+#: control/config.php:714
+msgid "Update flag has been set..."
+msgstr ""
+
+#: control/config.php:721
+msgid "Display calibration is started..."
+msgstr ""
+
+#: control/config.php:730 header.php:103
 msgid "Settings"
 msgstr ""
 
-#: control/config.php:731 control/config.php:954 control/config.php:967
+#: control/config.php:741 control/config.php:964 control/config.php:977
 msgid "Name"
 msgstr ""
 
-#: control/config.php:732
+#: control/config.php:742
 msgid "Probe Type"
 msgstr ""
 
-#: control/config.php:734
+#: control/config.php:744
 msgid "Probe Thresholds"
 msgstr ""
 
-#: control/config.php:735 control/config.php:1057 control/config.php:1065
+#: control/config.php:745 control/config.php:1067 control/config.php:1075
 msgid "min"
 msgstr ""
 
-#: control/config.php:737 control/config.php:1060 control/config.php:1067
+#: control/config.php:747 control/config.php:1070 control/config.php:1077
 msgid "max"
 msgstr ""
 
-#: control/config.php:739
+#: control/config.php:749
 msgid "Plot Color"
 msgstr ""
 
-#: control/config.php:740
+#: control/config.php:750
 msgid "Measuring Resistance"
 msgstr ""
 
-#: control/config.php:765
+#: control/config.php:775
 msgid "Browser Alarm"
 msgstr ""
 
-#: control/config.php:773
+#: control/config.php:783
 msgid "Alarm Notification Settings"
 msgstr ""
 
-#: control/config.php:775
+#: control/config.php:785
 msgid "Alarm Interval (s)"
 msgstr ""
 
-#: control/config.php:777
+#: control/config.php:787
 msgid "Status Interval (s)"
 msgstr ""
 
-#: control/config.php:779
+#: control/config.php:789
 msgid "Over Temp"
 msgstr ""
 
-#: control/config.php:780
+#: control/config.php:790
 msgid "Under Temp"
 msgstr ""
 
-#: control/config.php:781
+#: control/config.php:791
 msgid "Status"
 msgstr ""
 
-#: control/config.php:782
+#: control/config.php:792
 msgid "Message"
 msgstr ""
 
-#: control/config.php:787
+#: control/config.php:797
 msgid "Send Test Message"
 msgstr ""
 
-#: control/config.php:796
+#: control/config.php:806
 msgid "Email Notification Settings"
 msgstr ""
 
-#: control/config.php:797
+#: control/config.php:807
 msgid "TLS encryption"
 msgstr ""
 
-#: control/config.php:798
+#: control/config.php:808
 msgid "Enable Email Notification"
 msgstr ""
 
-#: control/config.php:801
+#: control/config.php:811
 msgid "Authentication"
 msgstr ""
 
-#: control/config.php:803
+#: control/config.php:813
 msgid "To"
 msgstr ""
 
-#: control/config.php:804
+#: control/config.php:814
 msgid "From"
 msgstr ""
 
-#: control/config.php:805
+#: control/config.php:815
 msgid "Subject"
 msgstr ""
 
-#: control/config.php:809
+#: control/config.php:819
 msgid "Server"
 msgstr ""
 
-#: control/config.php:811
+#: control/config.php:821
 msgid "Password"
 msgstr ""
 
-#: control/config.php:813
+#: control/config.php:823
 msgid "Username"
 msgstr ""
 
-#: control/config.php:823
+#: control/config.php:833
 msgid "Telegram Settings"
 msgstr ""
 
-#: control/config.php:825
+#: control/config.php:835
 msgid "Token"
 msgstr ""
 
-#: control/config.php:827
+#: control/config.php:837
 msgid "Chat-ID"
 msgstr ""
 
-#: control/config.php:829
+#: control/config.php:839
 msgid "Enable Telegram"
 msgstr ""
 
-#: control/config.php:838
+#: control/config.php:848
 msgid "Push Notification Settings"
 msgstr ""
 
-#: control/config.php:839
+#: control/config.php:849
 msgid "Enable Push Notification"
 msgstr ""
 
-#: control/config.php:842
+#: control/config.php:852
 msgid "URL"
 msgstr ""
 
-#: control/config.php:843
+#: control/config.php:853
 msgid "Body"
 msgstr ""
 
-#: control/config.php:854
+#: control/config.php:864
 msgid "Chart Settings"
 msgstr ""
 
-#: control/config.php:856
+#: control/config.php:866
 msgid "Chart Name"
 msgstr ""
 
-#: control/config.php:858
+#: control/config.php:868
 msgid "Enable Chart"
 msgstr ""
 
-#: control/config.php:860
+#: control/config.php:870
 msgid "Chart Range"
 msgstr ""
 
-#: control/config.php:861
+#: control/config.php:871
 msgid "from"
 msgstr ""
 
-#: control/config.php:863
+#: control/config.php:873
 msgid "to"
 msgstr ""
 
-#: control/config.php:865
+#: control/config.php:875
 msgid "Show Legend"
 msgstr ""
 
-#: control/config.php:868
+#: control/config.php:878
 msgid "top left"
 msgstr ""
 
-#: control/config.php:869
+#: control/config.php:879
 msgid "top right"
 msgstr ""
 
-#: control/config.php:870
+#: control/config.php:880
 msgid "bottom left"
 msgstr ""
 
-#: control/config.php:871
+#: control/config.php:881
 msgid "bottom right"
 msgstr ""
 
-#: control/config.php:872
+#: control/config.php:882
 msgid "center left"
 msgstr ""
 
-#: control/config.php:873
+#: control/config.php:883
 msgid "center right"
 msgstr ""
 
-#: control/config.php:876
+#: control/config.php:886
 msgid "Chart Size"
 msgstr ""
 
-#: control/config.php:888
+#: control/config.php:898
 msgid "Enable Frame Legend"
 msgstr ""
 
-#: control/config.php:890
+#: control/config.php:900
 msgid "Pit out"
 msgstr ""
 
-#: control/config.php:903
+#: control/config.php:913
 msgid "Enable Pitmaster Chart"
 msgstr ""
 
-#: control/config.php:905
+#: control/config.php:915
 msgid "Pit setpoint"
 msgstr ""
 
-#: control/config.php:918
+#: control/config.php:928
 msgid "Pit 2 out"
 msgstr ""
 
-#: control/config.php:931
+#: control/config.php:941
 msgid "Enable Pitmaster 2 Chart"
 msgstr ""
 
-#: control/config.php:933
+#: control/config.php:943
 msgid "Pit 2 setpoint"
 msgstr ""
 
-#: control/config.php:952
+#: control/config.php:962
 msgid "Webcam Settings"
 msgstr ""
 
-#: control/config.php:956
+#: control/config.php:966
 msgid "Enable Webcam"
 msgstr ""
 
-#: control/config.php:958 control/config.php:971
+#: control/config.php:968 control/config.php:981
 msgid "Resolution"
 msgstr ""
 
-#: control/config.php:969
+#: control/config.php:979
 msgid "Enable Raspicam"
 msgstr ""
 
-#: control/config.php:982
+#: control/config.php:992
 msgid "Exposure"
 msgstr ""
 
-#: control/config.php:1004 control/config.php:1175
+#: control/config.php:1014 control/config.php:1185
 msgid "Temperature"
 msgstr ""
 
-#: control/config.php:1005
+#: control/config.php:1015
 msgid "Control Curve"
 msgstr ""
 
-#: control/config.php:1006
+#: control/config.php:1016
 msgid "Enable Pitmaster"
 msgstr ""
 
-#: control/config.php:1011 control/config.php:1015
+#: control/config.php:1021 control/config.php:1025
 msgid "Channel"
 msgstr ""
 
-#: control/config.php:1020
+#: control/config.php:1030
 msgid "Delay"
 msgstr ""
 
-#: control/config.php:1022
+#: control/config.php:1032
 msgid "Manual Control"
 msgstr ""
 
-#: control/config.php:1024
+#: control/config.php:1034
 msgid "PID Control"
 msgstr ""
 
-#: control/config.php:1026
+#: control/config.php:1036
 msgid "Open Lid detection"
 msgstr ""
 
-#: control/config.php:1028
+#: control/config.php:1038
 msgid "Kp"
 msgstr ""
 
-#: control/config.php:1030
+#: control/config.php:1040
 msgid "Ki"
 msgstr ""
 
-#: control/config.php:1032
+#: control/config.php:1042
 msgid "Kd"
 msgstr ""
 
-#: control/config.php:1034
+#: control/config.php:1044
 msgid "Kp_a"
 msgstr ""
 
-#: control/config.php:1036
+#: control/config.php:1046
 msgid "Ki_a"
 msgstr ""
 
-#: control/config.php:1038
+#: control/config.php:1048
 msgid "Kd_a"
 msgstr ""
 
-#: control/config.php:1043
+#: control/config.php:1053
 msgid "Type"
 msgstr ""
 
-#: control/config.php:1046
+#: control/config.php:1056
 msgid "Servo"
 msgstr ""
 
-#: control/config.php:1047
+#: control/config.php:1057
 msgid "PWM Fan"
 msgstr ""
 
-#: control/config.php:1048
+#: control/config.php:1058
 msgid "Fan"
 msgstr ""
 
-#: control/config.php:1049
+#: control/config.php:1059
 msgid "IO"
 msgstr ""
 
-#: control/config.php:1050
+#: control/config.php:1060
 msgid "IO with PWM"
 msgstr ""
 
-#: control/config.php:1052
+#: control/config.php:1062
 msgid "Servo Damper"
 msgstr ""
 
-#: control/config.php:1056
+#: control/config.php:1066
 msgid "Duty Cycle (%)"
 msgstr ""
 
-#: control/config.php:1064
+#: control/config.php:1074
 msgid "Servo Pulse (µs)"
 msgstr ""
 
-#: control/config.php:1069
+#: control/config.php:1079
 msgid "Reverse Drive"
 msgstr ""
 
-#: control/config.php:1071
+#: control/config.php:1081
 msgid "Reverse Servo"
 msgstr ""
 
-#: control/config.php:1073
+#: control/config.php:1083
 msgid "Damper control"
 msgstr ""
 
-#: control/config.php:1074
+#: control/config.php:1084
 msgid "offset"
 msgstr ""
 
-#: control/config.php:1076
+#: control/config.php:1086
 msgid "pitch"
 msgstr ""
 
-#: control/config.php:1078
+#: control/config.php:1088
 msgid "Servo deadband (%)"
 msgstr ""
 
-#: control/config.php:1080
+#: control/config.php:1090
 msgid "Rate limit (s)"
 msgstr ""
 
-#: control/config.php:1081
+#: control/config.php:1091
 msgid "rise"
 msgstr ""
 
-#: control/config.php:1083
+#: control/config.php:1093
 msgid "fall"
 msgstr ""
 
-#: control/config.php:1097
+#: control/config.php:1107
 msgid "General Settings"
 msgstr ""
 
-#: control/config.php:1099
+#: control/config.php:1109
 msgid "Hardware Version"
 msgstr ""
 
-#: control/config.php:1109
+#: control/config.php:1119
 msgid "Language"
 msgstr ""
 
-#: control/config.php:1121
+#: control/config.php:1131
 msgid "Unit"
 msgstr ""
 
-#: control/config.php:1128
+#: control/config.php:1138
 msgid "New Log File on Start"
 msgstr ""
 
-#: control/config.php:1130
+#: control/config.php:1140
 msgid "Auto-Check for Update"
 msgstr ""
 
-#: control/config.php:1132
+#: control/config.php:1142
 msgid "Show CPU Usage"
 msgstr ""
 
-#: control/config.php:1134
+#: control/config.php:1144
 msgid "Enable Sound"
 msgstr ""
 
-#: control/config.php:1136
+#: control/config.php:1146
 msgid "Beep at Start"
 msgstr ""
 
-#: control/config.php:1138
+#: control/config.php:1148
 msgid "Enable Maverick receiver"
 msgstr ""
 
-#: control/config.php:1141
+#: control/config.php:1151
 msgid "Enable TC add on"
 msgstr ""
 
-#: control/config.php:1144
+#: control/config.php:1154
 msgid "View Channels"
 msgstr ""
 
-#: control/config.php:1160
+#: control/config.php:1170
 msgid "Display Einstellungen"
 msgstr ""
 
-#: control/config.php:1162
+#: control/config.php:1172
 msgid "LCD Display"
 msgstr ""
 
-#: control/config.php:1164
+#: control/config.php:1174
 msgid "LCD Type"
 msgstr ""
 
-#: control/config.php:1171
+#: control/config.php:1181
 msgid "Start Page"
 msgstr ""
 
-#: control/config.php:1174
+#: control/config.php:1184
 msgid "Menu"
 msgstr ""
 
-#: control/config.php:1178
+#: control/config.php:1188
 msgid "Force update!"
 msgstr ""
 
-#: control/config.php:1186
+#: control/config.php:1189
+msgid "Calibrate Display!"
+msgstr ""
+
+#: control/config.php:1197
 msgid "Logging settings"
 msgstr ""
 
-#: control/config.php:1188
+#: control/config.php:1199
 msgid "Logging level pitmaster"
 msgstr ""
 
-#: control/config.php:1196
+#: control/config.php:1207
 msgid "Logging level watch dog"
 msgstr ""
 
-#: control/config.php:1204
+#: control/config.php:1215
 msgid "Logging level main program"
 msgstr ""
 
-#: control/config.php:1212
+#: control/config.php:1223
 msgid "Logging level display"
 msgstr ""
 
-#: control/config.php:1220
+#: control/config.php:1232
 msgid "Show update log"
 msgstr ""
 
-#: control/config.php:1221
+#: control/config.php:1235
 msgid "Show logfile"
 msgstr ""
 
-#: control/config.php:1245
+#: control/config.php:1260
 msgid "File upload"
 msgstr ""
 
-#: control/config.php:1250
+#: control/config.php:1265
 msgid "Config file upload"
 msgstr ""
 
-#: control/config.php:1252
-msgid "Select config file for upload"
+#: control/config.php:1267
+msgid "Config file:"
+msgstr ""
+
+#: control/config.php:1270
+msgid "Download config"
 msgstr ""
 
 #: control/new_log_file.php:23
@@ -536,7 +568,7 @@ msgstr ""
 msgid "No new log file has been created"
 msgstr ""
 
-#: control/new_log_file.php:58 header.php:114
+#: control/new_log_file.php:58 header.php:118
 msgid "Create New Log File"
 msgstr ""
 
@@ -643,23 +675,23 @@ msgstr ""
 msgid "Updates have been deactivated"
 msgstr ""
 
-#: header.php:82
+#: header.php:86
 msgid "Reboot"
 msgstr ""
 
-#: header.php:83
+#: header.php:87
 msgid "Shutdown"
 msgstr ""
 
-#: header.php:96
+#: header.php:100
 msgid "WiFi Settings"
 msgstr ""
 
-#: header.php:102
+#: header.php:106
 msgid "Log File"
 msgstr ""
 
-#: header.php:111
+#: header.php:115
 msgid "Temperature Graph"
 msgstr ""
 
