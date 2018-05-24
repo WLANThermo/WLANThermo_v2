@@ -1226,7 +1226,7 @@ def NX_display():
                         i = 0
                         while i in range(45) and not stop_event.is_set():
                             interfaces = lan_getvalues()
-                            if 'wlan0' in interfaces:
+                            if 'wlan0' in interfaces and interfaces['wlan0']['ip'] != '000.000.000.000':
                                 # wlan0 hat eine IP-Adresse
                                 NX_sendvalues({'main.result.txt:20': 'IP:' + interfaces['wlan0']['ip']})
                                 NX_sendcmd('page result')
