@@ -1,3 +1,10 @@
+wlanthermo (2.8.0~rc1-0) stretch; urgency=medium
+
+  * FIX: Display issues (Pitmaster type select not shown)
+  * FIX: WLAN connect issues
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Thu, 24 May 2018 14:45:00 +0200
+ 
 wlanthermo (2.8.0~rc0-0) stretch; urgency=medium
 
   * ADD: Button for display calibration

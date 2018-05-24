@@ -862,6 +862,8 @@ def lan_getvalues():
         retvalue = os.popen("LANG=C ifconfig {} 2>/dev/null | awk '/inet / {{print $2}}'".format(interface)).readlines()
         if (len(retvalue)!=0):
             interfaces[interface] = {'name': interface, 'ip': retvalue[0].strip()}
+        else:
+            interfaces[interface] = {'name': interface, 'ip': '000.000.000.000'}
     return interfaces
 
 
@@ -875,7 +877,7 @@ def wlan_getsignal(interface):
                 (val, div) = quality.split('/')
                 quality = int(round(float(val) / float(div) * 100.0))
             return quality
-    return None
+    return 0
 
 
 def wlan_getssids():
@@ -889,10 +891,11 @@ def wlan_getssids():
     return ssids
 
 
-def wlan_reconnect():
-    os.system('ifdown wlan0')
+def wlan_reconnect(interface='wlan0'):
+    os.system('ifconfig {} down'.format(interface))
     time.sleep(1)
-    os.system('ifup wlan0')
+    os.system('wpa_cli -i {} reconfigure'.format(interface))
+    os.system('ifconfig {} up'.format(interface))
 
 
 def wlan_setpassphrase(ssid, psk):
@@ -969,7 +972,7 @@ def NX_display():
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
-    nextion_versions = ['v2.8', 'v2.7']
+    nextion_versions = ['v2.9', 'v2.8', 'v2.7']
     
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
