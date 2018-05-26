@@ -1,3 +1,10 @@
+wlanthermo (2.8.0~rc2-0) stretch; urgency=medium
+
+  * FIX: Display issues (Channel 11 not shown correctly on display)
+  * FIX: Sometimes channels got mixed up
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Thu, 26 May 2018 22:15:00 +0200
+ 
 wlanthermo (2.8.0~rc1-0) stretch; urgency=medium
 
   * FIX: Display issues (Pitmaster type select not shown)
