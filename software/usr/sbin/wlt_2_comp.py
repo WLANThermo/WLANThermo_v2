@@ -527,7 +527,6 @@ try:
             Email_alert = new_config.getboolean('Email','email_alert')
             Push_alert = new_config.getboolean('Push', 'push_on')
             Telegram_alert = new_config.getboolean('Telegram', 'telegram_alert')
-            App_alert = new_config.getboolean('App', 'app_alert')
 
             temp_unit = new_config.get('locale', 'temp_unit')
 
@@ -729,38 +728,6 @@ try:
                     logger.error(u'Telegram HTTP error: ' + str(e.code) + u' - ' + e.read(500))
                 except urllib2.URLError, e:
                     logger.error(u'Telegram URLError: ' + str(e.reason))  
-                    
-            if App_alert:
-                # Wenn konfiguriert, Alarm per Appnachricht schicken
-                App_inst_id = new_config.get('App', 'app_inst_id')
-                App_device = new_config.get('App', 'app_device')
-                App_inst_id2 = new_config.get('App', 'app_inst_id2')
-                App_device2 = new_config.get('App', 'app_device2')
-                App_inst_id3 = new_config.get('App', 'app_inst_id3')
-                App_device3 = new_config.get('App', 'app_device3')
-                App_sound = new_config.get('App', 'app_sound')
-                
-                if App_inst_id3 != '':
-                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?sound={sound}&inst_id={inst_id}&device={device}&inst_id2={inst_id2}&device2={device2}&inst_id3={inst_id3}&device3={device3}&message={messagetext}'
-                elif App_inst_id2 != '':
-                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?sound={sound}&inst_id={inst_id}&device={device}&inst_id2={inst_id2}&device2={device2}&message={messagetext}'
-                else:
-                    App_URL = 'http://weyerstall.de/WlanthermoPush.php?sound={sound}&inst_id={inst_id}&device={device}&message={messagetext}'
-
-                alarm_message2 = urllib.quote(alarm_message.encode('utf-8'))
-                url = App_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), sound=App_sound, inst_id=App_inst_id, device=App_device, inst_id2=App_inst_id2, device2=App_device2, inst_id3=App_inst_id3, device3=App_device3)
-                try: 
-                    logger.debug(u'App GET request, URL: ' + url)
-                    response = urllib2.urlopen(url)
-                    
-                    logger.info(u'App HTTP return code: ' + str(response.getcode()))
-                    logger.debug(u'App URL: ' + response.geturl())
-                    logger.debug(u'App result: ' + response.read(500))
-
-                except urllib2.HTTPError, e:
-                    logger.error(u'App HTTP error: ' + str(e.code) + u' - ' + e.read(500))
-                except urllib2.URLError, e:
-                    logger.error(u'App URLError: ' + str(e.reason))
                     
             if Push_alert:
                 # Wenn konfiguriert, Alarm per Pushnachricht schicken
