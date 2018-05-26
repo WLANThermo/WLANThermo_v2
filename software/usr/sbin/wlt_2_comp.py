@@ -383,10 +383,8 @@ pit2_tempfile = Config.get('filepath','pitmaster2')
 sound_on = Config.getboolean('Sound','Beeper_enabled')
 sound_on_start = Config.getboolean('Sound','beeper_on_start')
 
-#Einlesen der Software-Version
-command = 'cat /var/www/header.php | grep \'] = "V\' | cut -c31-38'
-
-build = os.popen(command).read()
+# Software-Version, wird beim build gesetzt
+build = 'XXX_VERSION_XXX'
 
 #Einlesen der Logging-Option
 newfile = Config.getboolean('Logging','write_new_log_on_restart')
