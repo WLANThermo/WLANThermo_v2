@@ -358,7 +358,7 @@ enable_max31855 = Config.getboolean('Hardware', 'max31855')
 current_temp = Config.get('filepath','current_temp')
 
 # Kanalvariablen-Initialisierung
-if version == u'miniV2' and enable_max31855:
+if version == u'miniV2':
     channel_count = 12
 else:
     channel_count = 10
@@ -564,7 +564,7 @@ try:
         for kanal in xrange(channel_count):
             Temp = 0.0
             WerteArray = []
-            if not kanal > 7:
+            if kanal <= 7:
                 median_value = median_filter(samples[kanal])
                 if (median_value > 15) and (median_value < 4080):
                     if (sensorname[kanal] != 'KTYPE'):
@@ -583,12 +583,10 @@ try:
                     warnung = 'Channel:{kanal} variance: {variance} in {iterations}, median @ {median_value}!'.format(kanal=kanal, variance=variance, iterations=iterations, median_value=median_value)
                     logger.warning(warnung)
                 logger.debug(u'Channel {}, MCP3128 {}, temperature {}'.format(kanal, kanal, Temperatur[kanal]))
-            elif version == u'miniV2'  and enable_max31855 and kanal <= 9:
-                Temperatur[kanal] = get_channel_max31855(kanal - 8)
-                logger.debug(u'Channel {}, MAX31855 {}, temperature {}'.format(kanal, kanal - 8, Temperatur[kanal]))
-            else:
+            elif kanal <= 9:
                 if maverick is None:
                     Temperatur[kanal] = None
+                    logger.debug(u'Channel {},disabled').format(kanal)
                 else:
                     logger.debug(u'Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - channel_count + 3, Temperatur[kanal]))
                     maverick_value = maverick['temperature_' + str(kanal - channel_count + 3)]
@@ -596,6 +594,16 @@ try:
                         Temperatur[kanal] = None
                     else:
                         Temperatur[kanal] = maverick_value
+            elif version == u'miniV2':
+                if enable_max31855:
+                    Temperatur[kanal] = get_channel_max31855(kanal - 10)
+                    logger.debug(u'Channel {}, MAX31855 {}, temperature {}'.format(kanal, kanal - 10, Temperatur[kanal]))
+                else:
+                    Temperatur[kanal] = None
+            else:
+                logger.error(u'Channel {} checked without a reason!'.format(kanal))
+                Temperatur[kanal] = None
+                
 
             alarm_values = dict()
             if temp_unit == 'celsius':

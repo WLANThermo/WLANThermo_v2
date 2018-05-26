@@ -106,7 +106,7 @@ logger.info(_(u'Display started!'))
 pid = str(os.getpid())
 pidfilename = '/var/run/' + os.path.basename(__file__).split('.')[0] + '.pid'
 
-if Config.get('Hardware', 'version') == u'miniV2' and Config.getboolean('Hardware', 'max31855'):
+if Config.get('Hardware', 'version') == u'miniV2':
     channel_count = 12
 else:
     channel_count = 10

@@ -972,7 +972,7 @@ def NX_display():
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
-    nextion_versions = ['v2.9', 'v2.8', 'v2.7']
+    nextion_versions = ['v2.10']
     
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
@@ -1020,11 +1020,17 @@ def NX_display():
     elif options['hw_version'] == 'miniplus':
         pitmaster_damper = True
 
-    if options['hw_version'] == 'miniV2' and options['max31855']:
-        channel_count += 2
-        hwchannel_count += 2
     if options['maverick_enabled'] == True:
         channel_count += 2
+    
+    if options['hw_version'] == 'miniV2':
+        hwchannel_count += 2
+        if options['max31855']:
+            # Always show 12 channels as:
+            #  9/10 = Maverick
+            # 11/12 = TC Add On (MAX31855)
+            channel_count = 12
+
 
     NX_sendvalues({'boot.text.txt:35':_(u'Connection established!')})
     NX_sendvalues({'boot.version.txt:15':version})
@@ -1502,17 +1508,23 @@ def NX_display():
             new_pitmaster_damper = False
             new_channel_count = 8
             new_hwchannel_count = 10
+            
+            if options['maverick_enabled'] == True:
+                new_channel_count += 2
+                
             if options['hw_version'] == 'miniV2':
                 new_pitmaster_count = 2
                 new_pitmaster_damper = True
+                new_hwchannel_count += 2
+                if options['max31855']:
+                    # Always show 12 channels as:
+                    #  9/10 = Maverick
+                    # 11/12 = TC Add On (MAX31855)
+                    new_channel_count = 12
+                    
             elif options['hw_version'] == 'miniplus':
                 new_pitmaster_damper = True
 
-            if options['hw_version'] == 'miniV2' and options['max31855']:
-                new_channel_count += 2
-                new_hwchannel_count += 2
-            if options['maverick_enabled'] == True:
-                new_channel_count += 2
                 
             if channel_count != new_channel_count:
                 values['main.chmax.val'] = new_channel_count
