@@ -1,3 +1,9 @@
+wlanthermo (2.8.0~rc3-0) stretch; urgency=medium
+
+  * FIX: Syntax error
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Thu, 26 May 2018 23:20:00 +0200
+ 
 wlanthermo (2.8.0~rc2-0) stretch; urgency=medium
 
   * FIX: Display issues (Channel 11 not shown correctly on display)

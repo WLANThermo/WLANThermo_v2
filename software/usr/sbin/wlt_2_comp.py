@@ -586,7 +586,7 @@ try:
             elif kanal <= 9:
                 if maverick is None:
                     Temperatur[kanal] = None
-                    logger.debug(u'Channel {},disabled').format(kanal)
+                    logger.debug(u'Channel {}, disabled'.format(kanal))
                 else:
                     logger.debug(u'Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - channel_count + 3, Temperatur[kanal]))
                     maverick_value = maverick['temperature_' + str(kanal - channel_count + 3)]
@@ -600,6 +600,7 @@ try:
                     logger.debug(u'Channel {}, MAX31855 {}, temperature {}'.format(kanal, kanal - 10, Temperatur[kanal]))
                 else:
                     Temperatur[kanal] = None
+                    logger.debug(u'Channel {}, disabled'.format(kanal))
             else:
                 logger.error(u'Channel {} checked without a reason!'.format(kanal))
                 Temperatur[kanal] = None
