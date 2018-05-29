@@ -353,6 +353,7 @@ IO          = 2
 #Hardwareversion einlesen
 version = Config.get('Hardware','version')
 enable_max31855 = Config.getboolean('Hardware', 'max31855')
+enable_maverick = Config.getboolean('ToDo', 'maverick_enabled')
 
 #Log Dateinamen aus der config lesen
 current_temp = Config.get('filepath','current_temp')
@@ -451,8 +452,14 @@ try:
         alarm_neu = False
         alarm_repeat = False
         alarme = []
-        statusse = []
-        maverick = read_maverick()
+        statusse = [
+        
+        if enable_maverick:
+            logger.info(u'Reading from Maverick receiver...')
+            maverick = read_maverick()
+        else:
+            logger.info(u'Maverick is disabled')
+            maverick = None
         
         Temperatur_string = [None for i in xrange(channel_count)]
         Temperatur_alarm = ['er' for i in xrange(channel_count)]
@@ -584,7 +591,7 @@ try:
             elif kanal <= 9:
                 if maverick is None:
                     Temperatur[kanal] = None
-                    logger.debug(u'Channel {}, disabled'.format(kanal))
+                    logger.debug(u'Channel {}, disabled or not available'.format(kanal))
                 else:
                     logger.debug(u'Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - 8, Temperatur[kanal]))
                     maverick_value = maverick['temperature_' + str(kanal - 8)]
