@@ -2,7 +2,7 @@
 # coding=utf-8
 
 # Copyright (c) 2013, 2014, 2015 Armin Thinnes
-# Copyright (c) 2015, 2016 Björn Schrader
+# Copyright (c) 2015 - 2018 Björn Schrader
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -586,8 +586,8 @@ try:
                     Temperatur[kanal] = None
                     logger.debug(u'Channel {}, disabled'.format(kanal))
                 else:
-                    logger.debug(u'Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - channel_count + 3, Temperatur[kanal]))
-                    maverick_value = maverick['temperature_' + str(kanal - channel_count + 3)]
+                    logger.debug(u'Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - 8, Temperatur[kanal]))
+                    maverick_value = maverick['temperature_' + str(kanal - 8)]
                     if maverick_value == '':
                         Temperatur[kanal] = None
                     else:
