@@ -452,7 +452,7 @@ try:
         alarm_neu = False
         alarm_repeat = False
         alarme = []
-        statusse = [
+        statusse = []
         
         if enable_maverick:
             logger.info(u'Reading from Maverick receiver...')
