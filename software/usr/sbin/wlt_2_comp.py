@@ -593,8 +593,8 @@ try:
                     Temperatur[kanal] = None
                     logger.debug(u'Channel {}, disabled or not available'.format(kanal))
                 else:
-                    logger.debug(u'Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - 8, Temperatur[kanal]))
-                    maverick_value = maverick['temperature_' + str(kanal - 8)]
+                    logger.debug(u'Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - 7, Temperatur[kanal]))
+                    maverick_value = maverick['temperature_' + str(kanal - 7)]
                     if maverick_value == '':
                         Temperatur[kanal] = None
                     else:
