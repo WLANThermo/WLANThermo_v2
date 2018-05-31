@@ -1,3 +1,9 @@
+wlanthermo (2.8.0~rc4-0) stretch; urgency=medium
+
+  * FIX: Maverick not working
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Thu, 31 May 2018 10:35:00 +0200
+ 
 wlanthermo (2.8.0~rc3-0) stretch; urgency=medium
 
   * FIX: Syntax error
