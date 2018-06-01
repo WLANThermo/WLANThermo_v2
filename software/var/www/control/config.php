@@ -1257,28 +1257,34 @@ for ($pitmaster = 0; $pitmaster < $_SESSION["pitmaster_count"]; $pitmaster++) {
 			</table>
 		<br>		
 	</form>
-    <h1><?php echo gettext("File upload");?></h1>
-    <div class="config small">
+	<h1><?php echo gettext("Config file upload/download");?></h1>
 	<form enctype="multipart/form-data" action="config.php" method="POST">
-		<input type="hidden" name="upload_file" value="" />
-		<input type="hidden" name="MAX_FILE_SIZE" value="10000" />
-				<div class="headline"><?php echo gettext("Config file upload");?></div>
-				<div class="headicon"><img src="../images/icons16x16/file_save.png" alt=""></div>
-				<div class="config_text row_1 col_1"><?php echo gettext("Config file:");?></div>
-				<div class="config_text row_1 col_4"><input name="configfile" type="file" /></div>
-                <div class="config_text row_2 col_4">
-                    <button type="reset" onclick="location.href='../conf/WLANThermo.conf'" class="wide"><?php echo gettext("Download config")?></button>
-                </div>
+	<div class="config small">
+	<input type="hidden" name="upload_file" value="" />
+	<input type="hidden" name="MAX_FILE_SIZE" value="10000" />
+		<div class="headline"><?php echo gettext("Config file upload");?></div>
+		<div class="headicon"><img src="../images/icons16x16/file_save.png" alt=""></div>
+		<div class="config_text row_1 col_1"><?php echo gettext("Config file:");?></div>
+		<div class="config_text row_1 col_4"><input name="configfile" type="file" /></div>
+		<div class="config_text row_2 col_4">
+			<button type="reset" onclick="location.href='../conf/WLANThermo.conf'" class="wide">
+				<?php echo gettext("Download config")?>
+			</button>
+		</div>
+	</div>
+	<br>
+	<table align="center" width="80%">
+		<tr>
+			<td width="20%"></td>
+			<td align="center">
+				<input type="submit" class=button_yes value="">
+				<input type="submit" class=button_no name="back"  value="">
+			</td>
+			<td width="20%"></td>
+		</tr>
+	</table>
+	<br>
 	</form>
-    </div>
-    		<br>
-			<table align="center" width="80%"><tr><td width="20%"></td>
-				<td align="center">
-                    <input type="submit" class=button_yes value="" />
-                    <input type="submit" class=button_no name="back"  value=""> </td>
-				<td width="20%"></td></tr>
-			</table>
-		<br>
 </div>
 <?php
 	}
