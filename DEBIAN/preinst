@@ -33,13 +33,19 @@ else
     echo "Serial Port was already enabled."
 fi
 
+MD5=$(/usr/bin/md5sum /etc/locale.gen)
 echo "Enabling locales"
 echo "----------------------------------------------------------"
 sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(de_DE.UTF-8 UTF-8.*)$/\2/m"
 sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(en_GB.UTF-8 UTF-8.*)$/\2/m"
 sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(en_US.UTF-8 UTF-8.*)$/\2/m"
 sed -i.old /etc/locale.gen -re "s/^(\s*#\s*)(fr_FR.UTF-8 UTF-8.*)$/\2/m"
-/usr/sbin/locale-gen
+
+if [ "$MD5" != "$(/usr/bin/md5sum /etc/locale.gen)" ]; then
+  echo "Generating locales"
+  echo "----------------------------------------------------------"
+  /usr/sbin/locale-gen
+fi
 
 echo "Install additional Python packages"
 echo "----------------------------------------------------------"
