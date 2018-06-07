@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WLANThermo 2.8.0\n"
-"POT-Creation-Date: 2018-05-22 13:59+0200\n"
-"PO-Revision-Date: 2018-05-22 14:02+0200\n"
+"POT-Creation-Date: 2018-06-07 16:03+0200\n"
+"PO-Revision-Date: 2018-06-07 16:04+0200\n"
 "Last-Translator: Björn Schrader <wlanthermo@bjoern-schrader.de>\n"
 "Language-Team: WLANThermo Team\n"
 "Language: de_DE\n"
@@ -53,7 +53,7 @@ msgid "Display calibration is started..."
 msgstr "Kalibrierung des Displays wird gestartet..."
 
 # header.php - Tooltip
-#: control/config.php:730 header.php:103
+#: control/config.php:730 header.php:102
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -531,8 +531,8 @@ msgid "Show logfile"
 msgstr "Logfile anzeigen"
 
 #: control/config.php:1260
-msgid "File upload"
-msgstr "Datei hochladen"
+msgid "Config file upload/download"
+msgstr "Konfiguration laden/speichern"
 
 #: control/config.php:1265
 msgid "Config file upload"
@@ -542,7 +542,7 @@ msgstr "Konfigurationsdatei hochladen"
 msgid "Config file:"
 msgstr "Konfigurationsdatei:"
 
-#: control/config.php:1270
+#: control/config.php:1271
 msgid "Download config"
 msgstr "Konfiguration herunterladen"
 
@@ -571,7 +571,7 @@ msgstr "Neues Logfile wird angelegt"
 msgid "No new log file has been created"
 msgstr "Verlassen der Seite ohne ein neues Logfile anzulegen"
 
-#: control/new_log_file.php:58 header.php:118
+#: control/new_log_file.php:58 header.php:117
 msgid "Create New Log File"
 msgstr "NEUES LOGFILE ERSTELLEN"
 
@@ -679,24 +679,24 @@ msgstr "Updates installieren"
 msgid "Updates have been deactivated"
 msgstr "Updates wurden deaktiviert"
 
-#: header.php:86
+#: header.php:85
 msgid "Reboot"
 msgstr "Neu starten"
 
 # header.php
-#: header.php:87
+#: header.php:86
 msgid "Shutdown"
 msgstr "Herunterfahren"
 
-#: header.php:100
+#: header.php:99
 msgid "WiFi Settings"
 msgstr "WiFi Einstellungen"
 
-#: header.php:106
+#: header.php:105
 msgid "Log File"
 msgstr "Log Datei"
 
-#: header.php:115
+#: header.php:114
 msgid "Temperature Graph"
 msgstr "Temperaturdiagramm"
 
@@ -827,6 +827,9 @@ msgstr "Herunterladen"
 #: thermolog.php:104
 msgid "view plot"
 msgstr "Plot anzeigen"
+
+#~ msgid "File upload"
+#~ msgstr "Datei hochladen"
 
 #~ msgid "Select config file for upload"
 #~ msgstr "Konfigurationsdatei zum hochladen auswählen"
