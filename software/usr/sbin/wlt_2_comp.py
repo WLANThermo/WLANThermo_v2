@@ -225,7 +225,7 @@ def init_softspi_max31855_2():
     return retval == 0
 
 
-def temperatur_sensor (Rt, typ, unit): #Ermittelt die Temperatur
+def temperatur_sensor (Rt, typ): #Ermittelt die Temperatur
     name = Config_Sensor.get(typ,'name')
     
     T = None
@@ -253,11 +253,7 @@ def temperatur_sensor (Rt, typ, unit): #Ermittelt die Temperatur
         except:
             pass
     
-    if T is not None:
-        if unit == 'celsius':
-            return T
-        elif unit == 'fahrenheit':
-            return T * 1.8 +32
+    return T
 
 def dateiname():
     # Zeitstring fuer eindeutige Dateinamen erzeugen
@@ -574,13 +570,10 @@ try:
                 if (median_value > 15) and (median_value < 4080):
                     if (sensorname[kanal] != 'KTYPE'):
                             Rtheta = messwiderstand[kanal]*((4096.0/median_value) - 1)
-                            Temperatur[kanal] = round(temperatur_sensor(Rtheta, sensortyp[kanal], temp_unit), 2)
+                            Temperatur[kanal] = round(temperatur_sensor(Rtheta, sensortyp[kanal]), 2)
                     else:
                         # AD595 = 10mV/°C
-                        if temp_unit == 'celsius':
-                            Temperatur[kanal] = median_value * 330 / 4096
-                        elif temp_unit == 'fahrenheit':
-                            Temperatur[kanal] = (median_value * 330 / 4096) * 1.8 + 32
+                        Temperatur[kanal] = median_value * 330 / 4096
                 else:
                     Temperatur[kanal] = None
                 variance = statistics.pvariance(samples[kanal])
@@ -609,13 +602,14 @@ try:
             else:
                 logger.error(u'Channel {} checked without a reason!'.format(kanal))
                 Temperatur[kanal] = None
-                
 
             alarm_values = dict()
             if temp_unit == 'celsius':
                 alarm_values['temp_unit'] = '°C'
                 alarm_values['temp_unit_long'] = _(u'degrees Celsius')
             elif temp_unit == 'fahrenheit':
+                if Temperatur[kanal] is not None:
+                    Temperatur[kanal] = Temperatur[kanal] * 1.8 + 32
                 alarm_values['temp_unit'] = '°F'
                 alarm_values['temp_unit_long'] = _(u'degrees Fahrenheit')
             alarm_values['kanal'] = kanal
