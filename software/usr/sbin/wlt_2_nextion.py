@@ -972,7 +972,7 @@ def NX_display():
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
-    nextion_versions = ['v2.10']
+    nextion_versions = ['v2.11']
     
     # Version des Displays prüfen
     display_version = str(NX_getvalue('main.version.txt'))
@@ -1292,16 +1292,16 @@ def NX_display():
                 if event['data']['area'] == 5:
                     if event['data']['id'] == 0:
                         if event['data']['action'] == 0:
-                            logger.debug(_(u'Shutting down...'))
+                            logger.info(_(u'Shutting down...'))
                             todo_setvalues(pi_down = 1)
                     elif event['data']['id'] == 1:
                         if event['data']['action'] == 0:
-                            logger.debug(_(u'Rebooting...'))
+                            logger.info(_(u'Rebooting...'))
                             todo_setvalues(pi_reboot = 1)
                     elif event['data']['id'] == 3:
                         if event['data']['action'] == 0:
                             # WLAN scannen
-                            logger.debug(_(u'Scanning WLANs'))
+                            logger.info(_(u'Scanning WLANs'))
                             ssids = wlan_getssids()
                             ssids_i = 0
                             logger.debug('SSIDs:' + str(ssids))
@@ -1327,12 +1327,12 @@ def NX_display():
                             NX_sendvalues({'main.ssid.txt:35': ssids[ssids_i]})
                     elif event['data']['id'] == 4:
                         if event['data']['action'] == 0:
-                            logger.debug(_(u'Create new logfile!'))
+                            logger.info(_(u'Create new logfile!'))
                             todo_setvalues(create_new_log = 1)
                 elif event['data']['area'] == 6:
                     if event['data']['id'] == 0:
                         if event['data']['action'] == 0:
-                            logger.debug(_(u'Alert acknowledged!'))
+                            logger.info(_(u'Alert acknowledged!'))
                             alert_setack()
             NX_eventq.task_done()
         elif temps_event.is_set():

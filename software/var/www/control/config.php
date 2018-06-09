@@ -713,6 +713,7 @@ if (isset($_POST["upload_file"])) {
 	echo "  <head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"></head>
 		<body> <h2>" . gettext("Update flag has been set...") . "</h2></body>";
 	echo "</div>";
+    $_SESSION["nextionupdate"] = True;
 } elseif(isset($_GET["calibrate-display"]) && $_GET["calibrate-display"] == "true") {
 	$ini['ToDo']['calibrate_display'] = 'True';
 	write_ini($inipath, $ini);
