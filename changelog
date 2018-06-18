@@ -1,3 +1,9 @@
+wlanthermo (2.8.0-0) stretch; urgency=medium
+
+  * FIX: Config file with missing options don´t get parsed
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Mon, 18 Jun 2018 23:10:00 +0200
+ 
 wlanthermo (2.8.0~rc6-0) stretch; urgency=medium
 
   * FIX: Conversion to Fahrenheit not working correctly
