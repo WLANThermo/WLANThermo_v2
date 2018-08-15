@@ -57,7 +57,7 @@ def config_write(configfile, config, oldconfig):
 def update_settings(section_name, key, value):
     if section_name in setting_updates:
         if key in setting_updates[section_name]:
-            return re.sub(setting_updates[section_name][key][0], setting_updates[section_name][key][0][1], value)
+            return re.sub(setting_updates[section_name][key][0], setting_updates[section_name][key][1], value)
     return value
 
 if __name__ == "__main__":
