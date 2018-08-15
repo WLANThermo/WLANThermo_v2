@@ -27,6 +27,8 @@ import re
 
 setting_updates = {'Pitmaster':
                     {'pit_iterm_min':('^35$','0')},
+                   'Display':
+                    {'serialdevice': ('^/dev/ttyAMA0$', r'/dev/serial0')}
                   }
 
 def get_random_filename(filename):
