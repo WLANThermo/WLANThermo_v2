@@ -51,6 +51,13 @@ Used in these thermometers:
 
 Not to be confused with the new iGrill 2.
 To be used as a meat probe as designed or as grill chamber probe.
+## Inkbird
+Used in these thermometers:
+* Inbird IBT-2X
+* Inbird IBT-4X
+* Inbird IBT-6X
+
+Available as a meat probe or as a shorter grill chamber probe with attachedcrocodile clip.
 ## iGrill2
 Used in these thermometers:
 * iDevices iGrill2
