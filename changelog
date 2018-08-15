@@ -1,3 +1,9 @@
+wlanthermo (2.8.1~beta3-0) stretch-dev; urgency=medium
+
+  * FIX: Add dependency to watchdog unit file
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Wed, 15 Aug 2018 20:15:00 +0200
+ 
 wlanthermo (2.8.1~beta2-0) stretch-dev; urgency=medium
 
   * FIX: Fix config file update
