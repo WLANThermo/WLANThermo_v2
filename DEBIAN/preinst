@@ -70,10 +70,7 @@ fi
 if [ -f /var/www/conf/WLANThermo.conf ]
 then
     echo Sichere alte Konfiguration
-    cp /var/www/conf/WLANThermo.conf /var/www/conf/WLANThermo.conf.old_
-    echo 'Patche alte Konfiguration ("pit_iterm_min")'
-    sudo sed -i.bak "s/pit_iterm_min = 35/pit_iterm_min = 0/g" /var/www/conf/WLANThermo.conf.old_
-    mv /var/www/conf/WLANThermo.conf.old_ /var/www/conf/WLANThermo.conf.old
+    cp /var/www/conf/WLANThermo.conf /var/www/conf/WLANThermo.conf.old
     cp /var/www/conf/sensor.conf /var/www/conf/sensor.conf.old
 else
     echo Noch keine Konfiguration vorhanden!

@@ -23,6 +23,11 @@ import codecs
 import random
 import string
 import argparse
+import re
+
+setting_updates = {'Pitmaster':
+                    {'pit_iterm_min':('^35$','0')},
+                  }
 
 def get_random_filename(filename):
     return filename + '_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(12))
@@ -38,7 +43,7 @@ def config_write(configfile, config, oldconfig):
             new_ini.write(u'[{section_name}]\n'.format(section_name=section_name))
             for (key, value) in config.items(section_name):
                 try:
-                    new_ini.write(u'{key} = {value}\n'.format(key=key, value=oldconfig.get(section_name, key)))
+                    new_ini.write(u'{key} = {value}\n'.format(key=key, value=update_settings(section_name, key, oldconfig.get(section_name, key))))
                 except (configparser.NoSectionError, configparser.NoOptionError):
                     new_ini.write(u'{key} = {value}\n'.format(key=key, value=value))
             new_ini.write('\n')
@@ -46,6 +51,12 @@ def config_write(configfile, config, oldconfig):
         os.fsync(new_ini.fileno())
         new_ini.close()
         os.rename(tmp_filename, configfile)
+
+def update_settings(section_name, key, value):
+    if section_name in setting_updates:
+        if key in setting_updates[section_name]:
+            return re.sub(setting_updates[section_name][key][0], setting_updates[section_name][key][0][1], value)
+    return value
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Update current WLANThermo configuration from file')
