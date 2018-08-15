@@ -1,5 +1,7 @@
 [Unit]
 Description=WLANThermo watchdog service
+Requires=pigpiod
+After=pigpiod
 
 [Service]
 ExecStart=/usr/sbin/wlt_2_watchdog.py
