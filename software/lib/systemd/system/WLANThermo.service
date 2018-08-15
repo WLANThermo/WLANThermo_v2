@@ -1,5 +1,7 @@
 [Unit]
 Description=WLANThermo main service
+Requires=pigpiod
+After=pigpiod
 
 [Service]
 ExecStart=/usr/sbin/wlt_2_comp.py
