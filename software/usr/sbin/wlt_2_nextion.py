@@ -367,6 +367,7 @@ def NX_init(port, baudrate):
         ser.port = port
         ser.baudrate = baudrate
         ser.timeout = 0.2
+        ser.write_timeout = 1
         ser.open()
         logger.debug(_(u'Locking serial port'))
         fcntl.flock(ser.fileno(), fcntl.LOCK_EX)
