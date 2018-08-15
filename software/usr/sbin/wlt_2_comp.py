@@ -578,7 +578,11 @@ try:
                     Temperatur[kanal] = None
                 variance = statistics.pvariance(samples[kanal])
                 if variance > 4:
-                    warnung = 'Channel:{kanal} variance: {variance} in {iterations}, median @ {median_value}!'.format(kanal=kanal, variance=variance, iterations=iterations, median_value=median_value)
+                    warnung = 'Channel:{kanal} variance: {variance} in {iterations}, median @ {median_value}!'.format(
+                        kanal=kanal,
+                        variance=variance,
+                        iterations=iterations,
+                        median_value=median_value)
                     logger.warning(warnung)
                 logger.debug(u'Channel {}, MCP3128 {}, temperature {}'.format(kanal, kanal, Temperatur[kanal]))
             elif kanal <= 9:
@@ -713,17 +717,35 @@ try:
                 Email_to = new_config.get('Email','email_to')
                 Email_subject = new_config.get('Email','email_subject')
                 Email_STARTTLS = new_config.getboolean ('Email','starttls')
-                alarm_email(Email_server,Email_user,Email_password, Email_STARTTLS, Email_from, Email_to, Email_subject, alarm_message)
+
+                alarm_email(
+                    Email_server,
+                    Email_user,
+                    Email_password,
+                    Email_STARTTLS,
+                    Email_from,
+                    Email_to,
+                    Email_subject,
+                    alarm_message)
                 
             if Telegram_alert:
                 Telegram_URL = 'https://api.telegram.org/bot{token}/sendMessage'
-                Telegram_Body = 'text={messagetext}&chat_id={chat_id}'
                 Telegram_chat_id = new_config.get('Telegram', 'telegram_chat_id')
                 Telegram_token = new_config.get('Telegram', 'telegram_token')
-                
-                alarm_message2 = urllib.quote(alarm_message.encode('utf-8'))
-                url = Telegram_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
-                body = Telegram_Body.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'), chat_id=Telegram_chat_id, token=Telegram_token)
+
+                if alarm_repeat:
+                    disable_notification = 'true'
+                else:
+                    disable_notification = 'false'
+
+                messagetext = alarm_message.encode('utf-8').replace('\n', '<br/>')
+
+                body = urllib.quote({
+                    'text': messagetext,
+                    'chat_id': Telegram_chat_id,
+                    'disable_notification': disable_notification})
+                url = Telegram_URL.format(token=Telegram_token)
+
                 try: 
                     logger.debug(u'Telegram POST request, URL: {}\nbody: {}'.format(url, body))
                     response = urllib2.urlopen(url, body)
@@ -741,8 +763,6 @@ try:
                 # Wenn konfiguriert, Alarm per Pushnachricht schicken
                 Push_URL = new_config.get('Push', 'push_url')
                 Push_Body = new_config.get('Push', 'push_body')
-        
-                alarm_message2 = urllib.quote(alarm_message.encode('utf-8'))
                 
                 try:
                     url = Push_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
