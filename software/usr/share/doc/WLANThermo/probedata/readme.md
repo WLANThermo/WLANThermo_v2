@@ -56,6 +56,8 @@ Used in these thermometers:
 * iDevices iGrill2
 * Weber iGrill2
 * Cappec Bluetooth Wireless BBQ Thermometer
+* Grilleye
+* Grilleye Pro Plus
 
 Not to be confused with the older iGrill 1.
 Available as a meat probe or as a shorter grill chamber probe.
