@@ -1,3 +1,11 @@
+wlanthermo (2.8.1~beta0-0) stretch-dev; urgency=medium
+
+  * CHANGE: Send repeated notification silent via telegram
+  * FIX: Add write timeout to Nextion display
+  * FIX: Add dependency to unit file
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Wed, 15 Aug 2018 15:55:00 +0200
+ 
 wlanthermo (2.8.0-0) stretch; urgency=medium
 
   * FIX: Config file with missing options don´t get parsed
