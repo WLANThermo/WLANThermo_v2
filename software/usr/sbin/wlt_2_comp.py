@@ -740,7 +740,7 @@ try:
 
                 messagetext = alarm_message.encode('utf-8').replace('\n', '<br/>')
 
-                body = urllib.quote({
+                body = urllib.urlencode({
                     'text': messagetext,
                     'chat_id': Telegram_chat_id,
                     'disable_notification': disable_notification})
