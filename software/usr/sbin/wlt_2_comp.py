@@ -738,10 +738,8 @@ try:
                 else:
                     disable_notification = 'false'
 
-                messagetext = alarm_message.encode('utf-8').replace('\n', '<br/>')
-
                 body = urllib.urlencode({
-                    'text': messagetext,
+                    'text': alarm_message.encode('utf-8'),
                     'chat_id': Telegram_chat_id,
                     'disable_notification': disable_notification})
                 url = Telegram_URL.format(token=Telegram_token)
