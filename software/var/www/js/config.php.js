@@ -42,7 +42,7 @@
 		document.getElementById("pit_servo_max").disabled=false;
 		document.getElementById("pit_pwm_min").disabled=false;
 		document.getElementById("pit_pwm_max").disabled=false;
-		document.getElementById("pit_io_gpio").disabled=false;
+		// document.getElementById("pit_io_gpio").disabled=false;
 	}
 	
 	function pid_settings_disable() {
@@ -442,4 +442,27 @@
 	$( "#lcd_type" ).change(function() {
 		check_lcd_type();
 	});
-	// Funktion aufrufen wenn Seite aufgerufen wird 
+	// Funktion aufrufen wenn Seite aufgerufen wird
+    
+    function fill_telegram_chat_id() {
+        $.getJSON("telegram.php?telegram_getid=true&telegram_token="+$('#telegram_token').val(), function(data) {
+            $("#telegram_chatid_select").empty();
+            $("#telegram_chatid_select").append('<option value="" selected="selected">'+ '---' +'</option>')
+            $.each(data, function(){
+                $("#telegram_chatid_select").append('<option value="'+ this.id +'" >'+ this.name +' - '+ this.id +'</option>')
+            }
+            )
+        }
+        )
+    };
+    
+    $( "#telegram_chatid_select" ).focus(function() {
+        fill_telegram_chat_id();
+        $( "#telegram_chatid_select" ).select();
+    });
+    $( "#telegram_chatid_select" ).change(function() {
+        var chatid = $( "#telegram_chatid_select option:selected" ).val();
+        if (chatid != '') {
+            $("#telegram_chat_id").val(chatid);
+        }
+    });

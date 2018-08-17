@@ -830,15 +830,20 @@ if (isset($_POST["upload_file"])) {
 // Formular Telegram Einstellungen --------------------------------------------------
 // ##################################################################################
 ?>
-		<div class="config little">
+		<div class="config small">
 			<div class="headline"><?php echo gettext("Telegram Settings");?></div>
 			<div class="headicon"><img src="../images/icons16x16/telegram.png" alt=""></div>
-			<div class="config_text row_1 col_1"><?php echo gettext("Token");?>:</div>
-			<div class="config_text row_1 col_3"><input type="text" name="telegram_token" id="telegram_token" size="25" maxlength="50" value="<?php echo $ini['Telegram']['telegram_token'];?>"></div>
-			<div class="config_text row_1 col_4"><?php echo gettext("Chat-ID");?>: <input type="text" name="telegram_chat_id" id="telegram_chat_id" size="18" maxlength="20" value="<?php echo $ini['Telegram']['telegram_chat_id'];?>"></div>
-			<div class="config_text row_1 col_5"></div>
-			<div class="config_text row_1 col_6"><?php echo gettext("Enable Telegram");?>:</div>			
-			<div class="config_text row_1 col_7"><input type="checkbox" name="telegram_alert" id="telegram_alert" value="True" <?php if($ini['Telegram']['telegram_alert'] == "True") {echo "checked=\"checked\"";}?> ></div>
+            <div class="config_text row_1 col_1"><?php echo gettext("Set Chat-ID");?>:</div>
+            <div class="config_text row_1 col_4"><select name="telegram_chatid_select" id="telegram_chatid_select" size="1" style="width:260px;">
+                                <option value="" selected="selected">---</option>
+                                </select></div>
+            <div class="config_text row_2 col_1"><?php echo gettext("Please enter token below and send '/start' to the Bot before getting Chat-ID!");?></div>
+			<div class="config_text row_3 col_1"><?php echo gettext("Token");?>:</div>
+			<div class="config_text row_3 col_3"><input type="text" name="telegram_token" id="telegram_token" size="25" maxlength="50" value="<?php echo $ini['Telegram']['telegram_token'];?>"></div>
+			<div class="config_text row_3 col_4"><?php echo gettext("Chat-ID");?>: <input type="text" name="telegram_chat_id" id="telegram_chat_id" size="18" maxlength="20" value="<?php echo $ini['Telegram']['telegram_chat_id'];?>"></div>
+			<div class="config_text row_3 col_5"></div>
+			<div class="config_text row_3 col_6"><?php echo gettext("Enable Telegram");?>:</div>			
+			<div class="config_text row_3 col_7"><input type="checkbox" name="telegram_alert" id="telegram_alert" value="True" <?php if($ini['Telegram']['telegram_alert'] == "True") {echo "checked=\"checked\"";}?> ></div>
 		</div>
 <?php
 // ##################################################################################
