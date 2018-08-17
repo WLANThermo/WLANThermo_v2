@@ -1,3 +1,11 @@
+wlanthermo (2.8.2-0) stretch; urgency=medium
+
+  * FIX: Fix newlines in alert message
+  * CHANGE: Send notification silent via telegram
+  * CHANGE: Send active alerts NOT silent via telegram
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Fri, 17 Aug 2018 21:10:00 +0200
+
 wlanthermo (2.8.1-0) stretch; urgency=medium
 
   * FIX: Fix config file update
