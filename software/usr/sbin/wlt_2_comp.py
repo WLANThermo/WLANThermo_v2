@@ -38,6 +38,7 @@ import pigpio
 from struct import pack, unpack
 import json
 import statistics
+import platform
 
 gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -666,6 +667,7 @@ try:
         message_values['alarme'] = ''.join(alarme)
         message_values['statusse'] = ''.join(statusse)
         message_values['lf'] = '\n'
+        message_values['hostname'] = platform.node()
         
         alarm_message = safe_format(message_template, message_values)
             
@@ -692,10 +694,12 @@ try:
         
         if status_interval > 0 and alarm_time + status_interval < time.time():
             # Periodisch den Status senden, wenn gewünscht
-            alarm_repeat = True
+            send_status = True
+        else:
+            send_status = False
 
         # Nachrichten senden
-        if alarm_neu or test_alarm or alarm_repeat:
+        if alarm_neu or test_alarm or alarm_repeat or send_status:
             alarm_time = time.time()
             
             if alarm_neu:
@@ -706,6 +710,8 @@ try:
                 alarm_message = _(u'test message\n') + alarm_message
             if alarm_repeat:
                 logger.info(u'repeated alert, sending messages')
+            if send_status:
+                logger.info(u'sending status')
                 
             if Email_alert:
                 # Wenn konfiguriert, Email schicken
@@ -733,7 +739,7 @@ try:
                 Telegram_chat_id = new_config.get('Telegram', 'telegram_chat_id')
                 Telegram_token = new_config.get('Telegram', 'telegram_token')
 
-                if alarm_repeat:
+                if not alarm_irgendwo:
                     disable_notification = 'true'
                 else:
                     disable_notification = 'false'
