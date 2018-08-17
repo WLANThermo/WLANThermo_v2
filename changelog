@@ -1,23 +1,13 @@
-wlanthermo (2.8.1~beta3-0) stretch-dev; urgency=medium
-
-  * FIX: Add dependency to watchdog unit file
-
- -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Wed, 15 Aug 2018 20:15:00 +0200
- 
-wlanthermo (2.8.1~beta2-0) stretch-dev; urgency=medium
+wlanthermo (2.8.1-0) stretch; urgency=medium
 
   * FIX: Fix config file update
-
- -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Wed, 15 Aug 2018 20:00:00 +0200
- 
-wlanthermo (2.8.1~beta1-0) stretch-dev; urgency=medium
-
   * CHANGE: Send repeated notification silent via telegram
   * FIX: Add write timeout to Nextion display
   * FIX: Add dependency to unit file
+  * ADD: Retrieve Telegram chat id automatically
 
- -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Wed, 15 Aug 2018 17:25:00 +0200
- 
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Fri, 17 Aug 2018 14:20:00 +0200
+
 wlanthermo (2.8.0-0) stretch; urgency=medium
 
   * FIX: Config file with missing options don´t get parsed
