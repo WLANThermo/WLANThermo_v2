@@ -73,11 +73,14 @@ Used in these thermometers:
 * Maverick ET-732
 * Maverick ET-733
 
+Similar values as Profile ODC, see below!
+
 To be used as a meat probe as designed or as grill chamber probe.
 ## ODC
 Used in these thermometers:
 * Outdoorchef Gourmet Check
 * TFA Dostmann Küchen-Chef 14.1503 (Replacement probe type TFA 30.3520)
+* Grillfürst BBQCheck Duo+
 
 To be used as a combined meat and grill chamber probe.
 
