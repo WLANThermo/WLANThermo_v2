@@ -281,6 +281,26 @@ if (isset($_POST["upload_file"])) {
 			}
 			
 			// ######################################################################
+			// Cloud Einstellungen --------------------------------------------------
+			// ######################################################################
+			
+			// Cloud Aktivieren/Deaktivieren
+			if(isset ($_POST['cloud_on'])) {$_POST['cloud_on'] = "True"; }else{ $_POST['cloud_on'] = "False";}
+			if($ini['cloud']['cloud_upload'] !== $_POST['cloud_on']){
+				$ini['cloud']['cloud_upload'] = $_POST['cloud_on'];
+			}
+			// New Token generation:
+			if(isset ($_POST['new_token'])){
+				$new_token =  token_generator();
+				$ini['cloud']['cloud_token'] = $new_token;
+			}
+			// Token failsafe, if config was empty (first ever start)
+			if($ini['cloud']['cloud_token']==''){
+				$new_token =  token_generator();
+				$ini['cloud']['cloud_token'] = $new_token;
+			}
+			
+			// ######################################################################
 			// Telegram Einstellungen --------------------------------------------------
 			// ######################################################################
 				
@@ -731,6 +751,21 @@ if (isset($_POST["upload_file"])) {
 	<h1><?php echo gettext("Settings");?></h1>
 	<form action="config.php" method="post" >
 	
+<?php
+// ##################################################################################
+// Formular Cloud Einstellungen --------------------------------------------------
+// ##################################################################################
+?>
+		<div class="config little">
+			<div class="headline"><?php echo gettext("Cloud Server");?></div>
+			<div class="config_text row_1 col_1"><?php echo gettext("Link");?>: <a href="<?php 
+			if($ini['cloud']['cloud_upload']== "True"){
+				echo $ini['cloud']['cloud_link'].'?api_token='.$ini['cloud']['cloud_token'];
+			}?>" target="_blank" style="color: rgb(125,125,255)"><?php echo gettext("Open Cloud");?></a></div>
+			<div class="config_text row_1 col_4"><?php echo gettext("New Token: ");?><input type="checkbox" name="new_token" id="new_token" value="True"></div>
+			<div class="config_text row_1 col_6"><?php echo gettext("Enable Cloud Server");?>:</div>			
+			<div class="config_text row_1 col_7"><input type="checkbox" name="cloud_on" id="cloud_on" value="True" <?php if($ini['cloud']['cloud_upload'] == "True") {echo "checked=\"checked\"";}?> ></div>
+		</div>
 <?php
 // ##################################################################################
 // Formular Fühler/Farbe/Temp min/Temp max/Kanal ------------------------------------
