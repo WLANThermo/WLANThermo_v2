@@ -933,7 +933,7 @@ try:
 			jsonpit = list()
 			jsonpit0 = dict()
 			jsonpit0['id'] = 0
-			jsonpit0['channel'] = new_config.getint('Pitmaster', 'pit_ch')
+			jsonpit0['channel'] = new_config.getint('Pitmaster', 'pit_ch')+1
 			jsonpit0['value'] = float(pit_new)
 			jsonpit0['set'] = new_config.getfloat('Pitmaster', 'pit_set')
 			jsonpit0['io'] = new_config.getint('Pitmaster', 'pit_io_gpio')
@@ -953,7 +953,7 @@ try:
 			if version == u'miniV2':	#Pitmaster 1 exists only in miniv2!
 				jsonpit1 = dict()
 				jsonpit1['id'] = 1
-				jsonpit1['channel'] = new_config.getint('Pitmaster2', 'pit_ch')
+				jsonpit1['channel'] = new_config.getint('Pitmaster2', 'pit_ch')+1
 				jsonpit1['value'] = float(pit2_new)
 				jsonpit1['set'] = new_config.getfloat('Pitmaster2', 'pit_set')
 				jsonpit1['io'] = new_config.getint('Pitmaster2', 'pit_io_gpio')
