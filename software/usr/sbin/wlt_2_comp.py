@@ -997,9 +997,7 @@ try:
 					response = requests.post(url, headers=headers, data=json.dumps(jsoncomplete, sort_keys=True))
 					time_cloud_last = time.time()
 					logger.debug(u'Cloud: Update send to cloud! {response}'.format(response=response))
-					new_config.set('cloud', 'cloud_status', '2')
 				except requests.exceptions.RequestException as e:
-					new_config.set('cloud', 'cloud_status', '1')
 					logger.warning(u'Error: Could not write to cloud ! {response}'.format(response=e))
 					continue
 				break

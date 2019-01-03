@@ -13,11 +13,12 @@ if(isset($_GET['page'])) {
 ?>
 <div class="wifi_site">
 	<div class="wifi_header">
-		<h1>Raspbian WiFi Configuration Portal</h1>
+		<h1>Raspbian Configuration Portal</h1>
 	</div>
 	<div class="wifi_menu">
 		<input class="button" type="button" value="WiFi Info" name="wlan0_info" onclick="document.location='?page='+this.name" />
-		<input class="button" type="button" value="Einstellungen" name="wpa_conf" onclick="document.location='?page='+this.name" />
+		<input class="button" type="button" value="WiFi Settings" name="wpa_conf" onclick="document.location='?page='+this.name" />
+		<input class="button" type="button" value="Time Settings" name="time_conf" onclick="document.location='?page='+this.name" />
 	</div>
 
 <div class="wifi_content">
@@ -236,6 +237,68 @@ update_config=1
 		}
 	}
 
+	break;
+	
+	case "time_conf":
+			
+		if(isset($_POST['timezone'])) {
+			$timezonetoset = $_POST['timezone'];
+			$timezones = timezone_identifiers_list();
+			if(in_array($timezonetoset,$timezones)){
+				exec("sudo timedatectl set-timezone $timezonetoset",$output,$returnset);
+				if($returnset == 0){
+					echo '<span style="color:green"><b>new time zone set</b></span>';
+				}else{
+					echo '<span style="color:red"><b>failed to set new time zone</b></span>';
+				}
+			}
+		} 
+
+		exec('timedatectl status',$return);
+			$local_time = $return[0];
+			$universal_time = $return[1];
+			$rtc_time = $return[2];
+			$time_zone = $return[3];
+			$network_time = $return[4];
+			$ntp_sync = $return[5];
+			$rtclocal_time = $return[6];
+
+		
+			
+		echo '<div class="infobox">
+				<div class="infoheader">Time Settings</div>
+				<div class="intheader">Current Time Settings</div>
+				<b>' . $local_time . '</b><br />
+				<b>' . $universal_time . '</b><br />
+				<b>' . $rtc_time . '</b><br />
+				<b>' . $time_zone . '</b><br />
+				<b>' . $network_time . '</b><br />
+				<b>' . $ntp_sync . '</b><br />
+				<b>' . $rtclocal_time . '</b><br />';
+		
+		$timezones = timezone_identifiers_list();  //this list is long...
+		
+		$time_zone = str_replace('Time zone: ','',$return[3]);
+		$time_zone_detail = explode(' ',$time_zone)[7];
+		
+		$zoneselector = '<select name="timezone">';
+		foreach ($timezones as $timezone){
+			$zoneselector .= '<option value="'.$timezone.'"';
+			if($timezone == $time_zone_detail)
+				$zoneselector .= 'selected="selected"';
+			$zoneselector .='>'.$timezone.'</option>';
+		}
+		$zoneselector .= '</select>';
+
+		$output = '<div class="intheader">New Settings</div>
+		<b>Current Setting: ' . $time_zone . '</b><br />';
+		$output .= '<form action="?page=time_conf" method="post">';
+		$output .= '<b>New Setting: ' .$zoneselector.'</b> ';
+		$output .= '<input type="submit" value="Set new timezone">';
+		$output .= '</form><br /></div>';
+		echo $output;
+	
+	
 	break;
 }
 ?>
