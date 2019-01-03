@@ -396,7 +396,7 @@ sound_on = Config.getboolean('Sound','Beeper_enabled')
 sound_on_start = Config.getboolean('Sound','beeper_on_start')
 
 # Software-Version, wird beim build gesetzt
-build = 'V2.8.2'
+build = 'XXX_VERSION_XXX'
 
 #Einlesen der Logging-Option
 newfile = Config.getboolean('Logging','write_new_log_on_restart')
