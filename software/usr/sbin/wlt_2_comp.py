@@ -39,6 +39,7 @@ from struct import pack, unpack
 import json
 import statistics
 import platform
+import requests
 
 gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -330,6 +331,19 @@ def read_maverick():
 
     return values
     
+def getserial():
+	# Extract serial from cpuinfo file
+	cpuserial = "0000000000000000"
+	try:
+		f = open('/proc/cpuinfo','r')
+		for line in f:
+			if line[0:6]=='Serial':
+				cpuserial = line[10:26]
+		f.close()
+	except:
+		cpuserial = "ERROR000000000"
+
+	return cpuserial
     
 sys.excepthook = log_uncaught_exceptions
 
@@ -437,6 +451,7 @@ alarm_state = [None for i in xrange(channel_count)]
 test_alarm = False
 config_mtime = 0
 alarm_time = 0
+time_cloud_last = 0
 
 try:
     while True:
@@ -664,16 +679,15 @@ try:
                     # Temperatur innerhalb der Grenzwerte
                     statusse.append(safe_format(status_template, alarm_values))
                     alarm_state[kanal] = 'ok'
-        
-        if pit_on:
-            try:
-                with codecs.open(pit_tempfile, 'r', 'utf_8') as pitfile:
-                    pit_values = pitfile.readline().split(';')
-                    pit['new'] = pit_values[3].rstrip('%')
-                    pit['set'] = pit_values[1]
-            except IOError:
+		if pit_on:
+			try:
+				with codecs.open(pit_tempfile, 'r', 'utf_8') as pitfile:
+					pit_values = pitfile.readline().split(';')
+					pit['new'] = pit_values[3].rstrip('%')
+					pit['set'] = pit_values[1]
+			except IOError:
                 # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
-                pit = None
+				pit = None
         else:
                 pit = None
         
@@ -689,14 +703,12 @@ try:
         else:
                 pit2 = None
 
-        
+      		  
         message_values = dict()
-                
         message_values['pit_new'] = pit['new'] if pit is not None else '-'
         message_values['pit_set'] = pit['set'] if pit is not None else '-'
         message_values['pit2_new'] = pit2['new'] if pit2 is not None else '-'
         message_values['pit2_set'] = pit2['set'] if pit2 is not None else '-'
-        
         message_values['alarme'] = ''.join(alarme)
         message_values['statusse'] = ''.join(statusse)
         message_values['lf'] = '\n'
@@ -869,20 +881,21 @@ try:
                     log_line.append('')
                 else:
                     log_line.append(str(Temperatur[kanal]))
-        
+									   
         if pit is not None:
-            log_line.append(pit['new'])
-            log_line.append(pit['set'])
+			log_line.append(pit['new'])
+			log_line.append(pit['set'])
         else:
-            log_line.append('')
-            log_line.append('')
+			log_line.append('')
+			log_line.append('')
         
+						
         if pit2 is not None:
             log_line.append(pit2['new'])
-            log_line.append(pit2['set'])
+            log_line.append(pit2['set'])		 
         else:
-            log_line.append('')
-            log_line.append('')
+			log_line.append('')
+			log_line.append('')
                 
         while True:
             try:
@@ -896,15 +909,128 @@ try:
                 time.sleep(1)
                 continue
             break
-        # Werte loggen
-        logger.debug(separator.join(log_line))
-        
-        time_remaining = time_start + delay - time.time()
-        if time_remaining < 0:
-            logger.warning(u'measuring loop running longer than {delay}s, remaining time {time_remaining}s'.format(delay=delay, time_remaining=time_remaining))
-        else:
-            logger.debug(u'measuring loop remaining time {time_remaining}s of {delay}s'.format(delay=delay, time_remaining=time_remaining))
-            time.sleep(time_remaining)
+			
+	# JSON for the cloud:
+	cloud_active = new_config.getboolean('cloud', 'cloud_upload')
+	if cloud_active:
+	
+		#check if its time:
+		cloud_interval = new_config.getint('cloud', 'cloud_interval')
+		time_cloud_over = time_cloud_last + cloud_interval - time.time()
+
+		if time_cloud_over < 0:
+			logger.debug(u'Cloud upload interval {time_remaining}s of {delay}s'.format(delay=cloud_interval, time_remaining=time_cloud_over))
+			jsonsystem = {'time' : int(time.time())}
+			jsonsystem['unit'] = temp_unit[:1].upper()
+			
+			#Channels:
+			jsonch = list()
+			for kanal in xrange(channel_count):
+				jsonchannel = dict()
+				jsonchannel['number'] = kanal + 1
+				jsonchannel['name'] = new_config.get('ch_name', 'ch_name' + str(kanal))
+				if Temperatur_string[kanal] is None:
+					jsonchannel['temp'] = 999
+				else:
+					jsonchannel['temp'] = float(Temperatur_string[kanal])
+				jsonchannel['typ'] = new_config.getint('Sensoren', 'ch' + str(kanal))-1		#+1 due to offset in list
+				jsonchannel['min'] = new_config.getint('temp_min', 'temp_min' + str(kanal))
+				jsonchannel['max'] = new_config.getint('temp_max', 'temp_max' + str(kanal))
+				jsonchannel['alarm'] = new_config.getboolean('web_alert', 'ch' + str(kanal))
+				jsonchannel['color'] = new_config.get('plotter', 'color_ch' + str(kanal))
+				jsonch.append(jsonchannel)
+			
+			#Pitmasters:
+			jsonpit = list()
+			jsonpit0 = dict()
+			jsonpit0['id'] = 0
+			jsonpit0['channel'] = new_config.getint('Pitmaster', 'pit_ch')+1
+			if pit is not None:
+				jsonpit0['value'] = pit['new']
+				jsonpit0['set'] = pit['set']	 
+			else:
+				jsonpit0['value'] = 0
+				jsonpit0['set'] = 0
+			jsonpit0['io'] = new_config.getint('Pitmaster', 'pit_io_gpio')
+			jsonpit0['profil'] = 0
+			if (new_config.get('ToDo', 'pit_on') == 'False'):
+				pittyp = 'off'
+			else:
+				if(new_config.get('Pitmaster', 'pit_man')=='0'):
+					pittyp = 'auto'
+				else:
+					pittyp = 'manual'
+			jsonpit0['typ'] = pittyp
+			jsonpit0['set_color'] = '#ffff00'
+			jsonpit0['value_color'] = '#fa8072'
+			jsonpit.append(jsonpit0)
+			
+			if version == u'miniV2':	#Pitmaster 1 exists only in miniv2!
+				jsonpit1 = dict()
+				jsonpit1['id'] = 1
+				jsonpit1['channel'] = new_config.getint('Pitmaster2', 'pit_ch')+1
+				if pit2 is not None:
+					jsonpit1['value'] = pit2['new']
+					jsonpit1['set'] = pit2['set']	 
+				else:
+					jsonpit1['value'] = 0
+					jsonpit1['set'] = 0
+				jsonpit1['io'] = new_config.getint('Pitmaster2', 'pit_io_gpio')
+				jsonpit1['profil'] = 0
+				if (new_config.get('ToDo', 'pit2_on') == 'False'):
+					pittyp = 'off'
+				else:
+					if(new_config.get('Pitmaster2', 'pit_man')=='0'):
+						pittyp = 'auto'
+					else:
+						pittyp = 'manual'
+				jsonpit1['typ'] = pittyp
+				jsonpit1['set_color'] = '#ffff00'
+				jsonpit1['value_color'] = '#fa8072'
+				jsonpit.append(jsonpit1)
+				
+			#device(device/serial/hw_version/sw_version)
+			jsondevice = {'device' : version}
+			jsondevice['serial'] = getserial()
+			jsondevice['hw_version'] = 1
+			jsondevice['sw_version'] = build
+			
+			#Join all to generate the full data json:
+			jsoncomplete = {'system' : jsonsystem, 'channel' : jsonch, 'pitmaster' : jsonpit}
+			jsoncompletedata = list()
+			jsoncompletedata.append(jsoncomplete)
+			
+			#cloud(task/api_token/data)
+			jsoncloud = {'task' : 'save'}
+			jsoncloud['api_token'] = new_config.get('cloud', 'cloud_token')
+			jsoncloud['data'] = jsoncompletedata
+			
+			#Join to generate full cloud json:
+			jsoncomplete = {'device' : jsondevice, 'cloud' : jsoncloud}
+			
+			#curl to cloud:	
+			while True:    
+				try:
+					url = new_config.get('cloud', 'cloud_path')
+					headers = {'Content-type': 'application/json'}
+					response = requests.post(url, headers=headers, data=json.dumps(jsoncomplete, sort_keys=True))
+					time_cloud_last = time.time()
+					logger.debug(u'Cloud: Update send to cloud! {response}'.format(response=response))
+				except requests.exceptions.RequestException as e:
+					logger.warning(u'Error: Could not write to cloud ! {response}'.format(response=e))
+					continue
+				break
+		else:
+			logger.debug(u'Cloud upload waiting {time_remaining}s of {delay}s'.format(delay=cloud_interval, time_remaining=time_cloud_over))											 
+	# Werte loggen
+	logger.debug(separator.join(log_line))
+	
+	time_remaining = time_start + delay - time.time()
+	if time_remaining < 0:
+		logger.warning(u'measuring loop running longer than {delay}s, remaining time {time_remaining}s'.format(delay=delay, time_remaining=time_remaining))
+	else:
+		logger.debug(u'measuring loop remaining time {time_remaining}s of {delay}s'.format(delay=delay, time_remaining=time_remaining))
+		time.sleep(time_remaining)
 
 except KeyboardInterrupt:
     logger.info(u'WLANThermo stopped!')
