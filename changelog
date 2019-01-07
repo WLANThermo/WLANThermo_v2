@@ -1,9 +1,11 @@
-wlanthermo (2.9.0-0) stretch; urgency=medium
+wlanthermo (2.9.0-beta1-0) stretch; urgency=medium
 
   * ADD: cloud integratrion
   * ADD: time zone setting
+  * ADD: Pit values to message
+  * FIX: LCD display errors
 
- -- Stephan Martin <stephan.martin@designer2k2.at> Thu, 03 Jan 2019 20:30:00 +0200
+ -- Stephan Martin <stephan.martin@designer2k2.at> Thu, 07 Jan 2019 18:00:00 +0200
 
 wlanthermo (2.8.2-0) stretch; urgency=medium
 
