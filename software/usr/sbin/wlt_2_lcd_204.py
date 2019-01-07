@@ -326,7 +326,17 @@ def show_values():
     except IndexError: 
         return None
 
-
+def lan_getvalues():
+    interfacelist = ['eth0', 'eth1', 'wlan0', 'wlan1']
+    interfaces = dict()
+    for interface in interfacelist:
+        retvalue = os.popen("LANG=C ifconfig {} 2>/dev/null | awk '/inet / {{print $2}}'".format(interface)).readlines()
+        if (len(retvalue)!=0):
+            interfaces[interface] = {'name': interface, 'ip': retvalue[0].strip()}
+        else:
+            interfaces[interface] = {'name': interface, 'ip': '000.000.000.000'}
+    return interfaces
+    
 #Einlesen Displayeinstellungen
 LCD = Config.getboolean('Display','lcd_present')
 
@@ -334,9 +344,10 @@ LCD = Config.getboolean('Display','lcd_present')
 error_val = Config.get('Display','error_val')
 
 #Einlesen der Software-Version
-command = 'cat /var/www/header.php | grep \'] = "V\' | cut -c31-38'
-
-build = os.popen(command).read()
+for line in codecs.open('/var/www/header.php', 'r', 'utf_8'):
+    if 'webGUIversion' in line:
+        build = re.match('.*=\s*"(.*)"', line).group(1)
+        break
 
 # Pfad fuer die uebergabedateien auslesen
 curPath,curFile = os.path.split(Config.get('filepath','current_temp'))
@@ -384,34 +395,11 @@ if LCD:
     time.sleep(3) # 3 second delay
 
     # IP-Adressen ermitteln
-    ETH1 = "0.0.0.0"
-    ETH0 = "0.0.0.0"
-    WLAN0 = "0.0.0.0"
-    retvalue = os.popen("LANG=C ifconfig eth0 | grep 'inet ' | cut -d':' -f2| cut -d' ' -f1").readlines()
-    
-    if (len(retvalue)==0):
-        ETH0="0.0.0.0"
-    else:
-        ETH=retvalue[0]
-        ETH0=ETH[:-1]
-    retvalue = os.popen("LANG=C ifconfig eth1 | grep 'inet ' | cut -d':' -f2| cut -d' ' -f1").readlines()
-    
-    if (len(retvalue)==0):
-        ETH1="0.0.0.0"
-    else:
-        ETH=retvalue[0]
-        ETH1=ETH[:-1]
+    interfaces = lan_getvalues()
 
-    retvalue = os.popen("LANG=C ifconfig wlan0 | grep 'inet ' | cut -d':' -f2| cut -d' ' -f1").readlines()
-    
-    if (len(retvalue)==0):
-        WLAN0="0.0.0.0"
-    else:
-        WLAN=retvalue[0]
-        WLAN0=WLAN[:-1]
-    WLAN0="WLAN0: " + WLAN0
-    ETH0="ETH0: " + ETH0
-    ETH1="ETH1: " + ETH1
+    WLAN0="WLAN0: " + interfaces['wlan0']['ip']
+    ETH0="ETH0: " + interfaces['eth0']['ip']
+    ETH1="ETH1: " + interfaces['eth1']['ip']
     lcd_byte(LCD_LINE_1, LCD_CMD)
     lcd_string(_(u'IP addresses:'),2)
     lcd_byte(LCD_LINE_2, LCD_CMD)
