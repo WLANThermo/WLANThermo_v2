@@ -465,6 +465,8 @@ try:
         alarm_repeat = False
         alarme = []
         statusse = []
+        pit = {}
+        pit2 = {}
         
         if enable_maverick:
             logger.info(u'Reading from Maverick receiver...')
@@ -677,8 +679,36 @@ try:
                     # Temperatur innerhalb der Grenzwerte
                     statusse.append(safe_format(status_template, alarm_values))
                     alarm_state[kanal] = 'ok'
+		if pit_on:
+			try:
+				with codecs.open(pit_tempfile, 'r', 'utf_8') as pitfile:
+					pit_values = pitfile.readline().split(';')
+					pit['new'] = pit_values[3].rstrip('%')
+					pit['set'] = pit_values[1]
+			except IOError:
+                # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
+				pit = None
+        else:
+                pit = None
         
+        if pit2_on:
+            try:
+                with codecs.open(pit2_tempfile, 'r', 'utf_8') as pit2file:
+                    pit2_values = pit2file.readline().split(';')
+                    pit2['new'] = pit2_values[3].rstrip('%')
+                    pit2['set'] = pit2_values[1]
+            except IOError:
+                # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
+                pit2 = None
+        else:
+                pit2 = None
+
+      		  
         message_values = dict()
+        message_values['pit_new'] = pit['new'] if pit is not None else '-'
+        message_values['pit_set'] = pit['set'] if pit is not None else '-'
+        message_values['pit2_new'] = pit2['new'] if pit2 is not None else '-'
+        message_values['pit2_set'] = pit2['set'] if pit2 is not None else '-'
         message_values['alarme'] = ''.join(alarme)
         message_values['statusse'] = ''.join(statusse)
         message_values['lf'] = '\n'
@@ -851,40 +881,21 @@ try:
                     log_line.append('')
                 else:
                     log_line.append(str(Temperatur[kanal]))
-					
-        pit_new = new_config.getint('Pitmaster', 'pit_man')		#preload for the json export below
-        if pit_on:
-            try:
-                with codecs.open(pit_tempfile, 'r', 'utf_8') as pitfile:
-                    pit_values = pitfile.readline().split(';')
-                    pit_new = pit_values[3].rstrip('%')
-                    pit_set = pit_values[1]
-                    log_line.append(pit_new)
-                    log_line.append(pit_set)
-            except IOError:
-                # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
-                log_line.append('')
-                log_line.append('')
+									   
+        if pit is not None:
+			log_line.append(pit['new'])
+			log_line.append(pit['set'])
         else:
-                log_line.append('')
-                log_line.append('')
+			log_line.append('')
+			log_line.append('')
         
-		pit2_new = new_config.getint('Pitmaster2', 'pit_man')   #preload for the json export below
-        if pit2_on:
-            try:
-                with codecs.open(pit2_tempfile, 'r', 'utf_8') as pit2file:
-                    pit2_values = pit2file.readline().split(';')
-                    pit2_new = pit2_values[3].rstrip('%')
-                    pit2_set = pit2_values[1]
-                    log_line.append(pit2_new)
-                    log_line.append(pit2_set)
-            except IOError:
-                # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
-                log_line.append('')
-                log_line.append('')
+						
+        if pit2 is not None:
+            log_line.append(pit2['new'])
+            log_line.append(pit2['set'])		 
         else:
-                log_line.append('')
-                log_line.append('')
+			log_line.append('')
+			log_line.append('')
                 
         while True:
             try:
@@ -934,8 +945,12 @@ try:
 			jsonpit0 = dict()
 			jsonpit0['id'] = 0
 			jsonpit0['channel'] = new_config.getint('Pitmaster', 'pit_ch')+1
-			jsonpit0['value'] = float(pit_new)
-			jsonpit0['set'] = new_config.getfloat('Pitmaster', 'pit_set')
+			if pit is not None:
+				jsonpit0['value'] = pit['new']
+				jsonpit0['set'] = pit['set']	 
+			else:
+				jsonpit0['value'] = 0
+				jsonpit0['set'] = 0
 			jsonpit0['io'] = new_config.getint('Pitmaster', 'pit_io_gpio')
 			jsonpit0['profil'] = 0
 			if (new_config.get('ToDo', 'pit_on') == 'False'):
@@ -954,8 +969,12 @@ try:
 				jsonpit1 = dict()
 				jsonpit1['id'] = 1
 				jsonpit1['channel'] = new_config.getint('Pitmaster2', 'pit_ch')+1
-				jsonpit1['value'] = float(pit2_new)
-				jsonpit1['set'] = new_config.getfloat('Pitmaster2', 'pit_set')
+				if pit2 is not None:
+					jsonpit1['value'] = pit2['new']
+					jsonpit1['set'] = pit2['set']	 
+				else:
+					jsonpit1['value'] = 0
+					jsonpit1['set'] = 0
 				jsonpit1['io'] = new_config.getint('Pitmaster2', 'pit_io_gpio')
 				jsonpit1['profil'] = 0
 				if (new_config.get('ToDo', 'pit2_on') == 'False'):
