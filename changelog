@@ -1,3 +1,9 @@
+wlanthermo (2.8.3~beta2-0) stretch; urgency=medium
+
+  * CHANGE: Remove unneeded packages
+
+ -- Bjoern Schrader <wlanthermo@bjoern-schrader.de>  Mon, 08 Jan 2019 12:45:00 +0100
+
 wlanthermo (2.8.3~beta1-0) stretch; urgency=medium
 
   * ADD: Pit values to message
