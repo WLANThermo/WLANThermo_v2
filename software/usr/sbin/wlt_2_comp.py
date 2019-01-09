@@ -467,6 +467,8 @@ try:
         statusse = []
         pit = {}
         pit2 = {}
+        pit_on = False
+        pit2_on = False
         
         if enable_maverick:
             logger.info(u'Reading from Maverick receiver...')
@@ -679,6 +681,7 @@ try:
                     # Temperatur innerhalb der Grenzwerte
                     statusse.append(safe_format(status_template, alarm_values))
                     alarm_state[kanal] = 'ok'
+					
 		if pit_on:
 			try:
 				with codecs.open(pit_tempfile, 'r', 'utf_8') as pitfile:
@@ -686,10 +689,9 @@ try:
 					pit['new'] = pit_values[3].rstrip('%')
 					pit['set'] = pit_values[1]
 			except IOError:
-                # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
 				pit = None
         else:
-                pit = None
+				pit = None
         
         if pit2_on:
             try:
@@ -698,10 +700,9 @@ try:
                     pit2['new'] = pit2_values[3].rstrip('%')
                     pit2['set'] = pit2_values[1]
             except IOError:
-                # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
-                pit2 = None
+				pit2 = None
         else:
-                pit2 = None
+				pit2 = None
 
       		  
         message_values = dict()
@@ -941,19 +942,30 @@ try:
 				jsonch.append(jsonchannel)
 			
 			#Pitmasters:
+			
+			pit = {}
+			if (new_config.getboolean('ToDo','pit_on') == True):
+				try:
+					with codecs.open(pit_tempfile, 'r', 'utf_8') as pitfile:
+						pit_values = pitfile.readline().split(';')
+						pit['new'] = pit_values[3].rstrip('%')
+						pit['set'] = pit_values[1]
+				except IOError:
+					pit = None
+					logger.debug('Pit 1 tempfile read in failed')
+			else:
+					pit = None	
+					logger.debug('Pit 1 is off')
+			
 			jsonpit = list()
 			jsonpit0 = dict()
 			jsonpit0['id'] = 0
 			jsonpit0['channel'] = new_config.getint('Pitmaster', 'pit_ch')+1
-			if pit is not None:
-				jsonpit0['value'] = pit['new']
-				jsonpit0['set'] = pit['set']	 
-			else:
-				jsonpit0['value'] = 0
-				jsonpit0['set'] = 0
+			jsonpit0['value'] = pit['new'] if pit is not None else new_config.getint('Pitmaster', 'pit_man')
+			jsonpit0['set'] = pit['set'] if pit is not None else new_config.getint('Pitmaster', 'pit_set')
 			jsonpit0['io'] = new_config.getint('Pitmaster', 'pit_io_gpio')
 			jsonpit0['profil'] = 0
-			if (new_config.get('ToDo', 'pit_on') == 'False'):
+			if (new_config.getboolean('ToDo', 'pit_on') == 'False'):
 				pittyp = 'off'
 			else:
 				if(new_config.get('Pitmaster', 'pit_man')=='0'):
@@ -966,15 +978,26 @@ try:
 			jsonpit.append(jsonpit0)
 			
 			if version == u'miniV2':	#Pitmaster 1 exists only in miniv2!
+			
+				pit2 = {}
+				if (new_config.getboolean('ToDo','pit2_on') == True):
+					try:
+						with codecs.open(pit_tempfile, 'r', 'utf_8') as pitfile:
+							pit_values = pitfile.readline().split(';')
+							pit2['new'] = pit_values[3].rstrip('%')
+							pit2['set'] = pit_values[1]
+					except IOError:
+						pit2 = None
+						logger.debug('Pit 2 tempfile read in failed')
+				else:
+						pit2 = None	
+						logger.debug('Pit 2 is off')
+			
 				jsonpit1 = dict()
 				jsonpit1['id'] = 1
 				jsonpit1['channel'] = new_config.getint('Pitmaster2', 'pit_ch')+1
-				if pit2 is not None:
-					jsonpit1['value'] = pit2['new']
-					jsonpit1['set'] = pit2['set']	 
-				else:
-					jsonpit1['value'] = 0
-					jsonpit1['set'] = 0
+				jsonpit1['value'] = pit2['new'] if pit2 is not None else new_config.getint('Pitmaster2', 'pit_man')
+				jsonpit1['set'] = pit2['set'] if pit2 is not None else new_config.getint('Pitmaster', 'pit_set') 
 				jsonpit1['io'] = new_config.getint('Pitmaster2', 'pit_io_gpio')
 				jsonpit1['profil'] = 0
 				if (new_config.get('ToDo', 'pit2_on') == 'False'):
