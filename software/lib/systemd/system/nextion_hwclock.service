@@ -1,10 +1,10 @@
 [Unit]
 Description=NEXTION Enhanced RTC
+Before=WLANThermo.service WLANThermoWD.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-Before=WLANThermo.service WLANThermoWD.service
 ExecStart=/usr/sbin/nextion_hwclock.py start
 ExecStop=/usr/sbin/nextion_hwclock.py stop
 
