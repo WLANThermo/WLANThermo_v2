@@ -164,6 +164,7 @@ function session($configfile) {
 		$_SESSION["ch_show".$i] = $ini['ch_show']['ch'.$i];
 	}
 	$_SESSION["locale"] = $ini['locale']['locale'];
+    $_SESSION["wlan_regdomain"] = $ini['locale']['wlan_regdomain'];
 	$_SESSION["temp_unit"] = $ini['locale']['temp_unit'];
 	$_SESSION["color_pit"] = $ini['plotter']['color_pit'];
 	$_SESSION["color_pitsoll"] = $ini['plotter']['color_pitsoll'];

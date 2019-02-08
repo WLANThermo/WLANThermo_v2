@@ -186,7 +186,7 @@ TX Power: <b>' . $strTxPower . '</b><br />
 	if(isset($_POST['SaveWPAPSKSettings'])) {
 		$config = 'ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
-
+country=' . $_SESSION["wlan_regdomain"] . '
 	';
 		$networks = $_POST['Networks'];
 		for($x = 0; $x <= $networks; $x++) {
@@ -199,8 +199,8 @@ update_config=1
 				echo "network: ".$network[0]."<br>";			
 				if ($network[0] <> "Passphrase must be 8..63 characters"){
 					foreach($network as $b) {
-						$config .= "$b
-	";
+						$config .= "$b\n";
+                        $config .= "priority=11\n"
 					}
 				}
 			}

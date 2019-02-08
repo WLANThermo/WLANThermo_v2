@@ -915,6 +915,7 @@ def wlan_setpassphrase(ssid, psk):
     wpa_file = open(tmp_filename, 'w')
     wpa_file.write('ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\n')
     wpa_file.write('update_config=1\n')
+    wpa_file.write('country={}\n'.format(Config.get('locale', 'wlan_regdomain')))
     
     if ssids:
         for i in range(len(ssids)):
@@ -923,14 +924,21 @@ def wlan_setpassphrase(ssid, psk):
                 # Wert verändert
                 logger.debug(_(u'SSID exists already in the configuration file, change PSK'))
                 wpa_passphrase = subprocess.Popen(("/usr/bin/wpa_passphrase", str(ssid), str(psk)), stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.readlines()
+                if wpa_passphrase[0] != "Passphrase must be 8..63 characters":
+                    for line in wpa_passphrase:
+                        wpa_file.write(line)
+                    wpa_file.write('priority=11\n')
+                else:
+                    logger.warning(u'PSK to short for SSID: {}'.format(ssid))
                 ssid_found = True
             else:
-                # neue SSID
+                # bestehende SSID
                 logger.debug(_(u'SSID and PSK taken from old configuration file'))
                 wpa_passphrase = subprocess.Popen(("/usr/bin/wpa_passphrase", str(ssids[i]), str(psks[i])), stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.readlines()
                 if wpa_passphrase[0] != "Passphrase must be 8..63 characters":
                     for line in wpa_passphrase:
                         wpa_file.write(line)
+                    wpa_file.write('priority=0\n')
                 else:
                     logger.warning(_(u'New PSK to short for SSID: {}').format(ssid))
     if not ssid_found:
@@ -940,6 +948,7 @@ def wlan_setpassphrase(ssid, psk):
         if wpa_passphrase[0] != "Passphrase must be 8..63 characters":
             for line in wpa_passphrase:
                 wpa_file.write(line)
+            wpa_file.write('priority=11\n')
         else:
             logger.warning(_(u'New PSK to short for SSID: {}').format(ssid))
     wpa_file.flush()
