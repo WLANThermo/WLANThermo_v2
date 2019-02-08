@@ -200,7 +200,6 @@ country=' . $_SESSION["wlan_regdomain"] . '
 				if ($network[0] <> "Passphrase must be 8..63 characters"){
 					foreach($network as $b) {
 						$config .= "$b\n";
-                        $config .= "priority=11\n"
 					}
 				}
 			}
