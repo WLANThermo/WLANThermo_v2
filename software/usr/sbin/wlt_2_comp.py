@@ -573,7 +573,10 @@ try:
                 if (median_value > 15) and (median_value < 4080):
                     if (sensorname[kanal] != 'KTYPE'):
                             Rtheta = messwiderstand[kanal]*((4096.0/median_value) - 1)
-                            Temperatur[kanal] = round(temperatur_sensor(Rtheta, sensortyp[kanal]), 2)
+                            try:
+                                Temperatur[kanal] = round(temperatur_sensor(Rtheta, sensortyp[kanal]), 2)
+                            except exceptions.TypeError:
+                                Temperatur[kanal] = None
                     else:
                         # AD595 = 10mV/°C
                         Temperatur[kanal] = median_value * 330 / 4096
