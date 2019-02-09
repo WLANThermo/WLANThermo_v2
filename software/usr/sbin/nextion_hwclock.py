@@ -288,14 +288,18 @@ else:
 
 if nextion and not ntp and mode =='start':
     print('Getting time from NEXTION RTC')
+
     values = NX_getvalues(('rtc0', 'rtc1', 'rtc2', 'rtc3', 'rtc4', 'rtc5'))
-    rtc_time = time.mktime((values['rtc0'], values['rtc1'], values['rtc2'], values['rtc3'], values['rtc4'], values['rtc5'], 0, 1, -1))
-    
-    if rtc_time > os.path.getmtime(__file__):
-        print('Setting system time:')
-        os.system('date -s "{}-{}-{} {}:{}:{}"'.format(values['rtc0'], values['rtc1'], values['rtc2'], values['rtc3'], values['rtc4'], values['rtc5']))
+    try:
+        rtc_time = time.mktime((values['rtc0'], values['rtc1'], values['rtc2'], values['rtc3'], values['rtc4'], values['rtc5'], 0, 1, -1))
+    except OverflowError:
+        print('No RTC installed?!')
     else:
-        print('Invalid RTC time')
+        if rtc_time > os.path.getmtime(__file__):
+            print('Setting system time:')
+            os.system('date -s "{}-{}-{} {}:{}:{}"'.format(values['rtc0'], values['rtc1'], values['rtc2'], values['rtc3'], values['rtc4'], values['rtc5']))
+        else:
+            print('Invalid RTC time')
 elif nextion and ntp:
     localtime = time.localtime()
     print('Setting NEXTION RTC from clock')
