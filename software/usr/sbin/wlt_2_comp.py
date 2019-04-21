@@ -39,6 +39,7 @@ from struct import pack, unpack
 import json
 import statistics
 import platform
+import requests
 
 gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
 
@@ -531,6 +532,7 @@ try:
             Email_alert = new_config.getboolean('Email','email_alert')
             Push_alert = new_config.getboolean('Push', 'push_on')
             Telegram_alert = new_config.getboolean('Telegram', 'telegram_alert')
+            App_alert = new_config.getboolean('App', 'app_alert')
 
             temp_unit = new_config.get('locale', 'temp_unit')
 
@@ -798,7 +800,42 @@ try:
                     logger.error(u'Telegram HTTP error: ' + str(e.code) + u' - ' + e.read(500))
                 except urllib2.URLError, e:
                     logger.error(u'Telegram URLError: ' + str(e.reason))  
+
+ 
+            if App_alert:
+                logger.debug(u'App_alert')
+                api_key='key=AAAA89_rQYw:APA91bEknuZrwPUNveElqW1CgFcICLOh9sIjtume6HPeExxtnJoQExiFIvqU84Xk-MsxI2Ig6w8VvaAsm43QHrowruP5EOvz0IO-HG9PB3mcoiumT2k6CcVryLiL4K450Jx1QKhumkd0'
+                app_id = ["","",""]
+                app_id[0] = new_config.get('App','app_inst_id')
+                app_id[1] = new_config.get('App','app_inst_id2')
+                app_id[2] = new_config.get('App','app_inst_id3')
+                app_device = ["","",""]
+                app_device[0] = new_config.get('App','app_device')
+                app_device[1] = new_config.get('App','app_device2')
+                app_device[2] = new_config.get('App','app_device3')
+                alarm_message = str(alarm_message.encode('utf-8'))
+
+                url = 'https://fcm.googleapis.com/fcm/send'
+                myheaders = {'Content-Type': 'application/json', 'Authorization': api_key}
+
+                i=0
+                while i < 3:
                     
+                    if app_id[i] != "" and app_device[i]=="0" :
+                        payload = {'data': {'Alarm':alarm_message}, "android":{"priority":"high"}, 'to':app_id[i]}
+                        try:
+                            logger.debug(u'App_alert try sending:' )
+                            logger.debug(u'App_id:' + app_id[i])
+                            data=json.dumps(payload)
+                            results = requests.post(url, data, headers=myheaders)
+                            print(results.text)
+                            logger.debug(u'AppAlert result: ' + str(results.text))
+                        except requests.exceptions.RequestException as e:
+                            print(e)
+                            logger.debug(u'App_alert error')
+                    i=i+1
+                
+                
             if Push_alert:
                 # Wenn konfiguriert, Alarm per Pushnachricht schicken
                 Push_URL = new_config.get('Push', 'push_url')
@@ -916,3 +953,4 @@ except KeyboardInterrupt:
     pi.bb_spi_close(7)
     logging.shutdown()
     os.unlink(pidfilename)
+    
