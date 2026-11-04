@@ -383,7 +383,8 @@ def check_pitmaster(id):
         id_string = str(id + 1)
     logger.debug(_('Checking pitmaster {}'.format(id + 1)))
     
-    pitmasterStatus = subprocess.call(('/bin/systemctl', 'status',  'WLANThermoPIT{}.service'.format(id + 1)))
+    # gleicher Unit-Name wie beim Starten: WLANThermoPIT, WLANThermoPIT2
+    pitmasterStatus = subprocess.call(('/bin/systemctl', 'status',  'WLANThermoPIT{}.service'.format(id_string)))
     bashCommandPit = tuple()
     if (Config.getboolean('ToDo', 'pit{}_on'.format(id_string))):
         if pitmasterStatus != 0:

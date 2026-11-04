@@ -37,6 +37,15 @@ PIT_PWM = 4  # Pitmaster PWM
 
 logger = False
 
+
+class Shutdown(Exception):
+    """Wird vom SIGTERM-Handler ausgelöst (systemctl stop), damit die Ausgänge abgeschaltet werden."""
+
+
+def handle_sigterm(signum, frame):
+    raise Shutdown()
+
+
 def clamp(value, minimum, maximum):
     return max(min(maximum, value), minimum)
 
@@ -173,7 +182,9 @@ class BBQpit:
                 self.pi.write(gpio, 1)
             self.pit_gpio = gpio
             self.pit_type = pit_type
-        elif pit_type == 'damper' and gpio != servo_gpio:
+        elif pit_type == 'damper' and gpio == servo_gpio:
+            self.logger.error(_('Damper needs separate GPIOs for fan and servo, not available on this hardware'))
+        elif pit_type == 'damper':
             # Lüftersteuerung für Damper
             self.pi.set_mode(gpio, pigpio.OUTPUT)
             self.pi.set_PWM_frequency(gpio, 500)
@@ -382,7 +393,7 @@ def get_steps(steps_str):
         try:
             retval.append((float(step_fields[0]), float(step_fields[1])))
         except ValueError:
-            logger.error('Illegal step in configuration: ', step_fields[0])
+            logger.error('Illegal step in configuration: {}'.format(step))
     return retval
 
 
@@ -397,15 +408,9 @@ def run(instance):
 
     # Konfigurationsdatei einlesen
     defaults = {'pit_startup_min': '25', 'pit_startup_threshold': '0', 'pit_startup_time': '0.5', 'pit_io_gpio': '2'}
-    Config = configparser.ConfigParser(defaults, strict=False, inline_comment_prefixes=(';',))
-    for i in range(0, 5):
-        while True:
-            try:
-                Config.read('/var/www/conf/WLANThermo.conf', encoding='utf-8')
-            except IndexError:
-                time.sleep(1)
-                continue
-            break
+    # Ohne Interpolation: '%' darf in den Werten vorkommen
+    Config = configparser.ConfigParser(defaults, interpolation=None, strict=False, inline_comment_prefixes=(';',))
+    Config.read('/var/www/conf/WLANThermo.conf', encoding='utf-8')
 
     if instance > 0:
         instance_string = str(instance + 1)
@@ -445,8 +450,8 @@ def run(instance):
                               }[
             Config.get('Hardware', 'version')][instance]
     except KeyError:
-        logger.info('Instance {} undefined in hardware configuration "{}"').format(instance,
-                                                                                    Config.get('Hardware', 'version'))
+        logger.error('Instance {} undefined in hardware configuration "{}"'.format(instance,
+                                                                                     Config.get('Hardware', 'version')))
         return False
 
     logger.info(_('WLANThermoPID started'))
@@ -512,13 +517,7 @@ def run(instance):
             if len(tline) > 5:
                 new_config_mtime = os.path.getmtime('/var/www/conf/WLANThermo.conf')
                 if new_config_mtime > config_mtime:
-                    while True:
-                        try:
-                            Config.read('/var/www/conf/WLANThermo.conf', encoding='utf-8')
-                        except IndexError:
-                            time.sleep(1)
-                            continue
-                        break
+                    Config.read('/var/www/conf/WLANThermo.conf', encoding='utf-8')
                     config_mtime = new_config_mtime
 
                     logger.debug(_('Loading configuration...'))
@@ -787,19 +786,17 @@ def run(instance):
                 else:
                     pit_now_str = str(pit_now)
 
-                while True:
-                    try:
-                        with codecs.open(pitPath + '/' + pitFile + '_tmp', 'w', 'utf_8') as fp:
-                            # Schreibe mit Trennzeichen ;
-                            # Zeit;Soll;Ist;%;msg + pitFile,
-                            fp.write('{};{};{};{}%;{}'.format(uhrzeit_lang, pit_set, pit_now_str, pit_new, msg))
-                            fp.flush()
-                            os.fsync(fp.fileno())
-                        os.rename(pitPath + '/' + pitFile + '_tmp', pitPath + '/' + pitFile)
-                    except IndexError:
-                        time.sleep(1)
-                        continue
-                    break
+                try:
+                    with codecs.open(pitPath + '/' + pitFile + '_tmp', 'w', 'utf_8') as fp:
+                        # Schreibe mit Trennzeichen ;
+                        # Zeit;Soll;Ist;%;msg + pitFile,
+                        fp.write('{};{};{};{}%;{}'.format(uhrzeit_lang, pit_set, pit_now_str, pit_new, msg))
+                        fp.flush()
+                        os.fsync(fp.fileno())
+                    os.rename(pitPath + '/' + pitFile + '_tmp', pitPath + '/' + pitFile)
+                except OSError as e:
+                    # protokollieren, die Regelung soll weiterlaufen
+                    logger.error('Could not write to file {}: {}'.format(pitmaster_log, e))
 
                 if (Config.getboolean('ToDo', 'pit' + instance_string + '_on') == False):
                     if (count > 0):
@@ -820,9 +817,11 @@ def run(instance):
                                                                                                    time_remaining=time_remaining))
                 time.sleep(time_remaining)
 
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, Shutdown):
         pass
-    bbqpit.stop_pit()
+    finally:
+        # Ausgänge auch nach einem Fehler abschalten, pigpiod behält sonst den letzten Wert
+        bbqpit.stop_pit()
     try:
         os.unlink(pitPath + '/' + pitFile)
     except OSError:
@@ -854,6 +853,8 @@ def main():
         instance = 0
 
     pidfilename = '/var/run/wlt_2_pitmaster_' + str(instance) + '.pid'
+    # systemctl stop (Watchdog) sendet SIGTERM
+    signal.signal(signal.SIGTERM, handle_sigterm)
 
     if os.access(pidfilename, os.F_OK):
         pidfile = open(pidfilename, "r")
@@ -869,9 +870,10 @@ def main():
     else:
         open(pidfilename, 'w').write(pid)
 
-    run(instance)
-
-    os.unlink(pidfilename)
+    try:
+        run(instance)
+    finally:
+        os.unlink(pidfilename)
 
 
 if __name__ == '__main__':
