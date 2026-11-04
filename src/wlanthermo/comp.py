@@ -23,7 +23,6 @@ import configparser
 import os
 import time
 import math
-import string
 import logging
 import urllib.request, urllib.error, urllib.parse
 import psutil
@@ -32,7 +31,6 @@ import traceback
 import gettext
 import wlanthermo
 import codecs
-import subprocess
 from bitstring import BitArray
 import pigpio
 from struct import pack, unpack
@@ -43,6 +41,35 @@ import platform
 # Konfigurationsdatei einlesen
 defaults = {'pit_control_out':'True'}
 pidfilename = '/var/run/wlt_2_comp.pid'
+
+# Zeitlimit in Sekunden für Email, Telegram und Push, damit die Messschleife nicht hängen bleibt
+NETWORK_TIMEOUT = 10
+
+# wird in main() eingerichtet, sobald die Konfiguration gelesen ist
+logger = None
+
+
+class Shutdown(Exception):
+    """Wird vom SIGTERM-Handler ausgelöst, um die Messschleife sauber zu beenden."""
+
+
+def handle_sigterm(signum, frame):
+    raise Shutdown()
+
+
+def read_config_file(config, filename):
+    # Die Datei kann gerade vom Webinterface neu geschrieben werden, dann erneut versuchen
+    while True:
+        try:
+            with codecs.open(filename, 'r', 'utf_8') as configfile:
+                config.read_file(configfile)
+        except (OSError, configparser.Error) as e:
+            if logger:
+                logger.warning('Could not read {}, retrying: {}'.format(filename, e))
+            time.sleep(1)
+            continue
+        break
+
 
 def check_pid(pid):
     try:
@@ -69,23 +96,24 @@ def safe_format(template, args):
             template = template.replace('{' + key_name + '}', '!!' + key_name + '!!')
     return message
 
-def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
+def alarm_email(SERVER,AUTH,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
     logger.info('Send mail!')
-    
-    from smtplib import SMTP 
-    from smtplib import SMTPException 
+
+    from smtplib import SMTP
+    from smtplib import SMTPException
     from email.mime.text import MIMEText as text
     if STARTTLS:
         port=587
     else:
         port=25
     try:
-        s = SMTP(SERVER,port)
+        s = SMTP(SERVER, port, timeout=NETWORK_TIMEOUT)
         if STARTTLS:
             s.starttls()
-        
-        s.login(USER,PASSWORT)
-        
+
+        if AUTH:
+            s.login(USER,PASSWORT)
+
 
         m = text(MESSAGE, 'plain', 'UTF-8')
 
@@ -100,20 +128,26 @@ def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
     except SMTPException as error:
         sendefehler = 'Error: unable to send email: {err}'.format(err=error)
         logger.error(sendefehler)
-    except:
-        #TODO err undefined!
-        sendefehler = 'Error: unable to resolve host (no internet connection?) :  {err}'
+    except OSError as error:
+        # Namensauflösung, Verbindungsaufbau, Zeitüberschreitung
+        sendefehler = 'Error: unable to connect to mail server (no internet connection?): {err}'.format(err=error)
         logger.error(sendefehler)
-        
-                   
-def init_softspi_mcp():
+
+
+def open_softspi(cs, baud):
+    # Ist der Bus noch von einem vorherigen Lauf offen, kann er weiter benutzt werden
     try:
-        retval = pi.bb_spi_open(CS, MISO, MOSI, SCLK, 20000, 0)
+        pi.bb_spi_open(cs, MISO, MOSI, SCLK, baud, 0)
     except pigpio.error as e:
-        if str(e) == "'GPIO already in use'":
-            retval = 0
-        else:
+        if e.value != pigpio.error_text(pigpio.PI_GPIO_IN_USE):
             raise
+
+
+def close_softspi(cs):
+    try:
+        pi.bb_spi_close(cs)
+    except pigpio.error as e:
+        logger.warning('Could not close SPI on CS {}: {}'.format(cs, e))
 
 
 def get_channel_mcp(channel):
@@ -131,30 +165,6 @@ def get_channel_max31855(channel):
         return None
     else:
         return data[0:14].int / 4.0
-
-
-def init_softspi_max31855_1():
-    try:
-        retval = pi.bb_spi_open(CS_MAX1, MISO, MOSI, SCLK, 250000, 0)
-    except pigpio.error as e:
-        if str(e) == "'GPIO already in use'":
-            retval = 0
-        else:
-            raise
-        
-    return retval == 0
-
-
-def init_softspi_max31855_2():
-    try:
-        retval = pi.bb_spi_open(CS_MAX2, MISO, MOSI, SCLK, 250000, 0)
-    except pigpio.error as e:
-        if str(e) == "'GPIO already in use'":
-            retval = 0
-        else:
-            raise
-            
-    return retval == 0
 
 
 def temperatur_sensor (Rt, typ): #Ermittelt die Temperatur
@@ -198,12 +208,15 @@ def create_logfile(filename, log_kanal):
     # Falls der Symlink noch da ist, loeschen
     try:
         os.remove('/var/log/WLAN_Thermo/TEMPLOG.csv')
-    except:
+    except FileNotFoundError:
         pass
-    
+
     # Symlink TEMPLOG.csv auf die gerade benutzte eindeutige Log-Datei legen.
-    os.symlink(filename, '/var/log/WLAN_Thermo/TEMPLOG.csv')
-    
+    try:
+        os.symlink(filename, '/var/log/WLAN_Thermo/TEMPLOG.csv')
+    except OSError as e:
+        logger.error('Could not create symlink to {file}: {err}'.format(file=filename, err=e))
+
     kopfzeile = []
     kopfzeile.append(_('Date_Time'))
     for kanal in range(channel_count):
@@ -215,17 +228,13 @@ def create_logfile(filename, log_kanal):
     kopfzeile.append(_('Controller 2 output value'))
     kopfzeile.append(_('Controller 2 set value'))
     
-    while True:
-        try:
-            fw = codecs.open(filename, 'w', 'utf_8') #Datei anlegen
+    try:
+        with codecs.open(filename, 'w', 'utf_8') as fw: #Datei anlegen
             fw.write(separator.join(kopfzeile) + '\n') # Kopfzeile der CSV-Datei schreiben
             fw.flush()
             os.fsync(fw.fileno())
-            fw.close()
-        except IndexError:
-            time.sleep(1)
-            continue
-        break
+    except OSError as e:
+        logger.error('Could not create log file {file}: {err}'.format(file=filename, err=e))
 
 def median_filter(raw):
     # Kombinierter Median und Mittelwertfilter
@@ -283,23 +292,10 @@ def main():
     # Wir laufen als root, auch andere müssen die Config schreiben!
     os.umask (0)
 
-    while True:
-        try:
-            Config.read_file(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
-        except IndexError:
-            time.sleep(1)
-            continue
-        break
-
+    read_config_file(Config, '/var/www/conf/WLANThermo.conf')
 
     Config_Sensor = configparser.ConfigParser(interpolation=None, strict=False, inline_comment_prefixes=(';',))
-    while True:
-        try:
-            Config_Sensor.read_file(codecs.open('/var/www/conf/sensor.conf', 'r', 'utf_8'))
-        except IndexError:
-            time.sleep(1)
-            continue
-        break
+    read_config_file(Config_Sensor, '/var/www/conf/sensor.conf')
 
     LOGFILE = Config.get('daemon_logging', 'log_file')
     logger = logging.getLogger('WLANthermo')
@@ -348,6 +344,8 @@ def main():
 
 
     sys.excepthook = log_uncaught_exceptions
+    # systemd beendet den Dienst mit SIGTERM, dann ebenfalls aufräumen
+    signal.signal(signal.SIGTERM, handle_sigterm)
     #GPIO END
 
     #Hardwareversion einlesen
@@ -375,8 +373,6 @@ def main():
     for kanal in range(channel_count):
         log_kanal[kanal] = Config.getboolean('Logging','CH' + str(kanal))
 
-    log_pitmaster =  Config.getboolean('Logging','pit_control_out')
-
     pit_tempfile = Config.get('filepath','pitmaster')
     pit2_tempfile = Config.get('filepath','pitmaster2')
 
@@ -391,9 +387,9 @@ def main():
     newfile = Config.getboolean('Logging','write_new_log_on_restart')
 
     pi = pigpio.pi()
-    init_softspi_mcp()
-    init_softspi_max31855_1()
-    init_softspi_max31855_2()
+    open_softspi(CS, 20000)
+    open_softspi(CS_MAX1, 250000)
+    open_softspi(CS_MAX2, 250000)
     # Pin-Programmierung (Pitmaster)
     pi.set_mode(PWM, pigpio.OUTPUT)
     pi.set_mode(IO, pigpio.OUTPUT)
@@ -469,13 +465,7 @@ def main():
             new_config_mtime = os.path.getmtime('/var/www/conf/WLANThermo.conf')
             if new_config_mtime != config_mtime:
                 logger.info('Reading configuration again...')
-                while True:
-                    try:
-                        new_config.read_file(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
-                    except IndexError:
-                        time.sleep(1)
-                        continue
-                    break
+                read_config_file(new_config, '/var/www/conf/WLANThermo.conf')
                 config_mtime = new_config_mtime
 
                 pit_on = new_config.getboolean('ToDo','pit_on')
@@ -492,7 +482,7 @@ def main():
                         temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
                     except ValueError:
                         logger.error('Error reading lower limit on channel ' + str(kanal))
-                        temp_max[kanal] = -20
+                        temp_min[kanal] = -20
 
                     try:
                         messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
@@ -569,8 +559,6 @@ def main():
                         samples[kanal].append(4095 - get_channel_mcp(kanal))
 
             for kanal in range(channel_count):
-                Temp = 0.0
-                WerteArray = []
                 if kanal <= 7:
                     median_value = median_filter(samples[kanal])
                     if (median_value > 15) and (median_value < 4080):
@@ -599,12 +587,12 @@ def main():
                         Temperatur[kanal] = None
                         logger.debug('Channel {}, disabled or not available'.format(kanal))
                     else:
-                        logger.debug('Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - 7, Temperatur[kanal]))
                         maverick_value = maverick['temperature_' + str(kanal - 7)]
                         if maverick_value == '':
                             Temperatur[kanal] = None
                         else:
                             Temperatur[kanal] = maverick_value
+                        logger.debug('Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - 7, Temperatur[kanal]))
                 elif version == 'miniV2':
                     if enable_max31855:
                         Temperatur[kanal] = get_channel_max31855(kanal - 10)
@@ -678,7 +666,8 @@ def main():
                         pit_values = pitfile.readline().split(';')
                         pit['new'] = pit_values[3].rstrip('%')
                         pit['set'] = pit_values[1]
-                except IOError:
+                except (OSError, IndexError):
+                    # IndexError: Datei leer oder gerade unvollständig geschrieben
                     # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
                     pit = None
             else:
@@ -690,7 +679,8 @@ def main():
                         pit2_values = pit2file.readline().split(';')
                         pit2['new'] = pit2_values[3].rstrip('%')
                         pit2['set'] = pit2_values[1]
-                except IOError:
+                except (OSError, IndexError):
+                    # IndexError: Datei leer oder gerade unvollständig geschrieben
                     # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
                     pit2 = None
             else:
@@ -766,6 +756,7 @@ def main():
 
                     alarm_email(
                         Email_server,
+                        Email_auth,
                         Email_user,
                         Email_password,
                         Email_STARTTLS,
@@ -792,7 +783,7 @@ def main():
 
                     try: 
                         logger.debug('Telegram POST request, URL: {}\nbody: {}'.format(url, body))
-                        response = urllib.request.urlopen(url, body.encode('utf-8'))
+                        response = urllib.request.urlopen(url, body.encode('utf-8'), timeout=NETWORK_TIMEOUT)
 
                         logger.info('Telegram HTTP return code: ' + str(response.getcode()))
                         logger.debug('Telegram URL: ' + response.geturl())
@@ -801,7 +792,10 @@ def main():
                     except urllib.error.HTTPError as e:
                         logger.error('Telegram HTTP error: ' + str(e.code) + ' - ' + e.read(500).decode('utf-8', 'replace'))
                     except urllib.error.URLError as e:
-                        logger.error('Telegram URLError: ' + str(e.reason))  
+                        logger.error('Telegram URLError: ' + str(e.reason))
+                    except OSError as e:
+                        # z.B. Zeitüberschreitung beim Lesen der Antwort
+                        logger.error('Telegram error: ' + str(e))
 
                 if Push_alert:
                     # Wenn konfiguriert, Alarm per Pushnachricht schicken
@@ -817,10 +811,10 @@ def main():
                         try: 
                             if Push_Body == '':
                                 logger.debug('push GET request, URL: ' + url)
-                                response = urllib.request.urlopen(url)
+                                response = urllib.request.urlopen(url, timeout=NETWORK_TIMEOUT)
                             else:
                                 logger.debug('push POST request, URL: ' + url + '\nbody: ' + body)
-                                response = urllib.request.urlopen(url, body.encode('utf-8'))
+                                response = urllib.request.urlopen(url, body.encode('utf-8'), timeout=NETWORK_TIMEOUT)
 
                             logger.info('push HTTP return code: ' + str(response.getcode()))
                             logger.debug('push URL: ' + response.geturl())
@@ -832,14 +826,21 @@ def main():
                             logger.error('Push URLError: ' + str(e.reason))
                         except ValueError as e:
                             logger.error('Push ValueError: ' + str(e))
+                        except OSError as e:
+                            # z.B. Zeitüberschreitung beim Lesen der Antwort
+                            logger.error('Push error: ' + str(e))
 
             # Log datei erzeugen
             lcsv = []
             Uhrzeit_lang = time.strftime('%d.%m.%y %H:%M:%S')
-            logdatei = os.readlink('/var/log/WLAN_Thermo/TEMPLOG.csv')
-            logdatei = logdatei[21:-4]
+            try:
+                logdatei = os.readlink('/var/log/WLAN_Thermo/TEMPLOG.csv')
+            except OSError:
+                # Symlink fehlt oder ist eine normale Datei
+                logdatei = name
+            # Name der Log-Datei ohne Verzeichnis und Endung, z.B. 20181024_183012_TEMPLOG
+            logdatei = os.path.splitext(os.path.basename(logdatei))[0]
             lcsv.append(Uhrzeit_lang)
-            t = ""
             for kanal in range(channel_count):
                 if Temperatur_string[kanal] is None:
                     lcsv.append('')
@@ -852,19 +853,15 @@ def main():
             lcsv.append(logdatei)
 
 
-            while True:
-                try:
-                    fcsv = codecs.open(current_temp  + '_tmp', 'w', 'utf_8')
+            # Bei einem Fehler nur protokollieren, die Messung und die Alarme sollen weiterlaufen
+            try:
+                with codecs.open(current_temp + '_tmp', 'w', 'utf_8') as fcsv:
                     fcsv.write(';'.join(lcsv))
                     fcsv.flush()
                     os.fsync(fcsv.fileno())
-                    fcsv.close()
-                    os.rename(current_temp + '_tmp', current_temp)
-                except IndexError:
-                    time.sleep(1)
-                    logger.debug('Error: Could not write to file {file}!'.format(file=current_temp))
-                    continue
-                break
+                os.rename(current_temp + '_tmp', current_temp)
+            except OSError as e:
+                logger.error('Could not write to file {file}: {err}'.format(file=current_temp, err=e))
 
             #Messzyklus protokollieren und nur die Kanaele loggen, die in der Konfigurationsdatei angegeben sind
             log_line = []
@@ -891,18 +888,14 @@ def main():
                 log_line.append('')
                 log_line.append('')
 
-            while True:
-                try:
-                    # Generierung des Logfiles
-                    logfile = codecs.open(name, 'a', 'utf_8')
+            try:
+                # Generierung des Logfiles
+                with codecs.open(name, 'a', 'utf_8') as logfile:
                     logfile.write(separator.join(log_line) + '\n')
                     logfile.flush()
                     os.fsync(logfile.fileno())
-                    logfile.close()
-                except IndexError:
-                    time.sleep(1)
-                    continue
-                break
+            except OSError as e:
+                logger.error('Could not write to file {file}: {err}'.format(file=name, err=e))
             # Werte loggen
             logger.debug(separator.join(log_line))
 
@@ -913,13 +906,19 @@ def main():
                 logger.debug('measuring loop remaining time {time_remaining}s of {delay}s'.format(delay=delay, time_remaining=time_remaining))
                 time.sleep(time_remaining)
 
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, Shutdown):
         logger.info('WLANThermo stopped!')
-        pi.bb_spi_close(25)
-        pi.bb_spi_close(8)
-        pi.bb_spi_close(7)
+    finally:
+        # Auch nach einem unerwarteten Fehler aufräumen
+        close_softspi(CS)
+        close_softspi(CS_MAX1)
+        close_softspi(CS_MAX2)
+        pi.stop()
+        try:
+            os.unlink(pidfilename)
+        except OSError:
+            pass
         logging.shutdown()
-        os.unlink(pidfilename)
 
 
 if __name__ == '__main__':
