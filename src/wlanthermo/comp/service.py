@@ -41,7 +41,7 @@ from .alarm import AlarmMonitor, ChannelStatus, NotificationSchedule, safe_forma
 from .channels import Channels
 from .datafiles import CurrentTempFile, PitmasterReader, TemperatureLog
 from .hardware import Board
-from .notify import build_notifiers
+from .notify import NotificationWorker, build_notifiers
 from .settings import parse_settings, parse_startup_settings
 
 PIDFILE = '/var/run/wlt_2_comp.pid'
@@ -116,6 +116,7 @@ class Comp:
         self.board = board
         # DataHub des Kernprozesses, None wenn comp allein läuft
         self.hub = hub
+        self.notifications = NotificationWorker()
         self.config = ConfigWatcher(
             CONFIG_FILE, lambda config: parse_settings(config, sensor_types, startup.channel_count))
         self.alarms = AlarmMonitor(startup.channel_count)
@@ -139,8 +140,11 @@ class Comp:
 
     def run(self):
         self.start()
-        while True:
-            self.cycle()
+        try:
+            while True:
+                self.cycle()
+        finally:
+            self.notifications.close()
 
     def cycle(self):
         time_start = time.time()
@@ -210,8 +214,7 @@ class Comp:
             logger.info('repeated alert, sending messages')
         if status:
             logger.info('sending status')
-        for notifier in build_notifiers(settings):
-            notifier.send(message, urgent=evaluation.active)
+        self.notifications.submit(build_notifiers(settings), message, urgent=evaluation.active)
 
     def write_outputs(self, temperatures, evaluation, pits):
         timestamp = time.strftime('%d.%m.%y %H:%M:%S')

@@ -4,7 +4,9 @@ Fehler beim Versand werden protokolliert und nicht weitergegeben, die
 Messschleife soll in jedem Fall weiterlaufen.
 """
 import logging
+import queue
 import smtplib
+import threading
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -123,3 +125,44 @@ def build_notifiers(settings):
     if settings.push is not None:
         notifiers.append(PushNotifier(settings.push))
     return notifiers
+
+
+class NotificationWorker:
+    """Versendet Nachrichten in einem eigenen Thread, damit die Messung nicht wartet.
+
+    Ohne Netz kann der Versand mehrmals NETWORK_TIMEOUT dauern; die Messung und
+    der Pitmaster sollen in dieser Zeit weiterlaufen. Die Nachrichten werden in
+    der Reihenfolge des Einreichens verschickt.
+    """
+
+    def __init__(self):
+        self.queue = queue.Queue()
+        self.thread = None
+
+    def submit(self, notifiers, message, urgent):
+        if self.thread is None:
+            self.thread = threading.Thread(target=self._run, name='notify', daemon=True)
+            self.thread.start()
+        self.queue.put((notifiers, message, urgent))
+
+    def _run(self):
+        while True:
+            item = self.queue.get()
+            if item is None:
+                return
+            notifiers, message, urgent = item
+            for notifier in notifiers:
+                try:
+                    notifier.send(message, urgent)
+                except Exception:
+                    # darf den Versand weiterer Nachrichten nicht beenden
+                    logger.exception('{} failed'.format(notifier.name))
+
+    def close(self, timeout=NETWORK_TIMEOUT):
+        """Noch ausstehende Nachrichten versenden, höchstens timeout Sekunden warten."""
+        if self.thread is None:
+            return
+        self.queue.put(None)
+        self.thread.join(timeout)
+        if self.thread.is_alive():
+            logger.warning('Pending notifications not sent')

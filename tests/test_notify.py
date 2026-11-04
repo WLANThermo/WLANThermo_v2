@@ -7,6 +7,8 @@ import os
 import smtplib
 import socket
 import sys
+import threading
+import time
 import unittest
 import urllib.error
 import urllib.parse
@@ -14,8 +16,8 @@ from unittest import mock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from wlanthermo.comp import notify  # noqa: E402
-from wlanthermo.comp.notify import (EmailNotifier, PushNotifier, TelegramNotifier,  # noqa: E402
-                               build_notifiers)
+from wlanthermo.comp.notify import (EmailNotifier, NotificationWorker, PushNotifier,  # noqa: E402
+                                    TelegramNotifier, build_notifiers)
 from wlanthermo.comp.settings import EmailSettings, PushSettings, TelegramSettings  # noqa: E402
 
 EMAIL = EmailSettings(server='smtp.example.org', auth=True, username='user', password='pw%1',
@@ -103,6 +105,34 @@ class PushNotifierTest(unittest.TestCase):
             with mock.patch('urllib.request.urlopen', side_effect=error), \
                     self.assertLogs('WLANthermo.notify', 'ERROR'):
                 PushNotifier(PushSettings(url='http://box/', body='')).send('x', urgent=True)
+
+
+class NotificationWorkerTest(unittest.TestCase):
+    def test_sends_in_order_and_survives_errors(self):
+        sent = []
+        broken = mock.Mock(**{'send.side_effect': RuntimeError('kaputt')})
+        broken.name = 'Broken'
+        good = mock.Mock(**{'send.side_effect': lambda message, urgent: sent.append((message, urgent))})
+        worker = NotificationWorker()
+        with self.assertLogs('WLANthermo.notify', 'ERROR'):
+            worker.submit([broken, good], 'eins', True)
+            worker.submit([good], 'zwei', False)
+            worker.close()
+        self.assertEqual(sent, [('eins', True), ('zwei', False)])
+        self.assertFalse(worker.thread.is_alive())
+
+    def test_does_not_block_caller(self):
+        release = threading.Event()
+        slow = mock.Mock(**{'send.side_effect': lambda message, urgent: release.wait(5)})
+        worker = NotificationWorker()
+        start = time.monotonic()
+        worker.submit([slow], 'x', True)
+        self.assertLess(time.monotonic() - start, 1)
+        release.set()
+        worker.close()
+
+    def test_close_without_messages(self):
+        NotificationWorker().close()
 
 
 class BuildNotifiersTest(unittest.TestCase):

@@ -131,6 +131,9 @@ class CycleTest(GettextTest):
             patcher = mock.patch(name, return_value=value)
             patcher.start()
             self.addCleanup(patcher.stop)
+        # Nachrichten sofort statt im eigenen Thread versenden
+        self.comp.notifications = mock.Mock(**{'submit.side_effect': lambda notifiers, message, urgent: [
+            n.send(message, urgent=urgent) for n in notifiers]})
         patcher = mock.patch.object(comp, 'build_notifiers', return_value=[self.notifier])
         patcher.start()
         self.addCleanup(patcher.stop)
