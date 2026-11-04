@@ -22,7 +22,6 @@ import sys
 import os
 import time
 import logging
-import urllib.request, urllib.error, urllib.parse
 import psutil
 import signal
 import traceback
@@ -36,14 +35,12 @@ import json
 import statistics
 import platform
 from wlanthermo.alarm import AlarmMonitor, NotificationSchedule, ChannelStatus, safe_format
+from wlanthermo.notify import build_notifiers
 from wlanthermo.sensors import KTypeSensor, load_sensors, median_filter, resistance_from_adc
 from wlanthermo.settings import (CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser,
                                  parse_settings, parse_startup_settings, read_config_file)
 
 pidfilename = '/var/run/wlt_2_comp.pid'
-
-# Zeitlimit in Sekunden für Email, Telegram und Push, damit die Messschleife nicht hängen bleibt
-NETWORK_TIMEOUT = 10
 
 # wird in main() eingerichtet, sobald die Konfiguration gelesen ist
 logger = None
@@ -64,46 +61,6 @@ def check_pid(pid):
         return False
     else:
         return True
-
-# Funktionsdefinition
-
-def alarm_email(SERVER,AUTH,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
-    logger.info('Send mail!')
-
-    from smtplib import SMTP
-    from smtplib import SMTPException
-    from email.mime.text import MIMEText as text
-    if STARTTLS:
-        port=587
-    else:
-        port=25
-    try:
-        s = SMTP(SERVER, port, timeout=NETWORK_TIMEOUT)
-        if STARTTLS:
-            s.starttls()
-
-        if AUTH:
-            s.login(USER,PASSWORT)
-
-
-        m = text(MESSAGE, 'plain', 'UTF-8')
-
-        m['Subject'] = SUBJECT
-        m['From'] = FROM
-        m['To'] = TO
-
-
-        s.sendmail(FROM,TO, m.as_string())
-        s.quit()
-        logger.debug('Alert Email has been sent!')
-    except SMTPException as error:
-        sendefehler = 'Error: unable to send email: {err}'.format(err=error)
-        logger.error(sendefehler)
-    except OSError as error:
-        # Namensauflösung, Verbindungsaufbau, Zeitüberschreitung
-        sendefehler = 'Error: unable to connect to mail server (no internet connection?): {err}'.format(err=error)
-        logger.error(sendefehler)
-
 
 def open_softspi(cs, baud):
     # Ist der Bus noch von einem vorherigen Lauf offen, kann er weiter benutzt werden
@@ -526,84 +483,8 @@ def main():
                 if send_status:
                     logger.info('sending status')
 
-                email = settings.email
-                if email is not None:
-                    # Wenn konfiguriert, Email schicken
-                    alarm_email(
-                        email.server,
-                        email.auth,
-                        email.username,
-                        email.password,
-                        email.starttls,
-                        email.sender,
-                        email.recipient,
-                        email.subject,
-                        alarm_message)
-
-                if settings.telegram is not None:
-                    Telegram_URL = 'https://api.telegram.org/bot{token}/sendMessage'
-                    Telegram_chat_id = settings.telegram.chat_id
-                    Telegram_token = settings.telegram.token
-
-                    if not alarm_irgendwo:
-                        disable_notification = 'true'
-                    else:
-                        disable_notification = 'false'
-
-                    body = urllib.parse.urlencode({
-                        'text': alarm_message,
-                        'chat_id': Telegram_chat_id,
-                        'disable_notification': disable_notification})
-                    url = Telegram_URL.format(token=Telegram_token)
-
-                    try: 
-                        logger.debug('Telegram POST request, URL: {}\nbody: {}'.format(url, body))
-                        response = urllib.request.urlopen(url, body.encode('utf-8'), timeout=NETWORK_TIMEOUT)
-
-                        logger.info('Telegram HTTP return code: ' + str(response.getcode()))
-                        logger.debug('Telegram URL: ' + response.geturl())
-                        logger.debug('Telegram result: ' + response.read(500).decode('utf-8', 'replace'))
-
-                    except urllib.error.HTTPError as e:
-                        logger.error('Telegram HTTP error: ' + str(e.code) + ' - ' + e.read(500).decode('utf-8', 'replace'))
-                    except urllib.error.URLError as e:
-                        logger.error('Telegram URLError: ' + str(e.reason))
-                    except OSError as e:
-                        # z.B. Zeitüberschreitung beim Lesen der Antwort
-                        logger.error('Telegram error: ' + str(e))
-
-                if settings.push is not None:
-                    # Wenn konfiguriert, Alarm per Pushnachricht schicken
-                    Push_URL = settings.push.url
-                    Push_Body = settings.push.body
-
-                    try:
-                        url = Push_URL.format(messagetext=urllib.parse.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
-                        body = Push_Body.format(messagetext=urllib.parse.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
-                    except KeyError as key:
-                        logger.error('Key "{}" is undefined!'.format(key))
-                    else:
-                        try: 
-                            if Push_Body == '':
-                                logger.debug('push GET request, URL: ' + url)
-                                response = urllib.request.urlopen(url, timeout=NETWORK_TIMEOUT)
-                            else:
-                                logger.debug('push POST request, URL: ' + url + '\nbody: ' + body)
-                                response = urllib.request.urlopen(url, body.encode('utf-8'), timeout=NETWORK_TIMEOUT)
-
-                            logger.info('push HTTP return code: ' + str(response.getcode()))
-                            logger.debug('push URL: ' + response.geturl())
-                            logger.debug('push result: ' + response.read(500).decode('utf-8', 'replace'))
-
-                        except urllib.error.HTTPError as e:
-                            logger.error('Push HTTP error: ' + str(e.code) + ' - ' + e.read(500).decode('utf-8', 'replace'))
-                        except urllib.error.URLError as e:
-                            logger.error('Push URLError: ' + str(e.reason))
-                        except ValueError as e:
-                            logger.error('Push ValueError: ' + str(e))
-                        except OSError as e:
-                            # z.B. Zeitüberschreitung beim Lesen der Antwort
-                            logger.error('Push error: ' + str(e))
+                for notifier in build_notifiers(settings):
+                    notifier.send(alarm_message, urgent=alarm_irgendwo)
 
             # Log datei erzeugen
             lcsv = []
