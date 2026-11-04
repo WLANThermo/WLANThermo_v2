@@ -19,7 +19,6 @@
 
 
 import sys
-import configparser
 import os
 import time
 import logging
@@ -38,9 +37,9 @@ import statistics
 import platform
 from wlanthermo.alarm import AlarmMonitor, NotificationSchedule, ChannelStatus, safe_format
 from wlanthermo.sensors import KTypeSensor, load_sensors, median_filter, resistance_from_adc
+from wlanthermo.settings import (CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser,
+                                 parse_settings, parse_startup_settings, read_config_file)
 
-# Konfigurationsdatei einlesen
-defaults = {'pit_control_out':'True'}
 pidfilename = '/var/run/wlt_2_comp.pid'
 
 # Zeitlimit in Sekunden für Email, Telegram und Push, damit die Messschleife nicht hängen bleibt
@@ -56,20 +55,6 @@ class Shutdown(Exception):
 
 def handle_sigterm(signum, frame):
     raise Shutdown()
-
-
-def read_config_file(config, filename):
-    # Die Datei kann gerade vom Webinterface neu geschrieben werden, dann erneut versuchen
-    while True:
-        try:
-            with codecs.open(filename, 'r', 'utf_8') as configfile:
-                config.read_file(configfile)
-        except (OSError, configparser.Error) as e:
-            if logger:
-                logger.warning('Could not read {}, retrying: {}'.format(filename, e))
-            time.sleep(1)
-            continue
-        break
 
 
 def check_pid(pid):
@@ -160,7 +145,7 @@ def dateiname():
     return fn
 
 
-def create_logfile(filename, log_kanal):
+def create_logfile(filename, log_kanal, separator):
     # Falls der Symlink noch da ist, loeschen
     try:
         os.remove('/var/log/WLAN_Thermo/TEMPLOG.csv')
@@ -175,8 +160,8 @@ def create_logfile(filename, log_kanal):
 
     kopfzeile = []
     kopfzeile.append(_('Date_Time'))
-    for kanal in range(channel_count):
-        if (log_kanal[kanal]):
+    for kanal, logged in enumerate(log_kanal):
+        if logged:
             kopfzeile.append('Kanal ' + str(kanal))
             
     kopfzeile.append(_('Controller output value'))
@@ -229,34 +214,24 @@ IO          = 2
 
 
 def main():
-    global channel_count, logger, pi, separator
+    global logger, pi
     gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/')
-    Config = configparser.ConfigParser(defaults, interpolation=None, strict=False, inline_comment_prefixes=(';',))
 
     # Wir laufen als root, auch andere müssen die Config schreiben!
     os.umask (0)
 
-    read_config_file(Config, '/var/www/conf/WLANThermo.conf')
+    Config = make_parser()
+    read_config_file(Config, CONFIG_FILE)
+    startup = parse_startup_settings(Config)
+    channel_count = startup.channel_count
 
-    Config_Sensor = configparser.ConfigParser(interpolation=None, strict=False, inline_comment_prefixes=(';',))
-    read_config_file(Config_Sensor, '/var/www/conf/sensor.conf')
+    Config_Sensor = make_parser()
+    read_config_file(Config_Sensor, SENSOR_FILE)
 
-    LOGFILE = Config.get('daemon_logging', 'log_file')
     logger = logging.getLogger('WLANthermo')
-    #Define Logging Level by changing >logger.setLevel(logging.LEVEL_YOU_WANT)< available: DEBUG, INFO, WARNING, ERROR, CRITICAL
-    #logger.setLevel(logging.DEBUG)
-    log_level = Config.get('daemon_logging', 'level_compy')
-    if log_level == 'DEBUG':
-        logger.setLevel(logging.DEBUG)
-    if log_level == 'INFO':
-        logger.setLevel(logging.INFO)
-    if log_level == 'ERROR':
-        logger.setLevel(logging.ERROR)
-    if log_level == 'WARNING':
-        logger.setLevel(logging.WARNING)
-    if log_level == 'CRITICAL':
-        logger.setLevel(logging.CRITICAL)
-    handler = logging.FileHandler(LOGFILE)
+    if startup.log_level in ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'):
+        logger.setLevel(startup.log_level)
+    handler = logging.FileHandler(startup.log_file)
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     logger.addHandler(handler)
@@ -286,51 +261,18 @@ def main():
         open(pidfilename, 'w').write(pid)
 
 
-    separator = Config.get('Logging','Separator')
-
-
     sys.excepthook = log_uncaught_exceptions
     # systemd beendet den Dienst mit SIGTERM, dann ebenfalls aufräumen
     signal.signal(signal.SIGTERM, handle_sigterm)
     #GPIO END
 
-    #Hardwareversion einlesen
-    version = Config.get('Hardware','version')
-    enable_max31855 = Config.getboolean('Hardware', 'max31855')
-    enable_maverick = Config.getboolean('ToDo', 'maverick_enabled')
-
-    #Log Dateinamen aus der config lesen
-    current_temp = Config.get('filepath','current_temp')
-
-    # Kanalvariablen-Initialisierung
-    if version == 'miniV2':
-        channel_count = 12
-    else:
-        channel_count = 10
-
-    sensortyp = [0 for i in range(channel_count)]
-    log_kanal = [0 for i in range(channel_count)]
-    temp_min = [0 for i in range(channel_count)]
-    temp_max = [0 for i in range(channel_count)]
-    messwiderstand = [0 for i in range(channel_count)]
-    kanal_name = [0 for i in range(channel_count)]
-
-    # read log_kanal only once because of log file format
-    for kanal in range(channel_count):
-        log_kanal[kanal] = Config.getboolean('Logging','CH' + str(kanal))
-
-    pit_tempfile = Config.get('filepath','pitmaster')
-    pit2_tempfile = Config.get('filepath','pitmaster2')
-
-    #Soundoption einlesen
-    sound_on = Config.getboolean('Sound','Beeper_enabled')
-    sound_on_start = Config.getboolean('Sound','beeper_on_start')
+    version = startup.version
+    current_temp = startup.current_temp_file
+    log_kanal = startup.log_channels
+    separator = startup.separator
 
     # Software-Version, wird beim build gesetzt
     build = wlanthermo.VERSION
-
-    #Einlesen der Logging-Option
-    newfile = Config.getboolean('Logging','write_new_log_on_restart')
 
     pi = pigpio.pi()
     open_softspi(CS, 20000)
@@ -346,7 +288,7 @@ def main():
     pi.write(PWM, 0)
     pi.write(IO, 0)
 
-    if sound_on_start:
+    if startup.beeper_on_start:
         pi.write(BEEPER, 1)
         time.sleep(1)
         pi.write(BEEPER, 0)
@@ -365,23 +307,22 @@ def main():
         pass
 
     name = "/var/log/WLAN_Thermo/"  + dateiname() +'_TEMPLOG.csv' #eindeutigen Namen generieren 
-    if (newfile):# neues File beim Start anlegen
-        create_logfile(name, log_kanal)
+    if startup.new_log_on_restart:# neues File beim Start anlegen
+        create_logfile(name, log_kanal, separator)
     else:
         #Kein neues File anlegen
         if os.path.exists('/var/log/WLAN_Thermo/TEMPLOG.csv'):
             # pruefen, ob die Datei schon da ist zum anhaengen, auch False bei Broken Link!
             name = '/var/log/WLAN_Thermo/TEMPLOG.csv'
         else:
-            create_logfile(name, log_kanal)
+            create_logfile(name, log_kanal, separator)
 
-    new_config = configparser.ConfigParser(strict=False, inline_comment_prefixes=(';',))
+    config_watcher = ConfigWatcher(CONFIG_FILE, lambda config: parse_settings(config, sensors, channel_count))
     Temperatur = [None for i in range(channel_count)]
 
     alarms = AlarmMonitor(channel_count)
     schedule = NotificationSchedule()
     test_alarm = False
-    config_mtime = 0
 
     try:
         while True:
@@ -395,7 +336,7 @@ def main():
             pit = {}
             pit2 = {}
 
-            if enable_maverick:
+            if startup.maverick:
                 logger.info('Reading from Maverick receiver...')
                 maverick = read_maverick()
             else:
@@ -404,75 +345,11 @@ def main():
 
             Temperatur_string = [None for i in range(channel_count)]
 
-            new_config_mtime = os.path.getmtime('/var/www/conf/WLANThermo.conf')
-            if new_config_mtime != config_mtime:
-                logger.info('Reading configuration again...')
-                read_config_file(new_config, '/var/www/conf/WLANThermo.conf')
-                config_mtime = new_config_mtime
-
-                pit_on = new_config.getboolean('ToDo','pit_on')
-                pit2_on = new_config.getboolean('ToDo','pit2_on')
-
-                for kanal in range (channel_count):
-                    try:
-                        temp_max[kanal] = new_config.getfloat('temp_max','temp_max' + str(kanal))
-                    except ValueError:
-                        logger.error('Error reading upper limit on channel ' + str(kanal))
-                        temp_max[kanal] = 200
-
-                    try:
-                        temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
-                    except ValueError:
-                        logger.error('Error reading lower limit on channel ' + str(kanal))
-                        temp_min[kanal] = -20
-
-                    try:
-                        messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
-                    except ValueError:
-                        logger.error('Error reading measurement resistor on channel ' + str(kanal))
-                        messwiderstand[kanal] = 47
-
-                    sensortyp[kanal] = new_config.get('Sensoren','CH' + str(kanal))
-                    kanal_name[kanal] = new_config.get('ch_name','ch_name' + str(kanal))
-
-                #Soundoption einlesen
-                sound_on = new_config.getboolean('Sound','Beeper_enabled')
-
-                #Einlesen, ueber wieviele Messungen integriert wird
-                iterations = new_config.getint('Messen','Iterations')
-
-                #delay zwischen jeweils 8 Messungen einlesen
-                delay = new_config.getfloat('Messen','Delay')
-
-                # Allgemeine Alarmeinstellungen
-                alarm_high_template = new_config.get('Alert', 'alarm_high_template')
-                alarm_low_template = new_config.get('Alert', 'alarm_low_template')
-                status_template = new_config.get('Alert', 'status_template')
-                message_template = new_config.get('Alert', 'message_template')
-
-                try:
-                    status_interval = new_config.getint('Alert', 'status_interval')
-                except ValueError:
-                    logger.error('Error reading status interval from config')
-                    status_interval = 0
-
-                try:
-                    alarm_interval = new_config.getint('Alert', 'alarm_interval')
-                except ValueError:
-                    logger.error('Error reading alarm interval from config')
-                    alarm_interval = 0
-
-                # Einlesen welche Alarmierungsart aktiv ist
-                Email_alert = new_config.getboolean('Email','email_alert')
-                Push_alert = new_config.getboolean('Push', 'push_on')
-                Telegram_alert = new_config.getboolean('Telegram', 'telegram_alert')
-
-                temp_unit = new_config.get('locale', 'temp_unit')
-
-                channel_sensor = [sensors.get(sensortyp[kanal]) for kanal in range(channel_count)]
-                for kanal in range(channel_count):
-                    if channel_sensor[kanal] is None:
-                        logger.error('Unknown sensor type {} on channel {}'.format(sensortyp[kanal], kanal))
+            settings = config_watcher.current()
+            channels = settings.channels
+            alert = settings.alert
+            temp_min = [channel.temp_min for channel in channels]
+            temp_max = [channel.temp_max for channel in channels]
 
             if os.path.isfile('/var/www/alert.ack'):
                 logger.info('alert.ack vorhanden')
@@ -488,9 +365,9 @@ def main():
 
             samples = [[] for i in range(8)]
 
-            for i in range(iterations):
+            for i in range(settings.iterations):
                 for kanal in range(8):
-                    if version == 'v1' or isinstance(channel_sensor[kanal], KTypeSensor):
+                    if version == 'v1' or isinstance(channels[kanal].sensor, KTypeSensor):
                         # Nicht invertiert messen
                         samples[kanal].append(get_channel_mcp(kanal))
                     else:
@@ -500,12 +377,12 @@ def main():
             for kanal in range(channel_count):
                 if kanal <= 7:
                     median_value = median_filter(samples[kanal])
-                    sensor = channel_sensor[kanal]
+                    sensor = channels[kanal].sensor
                     if sensor is not None and (median_value > 15) and (median_value < 4080):
                         if isinstance(sensor, KTypeSensor):
                             Temperatur[kanal] = sensor.temperature_from_adc(median_value)
                         else:
-                            Temperatur[kanal] = sensor.temperature(resistance_from_adc(median_value, messwiderstand[kanal]))
+                            Temperatur[kanal] = sensor.temperature(resistance_from_adc(median_value, channels[kanal].resistor))
                             if Temperatur[kanal] is not None:
                                 Temperatur[kanal] = round(Temperatur[kanal], 2)
                     else:
@@ -515,7 +392,7 @@ def main():
                         warnung = 'Channel:{kanal} variance: {variance} in {iterations}, median @ {median_value}!'.format(
                             kanal=kanal,
                             variance=variance,
-                            iterations=iterations,
+                            iterations=settings.iterations,
                             median_value=median_value)
                         logger.warning(warnung)
                     logger.debug('Channel {}, MCP3128 {}, temperature {}'.format(kanal, kanal, Temperatur[kanal]))
@@ -531,7 +408,7 @@ def main():
                             Temperatur[kanal] = maverick_value
                         logger.debug('Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - 7, Temperatur[kanal]))
                 elif version == 'miniV2':
-                    if enable_max31855:
+                    if startup.max31855:
                         Temperatur[kanal] = get_channel_max31855(kanal - 10)
                         logger.debug('Channel {}, MAX31855 {}, temperature {}'.format(kanal, kanal - 10, Temperatur[kanal]))
                     else:
@@ -541,7 +418,7 @@ def main():
                     logger.error('Channel {} checked without a reason!'.format(kanal))
                     Temperatur[kanal] = None
 
-                if temp_unit == 'fahrenheit' and Temperatur[kanal] is not None:
+                if settings.temp_unit == 'fahrenheit' and Temperatur[kanal] is not None:
                     Temperatur[kanal] = Temperatur[kanal] * 1.8 + 32
 
             evaluation = alarms.evaluate(Temperatur, temp_min, temp_max)
@@ -549,14 +426,14 @@ def main():
 
             for kanal in range(channel_count):
                 alarm_values = dict()
-                if temp_unit == 'celsius':
+                if settings.temp_unit == 'celsius':
                     alarm_values['temp_unit'] = '°C'
                     alarm_values['temp_unit_long'] = _('degrees Celsius')
-                elif temp_unit == 'fahrenheit':
+                elif settings.temp_unit == 'fahrenheit':
                     alarm_values['temp_unit'] = '°F'
                     alarm_values['temp_unit_long'] = _('degrees Fahrenheit')
                 alarm_values['kanal'] = kanal
-                alarm_values['name'] = kanal_name[kanal]
+                alarm_values['name'] = channels[kanal].name
                 # Python 2 gab Floats mit 12 Stellen aus, Python 3 mit allen (74.21000000000001)
                 alarm_values['temperatur'] = round(Temperatur[kanal], 2) if Temperatur[kanal] is not None else None
                 alarm_values['temp_max'] = temp_max[kanal]
@@ -568,15 +445,15 @@ def main():
 
                 status = evaluation.statuses[kanal]
                 if status == ChannelStatus.HI:
-                    alarme.append(safe_format(alarm_high_template, alarm_values))
+                    alarme.append(safe_format(alert.high_template, alarm_values))
                 elif status == ChannelStatus.LO:
-                    alarme.append(safe_format(alarm_low_template, alarm_values))
+                    alarme.append(safe_format(alert.low_template, alarm_values))
                 elif status == ChannelStatus.OK:
-                    statusse.append(safe_format(status_template, alarm_values))
+                    statusse.append(safe_format(alert.status_template, alarm_values))
 
-            if pit_on:
+            if settings.pit_on[0]:
                 try:
-                    with codecs.open(pit_tempfile, 'r', 'utf_8') as pitfile:
+                    with codecs.open(startup.pit_files[0], 'r', 'utf_8') as pitfile:
                         pit_values = pitfile.readline().split(';')
                         pit['new'] = pit_values[3].rstrip('%')
                         pit['set'] = pit_values[1]
@@ -587,9 +464,9 @@ def main():
             else:
                     pit = None
 
-            if pit2_on:
+            if settings.pit_on[1]:
                 try:
-                    with codecs.open(pit2_tempfile, 'r', 'utf_8') as pit2file:
+                    with codecs.open(startup.pit_files[1], 'r', 'utf_8') as pit2file:
                         pit2_values = pit2file.readline().split(';')
                         pit2['new'] = pit2_values[3].rstrip('%')
                         pit2['set'] = pit2_values[1]
@@ -613,12 +490,12 @@ def main():
             message_values['lf'] = '\n'
             message_values['hostname'] = platform.node()
 
-            alarm_message = safe_format(message_template, message_values)
+            alarm_message = safe_format(alert.message_template, message_values)
 
 
             # Beeper bei jedem unquittiertem Alarm
             if alarm_irgendwo:
-                if sound_on:
+                if settings.beeper:
                     logger.debug('BEEPER!!!')
                     pi.write(BEEPER, 1)
                     time.sleep(0.2)
@@ -634,7 +511,7 @@ def main():
 
             # Bei neuem Alarm oder Test sofort, sonst Alarm erneut bzw. periodisch den Status senden
             alarm_repeat, send_status, send = schedule.check(
-                evaluation, test_alarm, alarm_interval, status_interval, time.time())
+                evaluation, test_alarm, alert.alarm_interval, alert.status_interval, time.time())
 
             # Nachrichten senden
             if send:
@@ -649,32 +526,24 @@ def main():
                 if send_status:
                     logger.info('sending status')
 
-                if Email_alert:
+                email = settings.email
+                if email is not None:
                     # Wenn konfiguriert, Email schicken
-                    Email_server  = new_config.get('Email','server')
-                    Email_auth = new_config.getboolean('Email','auth')
-                    Email_user = new_config.get('Email','username')
-                    Email_password = new_config.get('Email','password')
-                    Email_from = new_config.get('Email','email_from')
-                    Email_to = new_config.get('Email','email_to')
-                    Email_subject = new_config.get('Email','email_subject')
-                    Email_STARTTLS = new_config.getboolean ('Email','starttls')
-
                     alarm_email(
-                        Email_server,
-                        Email_auth,
-                        Email_user,
-                        Email_password,
-                        Email_STARTTLS,
-                        Email_from,
-                        Email_to,
-                        Email_subject,
+                        email.server,
+                        email.auth,
+                        email.username,
+                        email.password,
+                        email.starttls,
+                        email.sender,
+                        email.recipient,
+                        email.subject,
                         alarm_message)
 
-                if Telegram_alert:
+                if settings.telegram is not None:
                     Telegram_URL = 'https://api.telegram.org/bot{token}/sendMessage'
-                    Telegram_chat_id = new_config.get('Telegram', 'telegram_chat_id')
-                    Telegram_token = new_config.get('Telegram', 'telegram_token')
+                    Telegram_chat_id = settings.telegram.chat_id
+                    Telegram_token = settings.telegram.token
 
                     if not alarm_irgendwo:
                         disable_notification = 'true'
@@ -703,10 +572,10 @@ def main():
                         # z.B. Zeitüberschreitung beim Lesen der Antwort
                         logger.error('Telegram error: ' + str(e))
 
-                if Push_alert:
+                if settings.push is not None:
                     # Wenn konfiguriert, Alarm per Pushnachricht schicken
-                    Push_URL = new_config.get('Push', 'push_url')
-                    Push_Body = new_config.get('Push', 'push_body')
+                    Push_URL = settings.push.url
+                    Push_Body = settings.push.body
 
                     try:
                         url = Push_URL.format(messagetext=urllib.parse.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
@@ -805,6 +674,7 @@ def main():
             # Werte loggen
             logger.debug(separator.join(log_line))
 
+            delay = settings.delay
             time_remaining = time_start + delay - time.time()
             if time_remaining < 0:
                 logger.warning('measuring loop running longer than {delay}s, remaining time {time_remaining}s'.format(delay=delay, time_remaining=time_remaining))
