@@ -27,15 +27,13 @@ import signal
 import traceback
 import gettext
 import wlanthermo
-from bitstring import BitArray
-import pigpio
-from struct import pack, unpack
-import statistics
 import platform
 from wlanthermo.alarm import AlarmMonitor, NotificationSchedule, ChannelStatus, safe_format
+from wlanthermo.channels import AdcInput, MaverickInput, ThermocoupleInput
 from wlanthermo.datafiles import CurrentTempFile, PitmasterReader, TemperatureLog, read_maverick
+from wlanthermo.hardware import Board
 from wlanthermo.notify import build_notifiers
-from wlanthermo.sensors import KTypeSensor, load_sensors, median_filter, resistance_from_adc
+from wlanthermo.sensors import load_sensors
 from wlanthermo.settings import (CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser,
                                  parse_settings, parse_startup_settings, read_config_file)
 
@@ -61,59 +59,12 @@ def check_pid(pid):
     else:
         return True
 
-def open_softspi(cs, baud):
-    # Ist der Bus noch von einem vorherigen Lauf offen, kann er weiter benutzt werden
-    try:
-        pi.bb_spi_open(cs, MISO, MOSI, SCLK, baud, 0)
-    except pigpio.error as e:
-        if e.value != pigpio.error_text(pigpio.PI_GPIO_IN_USE):
-            raise
-
-
-def close_softspi(cs):
-    try:
-        pi.bb_spi_close(cs)
-    except pigpio.error as e:
-        logger.warning('Could not close SPI on CS {}: {}'.format(cs, e))
-
-
-def get_channel_mcp(channel):
-    if channel > 7:
-        raise ValueError()
-    command = pack('>Hx', (0x18 + channel) << 6)
-    return unpack('>xH', pi.bb_spi_xfer(CS, command)[1])[0] & 0x0FFF
-
-
-def get_channel_max31855(channel):
-    if channel > 1:
-        raise ValueError()
-    data = BitArray(pi.bb_spi_xfer(8 - channel, b"\x00\x00")[1])
-    if data[15]:
-        return None
-    else:
-        return data[0:14].int / 4.0
-
-
 def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical(''.join(traceback.format_tb(tb)))
     logger.critical('{0}: {1}'.format(ex_cls, ex))
 
-# Variablendefinition und GPIO Pin-Definition
-ADC_Channel = 0  # Analog/Digital-Channel
-#GPIO START
-SCLK        = 18 # Serial-Clock
-MOSI        = 24 # Master-Out-Slave-In
-MISO        = 23 # Master-In-Slave-Out
-CS          = 25 # Chip-Select
-CS_MAX1 = 8 # MAX31855 IC1
-CS_MAX2 = 7 # MAX31855 IC2
-BEEPER      = 17 # Piepser
-PWM         = 4
-IO          = 2
-
-
 def main():
-    global logger, pi
+    global logger
     gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/')
 
     # Wir laufen als root, auch andere müssen die Config schreiben!
@@ -170,40 +121,28 @@ def main():
     # Software-Version, wird beim build gesetzt
     build = wlanthermo.VERSION
 
-    pi = pigpio.pi()
-    open_softspi(CS, 20000)
-    open_softspi(CS_MAX1, 250000)
-    open_softspi(CS_MAX2, 250000)
-    # Pin-Programmierung (Pitmaster)
-    pi.set_mode(PWM, pigpio.OUTPUT)
-    pi.set_mode(IO, pigpio.OUTPUT)
-
-    # Pin-Programmierung (Beeper)
-    pi.set_mode(BEEPER, pigpio.OUTPUT)
-
-    pi.write(PWM, 0)
-    pi.write(IO, 0)
-
-    if startup.beeper_on_start:
-        pi.write(BEEPER, 1)
-        time.sleep(1)
-        pi.write(BEEPER, 0)
-
-    current_temp_file = CurrentTempFile(startup.current_temp_file)
-    pit_readers = [PitmasterReader(path) for path in startup.pit_files]
-    temperature_log = TemperatureLog(startup.log_channels, startup.separator, [
-        _('Controller output value'), _('Controller set value'),
-        _('Controller 2 output value'), _('Controller 2 set value')])
-    temperature_log.open(new_file=startup.new_log_on_restart)
-
     config_watcher = ConfigWatcher(CONFIG_FILE, lambda config: parse_settings(config, sensors, channel_count))
-    Temperatur = [None for i in range(channel_count)]
 
     alarms = AlarmMonitor(channel_count)
     schedule = NotificationSchedule()
     test_alarm = False
 
     try:
+      with Board() as board:
+        if startup.beeper_on_start:
+            board.beeper.beep(1, on=1)
+
+        current_temp_file = CurrentTempFile(startup.current_temp_file)
+        pit_readers = [PitmasterReader(path) for path in startup.pit_files]
+        temperature_log = TemperatureLog(startup.log_channels, startup.separator, [
+            _('Controller output value'), _('Controller set value'),
+            _('Controller 2 output value'), _('Controller 2 set value')])
+        temperature_log.open(new_file=startup.new_log_on_restart)
+
+        adc_input = AdcInput(board.adc, version)
+        maverick_input = MaverickInput()
+        thermocouple_input = ThermocoupleInput(board.thermocouples, startup.max31855) if version == 'miniV2' else None
+
         while True:
             time_start = time.time()
             CPU_usage = psutil.cpu_percent(interval=1, percpu=True)
@@ -240,63 +179,12 @@ def main():
 
             logger.debug('Measuring {} channels'.format(channel_count))
 
-            samples = [[] for i in range(8)]
-
-            for i in range(settings.iterations):
-                for kanal in range(8):
-                    if version == 'v1' or isinstance(channels[kanal].sensor, KTypeSensor):
-                        # Nicht invertiert messen
-                        samples[kanal].append(get_channel_mcp(kanal))
-                    else:
-                        # Spannungsteiler ist nach v1 anders herum aufgebaut
-                        samples[kanal].append(4095 - get_channel_mcp(kanal))
-
-            for kanal in range(channel_count):
-                if kanal <= 7:
-                    median_value = median_filter(samples[kanal])
-                    sensor = channels[kanal].sensor
-                    if sensor is not None and (median_value > 15) and (median_value < 4080):
-                        if isinstance(sensor, KTypeSensor):
-                            Temperatur[kanal] = sensor.temperature_from_adc(median_value)
-                        else:
-                            Temperatur[kanal] = sensor.temperature(resistance_from_adc(median_value, channels[kanal].resistor))
-                            if Temperatur[kanal] is not None:
-                                Temperatur[kanal] = round(Temperatur[kanal], 2)
-                    else:
-                        Temperatur[kanal] = None
-                    variance = statistics.pvariance(samples[kanal])
-                    if variance > 4:
-                        warnung = 'Channel:{kanal} variance: {variance} in {iterations}, median @ {median_value}!'.format(
-                            kanal=kanal,
-                            variance=variance,
-                            iterations=settings.iterations,
-                            median_value=median_value)
-                        logger.warning(warnung)
-                    logger.debug('Channel {}, MCP3128 {}, temperature {}'.format(kanal, kanal, Temperatur[kanal]))
-                elif kanal <= 9:
-                    if maverick is None:
-                        Temperatur[kanal] = None
-                        logger.debug('Channel {}, disabled or not available'.format(kanal))
-                    else:
-                        maverick_value = maverick['temperature_' + str(kanal - 7)]
-                        if maverick_value == '':
-                            Temperatur[kanal] = None
-                        else:
-                            Temperatur[kanal] = maverick_value
-                        logger.debug('Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - 7, Temperatur[kanal]))
-                elif version == 'miniV2':
-                    if startup.max31855:
-                        Temperatur[kanal] = get_channel_max31855(kanal - 10)
-                        logger.debug('Channel {}, MAX31855 {}, temperature {}'.format(kanal, kanal - 10, Temperatur[kanal]))
-                    else:
-                        Temperatur[kanal] = None
-                        logger.debug('Channel {}, disabled'.format(kanal))
-                else:
-                    logger.error('Channel {} checked without a reason!'.format(kanal))
-                    Temperatur[kanal] = None
-
-                if settings.temp_unit == 'fahrenheit' and Temperatur[kanal] is not None:
-                    Temperatur[kanal] = Temperatur[kanal] * 1.8 + 32
+            Temperatur = (adc_input.read(channels[:8], settings.iterations)
+                          + maverick_input.read(maverick))
+            if thermocouple_input is not None:
+                Temperatur += thermocouple_input.read()
+            if settings.temp_unit == 'fahrenheit':
+                Temperatur = [t * 1.8 + 32 if t is not None else None for t in Temperatur]
 
             evaluation = alarms.evaluate(Temperatur, temp_min, temp_max)
             alarm_irgendwo = evaluation.active
@@ -351,17 +239,7 @@ def main():
             if alarm_irgendwo:
                 if settings.beeper:
                     logger.debug('BEEPER!!!')
-                    pi.write(BEEPER, 1)
-                    time.sleep(0.2)
-                    pi.write(BEEPER, 0)
-                    time.sleep(0.2)
-                    pi.write(BEEPER, 1)
-                    time.sleep(0.2)
-                    pi.write(BEEPER, 0)
-                    time.sleep(0.2)
-                    pi.write(BEEPER, 1)
-                    time.sleep(0.2)
-                    pi.write(BEEPER, 0)
+                    board.beeper.beep(3)
 
             # Bei neuem Alarm oder Test sofort, sonst Alarm erneut bzw. periodisch den Status senden
             alarm_repeat, send_status, send = schedule.check(
@@ -407,11 +285,7 @@ def main():
     except (KeyboardInterrupt, Shutdown):
         logger.info('WLANThermo stopped!')
     finally:
-        # Auch nach einem unerwarteten Fehler aufräumen
-        close_softspi(CS)
-        close_softspi(CS_MAX1)
-        close_softspi(CS_MAX2)
-        pi.stop()
+        # Auch nach einem unerwarteten Fehler aufräumen; die Hardware schließt Board
         try:
             os.unlink(pidfilename)
         except OSError:
