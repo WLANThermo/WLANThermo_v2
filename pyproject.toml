@@ -33,7 +33,7 @@ wlanthermo-pitmaster = "wlanthermo.pitmaster:main"
 wlanthermo-hwclock = "wlanthermo.display.hwclock:main"
 wlanthermo-nextion-upload = "wlanthermo.display.upload:main"
 wlanthermo-updateconfig = "wlanthermo.tools.updateconfig:main"
-wlanthermo-maverick = "wlanthermo.maverick:main"
+wlanthermo-maverick = "wlanthermo.sensors.maverick.receiver:main"
 wlanthermo-update-checker = "wlanthermo.tools.update_checker:main"
 
 [tool.setuptools.dynamic]

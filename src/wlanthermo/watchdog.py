@@ -413,7 +413,7 @@ def check_maverick():
     if (Config.getboolean('ToDo', 'maverick_enabled')):
         if pitmasterStatus != 0:
             logger.info(_('Start Maverick'))
-            bashCommandPit = ('/usr/bin/systemd-run', '--unit', 'WLANThermoMAVERICK.service', sys.executable, '-m', 'wlanthermo.maverick', '--json',  '/var/www/tmp/maverick.json' , '--noappend')
+            bashCommandPit = ('/usr/bin/systemd-run', '--unit', 'WLANThermoMAVERICK.service', sys.executable, '-m', 'wlanthermo.sensors.maverick.receiver', '--json',  '/var/www/tmp/maverick.json' , '--noappend')
         else:
             logger.info(_('Maverick already running'))
     else:

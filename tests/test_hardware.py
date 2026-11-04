@@ -11,10 +11,14 @@ from unittest import mock
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 import pigpio  # noqa: E402
 from wlanthermo.comp import hardware  # noqa: E402
-from wlanthermo.comp.channels import AdcInput, MaverickInput, ThermocoupleInput  # noqa: E402
-from wlanthermo.comp.hardware import Beeper, Board, Max31855, Mcp3208  # noqa: E402
-from wlanthermo.comp.sensors import KTypeSensor, NtcSensor  # noqa: E402
+from wlanthermo.comp.channels import Channels  # noqa: E402
+from wlanthermo.comp.hardware import Beeper, Board  # noqa: E402
 from wlanthermo.comp.settings import ChannelSettings  # noqa: E402
+from wlanthermo.sensors.adc import Mcp3208  # noqa: E402
+from wlanthermo.sensors.catalog import SensorType  # noqa: E402
+from wlanthermo.sensors.maverick import MaverickProbe  # noqa: E402
+from wlanthermo.sensors.resistive import NtcProbe  # noqa: E402
+from wlanthermo.sensors.thermocouple import Ad595Thermocouple, Max31855, Max31855Thermocouple  # noqa: E402
 
 
 class FakePi:
@@ -50,32 +54,6 @@ class FakePi:
 
     def stop(self):
         self.calls.append(('stop',))
-
-
-class Mcp3208Test(unittest.TestCase):
-    def test_read_channel(self):
-        pi = FakePi()
-        pi.adc[5] = 1234
-        self.assertEqual(Mcp3208(pi, hardware.CS_MCP).read(5), 1234)
-        self.assertEqual(pi.calls, [('adc', 5)])
-
-    def test_invalid_channel(self):
-        with self.assertRaises(ValueError):
-            Mcp3208(FakePi(), hardware.CS_MCP).read(8)
-
-
-class Max31855Test(unittest.TestCase):
-    def test_temperature(self):
-        pi = FakePi()
-        pi.max31855[8] = struct.pack('>h', int(123.25 * 4) << 2)
-        self.assertEqual(Max31855(pi, 8).read(), 123.25)
-        pi.max31855[8] = struct.pack('>h', int(-10.5 * 4) << 2)
-        self.assertEqual(Max31855(pi, 8).read(), -10.5)
-
-    def test_fault_bit(self):
-        pi = FakePi()
-        pi.max31855[7] = b'\x00\x01'
-        self.assertIsNone(Max31855(pi, 7).read())
 
 
 class BeeperTest(unittest.TestCase):
@@ -120,60 +98,62 @@ class BoardTest(unittest.TestCase):
                 pass
 
 
-def channel(sensor, resistor=47):
-    return ChannelSettings(name='', sensor_type='', sensor=sensor, temp_min=0, temp_max=100, resistor=resistor)
+FANTAST = SensorType('Fantast', NtcProbe, a=3.3558340e-03, b=2.5698192e-04, c=1.6391056e-06, rn=50.08)
+KTYPE = SensorType('KTYPE', Ad595Thermocouple)
 
 
-NTC = NtcSensor('Fantast', 3.3558340e-03, 2.5698192e-04, 1.6391056e-06, 50.08)
+def startup(version='v3', maverick=False, max31855=False):
+    return mock.Mock(version=version, maverick=maverick, max31855=max31855)
 
 
-class AdcInputTest(unittest.TestCase):
-    def test_interleaved_sampling_and_inversion(self):
+def settings(*sensor_types, resistor=47):
+    return mock.Mock(channels=[ChannelSettings(name='', sensor_number='', sensor_type=t, temp_min=0,
+                                               temp_max=100, resistor=resistor) for t in sensor_types])
+
+
+class ChannelsTest(unittest.TestCase):
+    def board(self, pi):
+        return mock.Mock(adc=Mcp3208(pi, hardware.CS_MCP),
+                         thermocouples=[Max31855(pi, cs) for cs in hardware.CS_MAX])
+
+    def test_layout_v3(self):
+        channels = Channels(startup(maverick=True), self.board(FakePi()))
+        channels.configure(settings(*[FANTAST] * 7, None))
+        sensors = channels.sensors
+        self.assertEqual(len(sensors), 10)
+        self.assertIsInstance(sensors[0], NtcProbe)
+        self.assertIsNone(sensors[7])
+        self.assertEqual([type(s) for s in sensors[8:]], [MaverickProbe, MaverickProbe])
+
+    def test_layout_mini_v2(self):
+        sensors = Channels(startup('miniV2', max31855=True), self.board(FakePi())).fixed
+        self.assertEqual([s is None for s in sensors[:2]], [True, True])   # Maverick aus
+        self.assertEqual([type(s) for s in sensors[2:]], [Max31855Thermocouple] * 2)
+        sensors = Channels(startup('miniV2', max31855=False), self.board(FakePi())).fixed
+        self.assertEqual(sensors, [None] * 4)
+
+    def test_probes_only_rebuilt_on_new_settings(self):
+        channels = Channels(startup(), self.board(FakePi()))
+        current = settings(*[FANTAST] * 8)
+        channels.configure(current)
+        first = channels.adc_probes
+        channels.configure(current)
+        self.assertIs(channels.adc_probes, first)
+        channels.configure(settings(*[KTYPE] * 8))
+        self.assertIsInstance(channels.adc_probes[0], Ad595Thermocouple)
+
+    def test_measure(self):
         pi = FakePi()
-        pi.adc[0] = 1000
-        pi.adc[1] = 1000
-        adc = AdcInput(Mcp3208(pi, hardware.CS_MCP), version='v3')
-        samples = adc.sample([channel(NTC), channel(KTypeSensor('KTYPE'))], iterations=2)
-        self.assertEqual([c[1] for c in pi.calls], [0, 1, 0, 1])
-        self.assertEqual(samples, [[3095, 3095], [1000, 1000]])
-
-    def test_v1_not_inverted(self):
-        pi = FakePi()
-        pi.adc[0] = 1000
-        adc = AdcInput(Mcp3208(pi, hardware.CS_MCP), version='v1')
-        self.assertEqual(adc.sample([channel(NTC)], iterations=1), [[1000]])
-
-    def test_temperature(self):
-        # Spannungsteiler in der Mitte: Fühler = Messwiderstand = Rn -> 1/a - 273
-        self.assertEqual(AdcInput.temperature(channel(NTC, resistor=50.08), 2048), round(1 / 3.3558340e-03 - 273, 2))
-        self.assertAlmostEqual(AdcInput.temperature(channel(KTypeSensor('KTYPE')), 2048), 165)
-
-    def test_out_of_range_or_unknown_sensor(self):
-        for value in (0, 15, 4080, 4095):
-            self.assertIsNone(AdcInput.temperature(channel(NTC), value))
-        self.assertIsNone(AdcInput.temperature(channel(None), 2048))
-
-    def test_noisy_channel_warns(self):
-        pi = FakePi()
-        values = iter([1000, 1100] * 5)
-        pi.bb_spi_xfer = lambda cs, data: (3, b'\x00' + struct.pack('>H', next(values)))
-        adc = AdcInput(Mcp3208(pi, hardware.CS_MCP), version='v3')
-        with self.assertLogs('WLANthermo.channels', 'WARNING'):
-            adc.read([channel(NTC)], iterations=10)
-
-
-class MaverickInputTest(unittest.TestCase):
-    def test_values(self):
-        self.assertEqual(MaverickInput().read({'temperature_1': 80.5, 'temperature_2': ''}), [80.5, None])
-        self.assertEqual(MaverickInput().read(None), [None, None])
-
-
-class ThermocoupleInputTest(unittest.TestCase):
-    def test_enabled_and_disabled(self):
-        chips = [mock.Mock(**{'read.return_value': 250.0}), mock.Mock(**{'read.return_value': None})]
-        self.assertEqual(ThermocoupleInput(chips, enabled=True).read(), [250.0, None])
-        self.assertEqual(ThermocoupleInput(chips, enabled=False).read(), [None, None])
-        chips[0].read.assert_called_once_with()
+        pi.adc = [2048, 2048] + [0] * 6
+        channels = Channels(startup(), self.board(pi))
+        channels.configure(settings(FANTAST, KTYPE, *[FANTAST] * 6, resistor=50.08))
+        temperatures = channels.measure(iterations=3)
+        self.assertEqual([c[1] for c in pi.calls], list(range(8)) * 3)
+        # Kanal 0 invertiert (Spannungsteiler, v3): 4095 - 2048 = 2047
+        self.assertEqual(temperatures[0], FANTAST.create(channels.sampler.channels[0], 50.08).read())
+        self.assertEqual(channels.sampler.channels[0].samples, [2047] * 3)
+        self.assertAlmostEqual(temperatures[1], 165)   # AD595 nicht invertiert
+        self.assertEqual(temperatures[2:], [None] * 8)  # ADC 0 = kein Fühler, Maverick aus
 
 
 if __name__ == '__main__':

@@ -12,6 +12,8 @@ import time
 from dataclasses import dataclass
 from typing import List, Optional
 
+from ..sensors.catalog import SensorType
+
 logger = logging.getLogger('WLANthermo.settings')
 
 CONFIG_FILE = '/var/www/conf/WLANThermo.conf'
@@ -89,8 +91,8 @@ def parse_startup_settings(config):
 @dataclass
 class ChannelSettings:
     name: str
-    sensor_type: str          # Abschnitt in sensor.conf
-    sensor: Optional[object]  # None, wenn der Typ in sensor.conf fehlt
+    sensor_number: str                  # Abschnitt in sensor.conf
+    sensor_type: Optional[SensorType]   # None, wenn der Typ in sensor.conf fehlt
     temp_min: float
     temp_max: float
     resistor: float           # Messwiderstand in kOhm
@@ -161,16 +163,16 @@ def _getint(config, section, option, default, what):
         return default
 
 
-def parse_channel(config, kanal, sensors):
+def parse_channel(config, kanal, sensor_types):
     k = str(kanal)
-    sensor_type = config.get('Sensoren', 'CH' + k)
-    sensor = sensors.get(sensor_type)
-    if sensor is None:
-        logger.error('Unknown sensor type {} on channel {}'.format(sensor_type, kanal))
+    sensor_number = config.get('Sensoren', 'CH' + k)
+    sensor_type = sensor_types.get(sensor_number)
+    if sensor_type is None:
+        logger.error('Unknown sensor type {} on channel {}'.format(sensor_number, kanal))
     return ChannelSettings(
         name=config.get('ch_name', 'ch_name' + k),
+        sensor_number=sensor_number,
         sensor_type=sensor_type,
-        sensor=sensor,
         temp_min=_getfloat(config, 'temp_min', 'temp_min' + k, DEFAULT_TEMP_MIN,
                            'lower limit on channel ' + k),
         temp_max=_getfloat(config, 'temp_max', 'temp_max' + k, DEFAULT_TEMP_MAX,
@@ -180,7 +182,7 @@ def parse_channel(config, kanal, sensors):
     )
 
 
-def parse_settings(config, sensors, channel_count):
+def parse_settings(config, sensor_types, channel_count):
     """Einstellungen, die sich im Betrieb ändern können."""
     email = None
     if config.getboolean('Email', 'email_alert'):
@@ -205,7 +207,7 @@ def parse_settings(config, sensors, channel_count):
         push = PushSettings(url=config.get('Push', 'push_url'), body=config.get('Push', 'push_body'))
 
     return Settings(
-        channels=[parse_channel(config, kanal, sensors) for kanal in range(channel_count)],
+        channels=[parse_channel(config, kanal, sensor_types) for kanal in range(channel_count)],
         pit_on=[config.getboolean('ToDo', 'pit_on'), config.getboolean('ToDo', 'pit2_on')],
         beeper=config.getboolean('Sound', 'Beeper_enabled'),
         iterations=config.getint('Messen', 'Iterations'),

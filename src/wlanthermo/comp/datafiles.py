@@ -3,13 +3,11 @@
 - CurrentTempFile: aktuelle Werte für Webinterface und Display (eine Zeile, ';'-getrennt)
 - TemperatureLog: CSV-Log aller Messzyklen, TEMPLOG.csv zeigt auf die aktuelle Datei
 - PitmasterReader: aktuelle Werte eines Pitmasters
-- read_maverick(): Werte des Maverick-Empfängers
 
 Schreibfehler werden protokolliert und nicht weitergegeben, die Messung und
 die Alarme sollen weiterlaufen.
 """
 import codecs
-import json
 import logging
 import os
 import time
@@ -18,9 +16,6 @@ from collections import namedtuple
 logger = logging.getLogger('WLANthermo.datafiles')
 
 LOG_DIR = '/var/log/WLAN_Thermo'
-MAVERICK_FILE = '/var/www/tmp/maverick.json'
-# Ältere Maverick-Werte werden verworfen
-MAVERICK_MAX_AGE = 30
 
 
 def _write_synced(f, text):
@@ -137,21 +132,3 @@ class PitmasterReader:
         except (OSError, IndexError):
             # IndexError: Datei leer oder gerade unvollständig geschrieben
             return None
-
-
-def read_maverick(path=MAVERICK_FILE, max_age=MAVERICK_MAX_AGE):
-    try:
-        with codecs.open(path, 'r', 'utf_8') as f:
-            values = json.load(f)
-    except ValueError:
-        logger.error('Maverick file is no valid JSON')
-        return None
-    except OSError:
-        logger.info('Maverick file could not be read')
-        return None
-
-    age = time.time() - values['time']
-    if age > max_age:
-        logger.debug('Maverick values too old, {} sec'.format(age))
-        return None
-    return values

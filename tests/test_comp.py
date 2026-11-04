@@ -19,8 +19,8 @@ from wlanthermo.comp.settings import AlertSettings, ChannelSettings, Settings, S
 
 def settings(**changes):
     values = dict(
-        channels=[ChannelSettings(name='Garraum', sensor_type='1', sensor=None, temp_min=10, temp_max=60, resistor=47),
-                  ChannelSettings(name='Kern', sensor_type='1', sensor=None, temp_min=10, temp_max=60, resistor=47)],
+        channels=[ChannelSettings(name='Garraum', sensor_number='1', sensor_type=None, temp_min=10, temp_max=60, resistor=47),
+                  ChannelSettings(name='Kern', sensor_number='1', sensor_type=None, temp_min=10, temp_max=60, resistor=47)],
         pit_on=[True, False], beeper=True, iterations=1, delay=3.0, temp_unit='celsius',
         alert=AlertSettings(high_template='{name} zu heiß: {temperatur}{temp_unit}{lf}',
                             low_template='{name} zu kalt{lf}',
@@ -115,13 +115,14 @@ class CycleTest(GettextTest):
                                   pit_files=['/p1', '/p2'], log_channels=[True] * 10, beeper_on_start=False,
                                   new_log_on_restart=False, separator=',', log_file='/l', log_level='ERROR')
         self.board = mock.Mock()
-        self.comp = comp.Comp(startup, sensors={}, board=self.board)
+        self.board.adc.channels = 8
+        self.comp = comp.Comp(startup, sensor_types={}, board=self.board)
         self.comp.current_temp_file = mock.Mock()
         self.comp.temperature_log = mock.Mock(**{'line.return_value': 'line'})
         self.comp.temperature_log.name = 'log'   # Mock(name=...) setzt den Namen des Mocks
         self.comp.config = mock.Mock(**{'current.return_value': settings(
             channels=settings().channels * 5, email=object())})
-        self.comp.adc_input = mock.Mock(**{'read.return_value': [70.0] + [30.0] * 7})
+        self.comp.channels = mock.Mock(**{'measure.return_value': [70.0] + [30.0] * 7 + [None, None]})
         self.comp.pit_readers = [mock.Mock(**{'read.return_value': PitValues('55', '110')}), mock.Mock()]
         self.notifier = mock.Mock()
         for name, value in (('psutil.cpu_percent', [1.0]), ('psutil.virtual_memory', mock.Mock(free=0)),
@@ -155,7 +156,7 @@ class CycleTest(GettextTest):
         self.assertEqual(self.board.beeper.beep.call_count, 2)  # Summer, solange nicht quittiert
 
     def test_test_alarm(self):
-        self.comp.adc_input.read.return_value = [30.0] * 8
+        self.comp.channels.measure.return_value = [30.0] * 8 + [None, None]
         self.comp.test_alarm = True
         self.comp.cycle()
         self.assertTrue(self.notifier.send.call_args[0][0].startswith('test message\n'))

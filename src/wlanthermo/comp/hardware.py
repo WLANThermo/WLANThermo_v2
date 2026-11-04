@@ -5,10 +5,11 @@ Der MCP3208 und die MAX31855 hängen an einem per Software erzeugten SPI-Bus
 """
 import logging
 import time
-from struct import pack, unpack
 
 import pigpio
-from bitstring import BitArray
+
+from ..sensors.adc import Mcp3208
+from ..sensors.thermocouple import Max31855
 
 logger = logging.getLogger('WLANthermo.hardware')
 
@@ -24,38 +25,6 @@ IO = 2         # Pitmaster
 
 MCP_BAUD = 20000
 MAX_BAUD = 250000
-
-
-class Mcp3208:
-    """12-Bit-AD-Wandler mit 8 Kanälen."""
-
-    channels = 8
-
-    def __init__(self, pi, cs):
-        self.pi = pi
-        self.cs = cs
-
-    def read(self, channel):
-        if not 0 <= channel < self.channels:
-            raise ValueError('MCP3208 has no channel {}'.format(channel))
-        # Startbit, Single-Ended, 3 Bit Kanal
-        command = pack('>Hx', (0x18 + channel) << 6)
-        return unpack('>xH', self.pi.bb_spi_xfer(self.cs, command)[1])[0] & 0x0FFF
-
-
-class Max31855:
-    """Wandler für ein Thermoelement Typ K."""
-
-    def __init__(self, pi, cs):
-        self.pi = pi
-        self.cs = cs
-
-    def read(self):
-        """Temperatur in °C, None bei einem Fehler (z.B. kein Thermoelement angeschlossen)."""
-        data = BitArray(self.pi.bb_spi_xfer(self.cs, b'\x00\x00')[1])
-        if data[15]:
-            return None
-        return data[0:14].int / 4.0
 
 
 class Beeper:

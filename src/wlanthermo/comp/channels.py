@@ -1,107 +1,68 @@
-"""Messkanäle: woher die Temperatur eines Kanals kommt.
+"""Belegung der Messkanäle: welcher Fühler an welchem Kanal hängt.
 
-    Kanal 0-7    Fühler am AD-Wandler (MCP3208)
+    Kanal 0-7    Fühler am AD-Wandler (Typ aus sensor.conf, je Kanal einstellbar)
     Kanal 8-9    Maverick-Funkthermometer
     Kanal 10-11  Thermoelemente am MAX31855 (nur miniV2)
 """
 import logging
-import statistics
 
-from .sensors import ADC_RANGE, KTypeSensor, median_filter, resistance_from_adc
+from ..sensors.adc import AdcSampler
+from ..sensors.maverick import MaverickFile, MaverickProbe
+from ..sensors.thermocouple import Max31855Thermocouple
 
 logger = logging.getLogger('WLANthermo.channels')
 
-# Werte am Rand des Messbereichs: Fühler nicht gesteckt oder Kurzschluss
-ADC_MIN = 15
-ADC_MAX = 4080
-# Ab dieser Streuung der Rohwerte wird gewarnt (Störungen, Wackelkontakt)
-MAX_VARIANCE = 4
+ADC_CHANNELS = 8
+MAVERICK_CHANNELS = 2
 
 
-class AdcInput:
-    """Kanäle am AD-Wandler.
+class Channels:
+    """Die Fühler aller Kanäle, None wo kein Fühler verfügbar ist."""
 
-    Ab Hardware v2 ist der Spannungsteiler anders herum aufgebaut, dann wird der
-    Wert invertiert. Thermoelemente am AD595 liefern eine Spannung und werden
-    nie invertiert.
-    """
+    def __init__(self, startup, board):
+        self.sampler = AdcSampler(board.adc, startup.version)
+        self.maverick = MaverickFile() if startup.maverick else None
+        maverick_probes = [MaverickProbe(self.maverick, n + 1) if self.maverick else None
+                           for n in range(MAVERICK_CHANNELS)]
+        thermocouples = []
+        if startup.version == 'miniV2':
+            thermocouples = [Max31855Thermocouple(chip) if startup.max31855 else None
+                             for chip in board.thermocouples]
+        # Fühler, die nicht von der Konfiguration abhängen
+        self.fixed = maverick_probes + thermocouples
+        self.settings = None
+        self.adc_probes = []
 
-    def __init__(self, adc, version):
-        self.adc = adc
-        self.inverted_divider = version != 'v1'
+    def update(self):
+        """Einmal je Messzyklus vor dem Messen: Werte des Maverick-Empfängers lesen."""
+        if self.maverick is None:
+            logger.info('Maverick is disabled')
+            return
+        logger.info('Reading from Maverick receiver...')
+        self.maverick.update()
 
-    def sample(self, channels, iterations):
-        """Rohwerte; die Kanäle werden abwechselnd gemessen, damit Störungen sich verteilen."""
-        samples = [[] for _ in channels]
-        invert = [self.inverted_divider and not isinstance(ch.sensor, KTypeSensor) for ch in channels]
-        for _ in range(iterations):
-            for kanal in range(len(channels)):
-                value = self.adc.read(kanal)
-                samples[kanal].append(ADC_RANGE - 1 - value if invert[kanal] else value)
-        return samples
+    def configure(self, settings):
+        """Fühler am AD-Wandler nach den Einstellungen; nur bei geänderten Einstellungen neu."""
+        if settings is self.settings:
+            return
+        self.settings = settings
+        self.adc_probes = []
+        for channel, adc_channel in zip(settings.channels[:ADC_CHANNELS], self.sampler.channels):
+            sensor_type = channel.sensor_type
+            self.adc_probes.append(sensor_type.create(adc_channel, channel.resistor)
+                                   if sensor_type is not None else None)
 
-    def read(self, channels, iterations):
-        """Temperaturen der Kanäle in °C (None ohne gültigen Wert)."""
+    @property
+    def sensors(self):
+        return self.adc_probes + self.fixed
+
+    def measure(self, iterations):
+        """Temperaturen aller Kanäle in °C, None ohne Wert."""
+        self.sampler.sample([probe is not None and probe.voltage_divider for probe in self.adc_probes],
+                            iterations)
         temperatures = []
-        for kanal, (channel, raw) in enumerate(zip(channels, self.sample(channels, iterations))):
-            median_value = median_filter(raw)
-            temperatures.append(self.temperature(channel, median_value))
-            variance = statistics.pvariance(raw)
-            if variance > MAX_VARIANCE:
-                logger.warning('Channel:{kanal} variance: {variance} in {iterations}, median @ {median_value}!'.format(
-                    kanal=kanal, variance=variance, iterations=iterations, median_value=median_value))
-            logger.debug('Channel {}, MCP3128 {}, temperature {}'.format(kanal, kanal, temperatures[-1]))
-        return temperatures
-
-    @staticmethod
-    def temperature(channel, adc_value):
-        sensor = channel.sensor
-        if sensor is None or not ADC_MIN < adc_value < ADC_MAX:
-            return None
-        if isinstance(sensor, KTypeSensor):
-            return sensor.temperature_from_adc(adc_value)
-        temperature = sensor.temperature(resistance_from_adc(adc_value, channel.resistor))
-        return round(temperature, 2) if temperature is not None else None
-
-
-class MaverickInput:
-    """Die zwei Kanäle des Maverick-Empfängers (siehe maverick.py)."""
-
-    first_channel = 8
-    count = 2
-
-    def read(self, values):
-        """values: Inhalt von maverick.json oder None, wenn nicht verfügbar."""
-        temperatures = []
-        for n in range(self.count):
-            kanal = self.first_channel + n
-            if values is None:
-                temperatures.append(None)
-                logger.debug('Channel {}, disabled or not available'.format(kanal))
-                continue
-            value = values['temperature_' + str(n + 1)]
-            temperatures.append(None if value == '' else value)
-            logger.debug('Channel {}, Maverick {}, temperature {}'.format(kanal, n + 1, temperatures[-1]))
-        return temperatures
-
-
-class ThermocoupleInput:
-    """Die Thermoelemente am MAX31855; enabled=False, wenn nicht bestückt."""
-
-    first_channel = 10
-
-    def __init__(self, thermocouples, enabled):
-        self.thermocouples = thermocouples
-        self.enabled = enabled
-
-    def read(self):
-        temperatures = []
-        for n, chip in enumerate(self.thermocouples):
-            kanal = self.first_channel + n
-            if self.enabled:
-                temperatures.append(chip.read())
-                logger.debug('Channel {}, MAX31855 {}, temperature {}'.format(kanal, n, temperatures[-1]))
-            else:
-                temperatures.append(None)
-                logger.debug('Channel {}, disabled'.format(kanal))
+        for kanal, sensor in enumerate(self.sensors):
+            temperature = sensor.read() if sensor is not None else None
+            logger.debug('Channel {}, {}, temperature {}'.format(kanal, sensor, temperature))
+            temperatures.append(temperature)
         return temperatures

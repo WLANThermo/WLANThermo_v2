@@ -35,11 +35,11 @@ import psutil
 
 import wlanthermo
 from .alarm import AlarmMonitor, ChannelStatus, NotificationSchedule, safe_format
-from .channels import AdcInput, MaverickInput, ThermocoupleInput
-from .datafiles import CurrentTempFile, PitmasterReader, TemperatureLog, read_maverick
+from .channels import Channels
+from .datafiles import CurrentTempFile, PitmasterReader, TemperatureLog
 from .hardware import Board
 from .notify import build_notifiers
-from .sensors import load_sensors
+from ..sensors.catalog import load_sensor_types
 from .settings import (CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser,
                        parse_settings, parse_startup_settings, read_config_file)
 
@@ -110,20 +110,16 @@ def build_message(settings, temperatures, evaluation, pits, hostname):
 
 
 class Comp:
-    def __init__(self, startup, sensors, board):
+    def __init__(self, startup, sensor_types, board):
         self.startup = startup
         self.board = board
         self.config = ConfigWatcher(
-            CONFIG_FILE, lambda config: parse_settings(config, sensors, startup.channel_count))
+            CONFIG_FILE, lambda config: parse_settings(config, sensor_types, startup.channel_count))
         self.alarms = AlarmMonitor(startup.channel_count)
         self.schedule = NotificationSchedule()
         self.test_alarm = False
 
-        self.adc_input = AdcInput(board.adc, startup.version)
-        self.maverick_input = MaverickInput()
-        self.thermocouple_input = None
-        if startup.version == 'miniV2':
-            self.thermocouple_input = ThermocoupleInput(board.thermocouples, startup.max31855)
+        self.channels = Channels(startup, board)
 
         self.current_temp_file = None
         self.temperature_log = None
@@ -146,11 +142,11 @@ class Comp:
     def cycle(self):
         time_start = time.time()
         self.log_system_load()
-        maverick = self.read_maverick()
+        self.channels.update()
         settings = self.config.current()
         self.check_web_requests()
 
-        temperatures = self.measure(settings, maverick)
+        temperatures = self.measure(settings)
         evaluation = self.alarms.evaluate(temperatures,
                                           [channel.temp_min for channel in settings.channels],
                                           [channel.temp_max for channel in settings.channels])
@@ -172,13 +168,6 @@ class Comp:
         ram_free = psutil.virtual_memory().free // 2 ** 20
         logger.debug('CPU: {} RAM free: {}'.format(cpu_usage, ram_free))
 
-    def read_maverick(self):
-        if not self.startup.maverick:
-            logger.info('Maverick is disabled')
-            return None
-        logger.info('Reading from Maverick receiver...')
-        return read_maverick()
-
     def check_web_requests(self):
         if os.path.isfile(ACK_FILE):
             logger.info('alert.ack vorhanden')
@@ -189,13 +178,11 @@ class Comp:
             self.test_alarm = True
             os.unlink(TEST_FILE)
 
-    def measure(self, settings, maverick):
+    def measure(self, settings):
         """Temperaturen aller Kanäle in der eingestellten Einheit, None ohne Wert."""
         logger.debug('Measuring {} channels'.format(self.startup.channel_count))
-        temperatures = (self.adc_input.read(settings.channels[:8], settings.iterations)
-                        + self.maverick_input.read(maverick))
-        if self.thermocouple_input is not None:
-            temperatures += self.thermocouple_input.read()
+        self.channels.configure(settings)
+        temperatures = self.channels.measure(settings.iterations)
         if settings.temp_unit == 'fahrenheit':
             temperatures = [to_fahrenheit(t) for t in temperatures]
         return temperatures
@@ -296,7 +283,7 @@ def main():
 
     setup_logging(startup)
     logger.info('WLANThermo started')
-    sensors = load_sensors(sensor_config)
+    sensor_types = load_sensor_types(sensor_config)
 
     claim_pidfile()
     sys.excepthook = log_uncaught_exceptions
@@ -305,7 +292,7 @@ def main():
 
     try:
         with Board() as board:
-            Comp(startup, sensors, board).run()
+            Comp(startup, sensor_types, board).run()
     except (KeyboardInterrupt, Shutdown):
         logger.info('WLANThermo stopped!')
     finally:

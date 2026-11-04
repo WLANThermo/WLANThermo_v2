@@ -3,19 +3,17 @@
 Start: python3 -m unittest tests/test_datafiles.py
 """
 import builtins
-import json
 import os
 import shutil
 import sys
 import tempfile
-import time
 import unittest
 from unittest import mock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from wlanthermo.comp.alarm import ChannelStatus  # noqa: E402
 from wlanthermo.comp.datafiles import (CurrentTempFile, PitmasterReader, PitValues,  # noqa: E402
-                                  TemperatureLog, read_maverick)
+                                  TemperatureLog)
 
 HEADER = ['Pit', 'Pit soll', 'Pit2', 'Pit2 soll']
 
@@ -115,21 +113,6 @@ class PitmasterReaderTest(TempDirTest):
         self.write('pit.temp', '12:00:00;110')
         self.assertIsNone(PitmasterReader(self.path('pit.temp')).read())
 
-
-class MaverickTest(TempDirTest):
-    def test_current_values(self):
-        self.write('maverick.json', json.dumps({'time': time.time(), 'temperature_1': 80}))
-        self.assertEqual(read_maverick(self.path('maverick.json'))['temperature_1'], 80)
-
-    def test_old_values_are_ignored(self):
-        self.write('maverick.json', json.dumps({'time': time.time() - 31}))
-        self.assertIsNone(read_maverick(self.path('maverick.json')))
-
-    def test_invalid_or_missing(self):
-        self.write('maverick.json', '{')
-        with self.assertLogs('WLANthermo.datafiles', 'ERROR'):
-            self.assertIsNone(read_maverick(self.path('maverick.json')))
-        self.assertIsNone(read_maverick(self.path('missing.json')))
 
 
 if __name__ == '__main__':

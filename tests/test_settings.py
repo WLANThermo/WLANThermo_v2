@@ -9,7 +9,8 @@ import tempfile
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from wlanthermo.comp.sensors import NtcSensor, load_sensors  # noqa: E402
+from wlanthermo.sensors.catalog import load_sensor_types  # noqa: E402
+from wlanthermo.sensors.resistive import NtcProbe  # noqa: E402
 from wlanthermo.comp.settings import (ConfigWatcher, make_parser, parse_settings,  # noqa: E402
                                  parse_startup_settings, read_config_file)
 
@@ -27,7 +28,7 @@ def load(path):
 class ShippedConfigTest(unittest.TestCase):
     def setUp(self):
         self.config = load(CONFIG_FILE)
-        self.sensors = load_sensors(load(SENSOR_FILE))
+        self.sensors = load_sensor_types(load(SENSOR_FILE))
 
     def test_startup_settings(self):
         startup = parse_startup_settings(self.config)
@@ -38,8 +39,8 @@ class ShippedConfigTest(unittest.TestCase):
         settings = parse_settings(self.config, self.sensors, 10)
         self.assertEqual(len(settings.channels), 10)
         channel = settings.channels[0]
-        self.assertEqual(channel.sensor_type, self.config.get('Sensoren', 'CH0'))
-        self.assertIsInstance(channel.sensor, NtcSensor)
+        self.assertEqual(channel.sensor_number, self.config.get('Sensoren', 'CH0'))
+        self.assertEqual(channel.sensor_type.probe_class, NtcProbe)
         self.assertEqual(channel.resistor, 47)
         self.assertGreater(settings.iterations, 0)
         self.assertIn(settings.temp_unit, ('celsius', 'fahrenheit'))
@@ -47,7 +48,7 @@ class ShippedConfigTest(unittest.TestCase):
 
 class ParseSettingsTest(unittest.TestCase):
     def setUp(self):
-        self.sensors = load_sensors(load(SENSOR_FILE))
+        self.sensors = load_sensor_types(load(SENSOR_FILE))
 
     def config(self, **changes):
         config = load(CONFIG_FILE)
@@ -80,7 +81,7 @@ class ParseSettingsTest(unittest.TestCase):
     def test_unknown_sensor_type(self):
         with self.assertLogs('WLANthermo.settings', 'ERROR'):
             settings = parse_settings(self.config(), {}, 10)
-        self.assertIsNone(settings.channels[0].sensor)
+        self.assertIsNone(settings.channels[0].sensor_type)
 
 
 class ConfigWatcherTest(unittest.TestCase):

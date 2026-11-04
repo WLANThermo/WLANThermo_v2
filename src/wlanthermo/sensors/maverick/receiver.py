@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding=utf-8
 
-# maverick.py
+# wlanthermo-maverick (bisher maverick.py)
 # Receives Wireless BBQ Thermometer Telegrams via RF-Receiver
 #
 # (c) Martin Raatz, 2016
