@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
 
 # Copyright (c) 2013, 2014, 2015 Armin Thinnes
@@ -17,16 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division
+
 import sys
-import ConfigParser
+import configparser
 import os
 import time
 import math
 import string
 import logging
-import urllib
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import psutil
 import signal
 import traceback
@@ -40,28 +39,28 @@ import json
 import statistics
 import platform
 
-gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/', unicode=True)
+gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/')
 
 # Konfigurationsdatei einlesen
 defaults = {'pit_control_out':'True'}
-Config = ConfigParser.ConfigParser(defaults)
+Config = configparser.ConfigParser(defaults, interpolation=None, strict=False, inline_comment_prefixes=(';',))
 
 # Wir laufen als root, auch andere müssen die Config schreiben!
 os.umask (0)
 
 while True:
     try:
-        Config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
+        Config.read_file(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
     except IndexError:
         time.sleep(1)
         continue
     break
 
 
-Config_Sensor = ConfigParser.ConfigParser()
+Config_Sensor = configparser.ConfigParser(interpolation=None, strict=False, inline_comment_prefixes=(';',))
 while True:
     try:
-        Config_Sensor.readfp(codecs.open('/var/www/conf/sensor.conf', 'r', 'utf_8'))
+        Config_Sensor.read_file(codecs.open('/var/www/conf/sensor.conf', 'r', 'utf_8'))
     except IndexError:
         time.sleep(1)
         continue
@@ -87,7 +86,7 @@ handler.setLevel(logging.DEBUG)
 handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
 
-logger.info(u'WLANThermo started')
+logger.info('WLANThermo started')
 
 #ueberpruefe ob der Dienst schon laeuft
 pid = str(os.getpid())
@@ -106,16 +105,16 @@ if os.access(pidfilename, os.F_OK):
     pidfile.seek(0)
     old_pid = int(pidfile.readline())
     if check_pid(old_pid):
-        print(_(u'%s already exists, Process is running, exiting') % pidfilename)
-        logger.error(u'%s already exists, Process is running, exiting' % pidfilename)
+        print(_('%s already exists, Process is running, exiting') % pidfilename)
+        logger.error('%s already exists, Process is running, exiting' % pidfilename)
         sys.exit()
     else:
-        logger.info(u'%s already exists, Process is NOT running, resuming operation' % pidfilename)
+        logger.info('%s already exists, Process is NOT running, resuming operation' % pidfilename)
         pidfile.seek(0)
         open(pidfilename, 'w').write(pid)
     
 else:
-    logger.debug(u"%s written" % pidfilename)
+    logger.debug("%s written" % pidfilename)
     open(pidfilename, 'w').write(pid)
 
 
@@ -128,18 +127,18 @@ separator = Config.get('Logging','Separator')
 ##
 def safe_format(template, args):
     message = ''
-    for i in xrange(100):
+    for i in range(100):
         try:
             message = template.format(**args)
             break
         except KeyError as e:
             key_name = str(e).strip('\'')
-            logger.error(u'Key "{key_name}" not found in template!'.format(key_name=key_name))
+            logger.error('Key "{key_name}" not found in template!'.format(key_name=key_name))
             template = template.replace('{' + key_name + '}', '!!' + key_name + '!!')
     return message
 
 def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
-    logger.info(u'Send mail!')
+    logger.info('Send mail!')
     
     from smtplib import SMTP 
     from smtplib import SMTPException 
@@ -165,13 +164,13 @@ def alarm_email(SERVER,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
 
         s.sendmail(FROM,TO, m.as_string())
         s.quit()
-        logger.debug(u'Alert Email has been sent!')
+        logger.debug('Alert Email has been sent!')
     except SMTPException as error:
-        sendefehler = u'Error: unable to send email: {err}'.format(err=error)
+        sendefehler = 'Error: unable to send email: {err}'.format(err=error)
         logger.error(sendefehler)
     except:
         #TODO err undefined!
-        sendefehler = u'Error: unable to resolve host (no internet connection?) :  {err}'
+        sendefehler = 'Error: unable to resolve host (no internet connection?) :  {err}'
         logger.error(sendefehler)
         
                    
@@ -195,7 +194,7 @@ def get_channel_mcp(channel):
 def get_channel_max31855(channel):
     if channel > 1:
         raise ValueError()
-    data = BitArray(pi.bb_spi_xfer(8 - channel, '\00\00')[1])
+    data = BitArray(pi.bb_spi_xfer(8 - channel, b"\x00\x00")[1])
     if data[15]:
         return None
     else:
@@ -274,15 +273,15 @@ def create_logfile(filename, log_kanal):
     os.symlink(filename, '/var/log/WLAN_Thermo/TEMPLOG.csv')
     
     kopfzeile = []
-    kopfzeile.append(_(u'Date_Time'))
-    for kanal in xrange(channel_count):
+    kopfzeile.append(_('Date_Time'))
+    for kanal in range(channel_count):
         if (log_kanal[kanal]):
             kopfzeile.append('Kanal ' + str(kanal))
             
-    kopfzeile.append(_(u'Controller output value'))
-    kopfzeile.append(_(u'Controller set value'))
-    kopfzeile.append(_(u'Controller 2 output value'))
-    kopfzeile.append(_(u'Controller 2 set value'))
+    kopfzeile.append(_('Controller output value'))
+    kopfzeile.append(_('Controller set value'))
+    kopfzeile.append(_('Controller 2 output value'))
+    kopfzeile.append(_('Controller 2 set value'))
     
     while True:
         try:
@@ -301,7 +300,7 @@ def median_filter(raw):
     laenge = len(raw)
     sortiert = sorted(raw)
     # Mitte des Arrays finden
-    index = int(round(laenge * 0.5))
+    index = int(math.floor(laenge * 0.5 + 0.5))  # Python 2 rundete .5 auf, Python 3 rundet round() zur geraden Zahl
     # Bereich für Mittelwertbildung festlegen area = 1 + ln(laenge)   Basis 2.7
     area_groesse = 1 + int(round(math.log(laenge) ))
     area = sortiert[index-area_groesse:index+area_groesse+1]
@@ -317,10 +316,10 @@ def read_maverick():
         with codecs.open('/var/www/tmp/maverick.json', 'r', 'utf_8') as maverick_json:
             values = json.load(maverick_json)
     except ValueError:
-        logger.error(u'Maverick file is no valid JSON')
+        logger.error('Maverick file is no valid JSON')
         return None
     except IOError:
-        logger.info(u'Maverick file could not be read')
+        logger.info('Maverick file could not be read')
         return None
 
     age = time.time() - values['time']
@@ -356,20 +355,20 @@ enable_maverick = Config.getboolean('ToDo', 'maverick_enabled')
 current_temp = Config.get('filepath','current_temp')
 
 # Kanalvariablen-Initialisierung
-if version == u'miniV2':
+if version == 'miniV2':
     channel_count = 12
 else:
     channel_count = 10
 
-sensortyp = [0 for i in xrange(channel_count)]
-log_kanal = [0 for i in xrange(channel_count)]
-temp_min = [0 for i in xrange(channel_count)]
-temp_max = [0 for i in xrange(channel_count)]
-messwiderstand = [0 for i in xrange(channel_count)]
-kanal_name = [0 for i in xrange(channel_count)]
+sensortyp = [0 for i in range(channel_count)]
+log_kanal = [0 for i in range(channel_count)]
+temp_min = [0 for i in range(channel_count)]
+temp_max = [0 for i in range(channel_count)]
+messwiderstand = [0 for i in range(channel_count)]
+kanal_name = [0 for i in range(channel_count)]
 
 # read log_kanal only once because of log file format
-for kanal in xrange(channel_count):
+for kanal in range(channel_count):
     log_kanal[kanal] = Config.getboolean('Logging','CH' + str(kanal))
 
 log_pitmaster =  Config.getboolean('Logging','pit_control_out')
@@ -430,10 +429,10 @@ else:
     else:
         create_logfile(name, log_kanal)
 
-new_config = ConfigParser.SafeConfigParser()
-Temperatur = [None for i in xrange(channel_count)]
+new_config = configparser.ConfigParser(strict=False, inline_comment_prefixes=(';',))
+Temperatur = [None for i in range(channel_count)]
 
-alarm_state = [None for i in xrange(channel_count)]
+alarm_state = [None for i in range(channel_count)]
 test_alarm = False
 config_mtime = 0
 alarm_time = 0
@@ -444,7 +443,7 @@ try:
         CPU_usage = psutil.cpu_percent(interval=1, percpu=True)
         ram = psutil.virtual_memory()
         ram_free = ram.free // 2**20
-        logger.debug(u'CPU: {} RAM free: {}'.format(CPU_usage, ram_free))
+        logger.debug('CPU: {} RAM free: {}'.format(CPU_usage, ram_free))
         alarm_irgendwo = False
         alarm_neu = False
         alarm_repeat = False
@@ -454,21 +453,21 @@ try:
         pit2 = {}
         
         if enable_maverick:
-            logger.info(u'Reading from Maverick receiver...')
+            logger.info('Reading from Maverick receiver...')
             maverick = read_maverick()
         else:
-            logger.info(u'Maverick is disabled')
+            logger.info('Maverick is disabled')
             maverick = None
         
-        Temperatur_string = [None for i in xrange(channel_count)]
-        Temperatur_alarm = ['er' for i in xrange(channel_count)]
+        Temperatur_string = [None for i in range(channel_count)]
+        Temperatur_alarm = ['er' for i in range(channel_count)]
 
         new_config_mtime = os.path.getmtime('/var/www/conf/WLANThermo.conf')
         if new_config_mtime != config_mtime:
-            logger.info(u'Reading configuration again...')
+            logger.info('Reading configuration again...')
             while True:
                 try:
-                    new_config.readfp(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
+                    new_config.read_file(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
                 except IndexError:
                     time.sleep(1)
                     continue
@@ -478,23 +477,23 @@ try:
             pit_on = new_config.getboolean('ToDo','pit_on')
             pit2_on = new_config.getboolean('ToDo','pit2_on')
 
-            for kanal in xrange (channel_count):
+            for kanal in range (channel_count):
                 try:
                     temp_max[kanal] = new_config.getfloat('temp_max','temp_max' + str(kanal))
                 except ValueError:
-                    logger.error(u'Error reading upper limit on channel ' + str(kanal))
+                    logger.error('Error reading upper limit on channel ' + str(kanal))
                     temp_max[kanal] = 200
 
                 try:
                     temp_min[kanal] = new_config.getfloat('temp_min','temp_min' + str(kanal))
                 except ValueError:
-                    logger.error(u'Error reading lower limit on channel ' + str(kanal))
+                    logger.error('Error reading lower limit on channel ' + str(kanal))
                     temp_max[kanal] = -20
 
                 try:
                     messwiderstand[kanal] = new_config.getfloat('Messen','Messwiderstand' + str(kanal))
                 except ValueError:
-                    logger.error(u'Error reading measurement resistor on channel ' + str(kanal))
+                    logger.error('Error reading measurement resistor on channel ' + str(kanal))
                     messwiderstand[kanal] = 47
 
                 sensortyp[kanal] = new_config.get('Sensoren','CH' + str(kanal))
@@ -518,13 +517,13 @@ try:
             try:
                 status_interval = new_config.getint('Alert', 'status_interval')
             except ValueError:
-                logger.error(u'Error reading status interval from config')
+                logger.error('Error reading status interval from config')
                 status_interval = 0
 
             try:
                 alarm_interval = new_config.getint('Alert', 'alarm_interval')
             except ValueError:
-                logger.error(u'Error reading alarm interval from config')
+                logger.error('Error reading alarm interval from config')
                 alarm_interval = 0
 
             # Einlesen welche Alarmierungsart aktiv ist
@@ -534,30 +533,30 @@ try:
 
             temp_unit = new_config.get('locale', 'temp_unit')
 
-            sensorname = [Config_Sensor.get(sensortyp[kanal], 'Name') for kanal in xrange(channel_count)]
+            sensorname = [Config_Sensor.get(sensortyp[kanal], 'Name') for kanal in range(channel_count)]
         
         if os.path.isfile('/var/www/alert.ack'):
             logger.info('alert.ack vorhanden')
             for kanal in range (channel_count):
                 if alarm_state[kanal] == 'hi':
-                    logger.debug(u'Acknowledging temperature over upper limit on channel ' + str(kanal))
+                    logger.debug('Acknowledging temperature over upper limit on channel ' + str(kanal))
                     alarm_state[kanal] = 'hi_ack'
                 elif alarm_state[kanal] == 'lo':
-                    logger.debug(u'Acknowledging temperature under lower limit on channel ' + str(kanal))
+                    logger.debug('Acknowledging temperature under lower limit on channel ' + str(kanal))
                     alarm_state[kanal] = 'lo_ack'
             os.unlink('/var/www/alert.ack')
         
         if os.path.isfile('/var/www/alert.test'):
-            logger.info(u'alert.test exists')
+            logger.info('alert.test exists')
             test_alarm = True
             os.unlink('/var/www/alert.test')
         
-        logger.debug(u'Measuring {} channels'.format(channel_count))
+        logger.debug('Measuring {} channels'.format(channel_count))
 
-        samples = [[] for i in xrange(8)]
+        samples = [[] for i in range(8)]
 
-        for i in xrange(iterations):
-            for kanal in xrange(8):
+        for i in range(iterations):
+            for kanal in range(8):
                 if version == 'v1' or sensorname[kanal] == 'KTYPE':
                     # Nicht invertiert messen
                     samples[kanal].append(get_channel_mcp(kanal))
@@ -565,7 +564,7 @@ try:
                     # Spannungsteiler ist nach v1 anders herum aufgebaut
                     samples[kanal].append(4095 - get_channel_mcp(kanal))
 
-        for kanal in xrange(channel_count):
+        for kanal in range(channel_count):
             Temp = 0.0
             WerteArray = []
             if kanal <= 7:
@@ -575,7 +574,7 @@ try:
                             Rtheta = messwiderstand[kanal]*((4096.0/median_value) - 1)
                             try:
                                 Temperatur[kanal] = round(temperatur_sensor(Rtheta, sensortyp[kanal]), 2)
-                            except exceptions.TypeError:
+                            except TypeError:
                                 Temperatur[kanal] = None
                     else:
                         # AD595 = 10mV/°C
@@ -590,41 +589,42 @@ try:
                         iterations=iterations,
                         median_value=median_value)
                     logger.warning(warnung)
-                logger.debug(u'Channel {}, MCP3128 {}, temperature {}'.format(kanal, kanal, Temperatur[kanal]))
+                logger.debug('Channel {}, MCP3128 {}, temperature {}'.format(kanal, kanal, Temperatur[kanal]))
             elif kanal <= 9:
                 if maverick is None:
                     Temperatur[kanal] = None
-                    logger.debug(u'Channel {}, disabled or not available'.format(kanal))
+                    logger.debug('Channel {}, disabled or not available'.format(kanal))
                 else:
-                    logger.debug(u'Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - 7, Temperatur[kanal]))
+                    logger.debug('Channel {}, Maverick {}, temperature {}'.format(kanal, kanal - 7, Temperatur[kanal]))
                     maverick_value = maverick['temperature_' + str(kanal - 7)]
                     if maverick_value == '':
                         Temperatur[kanal] = None
                     else:
                         Temperatur[kanal] = maverick_value
-            elif version == u'miniV2':
+            elif version == 'miniV2':
                 if enable_max31855:
                     Temperatur[kanal] = get_channel_max31855(kanal - 10)
-                    logger.debug(u'Channel {}, MAX31855 {}, temperature {}'.format(kanal, kanal - 10, Temperatur[kanal]))
+                    logger.debug('Channel {}, MAX31855 {}, temperature {}'.format(kanal, kanal - 10, Temperatur[kanal]))
                 else:
                     Temperatur[kanal] = None
-                    logger.debug(u'Channel {}, disabled'.format(kanal))
+                    logger.debug('Channel {}, disabled'.format(kanal))
             else:
-                logger.error(u'Channel {} checked without a reason!'.format(kanal))
+                logger.error('Channel {} checked without a reason!'.format(kanal))
                 Temperatur[kanal] = None
 
             alarm_values = dict()
             if temp_unit == 'celsius':
                 alarm_values['temp_unit'] = '°C'
-                alarm_values['temp_unit_long'] = _(u'degrees Celsius')
+                alarm_values['temp_unit_long'] = _('degrees Celsius')
             elif temp_unit == 'fahrenheit':
                 if Temperatur[kanal] is not None:
                     Temperatur[kanal] = Temperatur[kanal] * 1.8 + 32
                 alarm_values['temp_unit'] = '°F'
-                alarm_values['temp_unit_long'] = _(u'degrees Fahrenheit')
+                alarm_values['temp_unit_long'] = _('degrees Fahrenheit')
             alarm_values['kanal'] = kanal
             alarm_values['name'] = kanal_name[kanal]
-            alarm_values['temperatur'] = Temperatur[kanal]
+            # Python 2 gab Floats mit 12 Stellen aus, Python 3 mit allen (74.21000000000001)
+            alarm_values['temperatur'] = round(Temperatur[kanal], 2) if Temperatur[kanal] is not None else None
             alarm_values['temp_max'] = temp_max[kanal]
             alarm_values['temp_min'] = temp_min[kanal]
             alarm_values['lf'] = '\n'
@@ -739,15 +739,15 @@ try:
             alarm_time = time.time()
             
             if alarm_neu:
-                logger.debug(u'new alert, sending messages')
+                logger.debug('new alert, sending messages')
             if test_alarm:
-                logger.debug(u'test alert, sending messages')
+                logger.debug('test alert, sending messages')
                 test_alarm = False
-                alarm_message = _(u'test message\n') + alarm_message
+                alarm_message = _('test message\n') + alarm_message
             if alarm_repeat:
-                logger.info(u'repeated alert, sending messages')
+                logger.info('repeated alert, sending messages')
             if send_status:
-                logger.info(u'sending status')
+                logger.info('sending status')
                 
             if Email_alert:
                 # Wenn konfiguriert, Email schicken
@@ -780,24 +780,24 @@ try:
                 else:
                     disable_notification = 'false'
 
-                body = urllib.urlencode({
-                    'text': alarm_message.encode('utf-8'),
+                body = urllib.parse.urlencode({
+                    'text': alarm_message,
                     'chat_id': Telegram_chat_id,
                     'disable_notification': disable_notification})
                 url = Telegram_URL.format(token=Telegram_token)
 
                 try: 
-                    logger.debug(u'Telegram POST request, URL: {}\nbody: {}'.format(url, body))
-                    response = urllib2.urlopen(url, body)
+                    logger.debug('Telegram POST request, URL: {}\nbody: {}'.format(url, body))
+                    response = urllib.request.urlopen(url, body.encode('utf-8'))
                     
-                    logger.info(u'Telegram HTTP return code: ' + str(response.getcode()))
-                    logger.debug(u'Telegram URL: ' + response.geturl())
-                    logger.debug(u'Telegram result: ' + response.read(500))
+                    logger.info('Telegram HTTP return code: ' + str(response.getcode()))
+                    logger.debug('Telegram URL: ' + response.geturl())
+                    logger.debug('Telegram result: ' + response.read(500).decode('utf-8', 'replace'))
 
-                except urllib2.HTTPError, e:
-                    logger.error(u'Telegram HTTP error: ' + str(e.code) + u' - ' + e.read(500))
-                except urllib2.URLError, e:
-                    logger.error(u'Telegram URLError: ' + str(e.reason))  
+                except urllib.error.HTTPError as e:
+                    logger.error('Telegram HTTP error: ' + str(e.code) + ' - ' + e.read(500).decode('utf-8', 'replace'))
+                except urllib.error.URLError as e:
+                    logger.error('Telegram URLError: ' + str(e.reason))  
                     
             if Push_alert:
                 # Wenn konfiguriert, Alarm per Pushnachricht schicken
@@ -805,29 +805,29 @@ try:
                 Push_Body = new_config.get('Push', 'push_body')
                 
                 try:
-                    url = Push_URL.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
-                    body = Push_Body.format(messagetext=urllib.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
-                except KeyError, key:
-                    logger.error(u'Key "{}" is undefined!'.format(key))
+                    url = Push_URL.format(messagetext=urllib.parse.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
+                    body = Push_Body.format(messagetext=urllib.parse.quote(alarm_message.encode('utf-8')).replace('\n', '<br/>'))
+                except KeyError as key:
+                    logger.error('Key "{}" is undefined!'.format(key))
                 else:
                     try: 
                         if Push_Body == '':
-                            logger.debug(u'push GET request, URL: ' + url)
-                            response = urllib2.urlopen(url)
+                            logger.debug('push GET request, URL: ' + url)
+                            response = urllib.request.urlopen(url)
                         else:
-                            logger.debug(u'push POST request, URL: ' + url + u'\nbody: ' + body)
-                            response = urllib2.urlopen(url, body)
+                            logger.debug('push POST request, URL: ' + url + '\nbody: ' + body)
+                            response = urllib.request.urlopen(url, body.encode('utf-8'))
                         
-                        logger.info(u'push HTTP return code: ' + str(response.getcode()))
-                        logger.debug(u'push URL: ' + response.geturl())
-                        logger.debug(u'push result: ' + response.read(500))
+                        logger.info('push HTTP return code: ' + str(response.getcode()))
+                        logger.debug('push URL: ' + response.geturl())
+                        logger.debug('push result: ' + response.read(500).decode('utf-8', 'replace'))
     
-                    except urllib2.HTTPError, e:
-                        logger.error(u'Push HTTP error: ' + str(e.code) + u' - ' + e.read(500))
-                    except urllib2.URLError, e:
-                        logger.error(u'Push URLError: ' + str(e.reason))
-                    except ValueError, e:
-                        logger.error(u'Push ValueError: ' + str(e))
+                    except urllib.error.HTTPError as e:
+                        logger.error('Push HTTP error: ' + str(e.code) + ' - ' + e.read(500).decode('utf-8', 'replace'))
+                    except urllib.error.URLError as e:
+                        logger.error('Push URLError: ' + str(e.reason))
+                    except ValueError as e:
+                        logger.error('Push ValueError: ' + str(e))
         
         # Log datei erzeugen
         lcsv = []
@@ -836,12 +836,12 @@ try:
         logdatei = logdatei[21:-4]
         lcsv.append(Uhrzeit_lang)
         t = ""
-        for kanal in xrange(channel_count):
+        for kanal in range(channel_count):
             if Temperatur_string[kanal] is None:
                 lcsv.append('')
             else:
                 lcsv.append(str(Temperatur_string[kanal]))
-        for kanal in xrange(channel_count):
+        for kanal in range(channel_count):
             # 8 Felder mit allen Alarmzuständen
             lcsv.append(Temperatur_alarm[kanal])
         lcsv.append(build)
@@ -858,7 +858,7 @@ try:
                 os.rename(current_temp + '_tmp', current_temp)
             except IndexError:
                 time.sleep(1)
-                logger.debug(u'Error: Could not write to file {file}!'.format(file=current_temp))
+                logger.debug('Error: Could not write to file {file}!'.format(file=current_temp))
                 continue
             break
             
@@ -866,7 +866,7 @@ try:
         log_line = []
         log_line.append(Uhrzeit_lang)
         
-        for kanal in xrange(channel_count):
+        for kanal in range(channel_count):
             if (log_kanal[kanal]):
                 if Temperatur[kanal] is None:
                     log_line.append('')
@@ -904,13 +904,13 @@ try:
         
         time_remaining = time_start + delay - time.time()
         if time_remaining < 0:
-            logger.warning(u'measuring loop running longer than {delay}s, remaining time {time_remaining}s'.format(delay=delay, time_remaining=time_remaining))
+            logger.warning('measuring loop running longer than {delay}s, remaining time {time_remaining}s'.format(delay=delay, time_remaining=time_remaining))
         else:
-            logger.debug(u'measuring loop remaining time {time_remaining}s of {delay}s'.format(delay=delay, time_remaining=time_remaining))
+            logger.debug('measuring loop remaining time {time_remaining}s of {delay}s'.format(delay=delay, time_remaining=time_remaining))
             time.sleep(time_remaining)
 
 except KeyboardInterrupt:
-    logger.info(u'WLANThermo stopped!')
+    logger.info('WLANThermo stopped!')
     pi.bb_spi_close(25)
     pi.bb_spi_close(8)
     pi.bb_spi_close(7)

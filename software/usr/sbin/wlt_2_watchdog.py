@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
 
 # Copyright (c) 2013, 2014, 2015 Joe16
@@ -20,7 +20,7 @@ import codecs
 import os
 import pyinotify
 import subprocess
-import ConfigParser
+import configparser
 import time
 import sys
 import logging
@@ -31,7 +31,7 @@ import gettext
 import random
 import string
 
-gettext.install('wlt_2_watchdog', localedir='/usr/share/WLANThermo/locale/', unicode=True)
+gettext.install('wlt_2_watchdog', localedir='/usr/share/WLANThermo/locale/')
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -52,11 +52,11 @@ cf = '/var/www/conf/WLANThermo.conf'
 # Wir laufen als root, auch andere müssen die Config schreiben!
 os.umask (0)
 
-Config = ConfigParser.ConfigParser()
+Config = configparser.ConfigParser(interpolation=None, strict=False, inline_comment_prefixes=(';',))
 for i in range(0,5):
     while True:
         try:
-            Config.readfp(codecs.open(cf, 'r', 'utf_8'))
+            Config.read_file(codecs.open(cf, 'r', 'utf_8'))
         except IndexError:
             time.sleep(1)
             continue
@@ -82,7 +82,7 @@ handler.setLevel(logging.DEBUG)
 handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
 
-logger.info(_(u'WLANThermoWD started'))
+logger.info(_('WLANThermoWD started'))
 
 #ueberpruefe ob der Dienst schon laeuft
 pid = str(os.getpid())
@@ -101,16 +101,16 @@ if os.access(pidfilename, os.F_OK):
     pidfile.seek(0)
     old_pid = int(pidfile.readline())
     if check_pid(old_pid):
-        print(_(u'%s already exists, Process is running, exiting') % pidfilename)
-        logger.error(_(u'%s already exists, Process is running, exiting') % pidfilename)
+        print(_('%s already exists, Process is running, exiting') % pidfilename)
+        logger.error(_('%s already exists, Process is running, exiting') % pidfilename)
         sys.exit()
     else:
-        logger.info(_(u'%s already exists, Process is NOT running, resuming operation') % pidfilename)
+        logger.info(_('%s already exists, Process is NOT running, resuming operation') % pidfilename)
         pidfile.seek(0)
         open(pidfilename, 'w').write(pid)
     
 else:
-    logger.debug(_(u'%s written') % pidfilename)
+    logger.debug(_('%s written') % pidfilename)
     open(pidfilename, 'w').write(pid)
 
 
@@ -136,9 +136,9 @@ def config_write(configfile, config):
     tmp_filename = get_random_filename(configfile)
     with codecs.open(tmp_filename, 'w', 'utf_8') as new_ini:
         for section_name in config.sections():
-            new_ini.write(u'[{section_name}]\n'.format(section_name=section_name))
+            new_ini.write('[{section_name}]\n'.format(section_name=section_name))
             for (key, value) in config.items(section_name):
-                new_ini.write(u'{key} = {value}\n'.format(key=key, value=value))
+                new_ini.write('{key} = {value}\n'.format(key=key, value=value))
             new_ini.write('\n')
         new_ini.flush()
         os.fsync(new_ini.fileno())
@@ -147,7 +147,7 @@ def config_write(configfile, config):
 
 
 def reboot_pi():
-    logger.info(_(u'rebooting'))
+    logger.info(_('rebooting'))
     
     Config.set('ToDo', 'raspi_reboot', 'False')
     config_write(cf, Config)
@@ -165,8 +165,8 @@ def reboot_pi():
     tmp_filename = get_random_filename('/var/www/tmp/display/wd')
     while True:
         try:
-            fw = open(tmp_filename,'w')
-            fw.write(_(u'---- ATTENTION!  ----;---- WLANThermo ----;  is now rebooting  ;see you later...'))
+            fw = open(tmp_filename, 'w', encoding='utf-8')
+            fw.write(_('---- ATTENTION!  ----;---- WLANThermo ----;  is now rebooting  ;see you later...'))
             fw.flush()
             os.fsync(fw.fileno())
             fw.close()
@@ -178,16 +178,15 @@ def reboot_pi():
         
     time.sleep(2)
     bashCommand = 'sudo reboot'
-    retcode = subprocess.Popen(bashCommand.split())
-    retcode.wait()
+    retcode = subprocess.call(bashCommand.split())  # Python 3: Popen-Objekt ließe sich nicht mit 0 vergleichen
     if retcode < 0:
-        logger.info(_(u'Terminated by signal'))
+        logger.info(_('Terminated by signal'))
     else:
-        logger.info(_(u'Child returned: ') + str(retcode))
+        logger.info(_('Child returned: ') + str(retcode))
 
 
 def halt_pi():
-    logger.info(_(u'Shutting down the Raspberry'))
+    logger.info(_('Shutting down the Raspberry'))
     #Stoppe die Dienste
     handle_service('WLANThermo', 'stop')
     handle_service('WLANThermoPIT', 'stop')
@@ -195,8 +194,8 @@ def halt_pi():
     tmp_filename = get_random_filename('/var/www/tmp/display/wd')
     while True:
         try:
-            fw = open(tmp_filename, 'w')
-            fw.write(_(u'---- ATTENTION!  ----;---- WLANThermo ----;is now shutting down;Bye-bye!'))
+            fw = open(tmp_filename, 'w', encoding='utf-8')
+            fw.write(_('---- ATTENTION!  ----;---- WLANThermo ----;is now shutting down;Bye-bye!'))
             fw.flush()
             os.fsync(fw.fileno())
             fw.close()
@@ -206,16 +205,15 @@ def halt_pi():
             continue
         break
     bashCommand = 'sudo poweroff'
-    retcode = subprocess.Popen(bashCommand.split())
-    retcode.wait()
+    retcode = subprocess.call(bashCommand.split())  # Python 3: Popen-Objekt ließe sich nicht mit 0 vergleichen
     if retcode < 0:
-        logger.info(_(u'Terminated by signal'))
+        logger.info(_('Terminated by signal'))
     else:
-        logger.info(_(u'Child returned: ') + str(retcode))
+        logger.info(_('Child returned: ') + str(retcode))
 
 
 def halt_v3_pi():
-    logger.info(_(u'Shutting down the Raspberry, Power Off (v3)'))
+    logger.info(_('Shutting down the Raspberry, Power Off (v3)'))
     # Stoppe die Dienste
     handle_service('WLANThermo', 'stop')
     handle_service('WLANThermoPIT', 'stop')
@@ -223,8 +221,8 @@ def halt_v3_pi():
     tmp_filename = get_random_filename('/var/www/tmp/display/wd')
     while True:
         try:
-            fw = open(tmp_filename, 'w')
-            fw.write(_(u'---- ATTENTION!  ----;---- WLANThermo ----;is now shutting down;Bye-bye!'))
+            fw = open(tmp_filename, 'w', encoding='utf-8')
+            fw.write(_('---- ATTENTION!  ----;---- WLANThermo ----;is now shutting down;Bye-bye!'))
             fw.flush()
             os.fsync(fw.fileno())
             fw.close()
@@ -242,28 +240,27 @@ def halt_v3_pi():
     GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     # Fahre Betriebssystem herunter
     bashCommand = 'sudo poweroff'
-    retcode = subprocess.Popen(bashCommand.split())
-    retcode.wait()
+    retcode = subprocess.call(bashCommand.split())  # Python 3: Popen-Objekt ließe sich nicht mit 0 vergleichen
     if retcode < 0:
-        logger.info(_(u'Terminated by signal'))
+        logger.info(_('Terminated by signal'))
     else:
-        logger.info(_(u'Child returned: ') + str(retcode))
+        logger.info(_('Child returned: ') + str(retcode))
 
 
 def shutdown_button(gpio):
-    logger.info(_(u'Shutting down! (Button pressed)'))
+    logger.info(_('Shutting down! (Button pressed)'))
     halt_pi()
 
 
 def read_config():
     global cf
-    logger.debug(_(u'Read Config...'))
+    logger.debug(_('Read Config...'))
     try:
         # Konfigurationsdatei einlesen
         #Config = ConfigParser.ConfigParser()
         while True:
             try:
-                Config.readfp(codecs.open(cf, 'r', 'utf_8'))
+                Config.read_file(codecs.open(cf, 'r', 'utf_8'))
             except IndexError:
                 time.sleep(1)
                 continue
@@ -277,28 +274,28 @@ def read_config():
             pitmaster_count = 1
             
         if (Config.getboolean('ToDo', 'restart_thermo')):
-            logger.info(_(u'Restart WLANThermo process!'))
+            logger.info(_('Restart WLANThermo process!'))
             handle_service('WLANThermo', 'restart')
             time.sleep(3)
-            logger.info(_(u'Changing restart_thermo to False again!'))
+            logger.info(_('Changing restart_thermo to False again!'))
             
             Config.set('ToDo', 'restart_thermo', 'False')
             config_write(cf, Config)
         
         if (Config.getboolean('ToDo', 'restart_pitmaster')):
-            logger.info(_(u'Restart pitmaster!'))
+            logger.info(_('Restart pitmaster!'))
             handle_service('WLANThermoPIT', 'restart')
             time.sleep(3)
-            logger.info(_(u'Changing restart_pitmaster to False again!'))
+            logger.info(_('Changing restart_pitmaster to False again!'))
 
             Config.set('ToDo', 'restart_pitmaster', 'False')
             config_write(cf, Config)
             
         if (Config.getboolean('ToDo', 'restart_pitmaster2')):
-            logger.info(_(u'Restart pitmaster 2!'))
+            logger.info(_('Restart pitmaster 2!'))
             handle_service('WLANThermoPIT2', 'restart')
             time.sleep(3)
-            logger.info(_(u'Changing restart_pitmaster2 to False again!'))
+            logger.info(_('Changing restart_pitmaster2 to False again!'))
 
             Config.set('ToDo', 'restart_pitmaster2', 'False')
             config_write(cf, Config)
@@ -317,21 +314,21 @@ def read_config():
             reboot_pi()
         
         if (Config.getboolean('ToDo', 'backup')):
-            logger.info(_(u'Create backup!'))
+            logger.info(_('Create backup!'))
             Config.set('ToDo', 'backup', 'False')
             config_write(cf, Config)
             ret = os.popen("/usr/sbin/wlt_2_backup.sh").read()
             logger.debug(ret)
         
         if (Config.getboolean('ToDo', 'check_update')):
-            logger.info(_(u'Check for software updates...'))
+            logger.info(_('Check for software updates...'))
             Config.set('ToDo', 'check_update', 'False')
             config_write(cf, Config)
             ret = os.popen("/bin/systemctl --no-block start WLANThermoUPDATECHECK.service")
             logger.debug(ret)
 
         if (Config.getboolean('ToDo', 'start_system_update')):
-            logger.info(_(u'Update system software!'))
+            logger.info(_('Update system software!'))
             Config.set('ToDo', 'start_system_update', 'False')
             config_write(cf, Config)
             # Start update, hold back package wlanthermo
@@ -339,7 +336,7 @@ def read_config():
             logger.debug(ret)
             
         if (Config.getboolean('ToDo', 'start_full_update')):
-            logger.info(_(u'Update full software!'))
+            logger.info(_('Update full software!'))
             Config.set('ToDo', 'start_full_update', 'False')
             config_write(cf, Config)
             ret = os.popen("/usr/bin/systemd-run /usr/bin/wlt_2_update_system.sh --full").read()
@@ -347,7 +344,7 @@ def read_config():
             
         if (Config.getboolean('ToDo', 'create_new_log')):
             
-            logger.info(_(u'Create new log!'))
+            logger.info(_('Create new log!'))
             Config.set('ToDo', 'create_new_log', 'False')
             Config.set('Logging', 'write_new_log_on_restart', 'True')
             config_write(cf, Config)
@@ -359,34 +356,33 @@ def read_config():
             Config.set('Logging', 'write_new_log_on_restart', 'False')
             config_write(cf, Config)
             
-            logger.info(_(u'Finished creation of new logfile'))
+            logger.info(_('Finished creation of new logfile'))
 
-        for id in xrange(pitmaster_count):
-            logger.info(_(u'Check Pitmaster {}!'.format(id + 1)))
+        for id in range(pitmaster_count):
+            logger.info(_('Check Pitmaster {}!'.format(id + 1)))
             check_pitmaster(id)
         
         check_maverick()
             
     except:
-        logger.info(_(u'Unexpected error: ') +str(sys.exc_info()[0]))
+        logger.info(_('Unexpected error: ') +str(sys.exc_info()[0]))
         raise
 
 def handle_service(sService, sWhat):
     bashCommand = 'sudo systemctl ' + sWhat + ' ' + sService + '.service'
-    logger.debug(_(u'Handle service: ') + bashCommand)
-    retcode = subprocess.Popen(bashCommand.split())
-    retcode.wait()
+    logger.debug(_('Handle service: ') + bashCommand)
+    retcode = subprocess.call(bashCommand.split())  # Python 3: Popen-Objekt ließe sich nicht mit 0 vergleichen
     if retcode < 0:
-        logger.info(_(u'Terminated by signal'))
+        logger.info(_('Terminated by signal'))
     else:
-        logger.info(_(u'Child returned: ') + str(retcode))
+        logger.info(_('Child returned: ') + str(retcode))
 
 
 def check_file(f):
     if not os.path.isfile(f):
         while True:
             try:
-                fw1 = open(f,'w')
+                fw1 = open(f, 'w', encoding='utf-8')
                 fw1.write('-')
                 fw1.flush()
                 os.fsync(fw1.fileno())
@@ -398,23 +394,23 @@ def check_file(f):
 
 
 def check_display():
-    logger.debug(_(u'Checking display...'))
+    logger.debug(_('Checking display...'))
     global display_proc, Config
     if (Config.getboolean('Display', 'lcd_present')):
         startproc = False
         # Display aktiviert
         if display_proc == None:
             # Display-Prozess starten bzw. restarten
-            logger.info(_(u'Starting display...'))
+            logger.info(_('Starting display...'))
             startproc = True
         elif display_proc.poll() != None:
             # Display-Prozess wieder starten
-            logger.info(_(u'Starting display again...'))
+            logger.info(_('Starting display again...'))
             startproc = True
         elif (Config.getboolean('ToDo', 'restart_display')):
             # Display soll restartet werden
             # Wenn es nicht lief landen wir in den vorherigen Bedingungen
-            logger.info(_(u'Stopping display for restart...'))
+            logger.info(_('Stopping display for restart...'))
             display_proc.terminate()
             display_proc.wait()
             display_proc = None
@@ -425,7 +421,7 @@ def check_display():
             
         if Config.getboolean('ToDo', 'restart_display'):
             tmp_filename = get_random_filename(cf)
-            logger.info(_(u'Changing restart_display to False'))
+            logger.info(_('Changing restart_display to False'))
             Config.set('ToDo', 'restart_display', 'False')
             config_write(cf, Config)
     else:
@@ -442,58 +438,58 @@ def check_pitmaster(id):
         id_string = ''
     else:
         id_string = str(id + 1)
-    logger.debug(_(u'Checking pitmaster {}'.format(id + 1)))
+    logger.debug(_('Checking pitmaster {}'.format(id + 1)))
     
     pitmasterStatus = subprocess.call(('/bin/systemctl', 'status',  'WLANThermoPIT{}.service'.format(id + 1)))
     bashCommandPit = tuple()
     if (Config.getboolean('ToDo', 'pit{}_on'.format(id_string))):
         if pitmasterStatus != 0:
-            logger.info(_(u'Start pitmaster {}'.format(id + 1)))
+            logger.info(_('Start pitmaster {}'.format(id + 1)))
             bashCommandPit = ('/usr/bin/systemd-run', '--unit', 'WLANThermoPIT{}.service'.format(id_string), '/usr/sbin/wlt_2_pitmaster.py', str(id))
         else:
-            logger.info(_(u'Pitmaster {} already running'.format(id + 1)))
+            logger.info(_('Pitmaster {} already running'.format(id + 1)))
     else:
         if pitmasterStatus == 0:
-            logger.info(_(u'Stopping pitmaster {}'.format(id + 1)))
+            logger.info(_('Stopping pitmaster {}'.format(id + 1)))
             bashCommandPit = ('/bin/systemctl', 'stop', 'WLANThermoPIT{}.service'.format(id_string))
         else:
-            logger.info(_(u'Pitmaster {} already stopped'.format(id + 1)))
+            logger.info(_('Pitmaster {} already stopped'.format(id + 1)))
     if (len(bashCommandPit) > 0):
         retcodeO = subprocess.call(bashCommandPit)
         if retcodeO < 0:
-            logger.info(_(u'Pitmaster {} terminated by signal'.format(id + 1)))
+            logger.info(_('Pitmaster {} terminated by signal'.format(id + 1)))
         else:
-            logger.info(_(u'Child returned: ') + str(retcodeO))
+            logger.info(_('Child returned: ') + str(retcodeO))
 
 
 def check_maverick():
-    logger.debug(_(u'Checking Maverick'))
+    logger.debug(_('Checking Maverick'))
     
     pitmasterStatus = subprocess.call(('/bin/systemctl', 'status',  'WLANThermoMAVERICK.service'))
     bashCommandPit = tuple()
     if (Config.getboolean('ToDo', 'maverick_enabled')):
         if pitmasterStatus != 0:
-            logger.info(_(u'Start Maverick'))
+            logger.info(_('Start Maverick'))
             bashCommandPit = ('/usr/bin/systemd-run', '--unit', 'WLANThermoMAVERICK.service', '/usr/bin/maverick.py',  '--json',  '/var/www/tmp/maverick.json' , '--noappend')
         else:
-            logger.info(_(u'Maverick already running'))
+            logger.info(_('Maverick already running'))
     else:
         if pitmasterStatus == 0:
-            logger.info(_(u'Stopping Maverick'))
+            logger.info(_('Stopping Maverick'))
             bashCommandPit = ('/bin/systemctl', 'stop', 'WLANThermoMAVERICK.service')
         else:
-            logger.info(_(u'Maverick already stopped'))
+            logger.info(_('Maverick already stopped'))
     if (len(bashCommandPit) > 0):
         retcodeO = subprocess.call(bashCommandPit)
         if retcodeO < 0:
-            logger.info(_(u'Maverick terminated by signal'))
+            logger.info(_('Maverick terminated by signal'))
         else:
-            logger.info(_(u'Child returned: ') + str(retcodeO))
+            logger.info(_('Child returned: ') + str(retcodeO))
 
 
 def raise_keyboard(signum, frame):
-    logger.debug(_(u'Caught signal: ') + str(signum))
-    raise KeyboardInterrupt(_(u'Received SIGTERM'))
+    logger.debug(_('Caught signal: ') + str(signum))
+    raise KeyboardInterrupt(_('Received SIGTERM'))
 
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
@@ -510,7 +506,7 @@ wdd = wm.add_watch('/var/www/conf', mask) #, rec=True)
 
 GPIO.add_event_detect(27, GPIO.RISING, callback=shutdown_button, bouncetime=1000)
 
-Config.readfp(codecs.open(cf, 'r', 'utf_8'))
+Config.read_file(codecs.open(cf, 'r', 'utf_8'))
 check_display()
 check_maverick()
 
@@ -519,7 +515,7 @@ if Config.get('Hardware', 'version') in ['miniV2']:
 else:
     pitmaster_count = 1
             
-for id in xrange(pitmaster_count):
+for id in range(pitmaster_count):
     check_pitmaster(id)
 
 # Lösche Rebootflag
@@ -530,7 +526,7 @@ except OSError:
 
 while True:
     try:
-        Config.readfp(codecs.open(cf, 'r', 'utf_8'))
+        Config.read_file(codecs.open(cf, 'r', 'utf_8'))
         notifier.process_events()
         if notifier.check_events():
             notifier.read_events()
@@ -538,11 +534,11 @@ while True:
         notifier.stop()
         if (Config.getboolean('Display', 'lcd_present')):
             if display_proc.poll() == None:
-                logger.info(_(u'Stopping Display'))
+                logger.info(_('Stopping Display'))
                 display_proc.terminate()
                 display_proc.wait()
                 display_proc = None
-        logger.info(_(u'WLANThermoWD stopped'))
+        logger.info(_('WLANThermoWD stopped'))
         logging.shutdown()
         os.unlink(pidfilename)
         break

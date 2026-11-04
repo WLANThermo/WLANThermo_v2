@@ -49,7 +49,8 @@ fi
 
 echo "Install additional Python packages"
 echo "----------------------------------------------------------"
-/usr/bin/pip install bitstring statistics
+# bitstring kommt normalerweise als Paket python3-bitstring, pip nur als Rückfall
+/usr/bin/python3 -c 'import bitstring' 2>/dev/null || /usr/bin/pip3 install bitstring
 
 if [ -f /usr/sbin/wlt_2_comp.py ]
 then

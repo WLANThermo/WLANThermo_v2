@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
 
 # This is free and unencumbered software released into the public domain.
@@ -38,7 +38,7 @@ BAUDCOMM = 9600
 BAUDUPLOAD = 460800
 
 if len(sys.argv) < 2 or len(sys.argv) > 3:
-    sys.exit('usage: python %s directory [variant]' % sys.argv[0])
+    sys.exit('usage: python3 %s directory [variant]' % sys.argv[0])
 
 file_path = sys.argv[1]
 
@@ -63,9 +63,9 @@ def reader():
     
     while stop_thread.is_set() == False:
         r = ser.read(1)
-        if r == '':
+        if r == b'':
             continue
-        elif '\x05' in r:
+        elif b'\x05' in r:
             acked.set()
             continue
         else:
@@ -73,13 +73,13 @@ def reader():
 
 def connect_old():
     ser.baudrate = BAUDCOMM
-    ser.write('tjchmi-wri %i,%i,0' % (fsize, BAUDUPLOAD))
-    ser.write("\xff\xff\xff")
+    ser.write(('tjchmi-wri %i,%i,0' % (fsize, BAUDUPLOAD)).encode('ascii'))
+    ser.write(b'\xff\xff\xff')
     ser.flush()
     acked.clear()
     ser.baudrate = BAUDUPLOAD
     ser.timeout = 0.1
-    print 'Waiting for ACK...'
+    print('Waiting for ACK...')
     if acked.wait(1):
         return True
     else:
@@ -87,13 +87,13 @@ def connect_old():
 
 def connect_new():
     ser.baudrate = BAUDCOMM
-    ser.write('whmi-wri %i,%i,0' % (fsize, BAUDUPLOAD))
-    ser.write("\xff\xff\xff")
+    ser.write(('whmi-wri %i,%i,0' % (fsize, BAUDUPLOAD)).encode('ascii'))
+    ser.write(b'\xff\xff\xff')
     ser.flush()
     acked.clear()
     ser.baudrate = BAUDUPLOAD
     ser.timeout = 0.1
-    print 'Waiting for ACK...'
+    print('Waiting for ACK...')
     if acked.wait(1):
         return True
     else:
@@ -109,14 +109,14 @@ def upload(file_name):
     threader.daemon = True
     threader.start()
     
-    print 'Connecting...'
+    print('Connecting...')
     if not connect_new():
-        print 'No ACK. Maybe old Firmware?, trying old command...'
+        print('No ACK. Maybe old Firmware?, trying old command...')
         if not connect_old():
             stop_thread.set()
             threader.join(1)
             sys.exit('No ACK. Can´t establish connection!')
-    print 'Uploading...'
+    print('Uploading...')
     if file_name.endswith('.bz2'):
         open_function = bz2.BZ2File
     else:
@@ -149,20 +149,20 @@ for BAUDCOMM in (9600, 115200, 2400, 4800, 19200, 38400, 57600):
     ser.timeout = 3000/BAUDCOMM + 0.2
     print('Trying with ' + str(BAUDCOMM) + '...')
     # Clear Buffers and Wake-Up
-    ser.write("\xff\xff\xff")
-    ser.write('sleep=0')
-    ser.write("\xff\xff\xff")
+    ser.write(b'\xff\xff\xff')
+    ser.write(b'sleep=0')
+    ser.write(b'\xff\xff\xff')
     ser.flush()
     time.sleep(0.3)
     ser.flushInput()
     # Connect to Display
-    ser.write('connect')
-    ser.write("\xff\xff\xff")
+    ser.write(b'connect')
+    ser.write(b'\xff\xff\xff')
     r = ser.read(128)
-    if 'comok' in r:
+    if b'comok' in r:
         print('Connected with ' + str(BAUDCOMM) + '!')
         no_connect = False
-        status, reserved, model, firmware, mcu_code, serial, flash_size = r.strip("\xff\x00").split(',')
+        status, reserved, model, firmware, mcu_code, serial, flash_size = r.strip(b'\xff\x00').decode('iso-8859-1').split(',')
         print('Status: ' + status)
         print('Model: ' + model)
         print('Firmware: ' + firmware)
@@ -171,22 +171,26 @@ for BAUDCOMM in (9600, 115200, 2400, 4800, 19200, 38400, 57600):
         print('Flash size: ' + flash_size)
         
         file_name = '{file_path}{model}{variant}.tft'.format(file_path=file_path, model=model.split('_')[0], variant=variant_suffix)
-        print 'Now flashing {file}'.format(file=file_name)
+        print('Now flashing {file}'.format(file=file_name))
         if os.path.isfile(file_name + '.bz2'):
             file_name = file_name + '.bz2'
             with bz2.BZ2File(file_name, 'r') as data:
                 data.seek(0, os.SEEK_END)
                 fsize = data.tell()
-            print 'uploading %s (%i bytes uncompressed)...' % (file_name, fsize)
+            print('uploading %s (%i bytes uncompressed)...' % (file_name, fsize))
         elif os.path.isfile(file_name):
             fsize = os.path.getsize(file_name)
-            print 'uploading %s (%i bytes)...' % (file_name, fsize)
+            print('uploading %s (%i bytes)...' % (file_name, fsize))
         else:
             sys.exit('file {} not found'.format(file_name))
 
         print('Filesize: ' + str(fsize))
 
-        if fsize > flash_size:
+        try:
+            too_big = fsize > int(flash_size)  # Python 2 verglich hier int mit str, die Prüfung griff nie
+        except ValueError:
+            too_big = False
+        if too_big:
             sys.exit('File too big!')
 
         upload(file_name)
