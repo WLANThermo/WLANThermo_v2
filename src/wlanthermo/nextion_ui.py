@@ -35,46 +35,9 @@ import codecs
 
 from wlanthermo.display import Display
 
-gettext.install('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/')
-
 NX_channel = 0
 NX_page = 0
 NX_enhanced = False
-
-# Version is set by build script
-version = wlanthermo.VERSION
-
-temps = dict()
-channels = dict()
-pitmaster = dict()
-pitconf = dict()
-
-# Zugriff auf das Display (Protokoll: PyPI-Bibliothek nextion, siehe wlanthermo/display.py)
-nx = Display()
-# Events werden vom Display asynchron gesendet
-NX_eventq = nx.events
-
-# Lock für das schreiben in die Konfig
-configfile_lock = threading.Lock()
-
-# Neue Temperaturen
-temps_event = threading.Event()
-# Neue Kanalkonfiguration (= geändertes Konfigfile)
-channels_event = threading.Event()
-# Neue Pitmasterevents
-pitmaster_event = threading.Event()
-# Neue Pitmasterevents
-pitmaster2_event = threading.Event()
-# Neue Pitmasterkonfiguration (= geändertes Konfigfile)
-pitconf_event = threading.Event()
-# Neue Pitmasterkonfiguration (= geändertes Konfigfile)
-pitconf2_event = threading.Event()
-# Neue Localekonfiguration (= geändertes Konfigfile)
-config_event = threading.Event()
-# Event für ein Aufwachen aus dem Sleep-Mode (= geändertes Konfigfile)
-NX_wake_event = nx.wake_event
-# Stop des Prozesses wurde angefordert
-stop_event = threading.Event()
 
 # Konfigurationsdatei einlesen
 configdefaults = {'dim' : '90',
@@ -83,60 +46,6 @@ configdefaults = {'dim' : '90',
 'serialspeed': '115200'}
 
 configfile = '/var/www/conf/WLANThermo.conf'
-Config = configparser.ConfigParser(configdefaults, strict=False, inline_comment_prefixes=(';',))
-
-# Wir laufen als root, auch andere müssen die Config schreiben!
-os.umask (0)
-
-for i in range(0,5):
-    while True:
-        try:
-            Config.read_file(codecs.open(configfile, 'r', 'utf_8'))
-        except IndexError:
-            # Auf Event warten geht hier noch nicht, da wir die anderen Pfade aus der Config brauchen
-            # Logging geht auch noch nicht, da wir das Logfile brauchen, als an StdErr
-            sys.stderr.write(_('Waiting for configuration file'))
-            time.sleep(1)
-            continue
-        break
-
-# Logging initialisieren
-LOGFILE = Config.get('daemon_logging', 'log_file')
-logger = logging.getLogger('WLANthermoNEXTION')
-
-#Define Logging Level by changing >logger.setLevel(logging.LEVEL_YOU_WANT)< available: DEBUG, INFO, WARNING, ERROR, CRITICAL
-log_level = Config.get('daemon_logging', 'level_DISPLAY')
-if log_level == 'DEBUG':
-    logger.setLevel(logging.DEBUG)
-if log_level == 'INFO':
-    logger.setLevel(logging.INFO)
-if log_level == 'ERROR':
-    logger.setLevel(logging.ERROR)
-if log_level == 'WARNING':
-    logger.setLevel(logging.WARNING)
-if log_level == 'CRITICAL':
-    logger.setLevel(logging.CRITICAL)
-handler = logging.FileHandler(LOGFILE)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logging.captureWarnings(True)
-# Meldungen der nextion-Bibliothek und der Display-Schicht ins selbe Logfile
-nx.log = logger
-lib_logger = logging.getLogger('nextion')
-lib_logger.setLevel(logger.level)
-lib_logger.addHandler(handler)
-
-# Pfad fuer die Übergabedateien auslesen
-curPath, curFile = os.path.split(Config.get('filepath','current_temp'))
-pitPath, pitFile = os.path.split(Config.get('filepath','pitmaster'))
-pit2Path, pit2File = os.path.split(Config.get('filepath','pitmaster2'))
-confPath, confFile = os.path.split(configfile)
-
-# Wenn das display Verzeichniss im Ram Drive nicht exisitiert erstelle es
-if not os.path.exists(curPath):
-    os.makedirs(curPath)
 
 
 class FileEvent(pyinotify.ProcessEvent):
@@ -1266,111 +1175,213 @@ def check_pid(pid):
 def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical(''.join(traceback.format_tb(tb)))
     logger.critical('{0}: {1}'.format(ex_cls, ex))
-
-
-sys.excepthook = log_uncaught_exceptions
-
-# Auf geht es
-logger.info(_('Nextion display started, script version: ') + version)
-
-signal.signal(15, stop_all)
-signal.signal(2, stop_all)
-
-#Einlesen der Software-Version
-for line in codecs.open('/var/www/header.php', 'r', 'utf_8'):
-    if 'webGUIversion' in line:
-        build = re.match(r'.*=\s*"(.*)"', line).group(1)
-        break
-
-#ueberpruefe ob der Dienst schon laeuft
-pid = str(os.getpid())
 pidfilename = '/var/run/wlt_2_nextion.pid'
 
-if os.access(pidfilename, os.F_OK):
-    pidfile = open(pidfilename, "r")
-    pidfile.seek(0)
-    old_pid = int(pidfile.readline())
-    if check_pid(old_pid):
-        print(_("%s already exists, Process is running, exiting") % pidfilename)
-        logger.error(_("%s already exists, Process is running, exiting") % pidfilename)
-        sys.exit()
-    else:
-        logger.info(_("%s already exists, Process is NOT running, resuming operation") % pidfilename)
+
+def main():
+    global Config, NX_eventq, NX_wake_event, channels, channels_event
+    global confFile, confPath, config_event, configfile_lock, curFile, curPath
+    global logger, nx, pit2File, pit2Path, pitFile, pitPath, pitconf
+    global pitconf2_event, pitconf_event, pitmaster, pitmaster2_event
+    global pitmaster_event, stop_event, temps, temps_event, version
+    gettext.install('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/')
+
+    # Version is set by build script
+    version = wlanthermo.VERSION
+
+    temps = dict()
+    channels = dict()
+    pitmaster = dict()
+    pitconf = dict()
+
+    # Zugriff auf das Display (Protokoll: PyPI-Bibliothek nextion, siehe wlanthermo/display.py)
+    nx = Display()
+    # Events werden vom Display asynchron gesendet
+    NX_eventq = nx.events
+
+    # Lock für das schreiben in die Konfig
+    configfile_lock = threading.Lock()
+
+    # Neue Temperaturen
+    temps_event = threading.Event()
+    # Neue Kanalkonfiguration (= geändertes Konfigfile)
+    channels_event = threading.Event()
+    # Neue Pitmasterevents
+    pitmaster_event = threading.Event()
+    # Neue Pitmasterevents
+    pitmaster2_event = threading.Event()
+    # Neue Pitmasterkonfiguration (= geändertes Konfigfile)
+    pitconf_event = threading.Event()
+    # Neue Pitmasterkonfiguration (= geändertes Konfigfile)
+    pitconf2_event = threading.Event()
+    # Neue Localekonfiguration (= geändertes Konfigfile)
+    config_event = threading.Event()
+    # Event für ein Aufwachen aus dem Sleep-Mode (= geändertes Konfigfile)
+    NX_wake_event = nx.wake_event
+    # Stop des Prozesses wurde angefordert
+    stop_event = threading.Event()
+    Config = configparser.ConfigParser(configdefaults, strict=False, inline_comment_prefixes=(';',))
+
+    # Wir laufen als root, auch andere müssen die Config schreiben!
+    os.umask (0)
+
+    for i in range(0,5):
+        while True:
+            try:
+                Config.read_file(codecs.open(configfile, 'r', 'utf_8'))
+            except IndexError:
+                # Auf Event warten geht hier noch nicht, da wir die anderen Pfade aus der Config brauchen
+                # Logging geht auch noch nicht, da wir das Logfile brauchen, als an StdErr
+                sys.stderr.write(_('Waiting for configuration file'))
+                time.sleep(1)
+                continue
+            break
+
+    # Logging initialisieren
+    LOGFILE = Config.get('daemon_logging', 'log_file')
+    logger = logging.getLogger('WLANthermoNEXTION')
+
+    #Define Logging Level by changing >logger.setLevel(logging.LEVEL_YOU_WANT)< available: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    log_level = Config.get('daemon_logging', 'level_DISPLAY')
+    if log_level == 'DEBUG':
+        logger.setLevel(logging.DEBUG)
+    if log_level == 'INFO':
+        logger.setLevel(logging.INFO)
+    if log_level == 'ERROR':
+        logger.setLevel(logging.ERROR)
+    if log_level == 'WARNING':
+        logger.setLevel(logging.WARNING)
+    if log_level == 'CRITICAL':
+        logger.setLevel(logging.CRITICAL)
+    handler = logging.FileHandler(LOGFILE)
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logging.captureWarnings(True)
+    # Meldungen der nextion-Bibliothek und der Display-Schicht ins selbe Logfile
+    nx.log = logger
+    lib_logger = logging.getLogger('nextion')
+    lib_logger.setLevel(logger.level)
+    lib_logger.addHandler(handler)
+
+    # Pfad fuer die Übergabedateien auslesen
+    curPath, curFile = os.path.split(Config.get('filepath','current_temp'))
+    pitPath, pitFile = os.path.split(Config.get('filepath','pitmaster'))
+    pit2Path, pit2File = os.path.split(Config.get('filepath','pitmaster2'))
+    confPath, confFile = os.path.split(configfile)
+
+    # Wenn das display Verzeichniss im Ram Drive nicht exisitiert erstelle es
+    if not os.path.exists(curPath):
+        os.makedirs(curPath)
+
+
+    sys.excepthook = log_uncaught_exceptions
+
+    # Auf geht es
+    logger.info(_('Nextion display started, script version: ') + version)
+
+    signal.signal(15, stop_all)
+    signal.signal(2, stop_all)
+
+    #Einlesen der Software-Version
+    for line in codecs.open('/var/www/header.php', 'r', 'utf_8'):
+        if 'webGUIversion' in line:
+            build = re.match(r'.*=\s*"(.*)"', line).group(1)
+            break
+
+    #ueberpruefe ob der Dienst schon laeuft
+    pid = str(os.getpid())
+
+    if os.access(pidfilename, os.F_OK):
+        pidfile = open(pidfilename, "r")
         pidfile.seek(0)
-        open(pidfilename, 'w').write(pid)
-    
-else:
-    logger.debug(_("%s written") % pidfilename)
-    open(pidfilename, 'w').write(pid)
+        old_pid = int(pidfile.readline())
+        if check_pid(old_pid):
+            print(_("%s already exists, Process is running, exiting") % pidfilename)
+            logger.error(_("%s already exists, Process is running, exiting") % pidfilename)
+            sys.exit()
+        else:
+            logger.info(_("%s already exists, Process is NOT running, resuming operation") % pidfilename)
+            pidfile.seek(0)
+            open(pidfilename, 'w').write(pid)
 
-# Display initialisieren
-logger.debug(_('Loading display configuration'))
-display = display_getvalues()
-
-logger.debug(_('Initializing display, port: {}, baud rate: {}').format(display['serialdevice'], display['serialspeed']))
-
-if nx.start(display['serialdevice'], display['serialspeed']):
-    logger.debug(_('Initialisation OK'))
-
-    logger.debug(_('Starting display thread'))
-    NX_display_thread = threading.Thread(target=NX_display)
-    NX_display_thread.daemon = True
-    try:
-        NX_display_thread.start()
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except:
-        sys.excepthook(*sys.exc_info())
-    
-    logger.debug(_('Starting file watcher'))
-    wm = pyinotify.WatchManager()
-    mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
-    notifier = pyinotify.ThreadedNotifier(wm, FileEvent())
-    try:
-        notifier.start()
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except:
-        sys.excepthook(*sys.exc_info())
-        
-    wdd = wm.add_watch(curPath, mask)
-    wdd2 = wm.add_watch(pitPath, mask)
-    wdd3 = wm.add_watch(confPath, mask)
-    
-    while not stop_event.is_set():
-        # Hauptschleife
-        if not NX_display_thread.is_alive():
-            break
-        if not nx.alive:
-            break
-        time.sleep(0.5)
-    
-    if not NX_wake_event.is_set():
-        nx.wakeup()
-        time.sleep(0.2)
-    
-    if check_reboot():
-        NX_sendvalues({'boot.text.txt:35': _('System is rebooting...')})
     else:
-        NX_sendvalues({'boot.text.txt:35': _('System is shutting down...')})
-        NX_sendvalues({'boot.nextion_down.val': 1})
-    
-    NX_switchpage('boot')
-    
-    notifier.stop()
-    # Signal zum stoppen geben
+        logger.debug(_("%s written") % pidfilename)
+        open(pidfilename, 'w').write(pid)
 
-    logger.debug(_('Waiting for Threads...'))
-    # Auf Threads warten
-    NX_display_thread.join()
-    nx.stop()
-    
-else:
-    logger.error(_('Can´t establish connection to the Nextion display'))
-    nx.stop()
-    # Vielleicht ist die Software noch nicht auf dem Display installiert
-    open('/var/www/tmp/nextionupdate', 'w').close()
+    # Display initialisieren
+    logger.debug(_('Loading display configuration'))
+    display = display_getvalues()
 
-logger.info(_('Display stopped!'))
-logging.shutdown()
-os.unlink(pidfilename)
+    logger.debug(_('Initializing display, port: {}, baud rate: {}').format(display['serialdevice'], display['serialspeed']))
+
+    if nx.start(display['serialdevice'], display['serialspeed']):
+        logger.debug(_('Initialisation OK'))
+
+        logger.debug(_('Starting display thread'))
+        NX_display_thread = threading.Thread(target=NX_display)
+        NX_display_thread.daemon = True
+        try:
+            NX_display_thread.start()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            sys.excepthook(*sys.exc_info())
+
+        logger.debug(_('Starting file watcher'))
+        wm = pyinotify.WatchManager()
+        mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
+        notifier = pyinotify.ThreadedNotifier(wm, FileEvent())
+        try:
+            notifier.start()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            sys.excepthook(*sys.exc_info())
+
+        wdd = wm.add_watch(curPath, mask)
+        wdd2 = wm.add_watch(pitPath, mask)
+        wdd3 = wm.add_watch(confPath, mask)
+
+        while not stop_event.is_set():
+            # Hauptschleife
+            if not NX_display_thread.is_alive():
+                break
+            if not nx.alive:
+                break
+            time.sleep(0.5)
+
+        if not NX_wake_event.is_set():
+            nx.wakeup()
+            time.sleep(0.2)
+
+        if check_reboot():
+            NX_sendvalues({'boot.text.txt:35': _('System is rebooting...')})
+        else:
+            NX_sendvalues({'boot.text.txt:35': _('System is shutting down...')})
+            NX_sendvalues({'boot.nextion_down.val': 1})
+
+        NX_switchpage('boot')
+
+        notifier.stop()
+        # Signal zum stoppen geben
+
+        logger.debug(_('Waiting for Threads...'))
+        # Auf Threads warten
+        NX_display_thread.join()
+        nx.stop()
+
+    else:
+        logger.error(_('Can´t establish connection to the Nextion display'))
+        nx.stop()
+        # Vielleicht ist die Software noch nicht auf dem Display installiert
+        open('/var/www/tmp/nextionupdate', 'w').close()
+
+    logger.info(_('Display stopped!'))
+    logging.shutdown()
+    os.unlink(pidfilename)
+
+
+if __name__ == '__main__':
+    main()

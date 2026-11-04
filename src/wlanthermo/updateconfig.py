@@ -60,15 +60,16 @@ def update_settings(section_name, key, value):
             return re.sub(setting_updates[section_name][key][0], setting_updates[section_name][key][1], value)
     return value
 
-if __name__ == "__main__":
+
+def main():
     parser = argparse.ArgumentParser(description='Update current WLANThermo configuration from file')
     parser.add_argument('oldconfigfile',  metavar='filename', nargs='?',
                     help='A config file to merge into current configfile, deleted afterwards by default')
     parser.add_argument('-d', '--dontdelete', action='store_true',
                     help='Don´t delete file after merge')#
-                    
+
     args = parser.parse_args()
-    
+
     configfile = '/var/www/conf/WLANThermo.conf'
     oldconfigfile = args.oldconfigfile if args.oldconfigfile is not None else configfile + '.old'
     oldconfig = configparser.ConfigParser()
@@ -87,7 +88,10 @@ if __name__ == "__main__":
         sys.exit(1)
 
     config_write(configfile, config, oldconfig)
-    
+
     if not args.dontdelete:
         os.unlink(oldconfigfile)
 
+
+if __name__ == '__main__':
+    main()

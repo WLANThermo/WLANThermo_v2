@@ -31,15 +31,6 @@ import gettext
 import random
 import string
 
-gettext.install('wlt_2_watchdog', localedir='/usr/share/WLANThermo/locale/')
-
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
-
-GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-
-display_proc = None
-
 # Werte von [Display] lcd_type (vom Webinterface gesetzt) -> Modul im Paket wlanthermo
 DISPLAY_MODULES = {
     'wlt_2_nextion.py': 'wlanthermo.nextion_ui',
@@ -49,49 +40,7 @@ DISPLAY_MODULES = {
 HIGH = True  # HIGH-Pegel
 LOW  = False # LOW-Pegel
 
-wm = pyinotify.WatchManager()
-#mask = pyinotify.IN_DELETE | pyinotify.IN_CREATE | pyinotify.IN_CLOSE_WRITE
-mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
-
 cf = '/var/www/conf/WLANThermo.conf'
-
-# Wir laufen als root, auch andere müssen die Config schreiben!
-os.umask (0)
-
-Config = configparser.ConfigParser(interpolation=None, strict=False, inline_comment_prefixes=(';',))
-for i in range(0,5):
-    while True:
-        try:
-            Config.read_file(codecs.open(cf, 'r', 'utf_8'))
-        except IndexError:
-            time.sleep(1)
-            continue
-        break
-
-LOGFILE = Config.get('daemon_logging', 'log_file')
-logger = logging.getLogger('WLANthermoWD')
-#Define Logging Level by changing >logger.setLevel(logging.LEVEL_YOU_WANT)< available: DEBUG, INFO, WARNING, ERROR, CRITICAL
-#logger.setLevel(logging.DEBUG)
-log_level = Config.get('daemon_logging', 'level_WD')
-if log_level == 'DEBUG':
-    logger.setLevel(logging.DEBUG)
-if log_level == 'INFO':
-    logger.setLevel(logging.INFO)
-if log_level == 'ERROR':
-    logger.setLevel(logging.ERROR)
-if log_level == 'WARNING':
-    logger.setLevel(logging.WARNING)
-if log_level == 'CRITICAL':
-    logger.setLevel(logging.CRITICAL)
-handler = logging.FileHandler(LOGFILE)
-handler.setLevel(logging.DEBUG)
-handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(handler)
-
-logger.info(_('WLANThermoWD started'))
-
-#ueberpruefe ob der Dienst schon laeuft
-pid = str(os.getpid())
 pidfilename = '/var/run/wlt_2_watchdog.pid'
 
 def check_pid(pid):
@@ -101,23 +50,6 @@ def check_pid(pid):
         return False
     else:
         return True
-
-if os.access(pidfilename, os.F_OK):
-    pidfile = open(pidfilename, "r")
-    pidfile.seek(0)
-    old_pid = int(pidfile.readline())
-    if check_pid(old_pid):
-        print(_('%s already exists, Process is running, exiting') % pidfilename)
-        logger.error(_('%s already exists, Process is running, exiting') % pidfilename)
-        sys.exit()
-    else:
-        logger.info(_('%s already exists, Process is NOT running, resuming operation') % pidfilename)
-        pidfile.seek(0)
-        open(pidfilename, 'w').write(pid)
-    
-else:
-    logger.debug(_('%s written') % pidfilename)
-    open(pidfilename, 'w').write(pid)
 
 
 class fs_wd(pyinotify.ProcessEvent):
@@ -507,49 +439,124 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical(''.join(traceback.format_tb(tb)))
     logger.critical('{0}: {1}'.format(ex_cls, ex))
 
-sys.excepthook = log_uncaught_exceptions
 
-signal.signal(15, raise_keyboard)
+def main():
+    global Config, display_proc, logger
+    gettext.install('wlt_2_watchdog', localedir='/usr/share/WLANThermo/locale/')
 
-notifier = pyinotify.Notifier(wm, fs_wd())
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
 
-wdd = wm.add_watch('/var/www/conf', mask) #, rec=True)
+    GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-GPIO.add_event_detect(27, GPIO.RISING, callback=shutdown_button, bouncetime=1000)
+    display_proc = None
 
-Config.read_file(codecs.open(cf, 'r', 'utf_8'))
-check_display()
-check_maverick()
+    wm = pyinotify.WatchManager()
+    #mask = pyinotify.IN_DELETE | pyinotify.IN_CREATE | pyinotify.IN_CLOSE_WRITE
+    mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
 
-if Config.get('Hardware', 'version') in ['miniV2']:
-    pitmaster_count = 2
-else:
-    pitmaster_count = 1
-            
-for id in range(pitmaster_count):
-    check_pitmaster(id)
+    # Wir laufen als root, auch andere müssen die Config schreiben!
+    os.umask (0)
 
-# Lösche Rebootflag
-try:
-    os.unlink('/var/www/tmp/reboot.flag')
-except OSError:
-    pass
+    Config = configparser.ConfigParser(interpolation=None, strict=False, inline_comment_prefixes=(';',))
+    for i in range(0,5):
+        while True:
+            try:
+                Config.read_file(codecs.open(cf, 'r', 'utf_8'))
+            except IndexError:
+                time.sleep(1)
+                continue
+            break
 
-while True:
+    LOGFILE = Config.get('daemon_logging', 'log_file')
+    logger = logging.getLogger('WLANthermoWD')
+    #Define Logging Level by changing >logger.setLevel(logging.LEVEL_YOU_WANT)< available: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    #logger.setLevel(logging.DEBUG)
+    log_level = Config.get('daemon_logging', 'level_WD')
+    if log_level == 'DEBUG':
+        logger.setLevel(logging.DEBUG)
+    if log_level == 'INFO':
+        logger.setLevel(logging.INFO)
+    if log_level == 'ERROR':
+        logger.setLevel(logging.ERROR)
+    if log_level == 'WARNING':
+        logger.setLevel(logging.WARNING)
+    if log_level == 'CRITICAL':
+        logger.setLevel(logging.CRITICAL)
+    handler = logging.FileHandler(LOGFILE)
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    logger.addHandler(handler)
+
+    logger.info(_('WLANThermoWD started'))
+
+    #ueberpruefe ob der Dienst schon laeuft
+    pid = str(os.getpid())
+
+    if os.access(pidfilename, os.F_OK):
+        pidfile = open(pidfilename, "r")
+        pidfile.seek(0)
+        old_pid = int(pidfile.readline())
+        if check_pid(old_pid):
+            print(_('%s already exists, Process is running, exiting') % pidfilename)
+            logger.error(_('%s already exists, Process is running, exiting') % pidfilename)
+            sys.exit()
+        else:
+            logger.info(_('%s already exists, Process is NOT running, resuming operation') % pidfilename)
+            pidfile.seek(0)
+            open(pidfilename, 'w').write(pid)
+
+    else:
+        logger.debug(_('%s written') % pidfilename)
+        open(pidfilename, 'w').write(pid)
+
+    sys.excepthook = log_uncaught_exceptions
+
+    signal.signal(15, raise_keyboard)
+
+    notifier = pyinotify.Notifier(wm, fs_wd())
+
+    wdd = wm.add_watch('/var/www/conf', mask) #, rec=True)
+
+    GPIO.add_event_detect(27, GPIO.RISING, callback=shutdown_button, bouncetime=1000)
+
+    Config.read_file(codecs.open(cf, 'r', 'utf_8'))
+    check_display()
+    check_maverick()
+
+    if Config.get('Hardware', 'version') in ['miniV2']:
+        pitmaster_count = 2
+    else:
+        pitmaster_count = 1
+
+    for id in range(pitmaster_count):
+        check_pitmaster(id)
+
+    # Lösche Rebootflag
     try:
-        Config.read_file(codecs.open(cf, 'r', 'utf_8'))
-        notifier.process_events()
-        if notifier.check_events():
-            notifier.read_events()
-    except KeyboardInterrupt:
-        notifier.stop()
-        if (Config.getboolean('Display', 'lcd_present')):
-            if display_proc.poll() == None:
-                logger.info(_('Stopping Display'))
-                display_proc.terminate()
-                display_proc.wait()
-                display_proc = None
-        logger.info(_('WLANThermoWD stopped'))
-        logging.shutdown()
-        os.unlink(pidfilename)
-        break
+        os.unlink('/var/www/tmp/reboot.flag')
+    except OSError:
+        pass
+
+    while True:
+        try:
+            Config.read_file(codecs.open(cf, 'r', 'utf_8'))
+            notifier.process_events()
+            if notifier.check_events():
+                notifier.read_events()
+        except KeyboardInterrupt:
+            notifier.stop()
+            if (Config.getboolean('Display', 'lcd_present')):
+                if display_proc.poll() == None:
+                    logger.info(_('Stopping Display'))
+                    display_proc.terminate()
+                    display_proc.wait()
+                    display_proc = None
+            logger.info(_('WLANThermoWD stopped'))
+            logging.shutdown()
+            os.unlink(pidfilename)
+            break
+
+
+if __name__ == '__main__':
+    main()

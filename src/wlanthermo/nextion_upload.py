@@ -40,64 +40,70 @@ BAUDCOMM = 9600
 # Die nextion-Bibliothek unterstützt höchstens 230400 Baud (früher: 460800)
 BAUDUPLOAD = 230400
 
-if len(sys.argv) < 2 or len(sys.argv) > 3:
-    sys.exit('usage: python3 %s directory [variant]' % sys.argv[0])
 
-file_path = sys.argv[1]
-variant_suffix = '_' + sys.argv[2] if len(sys.argv) > 2 else ''
+def main():
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
+        sys.exit('usage: python3 %s directory [variant]' % sys.argv[0])
 
-if not os.path.exists(file_path):
-    sys.exit('directory "{}" not found'.format(file_path))
+    file_path = sys.argv[1]
+    variant_suffix = '_' + sys.argv[2] if len(sys.argv) > 2 else ''
 
-# Der Fortschritt der Bibliothek ("Uploaded: x%") geht auf stdout (-> Update-Log)
-logging.basicConfig(level=logging.WARNING, stream=sys.stdout, format='%(message)s')
-logging.getLogger('nextion').setLevel(logging.INFO)
+    if not os.path.exists(file_path):
+        sys.exit('directory "{}" not found'.format(file_path))
 
-display = Display()
-print('Connecting...')
-# Die Bibliothek probiert alle Baudraten durch, beginnend mit BAUDCOMM
-if not display.start(PORT, BAUDCOMM):
-    sys.exit('No connection!')
+    # Der Fortschritt der Bibliothek ("Uploaded: x%") geht auf stdout (-> Update-Log)
+    logging.basicConfig(level=logging.WARNING, stream=sys.stdout, format='%(message)s')
+    logging.getLogger('nextion').setLevel(logging.INFO)
 
-try:
-    info = display.device_info
-    print('Connected!')
-    print('Model: ' + info['model'])
-    print('Firmware: ' + info['firmware'])
-    print('Serial: ' + info['serial'])
-    print('Flash size: ' + info['flash_size'])
+    display = Display()
+    print('Connecting...')
+    # Die Bibliothek probiert alle Baudraten durch, beginnend mit BAUDCOMM
+    if not display.start(PORT, BAUDCOMM):
+        sys.exit('No connection!')
 
-    file_name = '{file_path}{model}{variant}.tft'.format(
-        file_path=file_path, model=info['model'].split('_')[0], variant=variant_suffix)
-    print('Now flashing {file}'.format(file=file_name))
+    try:
+        info = display.device_info
+        print('Connected!')
+        print('Model: ' + info['model'])
+        print('Firmware: ' + info['firmware'])
+        print('Serial: ' + info['serial'])
+        print('Flash size: ' + info['flash_size'])
 
-    if os.path.isfile(file_name + '.bz2'):
-        file_name += '.bz2'
-        opener = bz2.BZ2File
-    elif os.path.isfile(file_name):
-        opener = open
-    else:
-        sys.exit('file {} not found'.format(file_name))
+        file_name = '{file_path}{model}{variant}.tft'.format(
+            file_path=file_path, model=info['model'].split('_')[0], variant=variant_suffix)
+        print('Now flashing {file}'.format(file=file_name))
 
-    # Die Bibliothek braucht eine echte Datei (Größe über den Dateideskriptor),
-    # deshalb wird eine .bz2-Datei vorher entpackt.
-    with opener(file_name, 'rb') as src, tempfile.TemporaryFile(dir='/var/tmp') as tft:
-        shutil.copyfileobj(src, tft)
-        tft.flush()
-        fsize = tft.tell()
-        tft.seek(0)
-        print('uploading %s (%i bytes)...' % (file_name, fsize))
-        try:
-            too_big = fsize > int(info['flash_size'])
-        except ValueError:
-            too_big = False
-        if too_big:
-            sys.exit('File too big!')
-        try:
-            display.upload_firmware(tft, BAUDUPLOAD)
-        except Exception as e:
-            sys.exit('Upload failed: {}'.format(e))
-finally:
-    display.stop()
+        if os.path.isfile(file_name + '.bz2'):
+            file_name += '.bz2'
+            opener = bz2.BZ2File
+        elif os.path.isfile(file_name):
+            opener = open
+        else:
+            sys.exit('file {} not found'.format(file_name))
 
-print('File uploaded to Display!')
+        # Die Bibliothek braucht eine echte Datei (Größe über den Dateideskriptor),
+        # deshalb wird eine .bz2-Datei vorher entpackt.
+        with opener(file_name, 'rb') as src, tempfile.TemporaryFile(dir='/var/tmp') as tft:
+            shutil.copyfileobj(src, tft)
+            tft.flush()
+            fsize = tft.tell()
+            tft.seek(0)
+            print('uploading %s (%i bytes)...' % (file_name, fsize))
+            try:
+                too_big = fsize > int(info['flash_size'])
+            except ValueError:
+                too_big = False
+            if too_big:
+                sys.exit('File too big!')
+            try:
+                display.upload_firmware(tft, BAUDUPLOAD)
+            except Exception as e:
+                sys.exit('Upload failed: {}'.format(e))
+    finally:
+        display.stop()
+
+    print('File uploaded to Display!')
+
+
+if __name__ == '__main__':
+    main()

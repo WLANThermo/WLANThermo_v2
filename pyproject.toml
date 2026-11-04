@@ -25,16 +25,16 @@ Homepage = "https://wlanthermo.de/"
 Forum = "https://forum.wlanthermo.de/"
 
 [project.scripts]
-wlanthermo-comp = "wlanthermo.cli:comp"
-wlanthermo-nextion = "wlanthermo.cli:nextion"
-wlanthermo-lcd204 = "wlanthermo.cli:lcd204"
-wlanthermo-watchdog = "wlanthermo.cli:watchdog"
-wlanthermo-pitmaster = "wlanthermo.cli:pitmaster"
-wlanthermo-hwclock = "wlanthermo.cli:hwclock"
-wlanthermo-nextion-upload = "wlanthermo.cli:nextion_upload"
-wlanthermo-updateconfig = "wlanthermo.cli:updateconfig"
-wlanthermo-maverick = "wlanthermo.cli:maverick"
-wlanthermo-update-checker = "wlanthermo.cli:update_checker"
+wlanthermo-comp = "wlanthermo.comp:main"
+wlanthermo-nextion = "wlanthermo.nextion_ui:main"
+wlanthermo-lcd204 = "wlanthermo.lcd_204:main"
+wlanthermo-watchdog = "wlanthermo.watchdog:main"
+wlanthermo-pitmaster = "wlanthermo.pitmaster:main"
+wlanthermo-hwclock = "wlanthermo.nextion_hwclock:main"
+wlanthermo-nextion-upload = "wlanthermo.nextion_upload:main"
+wlanthermo-updateconfig = "wlanthermo.updateconfig:main"
+wlanthermo-maverick = "wlanthermo.maverick:main"
+wlanthermo-update-checker = "wlanthermo.update_checker:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "wlanthermo.__version__"}

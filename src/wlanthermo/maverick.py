@@ -40,26 +40,6 @@ import math
 import random
 import string
 import os
-
-parser = argparse.ArgumentParser(description='Receives Wireless BBQ Thermometer Telegrams via RF-Receiver')
-parser.add_argument('--html', nargs='?', const='maverick.html', help='Writes a HTML file')
-parser.add_argument('--json', nargs='?', const='maverick.json', help='Writes a JSON file')
-parser.add_argument('--sqlite', nargs='?', const='maverick.sqlite', help='Writes to an SQLite Database')
-parser.add_argument('--thingspeak', nargs='?', const='maverick.thingspeak', help='Writes to ThingSpeak (enter Write-API key)')
-parser.add_argument('--debug', action='store_true', help='Generates additional debugging Output')
-parser.add_argument('--pin', default=22, type=int, help='Sets the Pin number')
-parser.add_argument('--nosync', action='store_true', help='Always register new IDs')
-parser.add_argument('--fahrenheit', action='store_true', help='Sets the Output to Fahrenheit')
-parser.add_argument('--noappend', action='store_true', help='Don´t append to file')
-parser.add_argument('--verbose', action='store_true', help='Print more Information to stdout')
-
-options = parser.parse_args()
-
-if options.debug:
-   print(options)
-
-# Globals für die Pinchange-Routine
-oldtick = 0
 oldlevel = None
 state = 'wait'
 packet = []
@@ -78,9 +58,6 @@ long_high_max = 0
 long_low_max = 0
 short_high_max = 0
 short_low_max = 0
-
-# Queue für fertige Pakete
-packet_queue = queue.Queue()
 
 # Liste der Sender für die Synchronisierung
 unit_list = {}
@@ -589,47 +566,78 @@ def thingspeak_writer():
                 print('Sending to ThingSpeak')
             with urllib.request.urlopen(request) as response:
                 pass
-                #TODO Fehlerhandling
 
-pi = pigpio.pi() # connect to local Pi
-oldtick = pi.get_current_tick()
-pi.set_mode(options.pin, pigpio.INPUT)
-pi.set_noise_filter(options.pin, 4500, 400000)
-callback1 = pi.callback(options.pin, pigpio.EITHER_EDGE, pinchange)
-start = time.time()
 
-if options.html != None:
-   html_queue = queue.Queue()
-   html_writer_worker = threading.Thread(target=html_writer)
-   html_writer_worker.daemon = True
-   html_writer_worker.start()
+def main():
+    global html_queue, json, json_queue, oldtick, options, packet_queue
+    global sqlite3, sqlite_queue, thingspeak_queue, urllib
+    parser = argparse.ArgumentParser(description='Receives Wireless BBQ Thermometer Telegrams via RF-Receiver')
+    parser.add_argument('--html', nargs='?', const='maverick.html', help='Writes a HTML file')
+    parser.add_argument('--json', nargs='?', const='maverick.json', help='Writes a JSON file')
+    parser.add_argument('--sqlite', nargs='?', const='maverick.sqlite', help='Writes to an SQLite Database')
+    parser.add_argument('--thingspeak', nargs='?', const='maverick.thingspeak', help='Writes to ThingSpeak (enter Write-API key)')
+    parser.add_argument('--debug', action='store_true', help='Generates additional debugging Output')
+    parser.add_argument('--pin', default=22, type=int, help='Sets the Pin number')
+    parser.add_argument('--nosync', action='store_true', help='Always register new IDs')
+    parser.add_argument('--fahrenheit', action='store_true', help='Sets the Output to Fahrenheit')
+    parser.add_argument('--noappend', action='store_true', help='Don´t append to file')
+    parser.add_argument('--verbose', action='store_true', help='Print more Information to stdout')
 
-if options.json != None:
-   import json
-   json_queue = queue.Queue()
-   json_writer_worker = threading.Thread(target=json_writer)
-   json_writer_worker.daemon = True
-   json_writer_worker.start()
+    options = parser.parse_args()
 
-if options.sqlite != None:
-   import sqlite3
-   sqlite_queue = queue.Queue()
-   sqlite_writer_worker = threading.Thread(target=sqlite_writer)
-   sqlite_writer_worker.daemon = True
-   sqlite_writer_worker.start()
+    if options.debug:
+       print(options)
 
-if options.thingspeak != None:
-    import urllib.request
-    import urllib.parse
-    thingspeak_queue = queue.Queue()
-    thingspeak_writer_worker = threading.Thread(target=thingspeak_writer)
-    thingspeak_writer_worker.daemon = True
-    thingspeak_writer_worker.start()
+    # Globals für die Pinchange-Routine
+    oldtick = 0
 
-worker1 = threading.Thread(target=worker)
-worker1.daemon = True
-worker1.start()
+    # Queue für fertige Pakete
+    packet_queue = queue.Queue()
+                    #TODO Fehlerhandling
 
-while (1):
-   time.sleep(0.2)
-pi.stop()
+    pi = pigpio.pi() # connect to local Pi
+    oldtick = pi.get_current_tick()
+    pi.set_mode(options.pin, pigpio.INPUT)
+    pi.set_noise_filter(options.pin, 4500, 400000)
+    callback1 = pi.callback(options.pin, pigpio.EITHER_EDGE, pinchange)
+    start = time.time()
+
+    if options.html != None:
+       html_queue = queue.Queue()
+       html_writer_worker = threading.Thread(target=html_writer)
+       html_writer_worker.daemon = True
+       html_writer_worker.start()
+
+    if options.json != None:
+       import json
+       json_queue = queue.Queue()
+       json_writer_worker = threading.Thread(target=json_writer)
+       json_writer_worker.daemon = True
+       json_writer_worker.start()
+
+    if options.sqlite != None:
+       import sqlite3
+       sqlite_queue = queue.Queue()
+       sqlite_writer_worker = threading.Thread(target=sqlite_writer)
+       sqlite_writer_worker.daemon = True
+       sqlite_writer_worker.start()
+
+    if options.thingspeak != None:
+        import urllib.request
+        import urllib.parse
+        thingspeak_queue = queue.Queue()
+        thingspeak_writer_worker = threading.Thread(target=thingspeak_writer)
+        thingspeak_writer_worker.daemon = True
+        thingspeak_writer_worker.start()
+
+    worker1 = threading.Thread(target=worker)
+    worker1.daemon = True
+    worker1.start()
+
+    while (1):
+       time.sleep(0.2)
+    pi.stop()
+
+
+if __name__ == '__main__':
+    main()

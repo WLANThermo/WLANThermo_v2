@@ -48,56 +48,62 @@ def ntp_synchronized():
                 return True
     return False
 
-
-logging.basicConfig(level=logging.WARNING, format='%(name)s: %(message)s')
-
-if len(sys.argv) < 2:
-    sys.exit('Argument needed: start or stop')
-if sys.argv[1].lower() not in ('start', 'stop'):
-    sys.exit('Valid arguments: start or stop')
-mode = sys.argv[1].lower()
-
 # Ueberpruefe ob der Dienst schon laeuft
 pidfilename = '/var/run/nextion_hwclock.pid'
-if os.access(pidfilename, os.F_OK):
-    with open(pidfilename, 'r') as pidfile:
-        old_pid = int(pidfile.readline())
-    if check_pid(old_pid):
-        print("%s already exists, Process is running, exiting" % pidfilename)
-        sys.exit()
-with open(pidfilename, 'w') as pidfile:
-    pidfile.write(str(os.getpid()))
 
-display = Display()
-# Nicht warten, wenn ein anderer Prozess das Display benutzt
-nextion = display.start(config['serialdevice'], config['serialspeed'], blocking=False)
-if not nextion:
-    print('Error in NEXTION init')
 
-ntp = ntp_synchronized()
-print('NTP is synchronised' if ntp else 'NTP is NOT synchronised')
+def main():
+    global values
+    logging.basicConfig(level=logging.WARNING, format='%(name)s: %(message)s')
 
-if nextion and not ntp and mode == 'start':
-    print('Getting time from NEXTION RTC')
+    if len(sys.argv) < 2:
+        sys.exit('Argument needed: start or stop')
+    if sys.argv[1].lower() not in ('start', 'stop'):
+        sys.exit('Valid arguments: start or stop')
+    mode = sys.argv[1].lower()
+    if os.access(pidfilename, os.F_OK):
+        with open(pidfilename, 'r') as pidfile:
+            old_pid = int(pidfile.readline())
+        if check_pid(old_pid):
+            print("%s already exists, Process is running, exiting" % pidfilename)
+            sys.exit()
+    with open(pidfilename, 'w') as pidfile:
+        pidfile.write(str(os.getpid()))
 
-    values = display.getvalues(RTC_KEYS)
-    if len(values) < len(RTC_KEYS):
-        print('No RTC installed?!')
-    else:
-        try:
-            rtc_time = time.mktime(tuple(values[k] for k in RTC_KEYS) + (0, 1, -1))
-        except (OverflowError, ValueError):
+    display = Display()
+    # Nicht warten, wenn ein anderer Prozess das Display benutzt
+    nextion = display.start(config['serialdevice'], config['serialspeed'], blocking=False)
+    if not nextion:
+        print('Error in NEXTION init')
+
+    ntp = ntp_synchronized()
+    print('NTP is synchronised' if ntp else 'NTP is NOT synchronised')
+
+    if nextion and not ntp and mode == 'start':
+        print('Getting time from NEXTION RTC')
+
+        values = display.getvalues(RTC_KEYS)
+        if len(values) < len(RTC_KEYS):
             print('No RTC installed?!')
         else:
-            if rtc_time > os.path.getmtime(__file__):
-                print('Setting system time:')
-                os.system('date -s "{}-{}-{} {}:{}:{}"'.format(*(values[k] for k in RTC_KEYS)))
+            try:
+                rtc_time = time.mktime(tuple(values[k] for k in RTC_KEYS) + (0, 1, -1))
+            except (OverflowError, ValueError):
+                print('No RTC installed?!')
             else:
-                print('Invalid RTC time')
-elif nextion and ntp:
-    localtime = time.localtime()
-    print('Setting NEXTION RTC from clock')
-    display.sendvalues(dict(zip(RTC_KEYS, localtime[:6])))
+                if rtc_time > os.path.getmtime(__file__):
+                    print('Setting system time:')
+                    os.system('date -s "{}-{}-{} {}:{}:{}"'.format(*(values[k] for k in RTC_KEYS)))
+                else:
+                    print('Invalid RTC time')
+    elif nextion and ntp:
+        localtime = time.localtime()
+        print('Setting NEXTION RTC from clock')
+        display.sendvalues(dict(zip(RTC_KEYS, localtime[:6])))
 
-display.stop()
-os.unlink(pidfilename)
+    display.stop()
+    os.unlink(pidfilename)
+
+
+if __name__ == '__main__':
+    main()

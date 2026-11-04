@@ -32,13 +32,8 @@ import gettext
 import codecs
 import sys
 
-gettext.install('wlt_2_pitmaster', localedir='/usr/share/WLANThermo/locale/')
-
 # GPIO START
 PIT_PWM = 4  # Pitmaster PWM
-
-# Wir laufen als root, auch andere müssen die Config schreiben!
-os.umask(0)
 
 logger = False
 
@@ -397,7 +392,7 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical('{0}: {1}'.format(ex_cls, ex))
 
 
-def main(instance):
+def run(instance):
     global logger
 
     # Konfigurationsdatei einlesen
@@ -844,7 +839,13 @@ def check_pid(pid):
         return True
 
 
-if __name__ == "__main__":
+def main():
+    gettext.install('wlt_2_pitmaster', localedir='/usr/share/WLANThermo/locale/')
+
+    # Wir laufen als root, auch andere müssen die Config schreiben!
+    os.umask(0)
+
+
     pid = str(os.getpid())
 
     if (len(sys.argv) > 1):
@@ -868,6 +869,10 @@ if __name__ == "__main__":
     else:
         open(pidfilename, 'w').write(pid)
 
-    main(instance)
+    run(instance)
 
     os.unlink(pidfilename)
+
+
+if __name__ == '__main__':
+    main()

@@ -61,8 +61,9 @@ def check_updates(packages):
 
     return results
 
-	
-if __name__ == "__main__":
+
+def main():
+    global args
     parser = argparse.ArgumentParser(description='Check for updates available via apt')
     parser.add_argument('package', nargs='*',
                     help='A package to check for updates')
@@ -70,3 +71,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print(json.dumps(check_updates(args.package)))
+
+
+if __name__ == '__main__':
+    main()

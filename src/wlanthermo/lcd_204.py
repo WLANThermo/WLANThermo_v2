@@ -31,11 +31,6 @@ import signal
 import gettext
 import codecs
 
-gettext.install('wlt_2_lcd_204', localedir='/usr/share/WLANThermo/locale/')
-
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
-
 HIGH = True  # HIGH-Pegel
 LOW  = False # LOW-Pegel
 # Variablendefinition und GPIO Pin-Definition
@@ -64,52 +59,7 @@ E_DELAY = 0.0005
 counter = 0
 #String Length
 sLen = 7
-
-# Konfigurationsdatei einlesen
-Config = configparser.ConfigParser(interpolation=None, strict=False, inline_comment_prefixes=(';',))
-for i in range(0,5):
-    while True:
-        try:
-            Config.read('/var/www/conf/WLANThermo.conf', encoding='utf-8')
-        except IndexError:
-            time.sleep(1)
-            continue
-        break
-
-# Wir laufen als root, auch andere m�ssen die Config schreiben!
-os.umask (0)
-
-LOGFILE = Config.get('daemon_logging', 'log_file')
-logger = logging.getLogger('WLANthermoDIS')
-#Define Logging Level by changing >logger.setLevel(logging.LEVEL_YOU_WANT)< available: DEBUG, INFO, WARNING, ERROR, CRITICAL
-log_level = Config.get('daemon_logging', 'level_DISPLAY')
-if log_level == 'DEBUG':
-    logger.setLevel(logging.DEBUG)
-if log_level == 'INFO':
-    logger.setLevel(logging.INFO)
-if log_level == 'ERROR':
-    logger.setLevel(logging.ERROR)
-if log_level == 'WARNING':
-    logger.setLevel(logging.WARNING)
-if log_level == 'CRITICAL':
-    logger.setLevel(logging.CRITICAL)
-handler = logging.FileHandler(LOGFILE)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logging.captureWarnings(True)
-
-logger.info(_('Display started!'))
-
-#ueberpruefe ob der Dienst schon laeuft
-pid = str(os.getpid())
 pidfilename = '/var/run/wlt_2_lcd_204.pid'
-
-if Config.get('Hardware', 'version') == 'miniV2':
-    channel_count = 12
-else:
-    channel_count = 10
 
 def check_pid(pid):
     try:
@@ -118,28 +68,6 @@ def check_pid(pid):
         return False
     else:
         return True
-
-if os.access(pidfilename, os.F_OK):
-    pidfile = open(pidfilename, "r")
-    pidfile.seek(0)
-    old_pid = int(pidfile.readline())
-    if check_pid(old_pid):
-        print(_('%s already exists, Process is running, exiting') % pidfilename)
-        logger.error(_('%s already exists, Process is running, exiting') % pidfilename)
-        sys.exit()
-    else:
-        logger.info(_('%s already exists, Process is NOT running, resuming operation') % pidfilename)
-        pidfile.seek(0)
-        open(pidfilename, 'w').write(pid)
-    
-else:
-    logger.debug(_("%s written") % pidfilename)
-    open(pidfilename, 'w').write(pid)
-
-
-#File System Watcher
-wm = pyinotify.WatchManager()
-mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
 
 class PTmp(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
@@ -336,92 +264,171 @@ def lan_getvalues():
         else:
             interfaces[interface] = {'name': interface, 'ip': '000.000.000.000'}
     return interfaces
-    
-#Einlesen Displayeinstellungen
-LCD = Config.getboolean('Display','lcd_present')
 
-#Einlesen des gewuenschten Error value --> wenn ein unplausibler Messwert festgestellt wird wird statt dem Wert dieser String angezeigt
-error_val = Config.get('Display','error_val')
 
-#Einlesen der Software-Version
-for line in codecs.open('/var/www/header.php', 'r', 'utf_8'):
-    if 'webGUIversion' in line:
-        build = re.match(r'.*=\s*"(.*)"', line).group(1)
-        break
+def main():
+    global Config, channel_count, curFile, curPath, error_val, logger, pitFile
+    gettext.install('wlt_2_lcd_204', localedir='/usr/share/WLANThermo/locale/')
 
-# Pfad fuer die uebergabedateien auslesen
-curPath,curFile = os.path.split(Config.get('filepath','current_temp'))
-pitPath,pitFile = os.path.split(Config.get('filepath','pitmaster'))
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
 
-# Wenn das display Verzeichniss im Ram Drive nicht exisitiert erstelle es
-if not os.path.exists(curPath):
-    os.makedirs(curPath)
-
-# wd file beim Starten des Display Daemons loeschen!
-logger.debug(_('Check for watchdog file >{curPath}/wd<').format(curPath=curPath))
-if os.path.isfile(curPath + '/wd'):
-    os.remove(curPath + '/wd')
-
-if LCD:
-    GPIO.setup(LCD_E, GPIO.OUT)  # E
-    GPIO.setup(LCD_RS, GPIO.OUT) # RS
-    GPIO.setup(LCD_D4, GPIO.OUT) # DB4
-    GPIO.setup(LCD_D5, GPIO.OUT) # DB5
-    GPIO.setup(LCD_D6, GPIO.OUT) # DB6
-    GPIO.setup(LCD_D7, GPIO.OUT) # DB7
-
-    #Display initialisieren und Begruessungstext ausgeben
-    lcd_init()
-    lcd_byte(LCD_LINE_1, LCD_CMD)
-    lcd_string(_('----- 8 Channel -----'),2) 
-    lcd_byte(LCD_LINE_2, LCD_CMD)
-    lcd_string(_('----- WLANThermo ----'),2)
-    lcd_byte(LCD_LINE_3, LCD_CMD)
-    lcd_string(_('by Armin Thinnes'),2)
-    lcd_byte(LCD_LINE_4, LCD_CMD)
-    lcd_string(build,2)    
-
-    time.sleep(3) # 3 second delay 
-
-    lcd_byte(LCD_LINE_1, LCD_CMD)
-    lcd_string(_('     WLANThermo'),2)
-    lcd_byte(LCD_LINE_2, LCD_CMD)
-    lcd_string('',2)  
-    lcd_byte(LCD_LINE_3, LCD_CMD)
-    lcd_string(_('  The reference at'),1) 
-    lcd_byte(LCD_LINE_4, LCD_CMD)
-    lcd_string(_('grilling + measuring!'),1)   
-
-    time.sleep(3) # 3 second delay
-
-    # IP-Adressen ermitteln
-    interfaces = lan_getvalues()
-
-    WLAN0="WLAN0: " + interfaces['wlan0']['ip']
-    ETH0="ETH0: " + interfaces['eth0']['ip']
-    ETH1="ETH1: " + interfaces['eth1']['ip']
-    lcd_byte(LCD_LINE_1, LCD_CMD)
-    lcd_string(_('IP addresses:'),2)
-    lcd_byte(LCD_LINE_2, LCD_CMD)
-    lcd_string(WLAN0,2)  
-    lcd_byte(LCD_LINE_3, LCD_CMD)
-    lcd_string(ETH0,2) 
-    lcd_byte(LCD_LINE_4, LCD_CMD)
-    lcd_string(ETH1,2)   
-
-    time.sleep(3) # 3 second delay
-
-    notifier = pyinotify.Notifier(wm, PTmp())
-    wdd = wm.add_watch(curPath, mask) #, rec=True)
-    
-    show_values()
-    while True:
-        try:
-            notifier.process_events()
-            if notifier.check_events():
-                notifier.read_events()
-        except KeyboardInterrupt:
-            notifier.stop()
-            os.unlink(pidfilename)
+    # Konfigurationsdatei einlesen
+    Config = configparser.ConfigParser(interpolation=None, strict=False, inline_comment_prefixes=(';',))
+    for i in range(0,5):
+        while True:
+            try:
+                Config.read('/var/www/conf/WLANThermo.conf', encoding='utf-8')
+            except IndexError:
+                time.sleep(1)
+                continue
             break
-logger.info(_('Display stopped!'))
+
+    # Wir laufen als root, auch andere m�ssen die Config schreiben!
+    os.umask (0)
+
+    LOGFILE = Config.get('daemon_logging', 'log_file')
+    logger = logging.getLogger('WLANthermoDIS')
+    #Define Logging Level by changing >logger.setLevel(logging.LEVEL_YOU_WANT)< available: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    log_level = Config.get('daemon_logging', 'level_DISPLAY')
+    if log_level == 'DEBUG':
+        logger.setLevel(logging.DEBUG)
+    if log_level == 'INFO':
+        logger.setLevel(logging.INFO)
+    if log_level == 'ERROR':
+        logger.setLevel(logging.ERROR)
+    if log_level == 'WARNING':
+        logger.setLevel(logging.WARNING)
+    if log_level == 'CRITICAL':
+        logger.setLevel(logging.CRITICAL)
+    handler = logging.FileHandler(LOGFILE)
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logging.captureWarnings(True)
+
+    logger.info(_('Display started!'))
+
+    #ueberpruefe ob der Dienst schon laeuft
+    pid = str(os.getpid())
+
+    if Config.get('Hardware', 'version') == 'miniV2':
+        channel_count = 12
+    else:
+        channel_count = 10
+
+    if os.access(pidfilename, os.F_OK):
+        pidfile = open(pidfilename, "r")
+        pidfile.seek(0)
+        old_pid = int(pidfile.readline())
+        if check_pid(old_pid):
+            print(_('%s already exists, Process is running, exiting') % pidfilename)
+            logger.error(_('%s already exists, Process is running, exiting') % pidfilename)
+            sys.exit()
+        else:
+            logger.info(_('%s already exists, Process is NOT running, resuming operation') % pidfilename)
+            pidfile.seek(0)
+            open(pidfilename, 'w').write(pid)
+
+    else:
+        logger.debug(_("%s written") % pidfilename)
+        open(pidfilename, 'w').write(pid)
+
+
+    #File System Watcher
+    wm = pyinotify.WatchManager()
+    mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
+
+    #Einlesen Displayeinstellungen
+    LCD = Config.getboolean('Display','lcd_present')
+
+    #Einlesen des gewuenschten Error value --> wenn ein unplausibler Messwert festgestellt wird wird statt dem Wert dieser String angezeigt
+    error_val = Config.get('Display','error_val')
+
+    #Einlesen der Software-Version
+    for line in codecs.open('/var/www/header.php', 'r', 'utf_8'):
+        if 'webGUIversion' in line:
+            build = re.match(r'.*=\s*"(.*)"', line).group(1)
+            break
+
+    # Pfad fuer die uebergabedateien auslesen
+    curPath,curFile = os.path.split(Config.get('filepath','current_temp'))
+    pitPath,pitFile = os.path.split(Config.get('filepath','pitmaster'))
+
+    # Wenn das display Verzeichniss im Ram Drive nicht exisitiert erstelle es
+    if not os.path.exists(curPath):
+        os.makedirs(curPath)
+
+    # wd file beim Starten des Display Daemons loeschen!
+    logger.debug(_('Check for watchdog file >{curPath}/wd<').format(curPath=curPath))
+    if os.path.isfile(curPath + '/wd'):
+        os.remove(curPath + '/wd')
+
+    if LCD:
+        GPIO.setup(LCD_E, GPIO.OUT)  # E
+        GPIO.setup(LCD_RS, GPIO.OUT) # RS
+        GPIO.setup(LCD_D4, GPIO.OUT) # DB4
+        GPIO.setup(LCD_D5, GPIO.OUT) # DB5
+        GPIO.setup(LCD_D6, GPIO.OUT) # DB6
+        GPIO.setup(LCD_D7, GPIO.OUT) # DB7
+
+        #Display initialisieren und Begruessungstext ausgeben
+        lcd_init()
+        lcd_byte(LCD_LINE_1, LCD_CMD)
+        lcd_string(_('----- 8 Channel -----'),2) 
+        lcd_byte(LCD_LINE_2, LCD_CMD)
+        lcd_string(_('----- WLANThermo ----'),2)
+        lcd_byte(LCD_LINE_3, LCD_CMD)
+        lcd_string(_('by Armin Thinnes'),2)
+        lcd_byte(LCD_LINE_4, LCD_CMD)
+        lcd_string(build,2)    
+
+        time.sleep(3) # 3 second delay 
+
+        lcd_byte(LCD_LINE_1, LCD_CMD)
+        lcd_string(_('     WLANThermo'),2)
+        lcd_byte(LCD_LINE_2, LCD_CMD)
+        lcd_string('',2)  
+        lcd_byte(LCD_LINE_3, LCD_CMD)
+        lcd_string(_('  The reference at'),1) 
+        lcd_byte(LCD_LINE_4, LCD_CMD)
+        lcd_string(_('grilling + measuring!'),1)   
+
+        time.sleep(3) # 3 second delay
+
+        # IP-Adressen ermitteln
+        interfaces = lan_getvalues()
+
+        WLAN0="WLAN0: " + interfaces['wlan0']['ip']
+        ETH0="ETH0: " + interfaces['eth0']['ip']
+        ETH1="ETH1: " + interfaces['eth1']['ip']
+        lcd_byte(LCD_LINE_1, LCD_CMD)
+        lcd_string(_('IP addresses:'),2)
+        lcd_byte(LCD_LINE_2, LCD_CMD)
+        lcd_string(WLAN0,2)  
+        lcd_byte(LCD_LINE_3, LCD_CMD)
+        lcd_string(ETH0,2) 
+        lcd_byte(LCD_LINE_4, LCD_CMD)
+        lcd_string(ETH1,2)   
+
+        time.sleep(3) # 3 second delay
+
+        notifier = pyinotify.Notifier(wm, PTmp())
+        wdd = wm.add_watch(curPath, mask) #, rec=True)
+
+        show_values()
+        while True:
+            try:
+                notifier.process_events()
+                if notifier.check_events():
+                    notifier.read_events()
+            except KeyboardInterrupt:
+                notifier.stop()
+                os.unlink(pidfilename)
+                break
+    logger.info(_('Display stopped!'))
+
+
+if __name__ == '__main__':
+    main()
