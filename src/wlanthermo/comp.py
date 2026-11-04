@@ -27,14 +27,13 @@ import signal
 import traceback
 import gettext
 import wlanthermo
-import codecs
 from bitstring import BitArray
 import pigpio
 from struct import pack, unpack
-import json
 import statistics
 import platform
 from wlanthermo.alarm import AlarmMonitor, NotificationSchedule, ChannelStatus, safe_format
+from wlanthermo.datafiles import CurrentTempFile, PitmasterReader, TemperatureLog, read_maverick
 from wlanthermo.notify import build_notifiers
 from wlanthermo.sensors import KTypeSensor, load_sensors, median_filter, resistance_from_adc
 from wlanthermo.settings import (CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser,
@@ -95,66 +94,9 @@ def get_channel_max31855(channel):
         return data[0:14].int / 4.0
 
 
-def dateiname():
-    # Zeitstring fuer eindeutige Dateinamen erzeugen
-    # fn = YYYYMMDD_HHMMSS
-    fn = time.strftime('%Y%m%d_%H%M%S')
-    return fn
-
-
-def create_logfile(filename, log_kanal, separator):
-    # Falls der Symlink noch da ist, loeschen
-    try:
-        os.remove('/var/log/WLAN_Thermo/TEMPLOG.csv')
-    except FileNotFoundError:
-        pass
-
-    # Symlink TEMPLOG.csv auf die gerade benutzte eindeutige Log-Datei legen.
-    try:
-        os.symlink(filename, '/var/log/WLAN_Thermo/TEMPLOG.csv')
-    except OSError as e:
-        logger.error('Could not create symlink to {file}: {err}'.format(file=filename, err=e))
-
-    kopfzeile = []
-    kopfzeile.append(_('Date_Time'))
-    for kanal, logged in enumerate(log_kanal):
-        if logged:
-            kopfzeile.append('Kanal ' + str(kanal))
-            
-    kopfzeile.append(_('Controller output value'))
-    kopfzeile.append(_('Controller set value'))
-    kopfzeile.append(_('Controller 2 output value'))
-    kopfzeile.append(_('Controller 2 set value'))
-    
-    try:
-        with codecs.open(filename, 'w', 'utf_8') as fw: #Datei anlegen
-            fw.write(separator.join(kopfzeile) + '\n') # Kopfzeile der CSV-Datei schreiben
-            fw.flush()
-            os.fsync(fw.fileno())
-    except OSError as e:
-        logger.error('Could not create log file {file}: {err}'.format(file=filename, err=e))
-
 def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical(''.join(traceback.format_tb(tb)))
     logger.critical('{0}: {1}'.format(ex_cls, ex))
-
-def read_maverick():
-    try:
-        with codecs.open('/var/www/tmp/maverick.json', 'r', 'utf_8') as maverick_json:
-            values = json.load(maverick_json)
-    except ValueError:
-        logger.error('Maverick file is no valid JSON')
-        return None
-    except IOError:
-        logger.info('Maverick file could not be read')
-        return None
-
-    age = time.time() - values['time']
-    if age > 30:
-        logger.debug('Maverick values too old, {} sec'.format(age))
-        return None
-
-    return values
 
 # Variablendefinition und GPIO Pin-Definition
 ADC_Channel = 0  # Analog/Digital-Channel
@@ -224,9 +166,6 @@ def main():
     #GPIO END
 
     version = startup.version
-    current_temp = startup.current_temp_file
-    log_kanal = startup.log_channels
-    separator = startup.separator
 
     # Software-Version, wird beim build gesetzt
     build = wlanthermo.VERSION
@@ -250,29 +189,12 @@ def main():
         time.sleep(1)
         pi.write(BEEPER, 0)
 
-    # Pfad fuer die uebergabedateien auslesen und auftrennen in Pfad und Dateinamen
-    curPath,curFile = os.path.split(current_temp)
-
-    #Wenn das display Verzeichniss im Ram Drive nicht exisitiert erstelle es
-    if not os.path.exists(curPath):
-        os.makedirs(curPath)
-
-    #Temperatur-LOG-Verzeichnis anlegen, wenn noch nicht vorhanden und aktuelle Log-Datei generieren
-    try:
-        os.mkdir('/var/log/WLAN_Thermo')
-    except: 
-        pass
-
-    name = "/var/log/WLAN_Thermo/"  + dateiname() +'_TEMPLOG.csv' #eindeutigen Namen generieren 
-    if startup.new_log_on_restart:# neues File beim Start anlegen
-        create_logfile(name, log_kanal, separator)
-    else:
-        #Kein neues File anlegen
-        if os.path.exists('/var/log/WLAN_Thermo/TEMPLOG.csv'):
-            # pruefen, ob die Datei schon da ist zum anhaengen, auch False bei Broken Link!
-            name = '/var/log/WLAN_Thermo/TEMPLOG.csv'
-        else:
-            create_logfile(name, log_kanal, separator)
+    current_temp_file = CurrentTempFile(startup.current_temp_file)
+    pit_readers = [PitmasterReader(path) for path in startup.pit_files]
+    temperature_log = TemperatureLog(startup.log_channels, startup.separator, [
+        _('Controller output value'), _('Controller set value'),
+        _('Controller 2 output value'), _('Controller 2 set value')])
+    temperature_log.open(new_file=startup.new_log_on_restart)
 
     config_watcher = ConfigWatcher(CONFIG_FILE, lambda config: parse_settings(config, sensors, channel_count))
     Temperatur = [None for i in range(channel_count)]
@@ -290,8 +212,6 @@ def main():
             logger.debug('CPU: {} RAM free: {}'.format(CPU_usage, ram_free))
             alarme = []
             statusse = []
-            pit = {}
-            pit2 = {}
 
             if startup.maverick:
                 logger.info('Reading from Maverick receiver...')
@@ -408,39 +328,16 @@ def main():
                 elif status == ChannelStatus.OK:
                     statusse.append(safe_format(alert.status_template, alarm_values))
 
-            if settings.pit_on[0]:
-                try:
-                    with codecs.open(startup.pit_files[0], 'r', 'utf_8') as pitfile:
-                        pit_values = pitfile.readline().split(';')
-                        pit['new'] = pit_values[3].rstrip('%')
-                        pit['set'] = pit_values[1]
-                except (OSError, IndexError):
-                    # IndexError: Datei leer oder gerade unvollständig geschrieben
-                    # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
-                    pit = None
-            else:
-                    pit = None
-
-            if settings.pit_on[1]:
-                try:
-                    with codecs.open(startup.pit_files[1], 'r', 'utf_8') as pit2file:
-                        pit2_values = pit2file.readline().split(';')
-                        pit2['new'] = pit2_values[3].rstrip('%')
-                        pit2['set'] = pit2_values[1]
-                except (OSError, IndexError):
-                    # IndexError: Datei leer oder gerade unvollständig geschrieben
-                    # Wenn keine aktuellen Werte verfügbar sind, leere Werte schreiben
-                    pit2 = None
-            else:
-                    pit2 = None
-
+            # Werte der Pitmaster, None wenn abgeschaltet oder nicht verfügbar
+            pits = [reader.read() if on else None for reader, on in zip(pit_readers, settings.pit_on)]
+            pit, pit2 = pits
 
             message_values = dict()
 
-            message_values['pit_new'] = pit['new'] if pit is not None else '-'
-            message_values['pit_set'] = pit['set'] if pit is not None else '-'
-            message_values['pit2_new'] = pit2['new'] if pit2 is not None else '-'
-            message_values['pit2_set'] = pit2['set'] if pit2 is not None else '-'
+            message_values['pit_new'] = pit.new if pit is not None else '-'
+            message_values['pit_set'] = pit.set if pit is not None else '-'
+            message_values['pit2_new'] = pit2.new if pit2 is not None else '-'
+            message_values['pit2_set'] = pit2.set if pit2 is not None else '-'
 
             message_values['alarme'] = ''.join(alarme)
             message_values['statusse'] = ''.join(statusse)
@@ -486,74 +383,18 @@ def main():
                 for notifier in build_notifiers(settings):
                     notifier.send(alarm_message, urgent=alarm_irgendwo)
 
-            # Log datei erzeugen
-            lcsv = []
             Uhrzeit_lang = time.strftime('%d.%m.%y %H:%M:%S')
-            try:
-                logdatei = os.readlink('/var/log/WLAN_Thermo/TEMPLOG.csv')
-            except OSError:
-                # Symlink fehlt oder ist eine normale Datei
-                logdatei = name
-            # Name der Log-Datei ohne Verzeichnis und Endung, z.B. 20181024_183012_TEMPLOG
-            logdatei = os.path.splitext(os.path.basename(logdatei))[0]
-            lcsv.append(Uhrzeit_lang)
-            for kanal in range(channel_count):
-                if Temperatur_string[kanal] is None:
-                    lcsv.append('')
-                else:
-                    lcsv.append(str(Temperatur_string[kanal]))
-            for kanal in range(channel_count):
-                # 8 Felder mit allen Alarmzuständen
-                lcsv.append(evaluation.statuses[kanal].value)
-            lcsv.append(build)
-            lcsv.append(logdatei)
+            current_temp_file.write(
+                Uhrzeit_lang,
+                ['' if t is None else t for t in Temperatur_string],
+                evaluation.statuses,
+                build,
+                temperature_log.name)
 
-
-            # Bei einem Fehler nur protokollieren, die Messung und die Alarme sollen weiterlaufen
-            try:
-                with codecs.open(current_temp + '_tmp', 'w', 'utf_8') as fcsv:
-                    fcsv.write(';'.join(lcsv))
-                    fcsv.flush()
-                    os.fsync(fcsv.fileno())
-                os.rename(current_temp + '_tmp', current_temp)
-            except OSError as e:
-                logger.error('Could not write to file {file}: {err}'.format(file=current_temp, err=e))
-
-            #Messzyklus protokollieren und nur die Kanaele loggen, die in der Konfigurationsdatei angegeben sind
-            log_line = []
-            log_line.append(Uhrzeit_lang)
-
-            for kanal in range(channel_count):
-                if (log_kanal[kanal]):
-                    if Temperatur[kanal] is None:
-                        log_line.append('')
-                    else:
-                        log_line.append(str(Temperatur[kanal]))
-
-            if pit is not None:
-                log_line.append(pit['new'])
-                log_line.append(pit['set'])
-            else:
-                log_line.append('')
-                log_line.append('')
-
-            if pit2 is not None:
-                log_line.append(pit2['new'])
-                log_line.append(pit2['set'])
-            else:
-                log_line.append('')
-                log_line.append('')
-
-            try:
-                # Generierung des Logfiles
-                with codecs.open(name, 'a', 'utf_8') as logfile:
-                    logfile.write(separator.join(log_line) + '\n')
-                    logfile.flush()
-                    os.fsync(logfile.fileno())
-            except OSError as e:
-                logger.error('Could not write to file {file}: {err}'.format(file=name, err=e))
-            # Werte loggen
-            logger.debug(separator.join(log_line))
+            # Messzyklus protokollieren, nur die Kanäle, die in der Konfigurationsdatei angegeben sind
+            log_line = temperature_log.line(Uhrzeit_lang, Temperatur, pits)
+            temperature_log.append(log_line)
+            logger.debug(log_line)
 
             delay = settings.delay
             time_remaining = time_start + delay - time.time()
