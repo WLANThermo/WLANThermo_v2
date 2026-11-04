@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from wlanthermo.comp import service as comp  # noqa: E402
 from wlanthermo.comp.alarm import ChannelStatus, Evaluation  # noqa: E402
 from wlanthermo.comp.datafiles import PitValues  # noqa: E402
+from wlanthermo.core.hub import MEASUREMENT, DataHub  # noqa: E402
 from wlanthermo.comp.settings import AlertSettings, ChannelSettings, Settings, StartupSettings  # noqa: E402
 
 
@@ -154,6 +155,17 @@ class CycleTest(GettextTest):
         self.comp.cycle()
         self.assertEqual(self.notifier.send.call_count, 1)
         self.assertEqual(self.board.beeper.beep.call_count, 2)  # Summer, solange nicht quittiert
+
+    def test_publishes_measurement(self):
+        hub = DataHub()
+        self.comp.hub = hub
+        with mock.patch('time.time', return_value=1000.0):
+            self.comp.cycle()
+        measurement = hub.latest(MEASUREMENT)
+        self.assertEqual(measurement.time, 1000.0)
+        self.assertEqual(measurement.temperatures, (70.0,) + (30.0,) * 7 + (None, None))
+        self.assertEqual(measurement.statuses, ('hi',) + ('ok',) * 7 + ('er', 'er'))
+        self.assertEqual(measurement.unit, 'celsius')
 
     def test_test_alarm(self):
         self.comp.channels.measure.return_value = [30.0] * 8 + [None, None]

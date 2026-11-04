@@ -34,13 +34,14 @@ import traceback
 import psutil
 
 import wlanthermo
+from ..config import CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser, read_config_file
+from ..core.hub import MEASUREMENT, Measurement
+from ..sensors.catalog import load_sensor_types
 from .alarm import AlarmMonitor, ChannelStatus, NotificationSchedule, safe_format
 from .channels import Channels
 from .datafiles import CurrentTempFile, PitmasterReader, TemperatureLog
 from .hardware import Board
 from .notify import build_notifiers
-from ..sensors.catalog import load_sensor_types
-from ..config import CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser, read_config_file
 from .settings import parse_settings, parse_startup_settings
 
 PIDFILE = '/var/run/wlt_2_comp.pid'
@@ -110,9 +111,11 @@ def build_message(settings, temperatures, evaluation, pits, hostname):
 
 
 class Comp:
-    def __init__(self, startup, sensor_types, board):
+    def __init__(self, startup, sensor_types, board, hub=None):
         self.startup = startup
         self.board = board
+        # DataHub des Kernprozesses, None wenn comp allein läuft
+        self.hub = hub
         self.config = ConfigWatcher(
             CONFIG_FILE, lambda config: parse_settings(config, sensor_types, startup.channel_count))
         self.alarms = AlarmMonitor(startup.channel_count)
@@ -161,6 +164,10 @@ class Comp:
 
         self.notify(settings, evaluation, message)
         self.write_outputs(temperatures, evaluation, pits)
+        if self.hub is not None:
+            self.hub.publish(MEASUREMENT, Measurement(
+                time=time.time(), temperatures=tuple(temperatures),
+                statuses=tuple(status.value for status in evaluation.statuses), unit=settings.temp_unit))
         self.wait(time_start, settings.delay)
 
     def log_system_load(self):
