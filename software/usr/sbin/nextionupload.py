@@ -26,178 +26,78 @@
 
 # For more information, please refer to <http://unlicense.org/>
 
-import threading
-import time
-import os
-import sys
-import serial
 import bz2
+import logging
+import os
+import shutil
+import sys
+import tempfile
+
+from wlanthermo.display import Display
 
 PORT = '/dev/serial0'
 BAUDCOMM = 9600
-BAUDUPLOAD = 460800
+# Die nextion-Bibliothek unterstützt höchstens 230400 Baud (früher: 460800)
+BAUDUPLOAD = 230400
 
 if len(sys.argv) < 2 or len(sys.argv) > 3:
     sys.exit('usage: python3 %s directory [variant]' % sys.argv[0])
 
 file_path = sys.argv[1]
-
-if len(sys.argv) > 2:
-    variant_suffix = '_' + sys.argv[2]
-else:
-    variant_suffix = ''
+variant_suffix = '_' + sys.argv[2] if len(sys.argv) > 2 else ''
 
 if not os.path.exists(file_path):
     sys.exit('directory "{}" not found'.format(file_path))
 
-ser = serial.Serial(PORT, BAUDCOMM, timeout=.1, )
+# Der Fortschritt der Bibliothek ("Uploaded: x%") geht auf stdout (-> Update-Log)
+logging.basicConfig(level=logging.WARNING, stream=sys.stdout, format='%(message)s')
+logging.getLogger('nextion').setLevel(logging.INFO)
 
-acked = threading.Event()
-stop_thread = threading.Event()
-threader = False
+display = Display()
+print('Connecting...')
+# Die Bibliothek probiert alle Baudraten durch, beginnend mit BAUDCOMM
+if not display.start(PORT, BAUDCOMM):
+    sys.exit('No connection!')
 
-def reader():
-    global acked
-    global ser
-    global threader
-    
-    while stop_thread.is_set() == False:
-        r = ser.read(1)
-        if r == b'':
-            continue
-        elif b'\x05' in r:
-            acked.set()
-            continue
-        else:
-            continue
+try:
+    info = display.device_info
+    print('Connected!')
+    print('Model: ' + info['model'])
+    print('Firmware: ' + info['firmware'])
+    print('Serial: ' + info['serial'])
+    print('Flash size: ' + info['flash_size'])
 
-def connect_old():
-    ser.baudrate = BAUDCOMM
-    ser.write(('tjchmi-wri %i,%i,0' % (fsize, BAUDUPLOAD)).encode('ascii'))
-    ser.write(b'\xff\xff\xff')
-    ser.flush()
-    acked.clear()
-    ser.baudrate = BAUDUPLOAD
-    ser.timeout = 0.1
-    print('Waiting for ACK...')
-    if acked.wait(1):
-        return True
+    file_name = '{file_path}{model}{variant}.tft'.format(
+        file_path=file_path, model=info['model'].split('_')[0], variant=variant_suffix)
+    print('Now flashing {file}'.format(file=file_name))
+
+    if os.path.isfile(file_name + '.bz2'):
+        file_name += '.bz2'
+        opener = bz2.BZ2File
+    elif os.path.isfile(file_name):
+        opener = open
     else:
-        return False
+        sys.exit('file {} not found'.format(file_name))
 
-def connect_new():
-    ser.baudrate = BAUDCOMM
-    ser.write(('whmi-wri %i,%i,0' % (fsize, BAUDUPLOAD)).encode('ascii'))
-    ser.write(b'\xff\xff\xff')
-    ser.flush()
-    acked.clear()
-    ser.baudrate = BAUDUPLOAD
-    ser.timeout = 0.1
-    print('Waiting for ACK...')
-    if acked.wait(1):
-        return True
-    else:
-        return False 
-    
-def upload(file_name):
-    global acked
-    global ser
-    global stop_thread
-    global threader
-    
-    threader = threading.Thread(target = reader)
-    threader.daemon = True
-    threader.start()
-    
-    print('Connecting...')
-    if not connect_new():
-        print('No ACK. Maybe old Firmware?, trying old command...')
-        if not connect_old():
-            stop_thread.set()
-            threader.join(1)
-            sys.exit('No ACK. Can´t establish connection!')
-    print('Uploading...')
-    if file_name.endswith('.bz2'):
-        open_function = bz2.BZ2File
-    else:
-        open_function = open
-
-    with open_function(file_name, 'rb') as hmif:
-        dcount = 0
-        while True:
-            #time.sleep(.1)
-            data = hmif.read(4096)
-            if len(data) == 0: break
-            dcount += len(data)
-            #print 'writing %i...' % len(data)
-            ser.write(data)
-            acked.clear()
-            if sys.stdout.isatty():
-                sys.stdout.write('\rUploading, %3.1f%%...' % (dcount/ float(fsize)*100.0))
-            else:
-                print('Uploading, %3.1f%%...' % (dcount/ float(fsize)*100.0))
-            sys.stdout.flush()
-            #print 'waiting for hmi...'
-            acked.wait()
-        print('')
-    stop_thread.set()
-    threader.join(1)
-
-no_connect = True
-for BAUDCOMM in (9600, 115200, 2400, 4800, 19200, 38400, 57600):
-    ser.baudrate = BAUDCOMM
-    ser.timeout = 3000/BAUDCOMM + 0.2
-    print('Trying with ' + str(BAUDCOMM) + '...')
-    # Clear Buffers and Wake-Up
-    ser.write(b'\xff\xff\xff')
-    ser.write(b'sleep=0')
-    ser.write(b'\xff\xff\xff')
-    ser.flush()
-    time.sleep(0.3)
-    ser.flushInput()
-    # Connect to Display
-    ser.write(b'connect')
-    ser.write(b'\xff\xff\xff')
-    r = ser.read(128)
-    if b'comok' in r:
-        print('Connected with ' + str(BAUDCOMM) + '!')
-        no_connect = False
-        status, reserved, model, firmware, mcu_code, serial, flash_size = r.strip(b'\xff\x00').decode('iso-8859-1').split(',')
-        print('Status: ' + status)
-        print('Model: ' + model)
-        print('Firmware: ' + firmware)
-        print('MCU code: ' + mcu_code)
-        print('Serial: ' + serial)
-        print('Flash size: ' + flash_size)
-        
-        file_name = '{file_path}{model}{variant}.tft'.format(file_path=file_path, model=model.split('_')[0], variant=variant_suffix)
-        print('Now flashing {file}'.format(file=file_name))
-        if os.path.isfile(file_name + '.bz2'):
-            file_name = file_name + '.bz2'
-            with bz2.BZ2File(file_name, 'r') as data:
-                data.seek(0, os.SEEK_END)
-                fsize = data.tell()
-            print('uploading %s (%i bytes uncompressed)...' % (file_name, fsize))
-        elif os.path.isfile(file_name):
-            fsize = os.path.getsize(file_name)
-            print('uploading %s (%i bytes)...' % (file_name, fsize))
-        else:
-            sys.exit('file {} not found'.format(file_name))
-
-        print('Filesize: ' + str(fsize))
-
+    # Die Bibliothek braucht eine echte Datei (Größe über den Dateideskriptor),
+    # deshalb wird eine .bz2-Datei vorher entpackt.
+    with opener(file_name, 'rb') as src, tempfile.TemporaryFile(dir='/var/tmp') as tft:
+        shutil.copyfileobj(src, tft)
+        tft.flush()
+        fsize = tft.tell()
+        tft.seek(0)
+        print('uploading %s (%i bytes)...' % (file_name, fsize))
         try:
-            too_big = fsize > int(flash_size)  # Python 2 verglich hier int mit str, die Prüfung griff nie
+            too_big = fsize > int(info['flash_size'])
         except ValueError:
             too_big = False
         if too_big:
             sys.exit('File too big!')
+        try:
+            display.upload_firmware(tft, BAUDUPLOAD)
+        except Exception as e:
+            sys.exit('Upload failed: {}'.format(e))
+finally:
+    display.stop()
 
-        upload(file_name)
-        break
-
-if no_connect:
-    sys.exit('No connection!')
-else:
-    print('File uploaded to Display!')
-
+print('File uploaded to Display!')

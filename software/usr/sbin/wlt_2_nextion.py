@@ -22,24 +22,20 @@ import os
 import time
 import logging
 import pyinotify
-import serial
 import subprocess
 import threading
 import re
 import signal
-import queue
 import traceback
-from struct import unpack
 import gettext
-import termios
-import fcntl
 import random
 import string
 import codecs
 
+from wlanthermo.display import Display
+
 gettext.install('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/')
 
-NX_lf = '\xff\xff\xff'  # als str, wird in NX_write() nach latin-1 kodiert
 NX_channel = 0
 NX_page = 0
 NX_enhanced = False
@@ -52,10 +48,10 @@ channels = dict()
 pitmaster = dict()
 pitconf = dict()
 
+# Zugriff auf das Display (Protokoll: PyPI-Bibliothek nextion, siehe wlanthermo/display.py)
+nx = Display()
 # Events werden vom Display asynchron gesendet
-NX_eventq = queue.Queue()
-# Returns werden auf Anforderung zurückgegeben
-NX_returnq = queue.Queue()
+NX_eventq = nx.events
 
 # Lock für das schreiben in die Konfig
 configfile_lock = threading.Lock()
@@ -75,7 +71,7 @@ pitconf2_event = threading.Event()
 # Neue Localekonfiguration (= geändertes Konfigfile)
 config_event = threading.Event()
 # Event für ein Aufwachen aus dem Sleep-Mode (= geändertes Konfigfile)
-NX_wake_event = threading.Event()
+NX_wake_event = nx.wake_event
 # Stop des Prozesses wurde angefordert
 stop_event = threading.Event()
 
@@ -125,6 +121,11 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logging.captureWarnings(True)
+# Meldungen der nextion-Bibliothek und der Display-Schicht ins selbe Logfile
+nx.log = logger
+lib_logger = logging.getLogger('nextion')
+lib_logger.setLevel(logger.level)
+lib_logger.addHandler(handler)
 
 # Pfad fuer die Übergabedateien auslesen
 curPath, curFile = os.path.split(Config.get('filepath','current_temp'))
@@ -177,175 +178,6 @@ class FileEvent(pyinotify.ProcessEvent):
             logger.debug(_('New pitmaster 2 data available'))
             pitmaster2_event.set()
 
-def NX_reader():
-    global logger, ser, NX_returns, NX_events, stop_event, NX_wake_event
-    logger.info('Reader thread has been started')
-    # Timeout setzen, damit der Thread gestoppt werden kann
-    ser.timeout = 0.1
-    # Dauerschleife, bricht ab wenn ein stop_event vorlieg
-    while not stop_event.is_set():
-        is_return = False
-        endcount = 0
-        bytecount = 0
-        message = {'raw' : bytearray(), 'iserr' : False, 'errmsg' : '', 'data' : {}, 'type': ''}
-        
-        while (endcount != 3):
-            try:
-                byte = ser.read()
-            except termios.error as e:
-                logger.error(_('termios.error in NX_reader: {}').format(e.args[1]))
-            if byte != b'':
-                # Kein Timeout
-                bytecount += 1
-                message['raw'] += byte
-                if (byte[0] == 0xff):
-                    endcount += 1
-                else:
-                    endcount = 0
-            else:
-                # Timeout, sollen wir stoppen?
-                if stop_event.is_set():
-                    break
-        if stop_event.is_set():
-            break
-        # errmsg taken from ITEAD website, not translated
-        elif (message['raw'][0] == 0x00):
-            message['type'] = 'inv_instr'
-            message['iserr'] = True
-            message['errmsg'] = 'Invalid instruction'
-            is_return = True
-        elif (message['raw'][0] == 0x01):
-            message['type'] = 'ok'
-            message['errmsg'] = 'Successful execution of instruction'
-            is_return = True
-        elif (message['raw'][0] == 0x03):
-            message['type'] = 'inv_pageid'
-            message['iserr'] = True
-            message['errmsg'] = 'Page ID invalid'
-            is_return = True
-        elif (message['raw'][0] == 0x04):
-            message['type'] = 'inv_pictid'
-            message['iserr'] = True
-            message['errmsg'] = 'Picture ID invalid'
-            is_return = True
-        elif (message['raw'][0] == 0x05):
-            message['type'] = 'inv_fontid'
-            message['iserr'] = True
-            message['errmsg'] = 'Font ID invalid'
-            is_return = True
-        elif (message['raw'][0] == 0x11):
-            message['type'] = 'inv_baudrate'
-            message['iserr'] = True
-            message['errmsg'] = 'Baud rate setting invalid'
-            is_return = True
-        elif (message['raw'][0] == 0x12):
-            message['type'] = 'inv_curve'
-            message['iserr'] = True
-            message['errmsg'] = 'Curve control ID number or channel number is invalid'
-            is_return = True
-        elif (message['raw'][0] == 0x1a):
-            message['type'] = 'inv_varname'
-            message['iserr'] = True
-            message['errmsg'] = 'Variable name invalid '
-            is_return = True
-        elif (message['raw'][0] == 0x1B):
-            message['type'] = 'inv_varop'
-            message['iserr'] = True
-            message['errmsg'] = 'Variable operation invalid'
-            is_return = True
-        elif (message['raw'][0] == 0x65):
-            message['type'] = 'touch_event'
-            message['errmsg'] = 'Touch event return data'
-            message['data'] = {'page': unpack('B', message['raw'][1:2])[0], 'button': unpack('B', message['raw'][2:3])[0], 'event':['release', 'press'][unpack('B', message['raw'][3:4])[0]]}
-        elif (message['raw'][0] == 0x66):
-            message['type'] = 'current_page'
-            message['errmsg'] = 'Current page ID number return'
-            message['data'] = {'page': unpack('B', message['raw'][1:2])[0]}
-        elif (message['raw'][0] == 0x67):
-            message['type'] = 'touch_coord'
-            message['errmsg'] = 'Touch coordinate data returns'
-            message['data'] = {'x': unpack('>h', message['raw'][1:3])[0],'y': unpack('>h', message['raw'][3:5])[0], 'event':['release', 'press'][unpack('B', message['raw'][5:6])[0]]}
-        elif (message['raw'][0] == 0x68):
-            message['type'] = 'touch_coord_sleep'
-            message['errmsg'] = 'Touch Event in sleep mode'
-            message['data'] = {'x': unpack('>h', message['raw'][1:3])[0] ,'y': unpack('>h', message['raw'][3:5])[0], 'event':['release', 'press'][unpack('B', message['raw'][5:6])[0]]}
-        elif (message['raw'][0] == 0x70):
-            message['type'] = 'data_string'
-            message['errmsg'] = 'String variable data returns'
-            message['data'] = unpack((str(bytecount - 4)) + 's', message['raw'][1:-3])[0].decode('iso-8859-1')
-            is_return = True
-        elif (message['raw'][0] == 0x71):
-            message['type'] = 'data_int'
-            message['errmsg'] = 'Numeric variable data returns'
-            message['data'] = unpack('<i', message['raw'][1:5])[0]
-            is_return = True
-        elif (message['raw'][0] == 0x86):
-            message['type'] = 'sleep'
-            message['errmsg'] = 'Device automatically enters into sleep mode'
-            NX_wake_event.clear()
-        elif (message['raw'][0] == 0x87):
-            message['type'] = 'wakeup'
-            message['errmsg'] = 'Device automatically wake up'
-            # Device ist aufgewacht...
-            NX_wake_event.set()
-        elif (message['raw'][0] == 0x88):
-            message['type'] = 'startup'
-            message['errmsg'] = 'System successful start up'
-        elif (message['raw'][0] == 0x89):
-            message['type'] = 'sdupgrade'
-            message['errmsg'] = 'Start SD card upgrade'
-        # Selbst definierte Kommandos
-        elif (message['raw'][0] == 0x40):
-            message['type'] = 'read_cmd'
-            message['errmsg'] = 'Request to read from Display'
-            message['data'] = {'area': unpack('B', message['raw'][1:2])[0], 'id': unpack('B', message['raw'][2:3])[0]}
-        elif (message['raw'][0] == 0x41):
-            message['type'] = 'custom_cmd'
-            message['errmsg'] = 'Execute Special Command'
-            message['data'] = {'area': unpack('B', message['raw'][1:2])[0], 'id': unpack('B', message['raw'][2:3])[0], 'action': unpack('B', message['raw'][3:4])[0]}
-            logger.debug('Area: ' + str(message['data']['area']) + ' ID: ' + str(message['data']['id']) + ' Action: ' + str(message['data']['action']))
-        
-        logger.debug(_('Received message of type {type} from the Display').format(type=message['type']))
-        
-        if (is_return):
-            NX_returnq.put(message)
-        else:
-            NX_eventq.put(message)
-            
-    logger.info(_('Reader thread has been stopped'))
-    return True
-
-
-def NX_waitok():
-    endcount = 0
-    bytecount = 0
-    ok = False
-    byte = b''
-
-    while endcount != 3:
-        try:
-            byte = ser.read()
-        except termios.error as e:
-            logger.error(_('termios.error in NX_waitok: {}').format(e.args[1]))
-        
-        if byte == b'':
-            logger.info(_('Serial Communication Timeout!'))
-            break
-        bytecount += 1
-        if (byte[0] == 0xff):
-            endcount += 1
-        elif (byte[0] == 0x01 and bytecount == 1):
-            endcount = 0
-            ok = True
-        else:
-            endcount = 0
-            
-    if ok == True:
-        return True
-    else:
-        return False
-
-
 def set_hwclock():
     localtime = time.localtime()
     return NX_sendvalues({'rtc0':localtime[0], 'rtc1':localtime[1], 'rtc2':localtime[2], 'rtc3':localtime[3], 'rtc4':localtime[4], 'rtc5':localtime[5]})
@@ -361,235 +193,24 @@ def check_ntp():
     return False
 
 
-def NX_write(text):
-    """Sendet Text an das Display. Das Display erwartet ISO-8859-1."""
-    ser.write(text.encode('latin-1', 'replace'))
-
-
-def NX_init(port, baudrate):
-    global ser, NX_lf, NX_reader_thread
-    try:
-        ser.port = port
-        ser.baudrate = baudrate
-        ser.timeout = 0.2
-        ser.write_timeout = 1
-        ser.open()
-        logger.debug(_('Locking serial port'))
-        fcntl.flock(ser.fileno(), fcntl.LOCK_EX)
-        logger.debug(_('Clear serial buffer'))
-        # Buffer des Displays leeren
-        # - Ungültigen Befehl senden
-        # - Aufwachbefehl senden
-        NX_write('nop' + NX_lf)
-        NX_write('sleep=0' + NX_lf)
-        # - Warten
-        ser.flush()
-        time.sleep(0.2)
-        # - Empfangene Zeichen löschen
-        ser.flushInput()
-        # Immer eine Rückmeldung erhalten
-        NX_write('ref 0' + NX_lf)
-        ser.flush()
-    except termios.error as e:
-        logger.error(_('termios.error in NX_init: {}').format(e.args[1]))
-        
-    return NX_waitok()
-
-
 def NX_sendvalues(values):
-    global ser, NX_lf, NX_returnq, NX_wake_event
-    
-    systemvars = ['rtc0', 'rtc1', 'rtc2', 'rtc3', 'rtc4', 'rtc5', 'rtc6', 'dim', 'dims']
-    # NX_sendcmd('sleep=0')
-    error = False
-    for rawkey, value in values.items():
-        # Länge wird im Key mit codiert "key:länge"
-        keys = rawkey.split(':')
-        key = keys[0]
-        if len(keys) == 2:
-            length = int(keys[1])
-        else:
-            length = None
-        # Sendet die Daten zum Display und wartet auf eine Rückmeldung
-        logger.debug(_('Sending {key} to the display: {value}').format(key=key, value=str(value)))
-        try:
-            if key[-3:] == 'txt':
-                try:
-                    value = '%.12g' % float(value)
-                    if '.' in value:
-                        value = value.rstrip('0').rstrip('.')
-                except ValueError:
-                    value = str(value)
-                NX_write(str(key) + '="' + value[:length] + '"\xff\xff\xff')
-            elif key[-3:]  == 'val' or key in systemvars:
-                NX_write(str(key) + '=' + str(value) + '\xff\xff\xff')
-            else:
-                logger.warning(_('Unknown type of variable'))
-            ser.flush()
-        except termios.error as e:
-            logger.error(_('termios.error in NX_sendvalues: {}').format(e.args[1]))
-            
-        try:
-            ret = NX_returnq.get(timeout=1)
-        except queue.Empty:
-            logger.warning(_('Timeout - display possibly in sleep mode'))
-            error = True
-            break
-        else:
-            NX_returnq.task_done()
-            if ret['iserr']:
-                logger.warning(_('Received error message {} from the display').format(ret['type']))
-                error = True
-            else:
-                logger.debug(_('Received message {} from the display').format(ret['type']))
-    
-    if error:
-        return False
-    return True
-
-
-def NX_getvalues(ids):
-    global ser, NX_lf, NX_returnq
-    error = False
-    returnvalues = dict()
-    try:
-        while True:
-            ret = NX_returnq.get(False)
-            logger.info(_('Received unexpected message {} from the display (out of the display program)').format(ret['type']))
-    except queue.Empty:
-        for value_id in ids:
-        # Sendet die Daten zum Display und wartet auf eine Rückmeldung
-            logger.debug(_('Get {} from the display').format(str(value_id)))
-            try:
-                NX_write('get ' + str(value_id) + '\xff\xff\xff')
-                ser.flush()
-            except termios.error as e:
-                logger.error(_('termios.error in NX_getvalues: {}').format(e.args[1]))
-                
-            try:
-                ret = NX_returnq.get(0.5)
-                NX_returnq.task_done()
-                if ret['iserr']:
-                    logger.warning(_('Received error message {} from the display').format(ret['type']))
-                    error = True
-                else:
-                    # Gehen wir von einem "OK" aus, was sonst?
-                    logger.debug(_('Received message {} from the display').format(ret['type']))
-                    # OK, dann Daten abholen
-                    if ret['type'] == 'data_string':
-                        logger.debug(_('Got string {} from the display').format(ret['data']))
-                    elif ret['type'] == 'data_int':
-                        logger.debug(_('Got integer {} from the display').format(ret['data']))
-                    else:
-                        logger.info(_('Received unexpected message {} from the display').format(ret['type']))
-                        
-                if not error:
-                    returnvalues[value_id] = ret['data']
-                    error = True
-            except queue.Empty:
-                logger.warning(_('Received no answer from the display'))
-                error = True
-    return returnvalues
+    """Setzt Werte im Display, siehe wlanthermo.display.Display.sendvalues()."""
+    return nx.sendvalues(values)
 
 
 def NX_getvalue(value_id):
-    global ser, NX_lf, NX_returnq
-    error = False
-    # Sendet die Daten zum Display und wartet auf eine Rückmeldung
-    logger.debug(_('Get {} from the display').format(str(value_id)))
-    
-    try:
-        while True:
-            ret = NX_returnq.get(False)
-            logger.info(_('Received unexpected message {} from the display (out of the display program)').format(ret['type']))
-    except queue.Empty:
-        try:
-            NX_write('get ' + str(value_id) + '\xff\xff\xff')
-            ser.flush()
-        except termios.error as e:
-            logger.error(_('termios.error in NX_getvalues: {}').format(e.args[1]))
-            
-        try:
-            ret = NX_returnq.get(True, 0.5)
-            NX_returnq.task_done()
-            if ret['iserr']:
-                logger.warning(_('Received error message {} from the display').format(ret['type']))
-                error = True
-            else:
-                # OK, dann Daten abholen
-                if ret['type'] == 'data_string':
-                    logger.debug(_('Got string {} from the display').format(ret['data']))
-                elif ret['type'] == 'data_int':
-                    logger.debug(_('Got integer {} from the display').format(ret['data']))
-                else:
-                    logger.info(_('Received unexpected message {} from the display').format(ret['type']))
-        except queue.Empty:
-            logger.warning(_('Received no answer from the display'))
-            error = True
-        
-    if not error:
-        return ret['data']
-    else:
-        return None
+    """Liest einen Wert aus dem Display (Zahl oder Text), None bei einem Fehler."""
+    return nx.getvalue(value_id)
 
 
 def NX_sendcmd(cmd):
-    global ser, NX_returnq
-    error = False
-    # Sendet die Daten zum Display und wartet auf eine Rückmeldung
-    logger.debug(_('Send command {} to the display').format(str(cmd)))
-    try:
-        while True:
-            ret = NX_returnq.get(False)
-            logger.info(_('Received unexpected message {} from the display (out of the display program)').format(ret['type']))
-            NX_returnq.task_done()
-    except queue.Empty:
-        try:
-            NX_write(str(cmd) + '\xff\xff\xff')
-            ser.flush()
-            ret = NX_returnq.get(True, 0.5)
-            NX_returnq.task_done()
-            if ret['iserr']:
-                logger.warning(_('Received error message {} from the display').format(ret['type']))
-                error = True
-            else:
-                logger.debug(_('Received message {} from the display'.format(ret['type'])))
-        except queue.Empty:
-            logger.warning(_('Received no answer from the display'))
-            error = True
-        except termios.error as e:
-            logger.error(_('termios.error in NX_sendcmd: {}').format(e.args[1]))
-            error = True
-    if error:
-        return False
-    return True
+    """Sendet einen Befehl an das Display."""
+    return nx.sendcmd(cmd)
 
 
 def NX_switchpage(new_page):
-    global ser, NX_returnq, NX_page
-    error = False
-    logger.debug(_('Send page command to ') + str(new_page))
-    try:
-        while True:
-            ret = NX_returnq.get(False)
-            logger.info(_('Received unexpected message {} from the display (out of the display program)').format(ret['type']))
-    except queue.Empty:
-        try:
-            NX_write('page ' + str(new_page) + '\xff\xff\xff')
-            ser.flush()
-            ret = NX_returnq.get(True, 0.5)
-            if ret['iserr']:
-                logger.error(_('Received error message {} from the display').format(ret['type']))
-                error = True
-            else:
-                logger.debug(_('Received message {} from the display'.format(ret['type'])))
-        except queue.Empty:
-            logger.warning(_('Received no answer from the display'))
-            error = True
-        except termios.error as e:
-            logger.error(_('termios.error in NX_switchpage: {}').format(e.args[1]))
-            error = True
-    if error:
+    global NX_page
+    if not nx.switchpage(new_page):
         return False
     NX_page = new_page
     return True
@@ -986,7 +607,7 @@ def check_reboot():
 def NX_display():
     hwclock_nextupdate = 0
     logger.info(_('Display thread has been startet'))
-    global NX_page, NX_channel, stop_event, NX_eventq
+    global NX_page, NX_channel, stop_event
     global temps_event, channels_event, pitmaster_event, pitmasterconfig_event
     global Config
     
@@ -1685,24 +1306,11 @@ else:
 logger.debug(_('Loading display configuration'))
 display = display_getvalues()
 
-logger.debug(_('Opening serial port: ') + display['serialdevice'])
-ser = serial.Serial()
+logger.debug(_('Initializing display, port: {}, baud rate: {}').format(display['serialdevice'], display['serialspeed']))
 
-logger.debug(_('Initializing display, baud rate: ') + str(display['serialspeed']))
-
-if NX_init(display['serialdevice'], display['serialspeed']):
+if nx.start(display['serialdevice'], display['serialspeed']):
     logger.debug(_('Initialisation OK'))
-    
-    logger.debug(_('Starting reader thread'))
-    NX_reader_thread = threading.Thread(target=NX_reader)
-    NX_reader_thread.daemon = True
-    try:
-        NX_reader_thread.start()
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except:
-        sys.excepthook(*sys.exc_info())
-    
+
     logger.debug(_('Starting display thread'))
     NX_display_thread = threading.Thread(target=NX_display)
     NX_display_thread.daemon = True
@@ -1732,12 +1340,12 @@ if NX_init(display['serialdevice'], display['serialspeed']):
         # Hauptschleife
         if not NX_display_thread.is_alive():
             break
-        if not NX_reader_thread.is_alive():
+        if not nx.alive:
             break
         time.sleep(0.5)
     
     if not NX_wake_event.is_set():
-        NX_sendcmd('sleep=0')
+        nx.wakeup()
         time.sleep(0.2)
     
     if check_reboot():
@@ -1754,10 +1362,11 @@ if NX_init(display['serialdevice'], display['serialspeed']):
     logger.debug(_('Waiting for Threads...'))
     # Auf Threads warten
     NX_display_thread.join()
-    NX_reader_thread.join()
+    nx.stop()
     
 else:
     logger.error(_('Can´t establish connection to the Nextion display'))
+    nx.stop()
     # Vielleicht ist die Software noch nicht auf dem Display installiert
     open('/var/www/tmp/nextionupdate', 'w').close()
 

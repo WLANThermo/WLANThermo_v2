@@ -7,4 +7,4 @@ nppBackup
 .project
 .pydevproject
 .settings
-.idea
+.idea__pycache__/
