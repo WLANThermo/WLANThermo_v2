@@ -4,7 +4,7 @@ Requires=pigpiod.service
 After=pigpiod.service
 
 [Service]
-ExecStart=/usr/sbin/wlt_2_watchdog.py
+ExecStart=/usr/local/bin/wlanthermo-watchdog
 KillMode=mixed
 TimeoutStopSec=120
 

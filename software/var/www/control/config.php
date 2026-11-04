@@ -34,7 +34,7 @@ $sensor_ini = getConfig("../conf/sensor.conf", ";");  // dabei ist ; das zeichen
 if (isset($_POST["upload_file"])) {
 	if ($_FILES["configfile"]["error"] == UPLOAD_ERR_OK && $_FILES['configfile']['size'] != 0) {
 		if (is_uploaded_file($_FILES['configfile']['tmp_name'])) {
-			exec("/usr/bin/wlt_2_updateconfig.py {$_FILES['configfile']['tmp_name']} &> /var/www/tmp/updateconfig.log", $output);
+			exec("/usr/local/bin/wlanthermo-updateconfig {$_FILES['configfile']['tmp_name']} &> /var/www/tmp/updateconfig.log", $output);
 			echo "<head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"> </head> <body> <h2>" . gettext("File has been processed...") . "</h2></body>";
     		} else {
 			echo "<head> <meta http-equiv=\"refresh\" content=\"1;URL='config.php'\"> </head> <body> <h2>" . gettext("Error during file processing...") . "</h2></body>";

@@ -5,8 +5,8 @@ Before=WLANThermo.service WLANThermoWD.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/sbin/nextion_hwclock.py start
-ExecStop=/usr/sbin/nextion_hwclock.py stop
+ExecStart=/usr/local/bin/wlanthermo-hwclock start
+ExecStop=/usr/local/bin/wlanthermo-hwclock stop
 
 [Install]
 WantedBy=multi-user.target

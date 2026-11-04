@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# prerm script for wlanthermo
+
+# Python-Paket nur beim Entfernen deinstallieren, beim Upgrade installiert postinst neu
+case "$1" in
+    remove|deconfigure)
+        /usr/bin/python3 -m pip uninstall -y wlanthermo || /usr/bin/python3 -m pip uninstall -y --break-system-packages wlanthermo
+        ;;
+esac
+
+exit 0

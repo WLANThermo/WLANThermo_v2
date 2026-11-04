@@ -4,7 +4,7 @@ Requires=pigpiod.service
 After=pigpiod.service
 
 [Service]
-ExecStart=/usr/sbin/wlt_2_comp.py
+ExecStart=/usr/local/bin/wlanthermo-comp
 
 [Install]
 WantedBy=multi-user.target

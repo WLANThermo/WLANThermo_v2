@@ -26,4 +26,4 @@ then
     nice -n 15 apt update
 fi
 
-nice -n 15 /usr/bin/update_checker.py wlanthermo > /var/www/tmp/updates.json
+nice -n 15 /usr/local/bin/wlanthermo-update-checker wlanthermo > /var/www/tmp/updates.json

@@ -7,4 +7,10 @@ nppBackup
 .project
 .pydevproject
 .settings
-.idea__pycache__/
+.idea
+__pycache__/
+/build/pysrc/
+/build/lib/
+/build/bdist.*/
+*.egg-info/
+/dist/

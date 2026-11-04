@@ -1,2 +1,2 @@
 #!/bin/sh
-/usr/bin/update_checker.py wlanthermo > /var/www/tmp/updates.json
+/usr/local/bin/wlanthermo-update-checker wlanthermo > /var/www/tmp/updates.json

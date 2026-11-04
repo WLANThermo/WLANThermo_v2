@@ -2,6 +2,21 @@
 
 # postinst script for wlanthermo
 
+# Python-Paket wlanthermo (Wheel aus /usr/share/WLANThermo/python) in das System-Python installieren.
+# Fehlende Abhängigkeiten (z.B. nextion) holt pip aus dem PyPI.
+# Debian/Raspberry Pi OS ab Bookworm schützt die System-Pakete (PEP 668), dann hilft --break-system-packages
+pip_install() {
+    /usr/bin/python3 -m pip install "$@" || /usr/bin/python3 -m pip install --break-system-packages "$@"
+}
+WHEEL=$(ls /usr/share/WLANThermo/python/wlanthermo-*.whl | head -n 1)
+echo "Installing Python package $WHEEL"
+# 1. Abhängigkeiten auflösen, 2. Paket selbst immer neu installieren (auch bei gleicher Version)
+if ! pip_install "$WHEEL" || ! pip_install --force-reinstall --no-deps "$WHEEL"
+then
+    echo "Installation of the Python package failed!"
+    exit 1
+fi
+
 # restart sudo service
 systemctl restart sudo 
 
@@ -32,7 +47,7 @@ else
 fi
 
 # Update configuration
-/usr/bin/wlt_2_updateconfig.py
+/usr/local/bin/wlanthermo-updateconfig
 
 ln -s /var/log/WLAN_Thermo /var/www/thermolog &> /dev/null
 ln -s /var/log/WLANThermo.log /var/www/log/WLANThermo.log &> /dev/null

@@ -47,16 +47,6 @@ if [ "$MD5" != "$(/usr/bin/md5sum /etc/locale.gen)" ]; then
   /usr/sbin/locale-gen
 fi
 
-echo "Install additional Python packages"
-echo "----------------------------------------------------------"
-# bitstring kommt normalerweise als Paket python3-bitstring, pip nur als Rückfall
-/usr/bin/python3 -c 'import bitstring' 2>/dev/null || /usr/bin/pip3 install bitstring || /usr/bin/pip3 install --break-system-packages bitstring
-
-# Display-Bibliothek (LGPLv3), 3.x enthält einen Fehler im Firmware-Upload, daher 2.x.
-# Debian/Raspberry Pi OS ab Bookworm schützt die System-Pakete (PEP 668), dann hilft --break-system-packages
-NEXTION='nextion>=2.0,<3'
-/usr/bin/python3 -c 'import nextion' 2>/dev/null || /usr/bin/pip3 install "$NEXTION" || /usr/bin/pip3 install --break-system-packages "$NEXTION"
-
 if [ -f /usr/sbin/wlt_2_comp.py ]
 then
   sudo service WLANThermo stop

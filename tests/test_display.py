@@ -10,7 +10,7 @@ import threading
 import time
 import tty
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'software', 'usr', 'lib', 'python3', 'dist-packages'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from wlanthermo.display import Display, PortBusy, lock_port  # noqa: E402
 
 EOL = b'\xff\xff\xff'
