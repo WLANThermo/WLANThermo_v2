@@ -16,7 +16,7 @@ fi
 
 
 
-if [ $1 == 'W' ] || [ $1 == 'R' ]
+if [ "$1" == 'W' ] || [ "$1" == 'R' ]
     then 
      Typ=$1
     else 
@@ -25,10 +25,24 @@ if [ $1 == 'W' ] || [ $1 == 'R' ]
      exit 0;
 fi
 
-if [ -z $2 ]
+if [ -z "$2" ]
     then
     echo 'Kein Dateiname angegeben!'
     exit 0
+fi
+
+# Läuft per sudo als root, die Argumente kommen vom Webinterface: streng prüfen.
+# Dateiname nur ohne Pfad, Breite/Höhe nur Ziffern (sonst würde $((...)) Befehle ausführen),
+# Belichtung nur Buchstaben, Text ohne führendes @ (convert liest sonst eine Datei).
+if ! [[ $2 =~ ^[A-Za-z0-9_-]+\.jpg$ ]] || ! [[ $3 =~ ^[0-9]{1,4}$ ]] || ! [[ $4 =~ ^[0-9]{1,4}$ ]]
+    then
+    echo 'Ungültige Argumente!'
+    exit 1
+fi
+if [ "$1" == 'R' ] && ! [[ $6 =~ ^[a-z]+$ ]]
+    then
+    echo 'Ungültige Belichtung!'
+    exit 1
 fi
 
 #Dateiname fuer Output
@@ -50,7 +64,7 @@ irt=`date -d "$imt" +%e.' '%B' '%Y' | '%H:%M' Uhr'`
 
 #Text im Webcambild
 
-brand=$5 
+brand=${5#@}
 
 pt=$brand' | '$irt
 

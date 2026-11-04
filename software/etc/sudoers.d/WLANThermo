@@ -1,1 +1,9 @@
-www-data ALL=(ALL) NOPASSWD:/sbin/ifdown wlan0,/sbin/ifup wlan0,/bin/cat /etc/wpa_supplicant/wpa_supplicant.conf,/bin/cp /tmp/wifidata /etc/wpa_supplicant/wpa_supplicant.conf,/sbin/wpa_cli scan_results,/sbin/wpa_cli scan,/bin/cp,/bin/sleep,/bin/ps,/usr/bin/fswebcam,/usr/bin/raspi_webcam.sh,/tmp/WLANThermo_install.run,/opt/vc/bin/vcgencmd measure_temp,/usr/sbin/wlt_2_updatenextion.sh,/usr/bin/locale -a
+# Befehle, die das Webinterface (www-data) als root ausführen darf.
+# Nur feste Befehle; die beiden Skripte prüfen ihre Argumente selbst.
+www-data ALL=(root) NOPASSWD: /sbin/ifdown wlan0, /sbin/ifup wlan0, \
+    /bin/cat /etc/wpa_supplicant/wpa_supplicant.conf, \
+    /bin/cp /tmp/wifidata /etc/wpa_supplicant/wpa_supplicant.conf, \
+    /sbin/wpa_cli scan, /sbin/wpa_cli scan_results, \
+    /opt/vc/bin/vcgencmd measure_temp, \
+    /usr/bin/raspi_webcam.sh, \
+    /usr/sbin/wlt_2_updatenextion.sh
