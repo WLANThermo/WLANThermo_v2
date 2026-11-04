@@ -40,8 +40,8 @@ from .datafiles import CurrentTempFile, PitmasterReader, TemperatureLog
 from .hardware import Board
 from .notify import build_notifiers
 from ..sensors.catalog import load_sensor_types
-from .settings import (CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser,
-                       parse_settings, parse_startup_settings, read_config_file)
+from ..config import CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser, read_config_file
+from .settings import parse_settings, parse_startup_settings
 
 PIDFILE = '/var/run/wlt_2_comp.pid'
 # Vom Webinterface angelegt: Alarme quittieren bzw. Testnachricht senden

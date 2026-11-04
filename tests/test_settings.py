@@ -1,4 +1,4 @@
-"""Tests für wlanthermo.comp.settings (ohne Hardware).
+"""Tests für wlanthermo.comp.settings und wlanthermo.config (ohne Hardware).
 
 Start: python3 -m unittest tests/test_settings.py
 """
@@ -11,8 +11,8 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from wlanthermo.sensors.catalog import load_sensor_types  # noqa: E402
 from wlanthermo.sensors.resistive import NtcProbe  # noqa: E402
-from wlanthermo.comp.settings import (ConfigWatcher, make_parser, parse_settings,  # noqa: E402
-                                 parse_startup_settings, read_config_file)
+from wlanthermo.comp.settings import parse_settings, parse_startup_settings  # noqa: E402
+from wlanthermo.config import ConfigWatcher, make_parser, read_config_file  # noqa: E402
 
 CONF_DIR = os.path.join(os.path.dirname(__file__), '..', 'software', 'var', 'www', 'conf')
 CONFIG_FILE = os.path.join(CONF_DIR, 'WLANThermo.conf')
@@ -121,7 +121,7 @@ class ConfigWatcherTest(unittest.TestCase):
         watcher = ConfigWatcher(self.path, self.parse)
         watcher.current()
         self.write('[a]\nvalue = x\n', mtime=2000)
-        with self.assertLogs('WLANthermo.settings', 'ERROR'):
+        with self.assertLogs('WLANthermo.config', 'ERROR'):
             self.assertEqual(watcher.current(), 1)
         # wird im nächsten Zyklus erneut versucht
         self.write('[a]\nvalue = 3\n', mtime=2000)
