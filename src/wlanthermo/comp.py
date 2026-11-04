@@ -22,7 +22,6 @@ import sys
 import configparser
 import os
 import time
-import math
 import logging
 import urllib.request, urllib.error, urllib.parse
 import psutil
@@ -37,6 +36,8 @@ from struct import pack, unpack
 import json
 import statistics
 import platform
+from wlanthermo.alarm import AlarmMonitor, NotificationSchedule, ChannelStatus, safe_format
+from wlanthermo.sensors import KTypeSensor, load_sensors, median_filter, resistance_from_adc
 
 # Konfigurationsdatei einlesen
 defaults = {'pit_control_out':'True'}
@@ -80,21 +81,6 @@ def check_pid(pid):
         return True
 
 # Funktionsdefinition
-
-##
-## Formatierung von Strings auch wenn ein key nicht existiert.
-##
-def safe_format(template, args):
-    message = ''
-    for i in range(100):
-        try:
-            message = template.format(**args)
-            break
-        except KeyError as e:
-            key_name = str(e).strip('\'')
-            logger.error('Key "{key_name}" not found in template!'.format(key_name=key_name))
-            template = template.replace('{' + key_name + '}', '!!' + key_name + '!!')
-    return message
 
 def alarm_email(SERVER,AUTH,USER,PASSWORT,STARTTLS,FROM,TO,SUBJECT,MESSAGE):
     logger.info('Send mail!')
@@ -167,36 +153,6 @@ def get_channel_max31855(channel):
         return data[0:14].int / 4.0
 
 
-def temperatur_sensor (Rt, typ): #Ermittelt die Temperatur
-    name = Config_Sensor.get(typ,'name')
-    
-    T = None
-    
-    if not name in ('PT100', 'PT1000'):
-        a = Config_Sensor.getfloat(typ,'a')
-        b = Config_Sensor.getfloat(typ,'b')
-        c = Config_Sensor.getfloat(typ,'c')
-        Rn = Config_Sensor.getfloat(typ,'Rn')
-        
-        try: 
-            v = math.log(Rt/Rn)
-            T = (1/(a + b*v + c*v*v)) - 273
-        except: #bei unsinnigen Werten (z.B. ein- ausstecken des Sensors im Betrieb) Wert 999.9
-            pass
-    else:
-        Rkomp = Config_Sensor.getfloat(typ,'Rkomp')
-        Rt = Rt - Rkomp
-        if name == 'PT100':
-            Rpt=0.1
-        else:
-            Rpt=1
-        try: 
-            T = (-1)*math.sqrt( Rt/(Rpt*-0.0000005775) + (0.0039083**2)/(4*((-0.0000005775)**2)) - 1/(-0.0000005775)) - 0.0039083/(2*-0.0000005775)
-        except:
-            pass
-    
-    return T
-
 def dateiname():
     # Zeitstring fuer eindeutige Dateinamen erzeugen
     # fn = YYYYMMDD_HHMMSS
@@ -236,18 +192,6 @@ def create_logfile(filename, log_kanal):
     except OSError as e:
         logger.error('Could not create log file {file}: {err}'.format(file=filename, err=e))
 
-def median_filter(raw):
-    # Kombinierter Median und Mittelwertfilter
-    laenge = len(raw)
-    sortiert = sorted(raw)
-    # Mitte des Arrays finden
-    index = int(math.floor(laenge * 0.5 + 0.5))  # Python 2 rundete .5 auf, Python 3 rundet round() zur geraden Zahl
-    # Bereich für Mittelwertbildung festlegen area = 1 + ln(laenge)   Basis 2.7
-    area_groesse = 1 + int(round(math.log(laenge) ))
-    area = sortiert[index-area_groesse:index+area_groesse+1]
-    # arithmetisches Mittel
-    return sum(area) / len(area)
-
 def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical(''.join(traceback.format_tb(tb)))
     logger.critical('{0}: {1}'.format(ex_cls, ex))
@@ -285,7 +229,7 @@ IO          = 2
 
 
 def main():
-    global Config_Sensor, channel_count, logger, pi, separator
+    global channel_count, logger, pi, separator
     gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/')
     Config = configparser.ConfigParser(defaults, interpolation=None, strict=False, inline_comment_prefixes=(';',))
 
@@ -318,6 +262,8 @@ def main():
     logger.addHandler(handler)
 
     logger.info('WLANThermo started')
+
+    sensors = load_sensors(Config_Sensor)
 
     #ueberpruefe ob der Dienst schon laeuft
     pid = str(os.getpid())
@@ -432,10 +378,10 @@ def main():
     new_config = configparser.ConfigParser(strict=False, inline_comment_prefixes=(';',))
     Temperatur = [None for i in range(channel_count)]
 
-    alarm_state = [None for i in range(channel_count)]
+    alarms = AlarmMonitor(channel_count)
+    schedule = NotificationSchedule()
     test_alarm = False
     config_mtime = 0
-    alarm_time = 0
 
     try:
         while True:
@@ -444,9 +390,6 @@ def main():
             ram = psutil.virtual_memory()
             ram_free = ram.free // 2**20
             logger.debug('CPU: {} RAM free: {}'.format(CPU_usage, ram_free))
-            alarm_irgendwo = False
-            alarm_neu = False
-            alarm_repeat = False
             alarme = []
             statusse = []
             pit = {}
@@ -460,7 +403,6 @@ def main():
                 maverick = None
 
             Temperatur_string = [None for i in range(channel_count)]
-            Temperatur_alarm = ['er' for i in range(channel_count)]
 
             new_config_mtime = os.path.getmtime('/var/www/conf/WLANThermo.conf')
             if new_config_mtime != config_mtime:
@@ -527,17 +469,14 @@ def main():
 
                 temp_unit = new_config.get('locale', 'temp_unit')
 
-                sensorname = [Config_Sensor.get(sensortyp[kanal], 'Name') for kanal in range(channel_count)]
+                channel_sensor = [sensors.get(sensortyp[kanal]) for kanal in range(channel_count)]
+                for kanal in range(channel_count):
+                    if channel_sensor[kanal] is None:
+                        logger.error('Unknown sensor type {} on channel {}'.format(sensortyp[kanal], kanal))
 
             if os.path.isfile('/var/www/alert.ack'):
                 logger.info('alert.ack vorhanden')
-                for kanal in range (channel_count):
-                    if alarm_state[kanal] == 'hi':
-                        logger.debug('Acknowledging temperature over upper limit on channel ' + str(kanal))
-                        alarm_state[kanal] = 'hi_ack'
-                    elif alarm_state[kanal] == 'lo':
-                        logger.debug('Acknowledging temperature under lower limit on channel ' + str(kanal))
-                        alarm_state[kanal] = 'lo_ack'
+                alarms.acknowledge()
                 os.unlink('/var/www/alert.ack')
 
             if os.path.isfile('/var/www/alert.test'):
@@ -551,7 +490,7 @@ def main():
 
             for i in range(iterations):
                 for kanal in range(8):
-                    if version == 'v1' or sensorname[kanal] == 'KTYPE':
+                    if version == 'v1' or isinstance(channel_sensor[kanal], KTypeSensor):
                         # Nicht invertiert messen
                         samples[kanal].append(get_channel_mcp(kanal))
                     else:
@@ -561,16 +500,14 @@ def main():
             for kanal in range(channel_count):
                 if kanal <= 7:
                     median_value = median_filter(samples[kanal])
-                    if (median_value > 15) and (median_value < 4080):
-                        if (sensorname[kanal] != 'KTYPE'):
-                                Rtheta = messwiderstand[kanal]*((4096.0/median_value) - 1)
-                                try:
-                                    Temperatur[kanal] = round(temperatur_sensor(Rtheta, sensortyp[kanal]), 2)
-                                except TypeError:
-                                    Temperatur[kanal] = None
+                    sensor = channel_sensor[kanal]
+                    if sensor is not None and (median_value > 15) and (median_value < 4080):
+                        if isinstance(sensor, KTypeSensor):
+                            Temperatur[kanal] = sensor.temperature_from_adc(median_value)
                         else:
-                            # AD595 = 10mV/°C
-                            Temperatur[kanal] = median_value * 330 / 4096
+                            Temperatur[kanal] = sensor.temperature(resistance_from_adc(median_value, messwiderstand[kanal]))
+                            if Temperatur[kanal] is not None:
+                                Temperatur[kanal] = round(Temperatur[kanal], 2)
                     else:
                         Temperatur[kanal] = None
                     variance = statistics.pvariance(samples[kanal])
@@ -604,13 +541,18 @@ def main():
                     logger.error('Channel {} checked without a reason!'.format(kanal))
                     Temperatur[kanal] = None
 
+                if temp_unit == 'fahrenheit' and Temperatur[kanal] is not None:
+                    Temperatur[kanal] = Temperatur[kanal] * 1.8 + 32
+
+            evaluation = alarms.evaluate(Temperatur, temp_min, temp_max)
+            alarm_irgendwo = evaluation.active
+
+            for kanal in range(channel_count):
                 alarm_values = dict()
                 if temp_unit == 'celsius':
                     alarm_values['temp_unit'] = '°C'
                     alarm_values['temp_unit_long'] = _('degrees Celsius')
                 elif temp_unit == 'fahrenheit':
-                    if Temperatur[kanal] is not None:
-                        Temperatur[kanal] = Temperatur[kanal] * 1.8 + 32
                     alarm_values['temp_unit'] = '°F'
                     alarm_values['temp_unit_long'] = _('degrees Fahrenheit')
                 alarm_values['kanal'] = kanal
@@ -621,44 +563,16 @@ def main():
                 alarm_values['temp_min'] = temp_min[kanal]
                 alarm_values['lf'] = '\n'
 
-                if Temperatur[kanal] is not None:    
+                if Temperatur[kanal] is not None:
                     Temperatur_string[kanal] = "%.2f" % Temperatur[kanal]
-                    Temperatur_alarm[kanal] = 'ok'
 
-                    if Temperatur[kanal] >= temp_max[kanal]:
-                        # Temperatur über Grenzwert
-                        if alarm_state[kanal] == 'hi':
-                            # Nicht quittierter Alarm
-                            alarm_irgendwo = True
-                        elif alarm_state[kanal] == 'hi_ack':
-                            # Alarm bereits quittiert
-                            pass
-                        else:
-                            # Neuer Alarm
-                            alarm_irgendwo = True
-                            alarm_neu = True
-                            alarm_state[kanal] = 'hi'
-                        alarme.append(safe_format(alarm_high_template, alarm_values))
-                        Temperatur_alarm[kanal] = 'hi'
-                    elif Temperatur[kanal] <= temp_min[kanal]:
-                        # Temperatur unter Grenzwert
-                        if alarm_state[kanal] == 'lo':
-                            # Nicht quittierter Alarm
-                            alarm_irgendwo = True
-                        elif alarm_state[kanal] == 'lo_ack':
-                            # Alarm bereits quittiert
-                            pass
-                        else:
-                            # Neuer Alarm
-                            alarm_irgendwo = True
-                            alarm_neu = True
-                            alarm_state[kanal] = 'lo'
-                        alarme.append(safe_format(alarm_low_template, alarm_values))
-                        Temperatur_alarm[kanal] = 'lo'
-                    else:
-                        # Temperatur innerhalb der Grenzwerte
-                        statusse.append(safe_format(status_template, alarm_values))
-                        alarm_state[kanal] = 'ok'
+                status = evaluation.statuses[kanal]
+                if status == ChannelStatus.HI:
+                    alarme.append(safe_format(alarm_high_template, alarm_values))
+                elif status == ChannelStatus.LO:
+                    alarme.append(safe_format(alarm_low_template, alarm_values))
+                elif status == ChannelStatus.OK:
+                    statusse.append(safe_format(status_template, alarm_values))
 
             if pit_on:
                 try:
@@ -717,22 +631,14 @@ def main():
                     pi.write(BEEPER, 1)
                     time.sleep(0.2)
                     pi.write(BEEPER, 0)
-                if alarm_interval > 0 and alarm_time + alarm_interval < time.time():
-                    # Alarm erneut senden
-                    alarm_repeat = True
-                    alarm_time = time.time()
 
-            if status_interval > 0 and alarm_time + status_interval < time.time():
-                # Periodisch den Status senden, wenn gewünscht
-                send_status = True
-            else:
-                send_status = False
+            # Bei neuem Alarm oder Test sofort, sonst Alarm erneut bzw. periodisch den Status senden
+            alarm_repeat, send_status, send = schedule.check(
+                evaluation, test_alarm, alarm_interval, status_interval, time.time())
 
             # Nachrichten senden
-            if alarm_neu or test_alarm or alarm_repeat or send_status:
-                alarm_time = time.time()
-
-                if alarm_neu:
+            if send:
+                if evaluation.new:
                     logger.debug('new alert, sending messages')
                 if test_alarm:
                     logger.debug('test alert, sending messages')
@@ -848,7 +754,7 @@ def main():
                     lcsv.append(str(Temperatur_string[kanal]))
             for kanal in range(channel_count):
                 # 8 Felder mit allen Alarmzuständen
-                lcsv.append(Temperatur_alarm[kanal])
+                lcsv.append(evaluation.statuses[kanal].value)
             lcsv.append(build)
             lcsv.append(logdatei)
 
