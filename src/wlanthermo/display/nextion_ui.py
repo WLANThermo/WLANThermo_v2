@@ -33,7 +33,7 @@ import random
 import string
 import codecs
 
-from wlanthermo.display import Display
+from .device import Display
 
 NX_channel = 0
 NX_page = 0
@@ -104,7 +104,7 @@ def check_ntp():
 
 
 def NX_sendvalues(values):
-    """Setzt Werte im Display, siehe wlanthermo.display.Display.sendvalues()."""
+    """Setzt Werte im Display, siehe wlanthermo.display.device.Display.sendvalues()."""
     return nx.sendvalues(values)
 
 

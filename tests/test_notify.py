@@ -1,4 +1,4 @@
-"""Tests für wlanthermo.notify (ohne Netzwerk).
+"""Tests für wlanthermo.comp.notify (ohne Netzwerk).
 
 Start: python3 -m unittest tests/test_notify.py
 """
@@ -13,10 +13,10 @@ import urllib.parse
 from unittest import mock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from wlanthermo import notify  # noqa: E402
-from wlanthermo.notify import (EmailNotifier, PushNotifier, TelegramNotifier,  # noqa: E402
+from wlanthermo.comp import notify  # noqa: E402
+from wlanthermo.comp.notify import (EmailNotifier, PushNotifier, TelegramNotifier,  # noqa: E402
                                build_notifiers)
-from wlanthermo.settings import EmailSettings, PushSettings, TelegramSettings  # noqa: E402
+from wlanthermo.comp.settings import EmailSettings, PushSettings, TelegramSettings  # noqa: E402
 
 EMAIL = EmailSettings(server='smtp.example.org', auth=True, username='user', password='pw%1',
                       sender='a@example.org', recipient='b@example.org', subject='WLANThermo',

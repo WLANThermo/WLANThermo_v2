@@ -33,8 +33,8 @@ import string
 
 # Werte von [Display] lcd_type (vom Webinterface gesetzt) -> Modul im Paket wlanthermo
 DISPLAY_MODULES = {
-    'wlt_2_nextion.py': 'wlanthermo.nextion_ui',
-    'wlt_2_lcd_204.py': 'wlanthermo.lcd_204',
+    'wlt_2_nextion.py': 'wlanthermo.display.nextion_ui',
+    'wlt_2_lcd_204.py': 'wlanthermo.display.lcd_204',
 }
 
 HIGH = True  # HIGH-Pegel

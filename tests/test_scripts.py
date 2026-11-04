@@ -95,7 +95,7 @@ def main():
     env = dict(os.environ, PYTHONPATH=SRC)
     try:
         # hwclock: Systemzeit -> Display-RTC (timedatectl liefert hier meist kein NTP -> nur Lesepfad prüfen)
-        r = subprocess.run([sys.executable, '-m', 'wlanthermo.nextion_hwclock', 'start'],
+        r = subprocess.run([sys.executable, '-m', 'wlanthermo.display.hwclock', 'start'],
                            env=env, capture_output=True, text=True, timeout=120)
         print(r.stdout, r.stderr)
         check('hwclock exit 0', r.returncode == 0)
@@ -107,14 +107,14 @@ def main():
         payload = os.urandom(3000)  # ein Block; mehrere Blöcke scheitern im pty (Teilschreibvorgang), nicht geprüft
         with bz2.open(tmp + 'NX3224T028_foo.tft.bz2', 'wb') as f:
             f.write(payload)
-        r = subprocess.run([sys.executable, '-m', 'wlanthermo.nextion_upload', tmp, 'foo'],
+        r = subprocess.run([sys.executable, '-m', 'wlanthermo.display.upload', tmp, 'foo'],
                            env=env, capture_output=True, text=True, timeout=120)
         print(r.stdout, r.stderr)
         check('upload exit 0', r.returncode == 0)
         check('upload payload identical', fake.uploaded == payload)
 
         # Datei fehlt -> Fehlercode
-        r = subprocess.run([sys.executable, '-m', 'wlanthermo.nextion_upload', tmp, 'nope'],
+        r = subprocess.run([sys.executable, '-m', 'wlanthermo.display.upload', tmp, 'nope'],
                            env=env, capture_output=True, text=True, timeout=120)
         check('missing file -> exit != 0', r.returncode != 0 and 'not found' in (r.stdout + r.stderr))
     finally:

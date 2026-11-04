@@ -7,7 +7,7 @@
 import logging
 import statistics
 
-from wlanthermo.sensors import ADC_RANGE, KTypeSensor, median_filter, resistance_from_adc
+from .sensors import ADC_RANGE, KTypeSensor, median_filter, resistance_from_adc
 
 logger = logging.getLogger('WLANthermo.channels')
 

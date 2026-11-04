@@ -22,7 +22,7 @@ import sys
 import time
 from subprocess import PIPE, Popen
 
-from wlanthermo.display import Display
+from .device import Display
 
 # Konfigurationsdatei einlesen
 config = {'timeout': '30',

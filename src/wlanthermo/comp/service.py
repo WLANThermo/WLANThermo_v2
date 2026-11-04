@@ -34,14 +34,14 @@ import traceback
 import psutil
 
 import wlanthermo
-from wlanthermo.alarm import AlarmMonitor, ChannelStatus, NotificationSchedule, safe_format
-from wlanthermo.channels import AdcInput, MaverickInput, ThermocoupleInput
-from wlanthermo.datafiles import CurrentTempFile, PitmasterReader, TemperatureLog, read_maverick
-from wlanthermo.hardware import Board
-from wlanthermo.notify import build_notifiers
-from wlanthermo.sensors import load_sensors
-from wlanthermo.settings import (CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser,
-                                 parse_settings, parse_startup_settings, read_config_file)
+from .alarm import AlarmMonitor, ChannelStatus, NotificationSchedule, safe_format
+from .channels import AdcInput, MaverickInput, ThermocoupleInput
+from .datafiles import CurrentTempFile, PitmasterReader, TemperatureLog, read_maverick
+from .hardware import Board
+from .notify import build_notifiers
+from .sensors import load_sensors
+from .settings import (CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser,
+                       parse_settings, parse_startup_settings, read_config_file)
 
 PIDFILE = '/var/run/wlt_2_comp.pid'
 # Vom Webinterface angelegt: Alarme quittieren bzw. Testnachricht senden

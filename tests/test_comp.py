@@ -1,4 +1,4 @@
-"""Tests für wlanthermo.comp (ohne Hardware).
+"""Tests für wlanthermo.comp.service (ohne Hardware).
 
 Start: python3 -m unittest tests/test_comp.py   (benötigt: pip install pigpio bitstring psutil)
 """
@@ -11,10 +11,10 @@ import unittest
 from unittest import mock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from wlanthermo import comp  # noqa: E402
-from wlanthermo.alarm import ChannelStatus, Evaluation  # noqa: E402
-from wlanthermo.datafiles import PitValues  # noqa: E402
-from wlanthermo.settings import AlertSettings, ChannelSettings, Settings, StartupSettings  # noqa: E402
+from wlanthermo.comp import service as comp  # noqa: E402
+from wlanthermo.comp.alarm import ChannelStatus, Evaluation  # noqa: E402
+from wlanthermo.comp.datafiles import PitValues  # noqa: E402
+from wlanthermo.comp.settings import AlertSettings, ChannelSettings, Settings, StartupSettings  # noqa: E402
 
 
 def settings(**changes):

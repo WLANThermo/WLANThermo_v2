@@ -1,4 +1,4 @@
-"""Tests für wlanthermo.datafiles (in einem temporären Verzeichnis).
+"""Tests für wlanthermo.comp.datafiles (in einem temporären Verzeichnis).
 
 Start: python3 -m unittest tests/test_datafiles.py
 """
@@ -13,8 +13,8 @@ import unittest
 from unittest import mock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from wlanthermo.alarm import ChannelStatus  # noqa: E402
-from wlanthermo.datafiles import (CurrentTempFile, PitmasterReader, PitValues,  # noqa: E402
+from wlanthermo.comp.alarm import ChannelStatus  # noqa: E402
+from wlanthermo.comp.datafiles import (CurrentTempFile, PitmasterReader, PitValues,  # noqa: E402
                                   TemperatureLog, read_maverick)
 
 HEADER = ['Pit', 'Pit soll', 'Pit2', 'Pit2 soll']

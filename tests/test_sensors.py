@@ -1,4 +1,4 @@
-"""Tests für wlanthermo.sensors (ohne Hardware).
+"""Tests für wlanthermo.comp.sensors (ohne Hardware).
 
 Start: python3 -m unittest tests/test_sensors.py tests/test_alarm.py
 """
@@ -8,7 +8,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from wlanthermo.sensors import (KTypeSensor, NtcSensor, PtSensor, load_sensors,  # noqa: E402
+from wlanthermo.comp.sensors import (KTypeSensor, NtcSensor, PtSensor, load_sensors,  # noqa: E402
                                 median_filter, resistance_from_adc)
 
 SENSOR_CONF = os.path.join(os.path.dirname(__file__), '..', 'software', 'var', 'www', 'conf', 'sensor.conf')

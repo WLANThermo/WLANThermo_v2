@@ -1,4 +1,4 @@
-"""Test von wlanthermo.display gegen ein simuliertes Nextion-Display (pty).
+"""Test von wlanthermo.display.device gegen ein simuliertes Nextion-Display (pty).
 
 Start: python3 tests/test_display.py   (benötigt: pip install 'nextion>=2.0,<3')
 """
@@ -11,7 +11,7 @@ import time
 import tty
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from wlanthermo.display import Display, PortBusy, lock_port  # noqa: E402
+from wlanthermo.display.device import Display, PortBusy, lock_port  # noqa: E402
 
 EOL = b'\xff\xff\xff'
 

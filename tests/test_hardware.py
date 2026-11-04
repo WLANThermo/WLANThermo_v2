@@ -1,4 +1,4 @@
-"""Tests für wlanthermo.hardware und wlanthermo.channels mit einem simulierten pigpio.
+"""Tests für wlanthermo.comp.hardware und wlanthermo.comp.channels mit einem simulierten pigpio.
 
 Start: python3 -m unittest tests/test_hardware.py   (benötigt: pip install pigpio bitstring)
 """
@@ -10,11 +10,11 @@ from unittest import mock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 import pigpio  # noqa: E402
-from wlanthermo import hardware  # noqa: E402
-from wlanthermo.channels import AdcInput, MaverickInput, ThermocoupleInput  # noqa: E402
-from wlanthermo.hardware import Beeper, Board, Max31855, Mcp3208  # noqa: E402
-from wlanthermo.sensors import KTypeSensor, NtcSensor  # noqa: E402
-from wlanthermo.settings import ChannelSettings  # noqa: E402
+from wlanthermo.comp import hardware  # noqa: E402
+from wlanthermo.comp.channels import AdcInput, MaverickInput, ThermocoupleInput  # noqa: E402
+from wlanthermo.comp.hardware import Beeper, Board, Max31855, Mcp3208  # noqa: E402
+from wlanthermo.comp.sensors import KTypeSensor, NtcSensor  # noqa: E402
+from wlanthermo.comp.settings import ChannelSettings  # noqa: E402
 
 
 class FakePi:

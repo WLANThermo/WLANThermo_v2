@@ -1,4 +1,4 @@
-"""Tests für wlanthermo.alarm (ohne Hardware).
+"""Tests für wlanthermo.comp.alarm (ohne Hardware).
 
 Start: python3 -m unittest tests/test_sensors.py tests/test_alarm.py
 """
@@ -7,7 +7,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from wlanthermo.alarm import (AlarmMonitor, AlarmState, ChannelStatus, Evaluation,  # noqa: E402
+from wlanthermo.comp.alarm import (AlarmMonitor, AlarmState, ChannelStatus, Evaluation,  # noqa: E402
                               NotificationSchedule, safe_format)
 
 MIN = [0, 0]

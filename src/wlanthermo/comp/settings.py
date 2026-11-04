@@ -1,4 +1,4 @@
-"""Einstellungen von wlanthermo.comp aus WLANThermo.conf.
+"""Einstellungen von wlanthermo-comp aus WLANThermo.conf.
 
 StartupSettings werden einmal beim Start gelesen (Hardware, Dateipfade,
 Aufbau der Log-Datei). Settings werden bei jeder Änderung der Datei neu

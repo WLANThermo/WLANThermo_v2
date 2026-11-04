@@ -33,7 +33,7 @@ import shutil
 import sys
 import tempfile
 
-from wlanthermo.display import Display
+from .device import Display
 
 PORT = '/dev/serial0'
 BAUDCOMM = 9600

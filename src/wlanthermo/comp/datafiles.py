@@ -1,4 +1,4 @@
-"""Dateien, über die wlanthermo.comp mit den anderen Diensten und dem Webinterface Daten austauscht.
+"""Dateien, über die wlanthermo-comp mit den anderen Diensten und dem Webinterface Daten austauscht.
 
 - CurrentTempFile: aktuelle Werte für Webinterface und Display (eine Zeile, ';'-getrennt)
 - TemperatureLog: CSV-Log aller Messzyklen, TEMPLOG.csv zeigt auf die aktuelle Datei
