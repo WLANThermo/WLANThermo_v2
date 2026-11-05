@@ -166,6 +166,9 @@ class CycleTest(GettextTest):
         self.assertEqual(measurement.temperatures, (70.0,) + (30.0,) * 7 + (None, None))
         self.assertEqual(measurement.statuses, ('hi',) + ('ok',) * 7 + ('er', 'er'))
         self.assertEqual(measurement.unit, 'celsius')
+        self.assertEqual(measurement.log_name, 'log')
+        # im Kernprozess keine Übergabedatei
+        self.comp.current_temp_file.write.assert_not_called()
 
     def test_test_alarm(self):
         self.comp.channels.measure.return_value = [30.0] * 8 + [None, None]

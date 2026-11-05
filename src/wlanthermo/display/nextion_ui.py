@@ -117,14 +117,8 @@ def config_getvalues():
     return options
 
 
-def set_tempflag():
-    # Flag Datei für WebGUI anlegen
-    open('/var/www/tmp/flag', 'w').close()
-
-
 def channels_setvalues(channel, high= None, low=None, sensor=None):
     global configfile, configfile_lock
-    temp_changed = False
     
     try:
         with configfile_lock:
@@ -132,17 +126,12 @@ def channels_setvalues(channel, high= None, low=None, sensor=None):
             newconfig.read_file(codecs.open(configfile, 'r', 'utf_8'))
             if low is not None:
                 newconfig.set('temp_min','temp_min' + str(channel), str(int(low)))
-                temp_changed = True
             if high is not None:
                 newconfig.set('temp_max','temp_max' + str(channel), str(int(high)))
-                temp_changed = True
             if sensor is not None:
                 newconfig.set('Sensoren','ch' + str(channel), str(int(sensor)))
             
             config_write(configfile, newconfig)
-        
-        if temp_changed:
-            set_tempflag()
     
     except ValueError:
         logger.error(_('Error while setting channel values'))

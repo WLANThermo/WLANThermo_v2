@@ -70,7 +70,10 @@ def message(text, url, extra=None):
 
 
 def current_log_name():
-    """Name der aktuellen Log-Datei (letztes Feld der Übergabedatei von comp)."""
+    """Name der aktuellen Log-Datei: vom Kernprozess, sonst aus der Übergabedatei (comp allein gestartet)."""
+    state = core_state()
+    if state and state.get('measurement') and state['measurement'].get('log_name'):
+        return state['measurement']['log_name']
     path = current_app.config.get('CURRENT_TEMP') or g.settings.get('filepath', 'current_temp')
     try:
         with open(path) as f:
@@ -144,9 +147,6 @@ def main_fragment():
     for camera in ('webcam', 'raspicam'):
         if s.flag('webcam', camera + '_start'):
             start_camera(camera)
-    flag = tmp_path('flag')
-    if os.path.exists(flag) and time.time() - os.path.getmtime(flag) >= 20:
-        os.unlink(flag)
     # Browser-Alarm: stumm geschaltet bleibt er, bis kein Alarm mehr anliegt
     websound = session.get('websoundalert', True)
     if not sound:
@@ -508,7 +508,6 @@ def config_page():
     if 'save' in request.form:
         changes, errors, restart = configform.evaluate(g.ini, request.form, s)
         update_config(changes, current_app.config['CONFIG_FILE'])
-        touch(tmp_path('flag'))
         extra = errors + ([_('wlt_2_comp.py will be restarted...')] if restart else [])
         return message(_('Settings have been saved...'), '../index.php', extra)
     if 'back' in request.form:

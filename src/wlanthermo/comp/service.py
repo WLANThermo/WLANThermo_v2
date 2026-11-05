@@ -197,7 +197,8 @@ class Comp:
         if self.hub is not None:
             self.hub.publish(MEASUREMENT, Measurement(
                 time=time.time(), temperatures=tuple(temperatures),
-                statuses=tuple(status.value for status in evaluation.statuses), unit=settings.temp_unit))
+                statuses=tuple(status.value for status in evaluation.statuses), unit=settings.temp_unit,
+                log_name=self.temperature_log.name))
         self.wait(time_start, settings.delay)
 
     def log_system_load(self):
@@ -252,12 +253,14 @@ class Comp:
 
     def write_outputs(self, temperatures, evaluation, pits):
         timestamp = time.strftime('%d.%m.%y %H:%M:%S')
-        self.current_temp_file.write(
-            timestamp,
-            ['%.2f' % t if t is not None else '' for t in temperatures],
-            evaluation.statuses,
-            wlanthermo.VERSION,
-            self.temperature_log.name)
+        if self.hub is None:
+            # allein gestartet: Übergabedatei für Pitmaster und Displays; im Kernprozess über den DataHub
+            self.current_temp_file.write(
+                timestamp,
+                ['%.2f' % t if t is not None else '' for t in temperatures],
+                evaluation.statuses,
+                wlanthermo.VERSION,
+                self.temperature_log.name)
         line = self.temperature_log.line(timestamp, temperatures, pits)
         self.temperature_log.append(line)
         logger.debug(line)

@@ -3,9 +3,10 @@
     Messung (comp) ──Measurement──▶ DataHub ──▶ Pitmaster 1/2 ──PitState──▶ DataHub ──▶ comp
     Maverick-Empfänger ──Reading──▶ DataHub ──▶ comp
 
-Die Dateien für Webinterface und Displays (current.temp, pit.temp, TEMPLOG.csv)
-schreiben comp und Pitmaster weiterhin. Der Pitmaster schaltet seinen Ausgang
-ab, wenn keine aktuelle Messung mehr kommt.
+Webinterface und Displays bekommen die Werte über die Schnittstelle (api.py);
+die Übergabedateien current.temp und pit.temp gibt es nur noch, wenn comp und
+Pitmaster allein laufen. Das CSV-Log (TEMPLOG.csv) schreibt comp weiterhin.
+Der Pitmaster schaltet seinen Ausgang ab, wenn keine aktuelle Messung mehr kommt.
 
 Fällt ein Thread mit einem Fehler aus, beendet sich der ganze Prozess geordnet
 (Ausgänge aus) mit Exit-Code 1, systemd startet ihn neu (Restart=on-failure).

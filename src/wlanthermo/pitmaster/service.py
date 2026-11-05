@@ -121,8 +121,10 @@ class Pitmaster:
                 self.configure(settings)
             now, msg = self.input.value(settings.channel)
             msg += self.control(now)
-            self.write_pit_file(now, msg)
-            if self.hub is not None:
+            if self.hub is None:
+                # allein gestartet: Pitmaster-Datei für comp und Displays; im Kernprozess über den DataHub
+                self.write_pit_file(now, msg)
+            else:
                 self.hub.publish(pit_topic(self.instance), PitState(
                     instance=self.instance, time=time.time(), setpoint=settings.setpoint,
                     current=now, output=self.target, message=msg))

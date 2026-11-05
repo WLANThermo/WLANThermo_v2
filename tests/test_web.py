@@ -285,6 +285,12 @@ class ThermologTest(WebTestBase):
         self.client.post('/thermolog.php', data={'GrillfestUe': 'True', 'submit': ''})
         self.assertFalse(os.path.exists(os.path.join(self.log_dir, 'GrillfestUe.csv')))
 
+    def test_current_log_name_from_core(self):
+        self.write_log('20181025_TEMPLOG.csv')
+        self.hub.publish(MEASUREMENT, Measurement(time.time(), (20.0,), ('ok',), 'celsius', '20181025_TEMPLOG'))
+        data = self.client.get('/thermolog.php').data.decode()
+        self.assertIn('class="no_edit" id="20181025_TEMPLOG.csv"', data)
+
     def test_no_path_traversal(self):
         outside = os.path.join(self.dir, 'secret.csv')
         open(outside, 'w').close()

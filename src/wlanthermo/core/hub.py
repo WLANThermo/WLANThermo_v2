@@ -26,6 +26,7 @@ class Measurement:
     temperatures: Tuple[Optional[float], ...]   # je Kanal, in der eingestellten Einheit
     statuses: Tuple[str, ...]                   # 'ok', 'hi', 'lo', 'er' je Kanal
     unit: str                                   # 'celsius' oder 'fahrenheit'
+    log_name: str = ''                          # aktuelle Log-Datei ohne Endung, z.B. 20181024_183012_TEMPLOG
 
     def age(self, now=None):
         return (time.time() if now is None else now) - self.time
