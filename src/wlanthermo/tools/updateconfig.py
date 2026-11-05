@@ -23,6 +23,8 @@ import codecs
 import random
 import string
 import argparse
+
+from wlanthermo.config import config_lock
 import re
 
 setting_updates = {'Pitmaster':
@@ -43,9 +45,9 @@ def config_write(configfile, config, oldconfig):
     with codecs.open(tmp_filename, 'w', 'utf_8') as new_ini:
         for section_name in config.sections():
             new_ini.write(u'[{section_name}]\n'.format(section_name=section_name))
-            for (key, value) in config.items(section_name):
+            for (key, value) in config.items(section_name, raw=True):
                 try:
-                    new_ini.write(u'{key} = {value}\n'.format(key=key, value=update_settings(section_name, key, oldconfig.get(section_name, key))))
+                    new_ini.write(u'{key} = {value}\n'.format(key=key, value=update_settings(section_name, key, oldconfig.get(section_name, key, raw=True))))
                 except (configparser.NoSectionError, configparser.NoOptionError):
                     new_ini.write(u'{key} = {value}\n'.format(key=key, value=value))
             new_ini.write('\n')
@@ -72,22 +74,27 @@ def main():
 
     configfile = '/var/www/conf/WLANThermo.conf'
     oldconfigfile = args.oldconfigfile if args.oldconfigfile is not None else configfile + '.old'
-    oldconfig = configparser.ConfigParser()
-    config = configparser.ConfigParser()
+    # Ohne Interpolation: '%' darf in den Werten vorkommen
+    oldconfig = configparser.ConfigParser(interpolation=None)
+    config = configparser.ConfigParser(interpolation=None)
 
-    try:
-        config.readfp(codecs.open(configfile, 'r', 'utf_8'))
-    except (FileNotFoundError):
-        print('Current config not found!', file=sys.stderr)
-        sys.exit(1)
+    # Sperre wie alle anderen Prozesse, die die Konfiguration ändern
+    with config_lock(configfile):
+        try:
+            with codecs.open(configfile, 'r', 'utf_8') as f:
+                config.read_file(f)
+        except FileNotFoundError:
+            print('Current config not found!', file=sys.stderr)
+            sys.exit(1)
 
-    try:
-        oldconfig.readfp(codecs.open(oldconfigfile, 'r', 'utf_8'))
-    except (FileNotFoundError):
-        print('Old config not found!', file=sys.stderr)
-        sys.exit(1)
+        try:
+            with codecs.open(oldconfigfile, 'r', 'utf_8') as f:
+                oldconfig.read_file(f)
+        except FileNotFoundError:
+            print('Old config not found!', file=sys.stderr)
+            sys.exit(1)
 
-    config_write(configfile, config, oldconfig)
+        config_write(configfile, config, oldconfig)
 
     if not args.dontdelete:
         os.unlink(oldconfigfile)

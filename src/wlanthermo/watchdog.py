@@ -28,6 +28,8 @@ import RPi.GPIO as GPIO
 import signal
 import traceback
 import gettext
+
+from wlanthermo.config import update_config
 import random
 import string
 
@@ -67,28 +69,11 @@ def get_random_filename(filename):
     return filename + '_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(12))
 
 
-def config_write(configfile, config):
-    # Schreibt das Configfile
-    # Ein Lock sollte im aufrufenden Programm gehalten werden!
-    
-    tmp_filename = get_random_filename(configfile)
-    with codecs.open(tmp_filename, 'w', 'utf_8') as new_ini:
-        for section_name in config.sections():
-            new_ini.write('[{section_name}]\n'.format(section_name=section_name))
-            for (key, value) in config.items(section_name):
-                new_ini.write('{key} = {value}\n'.format(key=key, value=value))
-            new_ini.write('\n')
-        new_ini.flush()
-        os.fsync(new_ini.fileno())
-        new_ini.close()
-        os.rename(tmp_filename, configfile)
-
-
 def reboot_pi():
     logger.info(_('rebooting'))
     
     Config.set('ToDo', 'raspi_reboot', 'False')
-    config_write(cf, Config)
+    update_config({'ToDo': {'raspi_reboot': 'False'}}, cf)
     
     # Setze Flag
     try:
@@ -203,9 +188,7 @@ def read_config():
                 time.sleep(1)
                 continue
             break
-        tmp_filename = get_random_filename(cf)
-        
-        
+
         if Config.get('Hardware', 'version') in ['miniV2']:
             pitmaster_count = 2
         else:
@@ -218,7 +201,7 @@ def read_config():
             logger.info(_('Changing restart_thermo to False again!'))
             
             Config.set('ToDo', 'restart_thermo', 'False')
-            config_write(cf, Config)
+            update_config({'ToDo': {'restart_thermo': 'False'}}, cf)
         
         if (Config.getboolean('ToDo', 'restart_pitmaster')):
             logger.info(_('Restart pitmaster!'))
@@ -227,7 +210,7 @@ def read_config():
             logger.info(_('Changing restart_pitmaster to False again!'))
 
             Config.set('ToDo', 'restart_pitmaster', 'False')
-            config_write(cf, Config)
+            update_config({'ToDo': {'restart_pitmaster': 'False'}}, cf)
             
         if (Config.getboolean('ToDo', 'restart_pitmaster2')):
             logger.info(_('Restart pitmaster 2!'))
@@ -236,11 +219,11 @@ def read_config():
             logger.info(_('Changing restart_pitmaster2 to False again!'))
 
             Config.set('ToDo', 'restart_pitmaster2', 'False')
-            config_write(cf, Config)
+            update_config({'ToDo': {'restart_pitmaster2': 'False'}}, cf)
         
         if (Config.getboolean('ToDo', 'raspi_shutdown')):
             Config.set('ToDo', 'raspi_shutdown', 'False')
-            config_write(cf, Config)
+            update_config({'ToDo': {'raspi_shutdown': 'False'}}, cf)
             if Config.get('Hardware', 'version') in ['v3']:
                 halt_v3_pi()
             else:
@@ -254,21 +237,21 @@ def read_config():
         if (Config.getboolean('ToDo', 'backup')):
             logger.info(_('Create backup!'))
             Config.set('ToDo', 'backup', 'False')
-            config_write(cf, Config)
+            update_config({'ToDo': {'backup': 'False'}}, cf)
             ret = os.popen("/usr/sbin/wlt_2_backup.sh").read()
             logger.debug(ret)
         
         if (Config.getboolean('ToDo', 'check_update')):
             logger.info(_('Check for software updates...'))
             Config.set('ToDo', 'check_update', 'False')
-            config_write(cf, Config)
+            update_config({'ToDo': {'check_update': 'False'}}, cf)
             ret = os.popen("/bin/systemctl --no-block start WLANThermoUPDATECHECK.service")
             logger.debug(ret)
 
         if (Config.getboolean('ToDo', 'start_system_update')):
             logger.info(_('Update system software!'))
             Config.set('ToDo', 'start_system_update', 'False')
-            config_write(cf, Config)
+            update_config({'ToDo': {'start_system_update': 'False'}}, cf)
             # Start update, hold back package wlanthermo
             ret = os.popen("/usr/bin/systemd-run /usr/bin/wlt_2_update_system.sh").read()
             logger.debug(ret)
@@ -276,7 +259,7 @@ def read_config():
         if (Config.getboolean('ToDo', 'start_full_update')):
             logger.info(_('Update full software!'))
             Config.set('ToDo', 'start_full_update', 'False')
-            config_write(cf, Config)
+            update_config({'ToDo': {'start_full_update': 'False'}}, cf)
             ret = os.popen("/usr/bin/systemd-run /usr/bin/wlt_2_update_system.sh --full").read()
             logger.debug(ret)
             
@@ -285,14 +268,14 @@ def read_config():
             logger.info(_('Create new log!'))
             Config.set('ToDo', 'create_new_log', 'False')
             Config.set('Logging', 'write_new_log_on_restart', 'True')
-            config_write(cf, Config)
+            update_config({'ToDo': {'create_new_log': 'False'}, 'Logging': {'write_new_log_on_restart': 'True'}}, cf)
             
             time.sleep(2)
             handle_service('WLANThermo', 'restart')
             time.sleep(10)
             
             Config.set('Logging', 'write_new_log_on_restart', 'False')
-            config_write(cf, Config)
+            update_config({'Logging': {'write_new_log_on_restart': 'False'}}, cf)
             
             logger.info(_('Finished creation of new logfile'))
 
@@ -363,10 +346,9 @@ def check_display():
                 display_proc = subprocess.Popen([sys.executable, '-m', module], stdin=subprocess.PIPE)
             
         if Config.getboolean('ToDo', 'restart_display'):
-            tmp_filename = get_random_filename(cf)
             logger.info(_('Changing restart_display to False'))
             Config.set('ToDo', 'restart_display', 'False')
-            config_write(cf, Config)
+            update_config({'ToDo': {'restart_display': 'False'}}, cf)
     else:
         # Display deaktiviert
         if display_proc != None:

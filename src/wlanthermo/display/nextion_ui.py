@@ -34,6 +34,7 @@ import string
 import codecs
 
 from .device import Display
+from ..config import config_lock, write_config_file
 
 NX_channel = 0
 NX_page = 0
@@ -1114,20 +1115,8 @@ def get_random_filename(filename):
 
 
 def config_write(configfile, config):
-    # Schreibt das Configfile
-    # Ein Lock sollte im aufrufenden Programm gehalten werden!
-    
-    tmp_filename = get_random_filename(configfile)
-    with codecs.open(tmp_filename, 'w', 'utf_8') as new_ini:
-        for section_name in config.sections():
-            new_ini.write('[{section_name}]\n'.format(section_name=section_name))
-            for (key, value) in config.items(section_name):
-                new_ini.write('{key} = {value}\n'.format(key=key, value=value))
-            new_ini.write('\n')
-        new_ini.flush()
-        os.fsync(new_ini.fileno())
-        new_ini.close()
-        os.rename(tmp_filename, configfile)
+    # Ein Lock (configfile_lock) muss im aufrufenden Programm gehalten werden!
+    write_config_file(config, configfile)
 
 
 def check_recalibration():
@@ -1200,7 +1189,8 @@ def main():
     NX_eventq = nx.events
 
     # Lock für das schreiben in die Konfig
-    configfile_lock = threading.Lock()
+    # Sperre auch gegenüber den anderen Prozessen, die die Konfiguration ändern
+    configfile_lock = config_lock(configfile)
 
     # Neue Temperaturen
     temps_event = threading.Event()
