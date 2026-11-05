@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+					<div id="temp"></div>
+					<div id="ThermoPlot1" class="ThermoPlot" style="display: none;">
+						<p>
+							<img name="ThermoPlot" id="ThermoPlot" src="/tmp/temperaturkurve.png" onload="reload(3000)" onerror="reload(3000)" alt="">
+						</p>
+					</div>
+					<div id="webcam1" class="webcam" style="display: none;">
+						<p>
+						{% if webcam %}<img name="webcam" id="webcam" src="/tmp/webcam.jpg" onload="reload_webcam(9000)" onerror="reload_webcam(3000)" alt="">{% endif %}
+						</p>
+					</div>
+					<div id="raspicam1" class="raspicam" style="display: none;">
+						<p>
+						{% if raspicam %}<img name="raspicam" id="raspicam" src="/tmp/raspicam.jpg" onload="reload_raspicam(9000)" onerror="reload_raspicam(3000)" alt="">{% endif %}
+						</p>
+					</div>
+{% endblock %}

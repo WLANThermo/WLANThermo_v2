@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% macro value(section, key) %}{{ settings.get(section, key) }}{% endmacro %}
+{% macro checked(section, key, on='True') %}{% if settings.get(section, key) == on %}checked="checked"{% endif %}{% endmacro %}
+{% macro checkbox(name, section, key, id=none, on='True') %}<input type="checkbox" name="{{ name }}"{% if id %} id="{{ id }}"{% endif %} value="True" {{ checked(section, key, on) }}>{% endmacro %}
+{% macro options(values, current) %}{% for v in values %}<option {% if current == v %}selected {% endif %}value="{{ v }}">{{ v }}</option>{% endfor %}{% endmacro %}
+{% macro labelled(values, current) %}{% for v, label in values %}<option {% if current == v %}selected {% endif %}value="{{ v }}">{{ label }}</option>{% endfor %}{% endmacro %}
+{% macro colors(name, current, id=none) %}<select name="{{ name }}"{% if id %} id="{{ id }}"{% endif %} size="1">{{ options(plot_colors, current) }}</select>{% endmacro %}
+{% set NUM = "this.value=this.value.replace(/[^0-9.]/g,'');" %}
+{% set INT = "this.value=this.value.replace(/\\D/, '');" %}
+{% set SIGNED = "this.value=this.value.replace(/[^0-9-]/g,'');" %}
+{% set COMMA = "this.value=this.value.replace(/,/, '.');" %}
+{% block content %}
+<div id="config">
+	<h1>{{ _('Settings') }}</h1>
+	<form action="config.php" method="post">
+{% for i in range(settings.channel_count) %}
+		{% set hidden = ' style="display: none;"'|safe if i > 7 else '' %}
+		<div id="ch{{ i }}" class="config small">
+			<div class="headline">{{ value('ch_name', 'ch_name%d' % i) }}</div>
+			<div class="headicon"><font color="{{ to_css_color(value('plotter', 'color_ch%d' % i)|string) }}">#{{ i }}</font></div>
+			<div class="config_text row_1 col_1">{{ _('Name') }}:</div>
+			<div class="config_text row_1 col_6"{{ hidden }}>{{ _('Probe Type') }}:</div>
+			<div class="config_text row_1 col_3"><input type="text" name="tch{{ i }}" size="25" maxlength="28" value="{{ value('ch_name', 'ch_name%d' % i) }}"></div>
+			<div class="config_text row_3 col_1">{{ _('Probe Thresholds') }}</div>
+			<div class="config_text row_3 col_2">{{ _('min') }}:</div>
+			<div class="config_text row_3 col_3"><input type="text" onkeyup="{{ SIGNED }}" name="temp_min{{ i }}" size="6" maxlength="3" value="{{ value('temp_min', 'temp_min%d' % i) }}"></div>
+			<div class="config_text row_3 col_4">{{ _('max') }}:</div>
+			<div class="config_text row_3 col_5"><input type="text" onkeyup="{{ INT }}" name="temp_max{{ i }}" size="6" maxlength="3" value="{{ value('temp_max', 'temp_max%d' % i) }}"></div>
+			<div class="config_text row_2 col_6">{{ _('Plot Color') }}:</div>
+			<div class="config_text row_2 col_1"{{ hidden }}>{{ _('Measuring Resistance') }}:</div>
+			<div class="config_text row_2 col_3"{{ hidden }}><input type="text" onkeyup="{{ NUM }}" name="measuring_resistance{{ i }}" size="6" maxlength="6" value="{{ value('Messen', 'messwiderstand%d' % i) }}"></div>
+			<div class="config_text row_1 col_7"{{ hidden }}>
+				<select name="fuehler{{ i }}" size="1">
+				{% for sensor in sensors %}<option value="{{ sensor.number }}"{% if settings.get('Sensoren', 'ch%d' % i) == sensor.number %} selected{% endif %}>{{ sensor.name }}</option>{% endfor %}
+				</select>
+			</div>
+			<div class="config_text row_2 col_7">{{ colors('plot_color%d' % i, settings.get('plotter', 'color_ch%d' % i)) }}</div>
+			<div class="config_text row_3 col_7"><input type="checkbox" name="alert{{ i }}" value="salarm{{ i }}" {{ checked('web_alert', 'ch%d' % i) }}></div>
+			<div class="config_text row_3 col_6">{{ _('Browser Alarm') }}:</div>
+		</div>
+{% endfor %}
+		<div class="config middle">
+			<div class="headline">{{ _('Alarm Notification Settings') }}</div>
+			<div class="headicon"><img src="/images/icons16x16/speaker.png" alt=""></div>
+			<div class="config_text row_1 col_6">{{ _('Alarm Interval (s)') }}:</div>
+			<div class="config_text row_1 col_7"><input type="text" onkeyup="{{ NUM }}" name="alarm_interval" size="6" maxlength="6" value="{{ value('Alert', 'alarm_interval') }}"></div>
+			<div class="config_text row_2 col_6">{{ _('Status Interval (s)') }}:</div>
+			<div class="config_text row_2 col_7"><input type="text" onkeyup="{{ NUM }}" name="status_interval" size="6" maxlength="6" value="{{ value('Alert', 'status_interval') }}"></div>
+			<div class="config_text row_1 col_1">{{ _('Over Temp') }}:</div>
+			<div class="config_text row_2 col_1">{{ _('Under Temp') }}:</div>
+			<div class="config_text row_3 col_1">{{ _('Status') }}:</div>
+			<div class="config_text row_4 col_1">{{ _('Message') }}:</div>
+{% for key in ('alarm_high_template', 'alarm_low_template', 'status_template', 'message_template') %}
+			<div class="config_text row_{{ loop.index }} col_5"><input type="text" name="{{ key }}" id="{{ key }}" size="35" maxlength="250" value="{{ value('Alert', key) }}"></div>
+{% endfor %}
+			<div class="config_text row_4 col_6"><button type="button" onclick="$.get('config.php?alert-test=true')" class="wide">{{ _('Send Test Message') }}</button></div>
+		</div>
+		<div class="config middle">
+			<div class="headline">{{ _('Email Notification Settings') }}</div>
+			<div class="config_text row_4 col_4">{{ _('TLS encryption') }}:&nbsp;{{ checkbox('starttls', 'Email', 'starttls', 'email_starttls') }}</div>
+			<div class="config_text row_1 col_6">{{ _('Enable Email Notification') }}:</div>
+			<div class="config_text row_1 col_7">{{ checkbox('email', 'Email', 'email_alert', 'email') }}</div>
+			<div class="headicon"><img src="/images/icons16x16/mail.png" alt=""></div>
+			<div class="config_text row_2 col_6">{{ _('Authentication') }}:</div>
+			<div class="config_text row_2 col_7">{{ checkbox('auth_check', 'Email', 'auth', 'email_auth_check') }}</div>
+			<div class="config_text row_1 col_1">{{ _('To') }}:</div>
+			<div class="config_text row_2 col_1">{{ _('From') }}:</div>
+			<div class="config_text row_3 col_1">{{ _('Subject') }}:</div>
+			<div class="config_text row_1 col_5"><input type="text" name="email_to" id="email_to" size="35" maxlength="50" value="{{ value('Email', 'email_to') }}"></div>
+			<div class="config_text row_2 col_5"><input type="text" name="email_from" id="email_from" size="35" maxlength="50" value="{{ value('Email', 'email_from') }}"></div>
+			<div class="config_text row_3 col_5"><input type="text" name="email_subject" id="email_subject" size="35" maxlength="50" value="{{ value('Email', 'email_subject') }}"></div>
+			<div class="config_text row_3 col_6">{{ _('Server') }}:</div>
+			<div class="config_text row_3 col_7"><input type="text" name="email_smtp" id="email_smtp" size="18" maxlength="50" value="{{ value('Email', 'server') }}"></div>
+			<div class="config_text row_4 col_6">{{ _('Password') }}:</div>
+			<div class="config_text row_4 col_7"><input type="password" name="email_password" id="email_password" size="18" maxlength="50" value="{{ value('Email', 'password') }}"></div>
+			<div class="config_text row_4 col_1">{{ _('Username') }}:</div>
+			<div class="config_text row_4 col_3"><input type="text" name="email_username" id="email_username" size="15" maxlength="50" value="{{ value('Email', 'username') }}"></div>
+		</div>
+		<div class="config small">
+			<div class="headline">{{ _('Telegram Settings') }}</div>
+			<div class="headicon"><img src="/images/icons16x16/telegram.png" alt=""></div>
+			<div class="config_text row_1 col_1">{{ _('Set Chat-ID') }}:</div>
+			<div class="config_text row_1 col_4"><select name="telegram_chatid_select" id="telegram_chatid_select" size="1" style="width:260px;"><option value="" selected="selected">---</option></select></div>
+			<div class="config_text row_2 col_1">{{ _("Please enter token below and send '/start' to the Bot before getting Chat-ID!") }}</div>
+			<div class="config_text row_3 col_1">{{ _('Token') }}:</div>
+			<div class="config_text row_3 col_3"><input type="text" name="telegram_token" id="telegram_token" size="25" maxlength="50" value="{{ value('Telegram', 'telegram_token') }}"></div>
+			<div class="config_text row_3 col_4">{{ _('Chat-ID') }}: <input type="text" name="telegram_chat_id" id="telegram_chat_id" size="18" maxlength="20" value="{{ value('Telegram', 'telegram_chat_id') }}"></div>
+			<div class="config_text row_3 col_5"></div>
+			<div class="config_text row_3 col_6">{{ _('Enable Telegram') }}:</div>
+			<div class="config_text row_3 col_7">{{ checkbox('telegram_alert', 'Telegram', 'telegram_alert', 'telegram_alert') }}</div>
+		</div>
+		<div class="config little">
+			<div class="headline">{{ _('Push Notification Settings') }}</div>
+			<div class="config_text row_1 col_6">{{ _('Enable Push Notification') }}:</div>
+			<div class="config_text row_1 col_7">{{ checkbox('push_on', 'Push', 'push_on', 'push_on') }}</div>
+			<div class="headicon">&nbsp;</div>
+			<div class="config_text row_1 col_1">{{ _('URL') }}:</div>
+			<div class="config_text row_1 col_4">{{ _('Body') }}: <input type="text" name="push_body" id="push_body" size="23" maxlength="500" value="{{ value('Push', 'push_body') }}"></div>
+			<div class="config_text row_1 col_3"><input type="text" name="push_url" id="push_url" size="25" maxlength="500" value="{{ value('Push', 'push_url') }}"></div>
+			<div class="config_text row_1 col_5"></div>
+		</div>
+		<div class="config five_lines">
+			<div class="headline">{{ _('Chart Settings') }}</div>
+			<div class="headicon"><img src="/images/icons16x16/chart.png" alt=""></div>
+			<div class="config_text row_1 col_1">{{ _('Chart Name') }}:</div>
+			<div class="config_text row_1 col_3"><input type="text" name="plotname" id="plot_name" size="18" maxlength="25" value="{{ value('plotter', 'plotname') }}"></div>
+			<div class="config_text row_1 col_6">{{ _('Enable Chart') }}:</div>
+			<div class="config_text row_1 col_7">{{ checkbox('plot_start', 'ToDo', 'plot_start', 'plot_start') }}</div>
+			<div class="config_text row_2 col_1">{{ _('Chart Range') }}</div>
+			<div class="config_text row_2 col_2">{{ _('from') }}:</div>
+			<div class="config_text row_2 col_3"><input type="text" onkeyup="{{ SIGNED }}" name="plotbereich_min" id="plotbereich_min" size="6" maxlength="3" value="{{ value('plotter', 'plotbereich_min') }}"></div>
+			<div class="config_text row_2 col_4">{{ _('to') }}:</div>
+			<div class="config_text row_2 col_5"><input type="text" onkeyup="{{ INT }}" name="plotbereich_max" id="plotbereich_max" size="6" maxlength="3" value="{{ value('plotter', 'plotbereich_max') }}"></div>
+			<div class="config_text row_2 col_6">{{ _('Show Legend') }}:</div>
+			<div class="config_text row_2 col_7">
+				<select name="keybox" id="plot_keybox" size="1">
+				{% for pos in ('top left', 'top right', 'bottom left', 'bottom right', 'center left', 'center right') %}<option {% if settings.get('plotter', 'keybox') == pos %}selected {% endif %}value="{{ pos }}">{{ _(pos) }}</option>{% endfor %}
+				</select>
+			</div>
+			<div class="config_text row_3 col_1">{{ _('Chart Size') }}:</div>
+			<div class="config_text row_3 col_3"><select name="plotsize" id="plot_size" size="1">{{ options(('700x350', '800x500', '900x600', '1000x700', '1280x1024', '1600x1200', '1920x1200'), settings.get('plotter', 'plotsize')) }}</select></div>
+			<div class="config_text row_3 col_6">{{ _('Enable Frame Legend') }}:</div>
+			<div class="config_text row_3 col_7">{{ checkbox('keyboxframe', 'plotter', 'keyboxframe', 'plot_keyboxframe') }}</div>
+			<div class="config_text row_4 col_1">{{ _('Pit out') }}:</div>
+			<div class="config_text row_4 col_3">{{ colors('color_pit', settings.get('plotter', 'color_pit'), 'plot_color_pit') }}</div>
+			<div class="config_text row_4 col_6">{{ _('Enable Pitmaster Chart') }}:</div>
+			<div class="config_text row_4 col_7">{{ checkbox('plot_pit', 'plotter', 'plot_pit', 'plot_pit') }}</div>
+			<div class="config_text row_5 col_1">{{ _('Pit setpoint') }}:</div>
+			<div class="config_text row_5 col_3">{{ colors('color_pitsoll', settings.get('plotter', 'color_pitsoll'), 'plot_color_pitsoll') }}</div>
+			<div class="config_text row_4 col_4">{{ _('Pit 2 out') }}:&nbsp;{{ colors('color_pit2', settings.get('plotter', 'color_pit2'), 'plot_color_pit2') }}</div>
+			<div class="config_text row_5 col_6">{{ _('Enable Pitmaster 2 Chart') }}:</div>
+			<div class="config_text row_5 col_7">{{ checkbox('plot_pit2', 'plotter', 'plot_pit2', 'plot_pit2') }}</div>
+			<div class="config_text row_5 col_4">{{ _('Pit 2 setpoint') }}:&nbsp;{{ colors('color_pit2soll', settings.get('plotter', 'color_pit2soll'), 'plot_color_pit2soll') }}</div>
+		</div>
+		<div class="config middle">
+			<div class="headline">{{ _('Webcam Settings') }}</div>
+			<div class="headicon"><img src="/images/icons16x16/webcam.png" alt=""></div>
+			<div class="config_text row_1 col_1">{{ _('Name') }}:</div>
+			<div class="config_text row_1 col_3"><input type="text" name="webcam_name" id="webcam_name" size="25" maxlength="28" value="{{ value('webcam', 'webcam_name') }}"></div>
+			<div class="config_text row_1 col_6">{{ _('Enable Webcam') }}:</div>
+			<div class="config_text row_1 col_7">{{ checkbox('webcam_start', 'webcam', 'webcam_start', 'webcam_start') }}</div>
+			<div class="config_text row_2 col_1">{{ _('Resolution') }}:</div>
+			<div class="config_text row_2 col_3"><select name="webcam_size" id="webcam_size" size="1">{{ options(('320x240', '640x480', '1080x720', '1280x1024'), settings.get('webcam', 'webcam_size')) }}</select></div>
+			<div class="config_text row_3 col_1">{{ _('Name') }}:</div>
+			<div class="config_text row_3 col_3"><input type="text" name="raspicam_name" id="raspicam_name" size="25" maxlength="28" value="{{ value('webcam', 'raspicam_name') }}"></div>
+			<div class="config_text row_3 col_6">{{ _('Enable Raspicam') }}:</div>
+			<div class="config_text row_3 col_7">{{ checkbox('raspicam_start', 'webcam', 'raspicam_start', 'raspicam_start') }}</div>
+			<div class="config_text row_4 col_1">{{ _('Resolution') }}:</div>
+			<div class="config_text row_4 col_3"><select name="raspicam_size" id="raspicam_size" size="1">{{ options(('320x240', '640x480', '1024x768', '1280x720', '1280x1024', '2592x1944'), settings.get('webcam', 'raspicam_size')) }}</select></div>
+			<div class="config_text row_3 col_4">{{ _('Exposure') }}:&nbsp;&nbsp;<select name="raspicam_exposure" id="raspicam_exposure" size="1">{{ options(('off', 'auto', 'night', 'backlight', 'spotlight'), settings.get('webcam', 'raspicam_exposure')) }}</select></div>
+		</div>
+{% for p in range(settings.pitmaster_count) %}
+	{% set suffix = '' if p == 0 else (p + 1)|string %}
+	{% set prefix = 'pit' + suffix %}
+	{% set section = 'Pitmaster' + suffix %}
+		<div class="config five_lines">
+			<div class="headline">{{ _('Pitmaster %u Settings') % (p + 1) }}</div>
+			<div class="headicon"><img src="/images/icons16x16/pitmaster.png" alt=""></div>
+			<div class="config_text row_1 col_1">{{ _('Temperature') }}:</div>
+			<div class="config_text row_3 col_1">{{ _('Control Curve') }}:</div>
+			<div class="config_text row_1 col_6">{{ _('Enable Pitmaster') }}:</div>
+			<div class="config_text row_1 col_7">{{ checkbox(prefix + '_on', 'ToDo', prefix + '_on', prefix + '_on') }}</div>
+			<div class="config_text row_3 col_6"></div>
+			<div class="config_text row_3 col_7"></div>
+			<div class="config_text row_3 col_5"><input type="text" name="{{ prefix }}_curve" id="{{ prefix }}_curve" size="35" maxlength="50" value="{{ value(section, 'pit_curve') }}"></div>
+			<div class="config_text row_2 col_6">{{ _('Channel') }}:</div>
+			<div class="config_text row_2 col_7">
+				<select name="{{ prefix }}_ch" id="{{ prefix }}_ch" size="1">
+				{% for i in range(settings.channel_count) %}<option {% if settings.get(section, 'pit_ch') == i|string %}selected {% endif %}value="{{ i }}">{{ _('Channel') }} {{ i }}</option>{% endfor %}
+				</select>
+			</div>
+			<div class="config_text row_1 col_3"><input type="text" onkeyup="{{ NUM }}" name="{{ prefix }}_set" id="{{ prefix }}_set" size="5" maxlength="5" value="{{ value(section, 'pit_set') }}"></div>
+			<div class="config_text row_1 col_4">{{ _('Delay') }}: </div>
+			<div class="config_text row_2 col_3"><input type="text" onkeyup="{{ NUM }}" name="{{ prefix }}_man" id="{{ prefix }}_man" size="5" maxlength="5" value="{{ value(section, 'pit_man') }}"></div>
+			<div class="config_text row_2 col_1">{{ _('Manual Control') }}: </div>
+			<div class="config_text row_1 col_5"><input type="text" onkeyup="this.value=this.value.replace(/[^\d\.]/g, '');" name="{{ prefix }}_pause" id="{{ prefix }}_pause" size="5" maxlength="4" value="{{ value(section, 'pit_pause') }}"></div>
+			<div class="config_text row_5 col_6">{{ _('PID Control') }}:</div>
+			<div class="config_text row_5 col_7">{{ checkbox(prefix + '_controller_type', section, 'pit_controller_type', prefix + '_controller_type', on='PID') }}</div>
+			<div class="config_text row_4 col_6">{{ _('Open Lid detection') }}:</div>
+			<div class="config_text row_4 col_7">{{ checkbox(prefix + '_open_lid_detection', section, 'pit_open_lid_detection', prefix + '_open_lid_detection') }}</div>
+	{% for row, keys in ((4, ('kp', 'ki', 'kd')), (5, ('kp_a', 'ki_a', 'kd_a'))) %}
+		{% for key in keys %}
+			{% set label_col = ('1', '2', '4')[loop.index0] %}
+			{% set input_col = ('1_5', '3', '5')[loop.index0] %}
+			<div class="config_text row_{{ row }} col_{{ label_col }}">{{ _(key|capitalize if '_' not in key else key[:2]|capitalize + key[2:]) }}:</div>
+			<div class="config_text row_{{ row }} col_{{ input_col }}"><input type="text" onkeyup="{{ COMMA }}" name="{{ prefix }}_{{ key }}" id="{{ prefix }}_{{ key }}" size="5" maxlength="5" value="{{ value(section, 'pit_' + key) }}"></div>
+		{% endfor %}
+	{% endfor %}
+		</div>
+		<div class="config five_lines">
+			<div class="headline">{{ _('Pit %u Settings') % (p + 1) }}</div>
+			<div class="config_text row_1 col_1">{{ _('Type') }}:</div>
+			<div class="config_text row_1 col_2">
+				<select name="{{ prefix }}_type" id="{{ prefix }}_type" size="1">
+				{% set types = [('servo', _('Servo')), ('fan_pwm', _('PWM Fan')), ('fan', _('Fan')), ('io', _('IO')), ('io_pwm', _('IO with PWM'))] %}
+				{% if settings.version in ('miniV2', 'miniplus') %}{% set types = types + [('damper', _('Servo Damper'))] %}{% endif %}
+				{{ labelled(types, settings.get(section, 'pit_type')) }}
+				</select>
+			</div>
+			<div class="config_text row_2 col_1">{{ _('Duty Cycle (%)') }}</div>
+			<div class="config_text row_2 col_2">{{ _('min') }}:</div>
+			<div class="config_text row_2 col_3"><input type="text" onkeyup="{{ INT }}" name="{{ prefix }}_pwm_min" id="{{ prefix }}_pwm_min" size="5" maxlength="3" value="{{ value(section, 'pit_pwm_min') }}"></div>
+			<div class="config_text row_2 col_4">{{ _('max') }}:</div>
+			<div class="config_text row_2 col_5"><input type="text" onkeyup="{{ INT }}" name="{{ prefix }}_pwm_max" id="{{ prefix }}_pwm_max" size="5" maxlength="3" value="{{ value(section, 'pit_pwm_max') }}"></div>
+			<div class="config_text row_3 col_1">{{ _('Servo Pulse (µs)') }}:</div>
+			<div class="config_text row_3 col_2">{{ _('min') }}:</div>
+			<div class="config_text row_3 col_3"><input type="text" onkeyup="{{ INT }}" name="{{ prefix }}_servo_min" id="{{ prefix }}_servo_min" size="5" maxlength="4" value="{{ value(section, 'pit_servo_min') }}"></div>
+			<div class="config_text row_3 col_4">{{ _('max') }}:</div>
+			<div class="config_text row_3 col_5"><input type="text" onkeyup="{{ INT }}" name="{{ prefix }}_servo_max" id="{{ prefix }}_servo_max" size="5" maxlength="4" value="{{ value(section, 'pit_servo_max') }}"></div>
+			<div class="config_text row_2 col_6">{{ _('Reverse Drive') }}:</div>
+			<div class="config_text row_2 col_7">{{ checkbox(prefix + '_inverted', section, 'pit_inverted', prefix + '_inverted') }}</div>
+			<div class="config_text row_3 col_6">{{ _('Reverse Servo') }}:</div>
+			<div class="config_text row_3 col_7">{{ checkbox(prefix + '_servo_inverted', section, 'pit_servo_inverted', prefix + '_servo_inverted') }}</div>
+			<div class="config_text row_4 col_1">{{ _('Damper control') }}</div>
+			<div class="config_text row_4 col_2">{{ _('offset') }}:</div>
+			<div class="config_text row_4 col_3"><input type="text" onkeyup="{{ COMMA }}" name="{{ prefix }}_damper_offset" id="{{ prefix }}_damper_offset" size="5" maxlength="3" value="{{ value(section, 'pit_damper_offset') }}"></div>
+			<div class="config_text row_4 col_4">{{ _('pitch') }}:</div>
+			<div class="config_text row_4 col_5"><input type="text" onkeyup="{{ COMMA }}" name="{{ prefix }}_damper_pitch" id="{{ prefix }}_damper_pitch" size="5" maxlength="3" value="{{ value(section, 'pit_damper_pitch') }}"></div>
+			<div class="config_text row_4 col_6">{{ _('Servo deadband (%)') }}:</div>
+			<div class="config_text row_4 col_7"><input type="text" onkeyup="{{ INT }}" name="{{ prefix }}_servo_deadband" id="{{ prefix }}_servo_deadband" size="3" maxlength="3" value="{{ value(section, 'pit_servo_deadband') }}"></div>
+			<div class="config_text row_5 col_1">{{ _('Rate limit (s)') }}</div>
+			<div class="config_text row_5 col_2">{{ _('rise') }}:</div>
+			<div class="config_text row_5 col_3"><input type="text" onkeyup="{{ COMMA }}" name="{{ prefix }}_ratelimit_rise" id="{{ prefix }}_ratelimit_rise" size="5" maxlength="3" value="{{ value(section, 'pit_ratelimit_rise') }}"></div>
+			<div class="config_text row_5 col_4">{{ _('fall') }}:</div>
+			<div class="config_text row_5 col_5"><input type="text" onkeyup="{{ COMMA }}" name="{{ prefix }}_ratelimit_fall" id="{{ prefix }}_ratelimit_fall" size="5" maxlength="3" value="{{ value(section, 'pit_ratelimit_fall') }}"></div>
+		</div>
+{% endfor %}
+		<div class="config big">
+			<div class="headline">{{ _('General Settings') }}</div>
+			<div class="headicon"><img src="/images/icons16x16/settings.png" alt=""></div>
+			<div class="config_text row_1 col_1">{{ _('Hardware Version') }}:</div>
+			<div class="config_text row_1 col_4"><select name="hardware_version" id="hardware_version" size="1">{{ labelled((('v1', 'v1'), ('v2', 'v2'), ('v3', 'v3 / mini'), ('miniV2', 'miniV2'), ('miniplus', 'miniplus')), settings.version) }}</select></div>
+			<div class="config_text row_1 col_6">{{ _('Language') }}:</div>
+			<div class="config_text row_1 col_7"><select name="language" id="language" size="1">{{ options(languages, settings.get('locale', 'locale')) }}</select></div>
+			<div class="config_text row_2 col_6">{{ _('Unit') }}:</div>
+			<div class="config_text row_2 col_7"><select name="temp_unit" id="temp_unit" size="1">{{ labelled((('celsius', 'Celsius'), ('fahrenheit', 'Fahrenheit')), settings.temp_unit) }}</select></div>
+			<div class="config_text row_2 col_1">{{ _('New Log File on Start') }}:</div>
+			<div class="config_text row_2 col_4">{{ checkbox('new_logfile_restart', 'Logging', 'write_new_log_on_restart') }}</div>
+			<div class="config_text row_3 col_1">{{ _('Auto-Check for Update') }}:</div>
+			<div class="config_text row_3 col_4">{{ checkbox('checkUpdate', 'update', 'checkupdate') }}</div>
+			<div class="config_text row_3 col_6">{{ _('Show CPU Usage') }}:</div>
+			<div class="config_text row_3 col_7">{{ checkbox('showcpulast', 'Hardware', 'showcpulast') }}</div>
+			<div class="config_text row_4 col_1">{{ _('Enable Sound') }}:</div>
+			<div class="config_text row_4 col_4">{{ checkbox('beeper_enabled', 'Sound', 'beeper_enabled') }}</div>
+			<div class="config_text row_4 col_6">{{ _('Beep at Start') }}:</div>
+			<div class="config_text row_4 col_7">{{ checkbox('beeper_on_start', 'Sound', 'beeper_on_start') }}</div>
+			<div class="config_text row_5 col_1">{{ _('Enable Maverick receiver') }}:</div>
+			<div class="config_text row_5 col_4">{{ checkbox('maverick_enabled', 'ToDo', 'maverick_enabled') }}</div>
+			{% if settings.version == 'miniV2' %}
+			<div class="config_text row_5 col_6">{{ _('Enable TC add on') }}:</div>
+			<div class="config_text row_5 col_7">{{ checkbox('max31855', 'Hardware', 'max31855') }}</div>
+			{% endif %}
+			<div class="config_text row_6 col_1">{{ _('View Channels') }}:</div>
+			{% set half = settings.channel_count // 2 %}
+			<div class="config_text row_6 col_4">{% for i in range(half) %}ch{{ i }}&nbsp;{{ checkbox('ch_show%d' % i, 'ch_show', 'ch%d' % i, 'show_ch%d' % i) }}&nbsp;&nbsp;{% endfor %}</div>
+			<div class="config_text row_7 col_4">{% for i in range(half, settings.channel_count) %}ch{{ i }}&nbsp;{{ checkbox('ch_show%d' % i, 'ch_show', 'ch%d' % i, 'show_ch%d' % i) }}&nbsp;&nbsp;{% endfor %}</div>
+		</div>
+		<div class="config small">
+			<div class="headline">{{ _('Display Einstellungen') }}</div>
+			<div class="headicon"><img src="/images/icons16x16/display.png" alt=""></div>
+			<div class="config_text row_1 col_6">{{ _('LCD Display') }}:</div>
+			<div class="config_text row_1 col_7">{{ checkbox('lcd_show', 'Display', 'lcd_present', 'lcd_present') }}</div>
+			<div class="config_text row_2 col_6">{{ _('LCD Type') }}:</div>
+			<div class="config_text row_2 col_7"><select name="lcd_type" id="lcd_type" size="1">{{ labelled((('wlt_2_lcd_204.py', '4x20 HD44780'), ('wlt_2_nextion.py', 'Nextion LCD')), settings.get('Display', 'lcd_type')) }}</select></div>
+			<div class="config_text row_1 col_1">{{ _('Start Page') }}:</div>
+			<div class="config_text row_1 col_3"><select name="lcd_start_page" id="startpage" size="1">{{ labelled((('main', _('Menu')), ('temp', _('Temperature'))), settings.get('Display', 'start_page')) }}</select></div>
+			<div class="config_text row_2 col_3"><button type="button" onclick="$.get('config.php?update-nextion=true')" class="wide">{{ _('Force update!') }}</button></div>
+			<div class="config_text row_3 col_3"><button type="button" onclick="$.get('config.php?calibrate-display=true')" class="wide">{{ _('Calibrate Display!') }}</button></div>
+		</div>
+		<div class="config middle">
+			<div class="headline">{{ _('Logging settings') }}</div>
+			<div class="headicon"><img src="/images/icons16x16/log.png" alt=""></div>
+		{% for row, name, key, label in ((1, 'loglevel_pit', 'level_pit', 'Logging level pitmaster'), (2, 'loglevel_wd', 'level_wd', 'Logging level watch dog'), (3, 'loglevel_compy', 'level_compy', 'Logging level main program'), (4, 'loglevel_display', 'level_display', 'Logging level display')) %}
+			<div class="config_text row_{{ row }} col_1">{{ _(label) }}:</div>
+			<div class="config_text row_{{ row }} col_4"><select name="{{ name }}" id="{{ name if row < 4 else 'startpage' }}" size="1">{{ options(log_levels, settings.get('daemon_logging', key)) }}</select></div>
+		{% endfor %}
+			<div class="config_text row_3 col_6"><button type="reset" onclick="location.href='../thermolog/update.log'" class="wide">{{ _('Show update log') }}</button></div>
+			<div class="config_text row_4 col_6"><button type="reset" onclick="location.href='../log/WLANThermo.log'" class="wide">{{ _('Show logfile') }}</button></div>
+		</div>
+		<script type="text/javascript" src="/js/config.php.js"></script>
+		<br>
+		<table align="center" width="80%"><tr><td width="20%"></td>
+			<td align="center">
+				<input type="submit" class="button_yes" name="save" value="" onclick="enableallcheckbox()">
+				<input type="submit" class="button_no" name="back" value=""></td>
+			<td width="20%"></td></tr>
+		</table>
+		<br>
+	</form>
+	<h1>{{ _('Config file upload/download') }}</h1>
+	<form enctype="multipart/form-data" action="config.php" method="POST">
+	<div class="config small">
+		<input type="hidden" name="upload_file" value="" />
+		<div class="headline">{{ _('Config file upload') }}</div>
+		<div class="headicon"><img src="/images/icons16x16/file_save.png" alt=""></div>
+		<div class="config_text row_1 col_1">{{ _('Config file:') }}</div>
+		<div class="config_text row_1 col_4"><input name="configfile" type="file" /></div>
+		<div class="config_text row_2 col_4"><button type="reset" onclick="location.href='../conf/WLANThermo.conf'" class="wide">{{ _('Download config') }}</button></div>
+	</div>
+	<br>
+	<table align="center" width="80%">
+		<tr><td width="20%"></td>
+			<td align="center"><input type="submit" class="button_yes" value=""><input type="submit" class="button_no" name="back" value=""></td>
+			<td width="20%"></td></tr>
+	</table>
+	<br>
+	</form>
+</div>
+{% endblock %}

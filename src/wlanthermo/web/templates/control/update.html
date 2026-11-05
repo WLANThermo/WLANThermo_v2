@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% macro buttons(name) %}
+	<form action="./update.php" method="POST">
+		<table align="center" width="80%">
+			<tr>
+				<td width="20%"></td>
+				<td align="center"><input type="submit" class="button_yes" name="{{ name }}" value=""><input type="submit" class="button_back" name="back" value=""></td>
+				<td width="20%"></td>
+			</tr>
+		</table>
+	</form>
+{% endmacro %}
+{% block content %}
+<script>$(function() { $.session.set("ToggleStatusPlot", "NULL"); $.session.set("ToggleStatusWebcam", "NULL"); $.session.set("ToggleStatusraspicam", "NULL"); });</script>
+{% if not settings.flag('update', 'checkupdate') %}
+	<div id="info_site">
+		<h1>{{ _('Install updates') }}</h1>
+		<p>{{ _('Updates have been deactivated') }}</p>
+	</div>
+{% elif updates is none %}
+	<div id="info_site">
+		<h1>{{ _('Install update') }}</h1>
+		<p>{{ _('Error during check for updates!') }}</p>
+	</div>
+{% else %}
+	{% if updates.get('system', {}).get('available') is sameas true %}
+	<div id="info_site">
+		<h1>{{ _('Install update') }}</h1>
+		<p>{{ _('New updates have been found for the operating system') }}</p>
+		<br>
+		<p>{{ _('Updated packages:') }} <b>{{ updates.system.get('count', '') }}</b></p>
+		<br>
+		<p>{{ _('Do you want to install the update?') }}</p>
+		{{ buttons('update_step1') }}
+	</div>
+	{% endif %}
+	{% if updates.get('wlanthermo', {}).get('available') is sameas true %}
+	<div id="info_site">
+		<h1>{{ _('Install update') }}</h1>
+		<p>{{ _('A new update has been found for the WLANThermo') }}</p>
+		<br>
+		<p>{{ _('Installed version:') }} <b>{{ updates.wlanthermo.get('oldversion', '') }}</b></p>
+		<p>{{ _('Current version:') }} <b>{{ updates.wlanthermo.get('newversion', '') }}</b></p>
+		<br>
+		<p>{{ _('Do you want to install the update?') }}</p>
+		<p>{{ _('This update always includes the operating system update.') }}</p>
+		{{ buttons('wlanthermo_update_step1') }}
+	</div>
+	{% endif %}
+{% endif %}
+<div class="clear"></div>
+{% endblock %}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-title" content="WlanThermo">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	{% block refresh %}{% endblock %}
+	<link rel="apple-touch-icon-precomposed" href="/apple-touch-icon-180x180-precomposed.png">
+	<title>WLANThermo ({{ version }})</title>
+	<link rel="stylesheet" type="text/css" href="/css/style.css">
+	<link rel="stylesheet" href="/css/jquery.fancybox.css" type="text/css" media="screen">
+	<link rel="shortcut icon" type="image/x-icon" href="/images/icons16x16/thermo.png">
+	<script type="text/javascript" src="/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.session.js"></script>
+	<script type="text/javascript" src="/js/jquery.fancybox.js"></script>
+	<script type="text/javascript" src="/js/jquery.fancybox.script.js"></script>
+	<script type="text/javascript" src="/js/jquery.div.slide.js"></script>
+	<script type="text/javascript" src="/js/jquery.jeditable.js"></script>
+	<script type="text/javascript" src="/js/function.js"></script>
+	<script type="text/javascript" src="/js/wifi_functions.js"></script>
+	<script type="text/javascript" src="/js/jquery.image.reload.js"></script>
+	<script>$(function() { {% if show_update %}showUpdate();{% else %}hideUpdate();{% endif %} });</script>
+</head>
+<body onload="bildreload()">
+	<div id="wrapper">
+		<div id="header">
+			<div id="header_logo"><div class="header_link"><a href="/index.php"></a></div></div>
+		</div>
+		<div id="header_title"></div>
+			<div id="mainmenu">
+				<nav>
+					<ul>
+						<li class="shutdown_menu">
+							<a href="#" class="mainmenu"><img src="/images/icons32x32/shutdown.png" alt="Home" title="Shutdown"></a>
+							<ul>
+								<li><a href="/control/reboot.php"><b>{{ _('Reboot') }}</b></a></li>
+								<li><a href="/control/shutdown.php"><b>{{ _('Shutdown') }}</b></a></li>
+							</ul>
+						</li>
+						<li><a href="/index.php" class="mainmenu"><img src="/images/icons32x32/home.png" alt="Home" title="Home"></a></li>
+						<li><a href="https://forum.wlanthermo.de" class="mainmenu" target="_blank"><img src="/images/icons32x32/forum.png" alt="Forum" title="Forum"></a></li>
+						<li><a href="/info.php" class="mainmenu"><img src="/images/icons32x32/info.png" alt="Info" title="Info"></a></li>
+						<li><a href="/control/wifi.php" class="mainmenu"><img src="/images/icons32x32/wifi.png" alt="{{ _('WiFi Settings') }}" title="{{ _('WiFi Settings') }}"></a></li>
+						<li><a href="/control/config.php" class="mainmenu"><img src="/images/icons32x32/thermo.png" alt="{{ _('Settings') }}" title="{{ _('Settings') }}"></a></li>
+						<li><a href="/thermolog.php" class="mainmenu"><img src="/images/icons32x32/log.png" alt="{{ _('Log File') }}" title="{{ _('Log File') }}"></a></li>
+						<li style="display:{{ 'inline' if main_page and settings.flag('webcam', 'raspicam_start') else 'none' }}">
+							<a href="#" id="raspicam_button" class="mainmenu"><img src="/images/icons32x32/raspicam.png" alt="RaspiCam" title="RaspiCam"></a>
+						</li>
+						<li style="display:{{ 'inline' if main_page and settings.flag('webcam', 'webcam_start') else 'none' }}">
+							<a href="#" id="webcam_button" class="mainmenu"><img src="/images/icons32x32/webcam.png" alt="WebCam" title="WebCam"></a>
+						</li>
+						<li style="display:{{ 'inline' if main_page and settings.flag('ToDo', 'plot_start') else 'none' }}">
+							<a href="#" id="ThermoPlot_button" class="mainmenu"><img src="/images/icons32x32/chart.png" alt="{{ _('Temperature Graph') }}" title="{{ _('Temperature Graph') }}"></a>
+						</li>
+						<li>
+							<div id="newlogmenu"><a href="/control/new_log_file.php" class="mainmenu" style="text-align:left;"><b>{{ _('Create New Log File') }}</b></a></div>
+						</li>
+					</ul>
+				</nav>
+			</div>
+			<div class="clear"></div>
+			<div id="content">
+				<div class="inner">
+{% block content %}{% endblock %}
+				</div>
+			</div>
+		</div>
+		<div class="modal"><!-- Place at bottom of page --></div>
+</body>
+</html>

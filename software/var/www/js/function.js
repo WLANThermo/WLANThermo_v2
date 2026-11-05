@@ -1,8 +1,30 @@
+			// Temperaturen bei jeder neuen Messung nachladen (Server-Sent Events vom Webinterface),
+			// ohne EventSource oder ohne Verbindung zum Kernprozess wie bisher alle 2 s
 			$(document).ready(function() {
-   				setInterval(function() {
-                $('#temp').load('main.php')
-				},2000);
-			$('#temp').load('main.php');
+				if ($('#temp').length == 0) {
+					return;
+				}
+				$('#temp').load('main.php');
+				var polling = null;
+				function startPolling() {
+					if (polling === null) {
+						polling = setInterval(function() { $('#temp').load('main.php'); }, 2000);
+					}
+				}
+				if (!window.EventSource) {
+					startPolling();
+					return;
+				}
+				var events = new EventSource('events');
+				events.onmessage = function() {
+					if (polling !== null) {
+						clearInterval(polling);
+						polling = null;
+					}
+					$('#temp').load('main.php');
+				};
+				events.addEventListener('core-unavailable', startPolling);
+				events.onerror = startPolling;
 			});
 			
 			$(document).ready(function() {						

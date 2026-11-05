@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block refresh %}<meta http-equiv="refresh" content="1;URL='{{ url }}'">{% endblock %}
+{% block content %}
+<div class="infofield">
+	<h2>{{ text }}</h2>
+	{% for line in extra %}<h2>{{ line }}</h2>{% endfor %}
+</div>
+{% endblock %}

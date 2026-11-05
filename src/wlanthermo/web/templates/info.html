@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+</div>
+<div id="info_site">
+	<div id="info_site_left">
+		<h1>WLANThermo</h1>
+		<p>{{ _('a WLANThermo community project') }}</p>
+		<br>
+		<p>Idee, Hardware &amp; Backend &copy; 2013-2018 by </p><p>&#10026; <b>Armin Thinnes</b> &#10026;</p>
+		<hr class="linie">
+		<p>Web-Frontend &copy; 2013-2018 by </p><p>&#10026; <b>Florian Riedl</b> &#10026;</p>
+		<hr class="linie">
+		<p>Watchdog &amp; Pitmaster &copy; 2013-2015 by</p><p>&#10026; <b>Joe16</b> &#10026;</p>
+		<hr class="linie">
+		<p>Display &amp; Pitmaster &copy; 2015-2018 by</p><p>&#10026; <b>Bj&ouml;rn</b> &#10026;</p>
+		<hr class="linie">
+		<p>Grafik &copy; 2013 by</p><p>&#10026; <b>Michael Spanel</b> &#10026;</p>
+		<hr class="linie">
+		<p>PCB Design &amp; Layout &copy; 2013-2015 by </p><p>&#10026; <b>Grillprophet</b> &#10026;</p>
+		<hr class="linie">
+		<p>Display Design &amp; PCB v3 Mini &copy; 2015-2018 by </p><p>&#10026; <b>Alexander Sch&auml;fer</b> &#10026;</p>
+	</div>
+	<div id="info_site_right">
+		<h1>{{ _('Information') }}</h1>
+		<p>{{ _('This software is licensed under the') }} <b><a href="/LICENSE.txt" target="_blank">GPL</a></b> {{ _('License') }}</p>
+		<br>
+		<p>{{ _('Software version') }}: <b>{{ version }}</b></p>
+		<p>&nbsp;</p>
+		<hr class="linie">
+		<form action="./info.php" method="POST">
+			<h1>{{ _('Search updates') }}</h1>
+			<p><input class="button" type="submit" name="check_update" value="{{ _('Search updates') }}"/></p>
+		</form>
+		<hr class="linie">
+		{% if settings.flag('update', 'checkupdate') %}
+			{% if updates is none %}
+				<p>&#10026; <b>{{ _('WLANThermo update') }}:</b> &#10026;</p>
+				<p>{{ _('Error during update check, please wait 5min after boot!') }}</p>
+				<hr class="linie">
+			{% else %}
+				{% set shown = namespace(any=false) %}
+				{% if updates.get('system', {}).get('available') is sameas true %}
+					<p>&#10026; <b>{{ _('WLANThermo update') }}:</b> &#10026;</p>
+					<p>{{ _('System updates available') }}</p>
+					<p>{{ _('Update count') }}: <b>{{ updates.system.get('count', '') }}</b></p>
+					<hr class="linie">
+					{% set shown.any = true %}
+				{% endif %}
+				{% if updates.get('wlanthermo', {}).get('available') is sameas true %}
+					<p>&#10026; <b>{{ _('WLANThermo update') }}:</b> &#10026;</p>
+					<p>{{ _('WLANThermo update available') }}</p>
+					<p>{{ _('Version information:') }}<b><br>
+					{% if 'oldversion' in updates.wlanthermo %}{{ _('Old version: ') }}{{ updates.wlanthermo.oldversion }}<br>{{ _('New version: ') }}{{ updates.wlanthermo.newversion }}{% endif %}
+					</b></p>
+					<hr class="linie">
+					{% set shown.any = true %}
+				{% endif %}
+				{% if shown.any %}
+					<form action="./control/update.php"><p><input class="button" type="submit" value="{{ _('Update') }}"/></p></form>
+					<hr class="linie">
+				{% endif %}
+			{% endif %}
+		{% else %}
+			<p>&#10026; <b>{{ _('WLANThermo update') }}:</b> &#10026;</p>
+			<p>{{ _('Update check disabled!') }}</p>
+			<hr class="linie">
+		{% endif %}
+		{% if nextionupdate %}
+			<p>&#10026; <b>Nextion Update:</b> &#10026;</p>
+			<p>{{ _('new update available') }}</p>
+			<hr class="linie">
+			<form action="./control/update.php" method="post">
+				<p><input class="button" type="submit" name="update_nextion" value="{{ _('Update') }}"/></p>
+			</form>
+			<hr class="linie">
+		{% endif %}
+		<div id="info_site_gutglut"></div>
+	</div>
+<div class="clear"></div>
+</div>
+{% endblock %}

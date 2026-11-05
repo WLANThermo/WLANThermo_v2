@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="{{ page_id }}">
+	<h1>{{ title }}</h1>
+	<form action="{{ action }}" method="post">
+		<br><p><b>{{ question }}</b></p>
+		<table align="center" width="80%">
+			<tr>
+				<td width="20%"></td>
+				<td align="center"><input type="submit" class="button_yes" name="{{ name }}" value=""><input type="submit" class="button_back" name="back" value=""></td>
+				<td width="20%"></td>
+			</tr>
+		</table>
+	</form>
+</div>
+{% endblock %}

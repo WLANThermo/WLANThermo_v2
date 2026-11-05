@@ -1,0 +1,43 @@
+<script>$(function() { hideLoading();});</script>
+{% if measurement is none %}
+	<div class="last_measure_view">{% if core_down %}{{ _('Measurement not running') }}{% else %}{{ _('Waiting for first measurement') }}{% endif %}...</div>
+{% else %}
+{% if regulations %}
+	<div class="last_regulation_view">
+	{% for r in regulations %}
+		<img src="/images/icons16x16/pitmaster.png" alt=""> <img src="/images/icons16x16/number-{{ r.number }}.png" alt="">
+		{% if r.time %}{{ _('Last regulation on') }} <b>{{ r.time }}</b><br />{% endif %}
+	{% endfor %}
+	</div>
+{% endif %}
+	<div class="last_measure_view">{{ _('Last measurement on') }} <b>{{ time }}</b>
+	{% if cpu %}<br>{{ _('CPU utilization') }}: <b>{{ cpu.load }}% / {{ cpu.temperature }}{{ unit }}</b>{% endif %}
+	</div>
+	<br>
+	<div class="clear"></div>
+{% for c in channels %}
+	<div class="channel_view">
+		<div class="channel_name">{{ c.name }}</div>
+		<div class="{{ c.indicator }}">{{ '%.1f' % c.value }}{{ unit }}</div>
+		<div class="tempmm">Temp min <b>{{ c.temp_min }}{{ unit }}</b> / max <b>{{ c.temp_max }}{{ unit }}</b></div>
+		<div class="headicon"><font color="{{ to_css_color(c.color) }}">#{{ c.number }}</font></div>
+		<div class="webalert">
+		{% if c.alarm and websound %}<a href="#" id="webalert_false" class="webalert_false"><img src="/images/icons32x32/speaker.png" border="0" alt="Alarm" title="Alarm"></a>
+		{% elif c.alarm %}<a href="#" id="webalert_true" class="webalert_true"><img src="/images/icons32x32/speaker_mute.png" border="0" alt="Alarm" title="Alarm"></a>{% endif %}
+		</div>
+		{% for p in c.pits %}
+		<div class="headicon_left"><img src="/images/icons16x16/pitmaster.png" alt=""> <img src="/images/icons16x16/number-{{ p.number }}.png" alt=""></div>
+		<div class="pitmaster_left"> {{ '%.1f' % p.output }}% / {{ '%.1f' % p.setpoint }}{{ unit }}</div>
+		{% endfor %}
+	</div>
+{% endfor %}
+{% if sound and websound %}
+	<div id="sound">
+		<audio autoplay>
+			<source src="/buzzer.mp3" type="audio/mpeg" />
+			<source src="/buzzer.ogg" type="audio/ogg" />
+			<source src="/buzzer.m4a" type="audio/x-aac" />
+		</audio>
+	</div>
+{% endif %}
+{% endif %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="wifi_site">
+	<div class="wifi_header">
+		<h1>Raspbian WiFi Configuration Portal</h1>
+	</div>
+	<div class="wifi_menu">
+		<input class="button" type="button" value="WiFi Info" name="wlan0_info" onclick="document.location='?page='+this.name" />
+		<input class="button" type="button" value="Einstellungen" name="wpa_conf" onclick="document.location='?page='+this.name" />
+	</div>
+<div class="wifi_content">
+{% if page == 'wlan0_info' %}
+	{% if notice == 'wait' %}<p>Bitte warten...</p><script type="text/Javascript">window.setTimeout("document.location=\"?page=wlan0_info\"", 5000)</script>
+	{% elif notice %}{{ notice }}{% endif %}
+	<div class="infobox">
+		<form action="?page=wlan0_info" method="POST">
+			<input type="submit" value="ifdown wlan0" name="ifdown_wlan0" />
+			<input type="submit" value="ifup wlan0" name="ifup_wlan0" />
+			<input type="submit" value="ifdown/ifup wlan0" name="ifdown_up_wlan0" />
+			<input type="button" value="Refresh" onclick="document.location.reload(true)" />
+		</form>
+		<div class="infoheader">Wireless Information and Statistics</div>
+		<div id="intinfo"><div class="intheader">Interface Information</div>
+			Interface Name : <b>wlan0</b><br />
+			Interface Status : <b>{% if info.up %}<span style="color:green">Interface is up</span>{% else %}<span style="color:red">Interface is down</span>{% endif %}</b><br />
+			IP Address : <b>{{ info.ip_address }}</b><br />
+			Subnet Mask : <b>{{ info.netmask }}</b><br />
+			Mac Address : <b>{{ info.hw_address }}</b><br />
+			<div class="intheader">Interface Statistics</div>
+			Received Packets : <b>{{ info.rx_packets }}</b><br />
+			Received Bytes : <b>{{ info.rx_bytes }}</b><br /><br />
+			Transferred Packets : <b>{{ info.tx_packets }}</b><br />
+			Transferred Bytes : <b>{{ info.tx_bytes }}</b><br />
+		</div>
+		<div id="wifiinfo">
+			<div class="intheader">Wireless Information</div>
+			Connected To : <b>{{ info.ssid }}</b><br />
+			AP Mac Address : <b>{{ info.bssid }}</b><br />
+			Bitrate : <b>{{ info.bitrate }}</b><br />
+			Link Quality : <b>{{ info.link_quality }}</b><br />
+			Signal Level : <b>{{ info.signal_level }}</b><br />
+			TX Power: <b>{{ info.tx_power }}</b><br />
+		</div>
+	</div>
+	<div class="intfooter">Information provided by ifconfig and iwconfig</div><br style="clear:both;">
+{% else %}
+	<form name="wpa_conf_form" method="POST" action="?page=wpa_conf" id="wpa_conf_form"><input type="hidden" id="Networks" name="Networks" />
+		<div class="network" id="networkbox">
+		{% for ssid, psk in networks %}
+			<div id="Networkbox{{ loop.index0 }}" class="NetworkBoxes">Network {{ loop.index0 }} <input type="button" value="Delete" onClick="DeleteNetwork({{ loop.index0 }});" /><br />
+				<span class="tableft">SSID :</span><input type="text" name="ssid{{ loop.index0 }}" value="{{ ssid }}" onkeyup="CheckSSID(this)" /><br />
+				<span class="tableft">PSK :</span><input type="password" name="psk{{ loop.index0 }}" value="{{ psk }}" onkeyup="CheckPSK(this)" /></div>
+		{% endfor %}
+		</div>
+		<input type="submit" value="Scan for Networks" name="Scan" /><input type="button" value="Add Network" onClick="AddNetwork();" />
+		<p><input type="submit" value="Save" name="SaveWPAPSKSettings" onmouseover="UpdateNetworks(this)" id="Save" disabled /><input type="button" onClick="document.location='?page=wpa_conf'" value="Cancel" id="Cancel" disabled /></p>
+	</form>
+	<script type="text/Javascript">UpdateNetworks()</script>
+	{% if notice %}<p>{{ notice }}</p>{% endif %}
+	{% if found is not none %}
+		Networks found : <br />
+		{% for n in found %}
+			<input type="button" value="Connect to This network" onClick="AddScanned({{ n.ssid|tojson|forceescape }})" />{{ n.ssid }} on channel {{ n.channel }} with {{ n.signal }}({{ n.security }} Security)<br />
+		{% endfor %}
+	{% endif %}
+{% endif %}
+</div>
+</div>
+{% endblock %}

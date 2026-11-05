@@ -30,7 +30,10 @@ import re
 setting_updates = {'Pitmaster':
                     {'pit_iterm_min':('^35$','0')},
                    'Display':
-                    {'serialdevice': ('^/dev/ttyAMA0$', r'/dev/serial0')}
+                    {'serialdevice': ('^/dev/ttyAMA0$', r'/dev/serial0')},
+                   # Tippfehler im ausgelieferten Standard, gnuplot kennt die Farbe nicht
+                   'plotter':
+                    {'color_ch11': ('^turqoise$', 'turquoise')}
                   }
 
 def get_random_filename(filename):

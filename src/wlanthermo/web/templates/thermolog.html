@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+	<form action="thermolog.php" method="post">
+	<div id="thermolog">
+	<h1>{{ _('Logfile Folder') }}</h1>
+	<br />
+	<table>
+		<thead>
+			<tr>
+				<th>{{ _('Filename') }}</th>
+				<th>{{ _('D/L') }}</th>
+				<th>{{ _('Plot') }}</th>
+				<th>{{ _('File Size') }}</th>
+				<th>{{ _('Last Updated') }}</th>
+				<th>{{ _('Delete') }}</th>
+			</tr>
+		</thead>
+		<tfoot>
+			<tr><th></th><th></th><th></th><th></th><th></th>
+				<th><input type="submit" class="button_delete" name="submit" value=""></th>
+			</tr>
+		</tfoot>
+		<tbody>
+		{% for f in files %}
+			<tr>
+				<td><div class="{{ 'edit' if f.editable else 'no_edit' }}" id="{{ f.name }}">{{ f.base }}</div></td>
+				<td><a href="./thermolog/{{ f.name }}"><img src="/images/icons16x16/download.png" alt="{{ _('download') }}" title="{{ _('download') }}"></a></td>
+				<td>{% if f.plot %}<a class="fancybox" href="./thermoplot/{{ f.base }}.png" data-fancybox-type="image"><img src="/images/icons16x16/chart.png" alt="{{ _('view plot') }}" title="{{ _('view plot') }}"></a>{% endif %}</td>
+				<td>{{ f.size }}</td>
+				<td>{{ f.date }}</td>
+				<td>{% if f.editable %}<input type="checkbox" name="{{ f.base }}" value="True">{% endif %}</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	</div>
+	</form>
+{% endblock %}
