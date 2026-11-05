@@ -62,12 +62,14 @@ systemctl daemon-reload
 
 # enable all required services
 systemctl enable WLANThermo.service
+systemctl enable wlanthermo-web.service
 systemctl enable WLANThermoWD.service
 systemctl enable pigpiod.service
 systemctl enable nextion_hwclock.service
 systemctl enable WLANThermoUPDATECHECK.timer
 
 # Restart services
+systemctl restart wlanthermo-web.service
 systemctl restart lighttpd.service
 systemctl restart WLANThermo.service
 systemctl start pigpiod.service

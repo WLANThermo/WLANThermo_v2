@@ -17,8 +17,6 @@ echo Version: $PKG_VERSION >> ./build/DEBIAN/control
 
 [[ $PKG_VERSION =~ ^(.*)(-[[:digit:]]+)$ ]]
 VERSION=${BASH_REMATCH[1]}
-echo Setze Version in der header.php...
-sed -i -e "s/XXX_VERSION_XXX/V${VERSION}/g" ./build/var/www/header.php
 
 # PEP 440 kennt kein "~": 2.8.3~beta1 -> 2.8.3beta1 (pip normalisiert zu 2.8.3b1)
 PY_VERSION=${VERSION//\~/}

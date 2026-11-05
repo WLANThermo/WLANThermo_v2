@@ -1,0 +1,15 @@
+[Unit]
+Description=WLANThermo web interface (Flask, behind lighttpd)
+After=network.target WLANThermo.service
+
+[Service]
+ExecStart=/usr/local/bin/wlanthermo-web
+User=www-data
+Group=www-data
+# Schlüssel für die Sitzungs-Cookies in /var/lib/wlanthermo
+StateDirectory=wlanthermo
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
