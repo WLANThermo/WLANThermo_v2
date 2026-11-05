@@ -168,7 +168,7 @@ class ManagerTest(unittest.TestCase):
 
 class CoreTest(unittest.TestCase):
     def test_failure_of_a_service_stops_the_core(self):
-        core = service.Core(startup=mock.Mock(), sensor_types={})
+        core = service.Core(startup=mock.Mock(), sensor_types={}, api_path=None)
         core.run_comp = mock.Mock(side_effect=RuntimeError('ADC kaputt'))
         core.manager = mock.Mock()
         core.manager.check.side_effect = lambda: None
@@ -179,13 +179,24 @@ class CoreTest(unittest.TestCase):
         core.manager.stop.assert_called_once_with()
 
     def test_stop(self):
-        core = service.Core(startup=mock.Mock(), sensor_types={})
+        core = service.Core(startup=mock.Mock(), sensor_types={}, api_path=None)
         started = threading.Event()
         core.run_comp = lambda: (started.set(), core.stop_event.wait(10))
         core.manager = mock.Mock()
         threading.Timer(0.1, core.stop).start()
         self.assertFalse(core.run())
         self.assertTrue(started.is_set())
+
+    def test_runs_without_api(self):
+        core = service.Core(startup=mock.Mock(), sensor_types={}, api_path='/proc/nicht/erlaubt.sock')
+        started = threading.Event()
+        core.run_comp = lambda: (started.set(), core.stop_event.wait(10))
+        core.manager = mock.Mock()
+        threading.Timer(0.2, core.stop).start()
+        with self.assertLogs('WLANthermo.core', 'ERROR'):
+            self.assertFalse(core.run())
+        self.assertTrue(started.is_set())
+        self.assertIsNone(core.api_server)
 
     def test_max_measurement_age(self):
         self.assertEqual(service.max_measurement_age(3), 15)

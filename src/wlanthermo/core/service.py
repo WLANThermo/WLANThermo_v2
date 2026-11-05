@@ -25,6 +25,7 @@ from ..config import CONFIG_FILE, ConfigWatcher, update_config
 from ..pitmaster import service as pitmaster_service
 from ..pitmaster.settings import section_suffix
 from ..sensors.maverick.receiver import MaverickReceiver
+from .api import SOCKET_PATH, Api, ApiServer
 from .hub import DataHub
 from .sources import MAVERICK
 
@@ -173,15 +174,17 @@ class Manager:
 
 
 class Core:
-    def __init__(self, startup, sensor_types, board_factory=Board):
+    def __init__(self, startup, sensor_types, board_factory=Board, api_path=SOCKET_PATH):
         self.startup = startup
         self.sensor_types = sensor_types
         self.board_factory = board_factory
+        self.api_path = api_path
         self.hub = DataHub()
         self.stop_event = threading.Event()
         self.failed = []
         self.comp = None
         self.manager = Manager(self.hub, self.fail)
+        self.api_server = None
 
     def fail(self, name):
         self.failed.append(name)
@@ -204,6 +207,14 @@ class Core:
         """Läuft bis stop() oder bis ein Dienst ausfällt; True bei Ausfall."""
         threads = [ServiceThread('comp', self.run_comp, self.fail),
                    ServiceThread('manager', self.run_manager, self.fail)]
+        if self.api_path is not None:
+            # Messung und Pitmaster laufen auch ohne Schnittstelle weiter
+            try:
+                self.api_server = ApiServer(Api(self.hub, comp=lambda: self.comp), self.api_path)
+            except OSError as e:
+                logger.error('API not available: {}'.format(e))
+            else:
+                threads.append(ServiceThread('api', self.api_server.serve_forever, self.fail))
         for thread in threads:
             thread.start()
         try:
@@ -219,6 +230,8 @@ class Core:
     def shutdown(self, threads):
         logger.info('Shutting down')
         self.stop_event.set()
+        if self.api_server is not None:
+            self.api_server.close()
         if self.comp is not None:
             self.comp.stop()
         # zuerst die Pitmaster (Ausgänge aus), dann die Messung

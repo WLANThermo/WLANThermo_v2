@@ -27,6 +27,7 @@ import os
 import platform
 import signal
 import sys
+import threading
 import time
 import traceback
 
@@ -130,6 +131,9 @@ class Comp:
         self.alarms = AlarmMonitor(startup.channel_count)
         self.schedule = NotificationSchedule()
         self.test_alarm = False
+        # Anfragen aus anderen Threads (Schnittstelle des Kernprozesses), im nächsten Zyklus ausgeführt
+        self.acknowledge_requested = threading.Event()
+        self.test_alert_requested = threading.Event()
 
         if hub is None:
             self.channels = Channels(startup, board)
@@ -144,6 +148,12 @@ class Comp:
     def stop(self):
         """Beendet run() nach dem laufenden Zyklus (aus einem anderen Thread)."""
         self.stopping = True
+
+    def request_acknowledge(self):
+        self.acknowledge_requested.set()
+
+    def request_test_alert(self):
+        self.test_alert_requested.set()
 
     def start(self):
         if self.startup.beeper_on_start:
@@ -200,10 +210,18 @@ class Comp:
             logger.info('alert.ack vorhanden')
             self.alarms.acknowledge()
             os.unlink(ACK_FILE)
+        if self.acknowledge_requested.is_set():
+            logger.info('acknowledge requested')
+            self.acknowledge_requested.clear()
+            self.alarms.acknowledge()
         if os.path.isfile(TEST_FILE):
             logger.info('alert.test exists')
             self.test_alarm = True
             os.unlink(TEST_FILE)
+        if self.test_alert_requested.is_set():
+            logger.info('test alert requested')
+            self.test_alert_requested.clear()
+            self.test_alarm = True
 
     def measure(self, settings):
         """Temperaturen aller Kanäle in der eingestellten Einheit, None ohne Wert."""
