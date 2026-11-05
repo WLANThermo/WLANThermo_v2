@@ -30,547 +30,567 @@
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import time
-import pigpio
+
 import argparse
-import copy
-import queue
-import threading
+import json
 import math
+import os
+import queue
 import random
 import string
-import os
-oldlevel = None
-state = 'wait'
-packet = []
-bit = 0
-preamblecount = 0
-traincount = 0
-long_high = 0
-long_low = 0
-short_high = 0
-short_low = 0
-long_high_min = 0
-long_low_min = 0
-short_high_min = 0
-short_low_min = 0
-long_high_max = 0
-long_low_max = 0
-short_high_max = 0
-short_low_max = 0
+import threading
+import time
+from dataclasses import dataclass
 
-# Liste der Sender für die Synchronisierung
-unit_list = {}
+import pigpio
 
-def get_state (bitlist):
-   # Wertet das Statusbye aus
-   state = quart(bitlist[6*4:6*4+4]) << 2
-   state |= quart(bitlist[7*4:7*4+4])
-   if options.debug:
-      print('state ', state)
-   if state == 7:
-      return 'init'
-   elif state == 2:
-      return 'default'
-   else:
-      print('Unknown state:', state)
-      return 'unknown ' + str(state)
+# Paket: 104 Bit, je 4 Bit ("Quart") stehen für 2 Datenbits
+PACKET_BITS = 104
+# Byte der Präambel, wird zum Einlernen der Pulsdauern benutzt
+PREAMBLE = [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1]
 
-def bitlist_to_int (bitlist):
-   out = 0
-   for bit in bitlist:
-      out = (out << 1) | bit
-   return out
 
-def bitlist_to_hexlist (bitlist):
-   # Gibt eine Bitliste als Hex aus
-   # nützlich zum debuggen
-   out = []
-   max = int(len(bitlist)/8)
-   for i in range(max):
-      out.append(hex(bitlist_to_int(bitlist[i*8:i*8+8])))
-   return out
+def quart(raw):
+    # 4 zu 2 Umwandlung
+    if raw == [0, 1, 0, 1]:
+        return 0
+    elif raw == [0, 1, 1, 0]:
+        return 1
+    elif raw == [1, 0, 0, 1]:
+        return 2
+    elif raw == [1, 0, 1, 0]:
+        return 3
+    else:
+        print('Error in Quart conversion', raw)
+        return -1
 
-def quart (raw):
-   # 4 zu 2 Umwandlung
-   if raw == [0,1,0,1]:
-      return 0
-   elif raw == [0,1,1,0]:
-      return 1
-   elif raw == [1,0,0,1]:
-      return 2
-   elif raw == [1,0,1,0]:
-      return 3
-   else:
-      print('Error in Quart conversion', raw)
-      return -1
+
+def get_state(bitlist, debug=False):
+    # Wertet das Statusbyte aus
+    state = quart(bitlist[6 * 4:6 * 4 + 4]) << 2
+    state |= quart(bitlist[7 * 4:7 * 4 + 4])
+    if debug:
+        print('state ', state)
+    if state == 7:
+        return 'init'
+    elif state == 2:
+        return 'default'
+    else:
+        print('Unknown state:', state)
+        return 'unknown ' + str(state)
+
+
+def bitlist_to_int(bitlist):
+    out = 0
+    for bit in bitlist:
+        out = (out << 1) | bit
+    return out
+
+
+def bitlist_to_hexlist(bitlist):
+    # Gibt eine Bitliste als Hex aus, nützlich zum Debuggen
+    return [hex(bitlist_to_int(bitlist[i * 8:i * 8 + 8])) for i in range(int(len(bitlist) / 8))]
+
 
 def calc_chksum(bitlist):
-   # Berechnet die Checksumme anhand der Daten
-   chksum_data = 0
-   for i in range(12):
-      chksum_data |= quart(bitlist[(6+i)*4:(6+i)*4+4]) << 22-2*i
+    # Berechnet die Checksumme anhand der Daten
+    chksum_data = 0
+    for i in range(12):
+        chksum_data |= quart(bitlist[(6 + i) * 4:(6 + i) * 4 + 4]) << 22 - 2 * i
 
-   mask = 0x3331;
-   chksum = 0x0;
-   for i in range(24):
-      if (chksum_data >> i) & 0x01:
-         chksum ^= mask;
-      msb = (mask >> 15) & 0x01
-      mask = (mask << 1) & 0xFFFF
-      if msb == 1:
-         mask ^= 0x1021
+    mask = 0x3331
+    chksum = 0x0
+    for i in range(24):
+        if (chksum_data >> i) & 0x01:
+            chksum ^= mask
+        msb = (mask >> 15) & 0x01
+        mask = (mask << 1) & 0xFFFF
+        if msb == 1:
+            mask ^= 0x1021
+    return chksum
 
-   return chksum
 
 def chksum(bitlist):
-   # prüft die errechnete Checksumme gegen die übertragene
-   # gibt das Ergebniss zurück, da es gleichzeitig die
-   # zufällige ID des Senders ist
+    """(Typ, ID): prüft die errechnete Checksumme gegen die übertragene.
 
-   chksum_data = calc_chksum(bitlist)
+    Das Ergebnis ist gleichzeitig die zufällige ID des Senders.
+    """
+    chksum_data = calc_chksum(bitlist)
 
-   chksum = 0
-   for i in range(6):
-      chksum |= quart(bitlist[(18+i)*4:((18+i)*4)+4]) << 14-i*2
+    chksum = 0
+    for i in range(6):
+        chksum |= quart(bitlist[(18 + i) * 4:((18 + i) * 4) + 4]) << 14 - i * 2
+    # ET-733 wird wie ET-732 ausgewertet
+    type = 'et732'
+    chksum |= 0xFFFF & quart(bitlist[24 * 4:(24 * 4) + 4]) << 2
+    chksum |= 0xFFFF & quart(bitlist[25 * 4:(25 * 4) + 4])
 
-#    if bitlist[24*4:(24*4)+4] == [0,0,0,1] or  bitlist[24*4:(24*4)+4] == [0,0,1,0]:
-#       # to be verified, our ET-733 use the ET-732 code below
-#       type = 'et733'
-#       chksum  |= 0xFFFF & (quart(bitlist[25*4:(25*4)+4])&1) << 3
-#       chksum  |= 0xFFFF & (quart(bitlist[25*4:(25*4)+4])&2) << 1
-#       if  bitlist[24*4:(24*4)+4] == [0,0,1,0]:
-#          chksum |= 0x02
-#    else:
-   type = 'et732'
-   chksum  |= 0xFFFF & quart(bitlist[24*4:(24*4)+4]) << 2
-   chksum  |= 0xFFFF & quart(bitlist[25*4:(25*4)+4])
+    chksum = (chksum_data & 0xffff) ^ chksum
+    return type, chksum
 
-   chksum = (chksum_data & 0xffff) ^ chksum
-   return type, chksum
 
-def get_data (bitlist):
-   # Liest die Sensordaten aus dem Datenpaket aus
-   sensor1 = 0
-   sensor2 = 0
+def get_data(bitlist, fahrenheit=False):
+    """[Fühler 1, Fühler 2]: Temperatur oder '' ohne Fühler."""
+    sensor1 = 0
+    sensor2 = 0
+    for i in range(5):
+        startbit = (4 - i) * 4
+        sensor1 += quart(bitlist[startbit + 32:startbit + 32 + 4]) * (1 << (2 * i))
+        sensor2 += quart(bitlist[startbit + 52:startbit + 52 + 4]) * (1 << (2 * i))
 
-   for i in range(5):
-      startbit = (4-i)*4
-      sensor1 += quart(bitlist[startbit+32:startbit+32+4]) * ( 1 << (2*i))
-      sensor2 += quart(bitlist[startbit+52:startbit+52+4]) * ( 1 << (2*i))
+    values = []
+    for sensor in (sensor1, sensor2):
+        if sensor == 0:
+            values.append('')
+        else:
+            sensor -= 532
+            if fahrenheit:
+                sensor = (((sensor * 9) / 5) + 32)
+            values.append(sensor)
+    return values
 
-   if sensor1 == 0:
-      sensor1 = ''
-   else:
-      sensor1 -= 532
-      if options.fahrenheit:
-         sensor1 = (((sensor1*9)/5) +32)
 
-   if sensor2 == 0:
-      sensor2 = ''
-   else:
-      sensor2 -= 532
-      if options.fahrenheit:
-         sensor2 = (((sensor2*9)/5) +32)
+class PulseWidths:
+    """Mittelwert und Grenzen einer Pulsart, eingelernt aus der Präambel."""
 
-   return [sensor1, sensor2]
+    def __init__(self):
+        self.sum = 0
+        self.min = None
+        self.max = None
 
-def pinchange(gpio, level, tick):
-   # Interruptroutine
-   # wertet das Funksignal aus
-   global oldtick
-   global oldlevel
-   global state
-   global packet
-   global bit
-   global packet_queue
-   global preamblecount
-   global traincount
-   global long_high, long_high_min, long_high_max
-   global long_low, long_low_min, long_low_max
-   global short_high, short_high_min, short_high_max
-   global short_low, short_low_min, short_low_max
+    def add(self, duration):
+        self.sum += duration
+        if self.min is None or self.min > duration:
+            self.min = duration
+        if self.max is None or self.max < duration:
+            self.max = duration
 
-   if oldlevel is None:
-      oldlevel = level
-   elif oldlevel == level:
-      print('\nLost_Tick!')
-   oldlevel = level
-   duration = tick - oldtick
-   oldtick = tick
-   
-   if duration >= 70:
-       if options.debug and preamblecount > 0:
-          print(duration, ":", level, " ",sep="", end="", flush=False)
+    def finish(self, count, min_factor, max_factor):
+        average = self.sum / count
+        if self.min > average * min_factor:
+            self.min = average * min_factor
+        if self.max < average * max_factor:
+            self.max = average * max_factor
+        self.max = math.floor(self.max)
+        self.min = math.ceil(self.min)
+        self.sum = average
 
-       # wait ist der Wartestatus
-       if state == 'wait' and level == 1:
-          # lange Ruhe = vermutlich Preamble
-          if 4000 < duration < 5500:
-             state = 'preamble'
-             preamblecount = 1
-             if options.debug :
-                 print('\npreamble', flush=True)
-       elif state == 'preamble':
-          if (380 < duration < 650):
-             if preamblecount > 6:
-                 state = 'train'
-                 traincount = 1
-                 if options.debug :
-                     print('train', flush=True)
-                 bit = 1
-                 packet[:] = []
-                 # Append preamble byte which we use for training
-                 packet.extend([1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1])
-                 
-                 # First impulse in preamble ist long low
-                 long_low = duration
-                 long_low_min = duration
-                 long_low_max = duration
-                  
-                 short_high = 0
-                 short_high_min = None
-                 short_high_max = None
-               
-                 short_low = 0
-                 short_low_min = None
-                 short_low_max = None
-                  
-                 long_high = 0
-                 long_high_min = None
-                 long_high_max = None
-                 
-             else:
-                 state = 'wait'
-                 preamblecount = 0
-                 if options.debug :
-                     print('not enough long pulses', flush=True)
-          elif (100 < duration < 350):
-             state = 'preamble'
-          elif 4000 < duration < 5500:
-             preamblecount += 1
-             if options.debug :
-                 print('preamble',preamblecount, flush=True)
-          else:
-             state = 'wait'
-             if options.debug :
-                 print('wait', flush=True)
-             preamblecount = 0
-       elif state == 'train':
-             traincount += 1
-             if options.debug :
-                 print('train',traincount, flush=True)
-             #L l   L h   L l   L h   L l   L h   L l   L h   L l   S h   S l   L h   S l   S h   L l   S h   S l   L h
-             # 1     2     3     4     5     6     7     8     9     10    11    12    13    14    15    16    17    18
-             # First levelchange has already been counted!
-             if traincount in (2, 4, 6, 8, 12, 18):
-                # Long high
-                 long_high += duration
-                 if long_high_min is None or long_high_min > duration:
-                     long_high_min = duration
-                 if long_high_max is None or long_high_max < duration:
-                     long_high_max = duration
-             elif traincount in (3, 5, 7, 9, 15):
-                 long_low += duration
-                 if long_low_min is None or long_low_min > duration:
-                     long_low_min = duration
-                 if long_low_max is None or long_low_max < duration:
-                     long_low_max = duration
-             elif traincount in (10, 14, 16) :
-                 short_high += duration
-                 if short_high_min is None or short_high_min > duration:
-                     short_high_min = duration
-                 if short_high_max is None or short_high_max < duration:
-                     short_high_max = duration
-             elif traincount in (11, 13, 17):
-                 short_low += duration
-                 if short_low_min is None or short_low_min > duration:
-                     short_low_min = duration
-                 if short_low_max is None or short_low_max < duration:
-                     short_low_max = duration
-                     
-             if traincount == 18:
-                 long_high /= 6
-                 long_low /= 6
-                 short_high /= 3
-                 short_low /= 3
-                 state = 'data'
-                 
-                 if long_high_min > long_high*0.75 :
-                     long_high_min = long_high*0.75
-                 if long_low_min > long_low*0.75 :
-                     long_low_min = long_low*0.75
-                 if short_high_min > short_high*0.2 :
-                     short_high_min = short_high*0.2
-                 if short_low_min > short_low*0.2 :
-                     short_low_min = short_low*0.2
+    def __contains__(self, duration):
+        return self.min <= duration <= self.max
 
-                 if long_high_max < long_high*1.4 :
-                     long_high_max = long_high*1.4
-                 if long_low_max < long_low*1.4 :
-                     long_low_max = long_low*1.4
-                 if short_high_max < short_high*1.25 :
-                     short_high_max = short_high*1.25
-                 if short_low_max < short_low*1.25 :
-                     short_low_max = short_low*1.25
 
-                 long_high_max = math.floor(long_high_max)
-                 long_low_max = math.floor(long_low_max)
-                 short_high_max = math.floor(short_high_max)
-                 short_low_max = math.floor(short_low_max)
+class Decoder:
+    """Dekodiert die Flanken des Funkempfängers zu Paketen.
 
-                 long_high_min = math.ceil(long_high_min)
-                 long_low_min = math.ceil(long_low_min)
-                 short_high_min = math.ceil(short_high_min)
-                 short_low_min = math.ceil(short_low_min)
+    edge() wird für jede Flanke aufgerufen (pigpio-Callback); vollständige
+    Pakete gehen als (Zeit, Bitliste) an on_packet.
 
-                 if options.debug :
-                     print('long_high',round(long_high),"min",long_high_min,"max",long_high_max, flush=False)
-                     print('short_high',round(short_high),"min",short_high_min,"max",short_high_max, flush=False)
-                     print('long_low',round(long_low),"min",long_low_min,"max",long_low_max, flush=False)
-                     print('short_low',round(short_low),"min",short_low_min,"max",short_low_max, flush=False)
-                     print('data', flush=True)
-                     
-       elif state == 'data':
-          if level == 0:
-          # level == 0 heisst, es wurde ein HIGH-Impuls ausgewertet
-             if (short_low_min <= duration <= short_low_max ):
+    Ablauf: lange Pausen (Präambel), dann 18 Pulse zum Einlernen der Pulsdauern
+    (train), dann die Daten: langer Puls = Pegelwechsel, kurzer = Wiederholung.
+    """
+
+    # Position der Pulse im Einlernteil
+    # L l   L h   L l   L h   L l   L h   L l   L h   L l   S h   S l   L h   S l   S h   L l   S h   S l   L h
+    # 1     2     3     4     5     6     7     8     9     10    11    12    13    14    15    16    17    18
+    LONG_HIGH = (2, 4, 6, 8, 12, 18)
+    LONG_LOW = (3, 5, 7, 9, 15)
+    SHORT_HIGH = (10, 14, 16)
+    SHORT_LOW = (11, 13, 17)
+
+    def __init__(self, on_packet, debug=False):
+        self.on_packet = on_packet
+        self.debug = debug
+        self.oldtick = 0
+        self.oldlevel = None
+        self.state = 'wait'
+        self.packet = []
+        self.bit = 0
+        self.preamblecount = 0
+        self.traincount = 0
+        self._reset_widths()
+
+    def _reset_widths(self):
+        self.long_high = PulseWidths()
+        self.long_low = PulseWidths()
+        self.short_high = PulseWidths()
+        self.short_low = PulseWidths()
+
+    def _wait(self):
+        self.state = 'wait'
+        self.preamblecount = 0
+
+    def edge(self, gpio, level, tick):
+        debug = self.debug
+        if self.oldlevel is None:
+            self.oldlevel = level
+        elif self.oldlevel == level:
+            print('\nLost_Tick!')
+        self.oldlevel = level
+        duration = tick - self.oldtick
+        self.oldtick = tick
+
+        if duration < 70:
+            return
+        if debug and self.preamblecount > 0:
+            print(duration, ":", level, " ", sep="", end="", flush=False)
+
+        if self.state == 'wait' and level == 1:
+            # lange Ruhe = vermutlich Präambel
+            if 4000 < duration < 5500:
+                self.state = 'preamble'
+                self.preamblecount = 1
+                if debug:
+                    print('\npreamble', flush=True)
+        elif self.state == 'preamble':
+            self._preamble(duration)
+        elif self.state == 'train':
+            self._train(duration)
+        elif self.state == 'data':
+            self._data(level, duration)
+
+        if len(self.packet) == PACKET_BITS:
+            # komplettes Paket empfangen
+            if debug:
+                print('wait - ready', flush=True)
+            self._wait()
+            self.on_packet(time.time(), list(self.packet))
+            self.packet[:] = []
+
+    def _preamble(self, duration):
+        debug = self.debug
+        if 380 < duration < 650:
+            if self.preamblecount > 6:
+                self.state = 'train'
+                self.traincount = 1
+                if debug:
+                    print('train', flush=True)
+                self.bit = 1
+                self.packet[:] = list(PREAMBLE)
+                self._reset_widths()
+                # Der erste Impuls der Präambel ist long low
+                self.long_low.sum = duration
+                self.long_low.min = duration
+                self.long_low.max = duration
+            else:
+                self._wait()
+                if debug:
+                    print('not enough long pulses', flush=True)
+        elif 100 < duration < 350:
+            self.state = 'preamble'
+        elif 4000 < duration < 5500:
+            self.preamblecount += 1
+            if debug:
+                print('preamble', self.preamblecount, flush=True)
+        else:
+            self.state = 'wait'
+            if debug:
+                print('wait', flush=True)
+            self.preamblecount = 0
+
+    def _train(self, duration):
+        self.traincount += 1
+        if self.debug:
+            print('train', self.traincount, flush=True)
+        # Die erste Flanke wurde schon gezählt
+        if self.traincount in self.LONG_HIGH:
+            self.long_high.add(duration)
+        elif self.traincount in self.LONG_LOW:
+            self.long_low.add(duration)
+        elif self.traincount in self.SHORT_HIGH:
+            self.short_high.add(duration)
+        elif self.traincount in self.SHORT_LOW:
+            self.short_low.add(duration)
+
+        if self.traincount == 18:
+            self.long_high.finish(6, 0.75, 1.4)
+            self.long_low.finish(6, 0.75, 1.4)
+            self.short_high.finish(3, 0.2, 1.25)
+            self.short_low.finish(3, 0.2, 1.25)
+            self.state = 'data'
+            if self.debug:
+                for name in ('long_high', 'short_high', 'long_low', 'short_low'):
+                    w = getattr(self, name)
+                    print(name, round(w.sum), "min", w.min, "max", w.max, flush=False)
+                print('data', flush=True)
+
+    def _data(self, level, duration):
+        debug = self.debug
+        if level == 0:
+            # level == 0 heisst, es wurde ein HIGH-Impuls ausgewertet
+            if duration in self.short_low:
                 # kurzer LOW = 0 wiederholt
-                if options.debug :
-                    print ("SL    ",end="", flush=False)
-                if bit == 0:
-                   packet.append(0)
-             elif (long_low_min <= duration <= long_low_max):
+                if debug:
+                    print("SL    ", end="", flush=False)
+                if self.bit == 0:
+                    self.packet.append(0)
+            elif duration in self.long_low:
                 # langes LOW = 0
-                if options.debug :
-                    print ("LL    ",end="", flush=False)
-                packet.append(0)
-                bit = 0
-             else:
+                if debug:
+                    print("LL    ", end="", flush=False)
+                self.packet.append(0)
+                self.bit = 0
+            else:
                 # ungueltige Zeit
-                state = 'wait'
-                if options.debug :
-                    print('wait ungueltig 0 bei ',len(packet), flush=True)
-                preamblecount = 0
-          else:
-             if (short_high_min <= duration <= short_high_max):
+                self._wait()
+                if debug:
+                    print('wait ungueltig 0 bei ', len(self.packet), flush=True)
+        else:
+            if duration in self.short_high:
                 # kurzer HIGH = 1 wiederholt
-                if options.debug :
-                    print ("SH    ",end="", flush=False)
-                if bit == 1:
-                   packet.append(1)
-             elif (long_high_min <= duration <= long_high_max):
+                if debug:
+                    print("SH    ", end="", flush=False)
+                if self.bit == 1:
+                    self.packet.append(1)
+            elif duration in self.long_high:
                 # langes HIGH = 1
-                if options.debug :
-                    print ("LH    ",end="", flush=False)
-                packet.append(1)
-                bit = 1
-             else:
+                if debug:
+                    print("LH    ", end="", flush=False)
+                self.packet.append(1)
+                self.bit = 1
+            else:
                 # ungueltige Zeit
-                state = 'wait'
-                if options.debug :
-                    print('wait ungueltig 1 bei ',len(packet), flush=True)
-                preamblecount = 0
-       if len(packet) == 104:
-          # komplettes Paket empfangen
-          if options.debug :
-              print('wait - ready', flush=True)
-          state = 'wait'
-          preamblecount = 0
-          packet_queue.put((time.time(),list(packet)))
-          packet[:] = []
+                self._wait()
+                if debug:
+                    print('wait ungueltig 1 bei ', len(self.packet), flush=True)
 
-def updated(id, state, timestamp):
-   # Prüft ob in den letzten 5s ein Paket vom gleichen Sender empfangen wurde
-   global unit_list
-   if id in unit_list:
-      if (unit_list[id] + 5) < timestamp:
-         unit_list[id] = timestamp
-         if options.debug:
-            print('units:', unit_list)
-         return True
-      else:
-         return False
-   else:
-      if state == 'init' or options.nosync:
-      # trägt neue Sender nur ein, wenn diese im Sync-Status sind, oder --nosync aktiv ist
-         unit_list[id] = timestamp
-         if options.debug:
-            print('units:', unit_list)
-         return True
-      else:
-         return False
+
+@dataclass(frozen=True)
+class Reading:
+    """Ein empfangenes Telegramm."""
+    time: float
+    checksum: int        # zufällige ID des Senders
+    type: str
+    temperature_1: object   # Zahl oder '' ohne Fühler
+    temperature_2: object
+    unit: str = '°C'
+
+    def as_dict(self):
+        """Wie in maverick.json."""
+        return {'time': self.time, 'checksum': self.checksum, 'type': self.type, 'unit': self.unit,
+                'temperature_1': self.temperature_1, 'temperature_2': self.temperature_2}
+
+    def age(self, now=None):
+        return (time.time() if now is None else now) - self.time
+
+
+class MaverickReceiver:
+    """Empfängt die Telegramme am Funkempfänger und meldet neue Werte an on_reading.
+
+    Die Flanken wertet pigpio aus (Zeitstempel kommen von pigpiod, daher ist
+    die Verzögerung in Python unkritisch); die Pakete werden in einem eigenen
+    Thread geprüft. Ein Sender wird nur angenommen, wenn er im Sync-Status ist
+    (Taste am Sender) oder nosync gesetzt ist, und höchstens alle 5 s gemeldet.
+    """
+
+    def __init__(self, pi, on_reading, pin=22, nosync=False, fahrenheit=False, debug=False, verbose=False):
+        self.pi = pi
+        self.on_reading = on_reading
+        self.pin = pin
+        self.nosync = nosync
+        self.fahrenheit = fahrenheit
+        self.debug = debug
+        self.verbose = verbose
+        self.unit_list = {}   # ID -> Zeit der letzten Meldung
+        self.packets = queue.Queue()
+        self.decoder = Decoder(lambda t, bits: self.packets.put((t, bits)), debug)
+        self.callback = None
+        self.worker = None
+
+    def start(self):
+        self.decoder.oldtick = self.pi.get_current_tick()
+        self.pi.set_mode(self.pin, pigpio.INPUT)
+        self.pi.set_noise_filter(self.pin, 4500, 400000)
+        self.callback = self.pi.callback(self.pin, pigpio.EITHER_EDGE, self.decoder.edge)
+        self.worker = threading.Thread(target=self._run, name='maverick', daemon=True)
+        self.worker.start()
+
+    def stop(self):
+        if self.callback is not None:
+            self.callback.cancel()
+            self.callback = None
+        if self.worker is not None:
+            self.packets.put(None)
+            self.worker.join(5)
+            self.worker = None
+
+    def updated(self, id, state, timestamp):
+        """Ob das Paket gemeldet werden soll (nicht schon innerhalb der letzten 5 s vom gleichen Sender)."""
+        if id in self.unit_list:
+            if (self.unit_list[id] + 5) < timestamp:
+                self.unit_list[id] = timestamp
+                if self.debug:
+                    print('units:', self.unit_list)
+                return True
+            return False
+        if state == 'init' or self.nosync:
+            # trägt neue Sender nur ein, wenn diese im Sync-Status sind, oder --nosync aktiv ist
+            self.unit_list[id] = timestamp
+            if self.debug:
+                print('units:', self.unit_list)
+            return True
+        return False
+
+    def process(self, item_time, item):
+        type, chksum_is = chksum(item)
+        temp1, temp2 = get_data(item, self.fahrenheit)
+        state = get_state(item, self.debug)
+        if not self.updated(chksum_is, state, item_time):
+            return None
+        reading = Reading(item_time, chksum_is, type, temp1, temp2, '°F' if self.fahrenheit else '°C')
+        if self.verbose:
+            print(time.strftime('%c:', time.localtime(item_time)), '-', chksum_is, '- Temperatur 1:', temp1,
+                  reading.unit, 'Temperatur 2:', temp2, reading.unit)
+        if self.debug:
+            print('raw:', item)
+            print('hex', bitlist_to_hexlist(item))
+        return reading
+
+    def _run(self):
+        if self.verbose:
+            print('Main task running')
+        while True:
+            entry = self.packets.get()
+            if entry is None:
+                return
+            reading = self.process(*entry)
+            if reading is not None:
+                self.on_reading(reading)
+
+
+# ---------------------------------------------------------------- Kommandozeile: Ausgaben
 
 def get_random_filename(filename):
     return filename + '_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(12))
-    
-def worker():
-   if options.verbose:
-      print('Main task running')
-   # Hauptthread, wertet empfangene Pakete aus und verteilt an die anderen Queues
-   global unit_list
-   if options.fahrenheit:
-      unit = '°F'
-   else:
-      unit = '°C'
-   while True:
-      item_time, item = packet_queue.get()
-      type, chksum_is = chksum(item)
-      temp1, temp2 = get_data(item)
-      state = get_state(item)
-      if updated(chksum_is, state, item_time):
-         if options.html != None:
-            html_queue.put((item_time, chksum_is, type, temp1, temp2))
-         if options.json != None:
-            json_queue.put((item_time, chksum_is, type, temp1, temp2))
-         if options.sqlite != None:
-            sqlite_queue.put((item_time, chksum_is, type, temp1, temp2))
-         if options.thingspeak != None:
-            thingspeak_queue.put((item_time, chksum_is, type, temp1, temp2))
-         if options.verbose:
-            print(time.strftime('%c:',time.localtime(item_time)), '-', chksum_is, '- Temperatur 1:', temp1, unit, 'Temperatur 2:', temp2, unit)
-         if options.debug:
-            print('raw:', item)
-            print('hex', bitlist_to_hexlist(item))
-      packet_queue.task_done()
 
-def json_writer():
-   # schreibt ein JSON-Logfile
-   if options.verbose:
-       print('Starting JSON writer Task')
-   if options.fahrenheit:
-      unit = '°F'
-   else:
-      unit = '°C'
-   while True:
-      item_time, chksum_is, type, temp1, temp2 =  json_queue.get()
-      set = {'time': item_time, 'checksum': chksum_is, 'type' : type, 'unit': unit, 'temperature_1' : temp1, 'temperature_2' : temp2}
-      if options.noappend:
-        tmp_filename = get_random_filename(options.json)
-        with open(tmp_filename, 'w') as json_file:
-            json_file.write(json.dumps(set))
-            json_file.flush()
-            os.fsync(json_file.fileno())
-            json_file.close()
+
+class QueueWriter:
+    """Schreibt Werte in einem eigenen Thread, damit der Empfang nicht wartet."""
+
+    def __init__(self, options):
+        self.options = options
+        self.queue = queue.Queue()
+        threading.Thread(target=self._loop, daemon=True).start()
+
+    def put(self, reading):
+        self.queue.put(reading)
+
+    def _loop(self):
+        self.run()
+
+    def run(self):
+        while True:
+            self.write(self.queue.get())
+            self.queue.task_done()
+
+
+class JsonWriter(QueueWriter):
+    # schreibt ein JSON-Logfile
+    def write(self, reading):
+        options = self.options
+        if options.noappend:
+            tmp_filename = get_random_filename(options.json)
+            with open(tmp_filename, 'w') as json_file:
+                json_file.write(json.dumps(reading.as_dict()))
+                json_file.flush()
+                os.fsync(json_file.fileno())
             os.rename(tmp_filename, options.json)
-      else:
-        with open(options.json, 'a') as json_file:
-            json_file.write(json.dumps(set) + ',')
-            json_file.flush()
-
-      json_queue.task_done()
-
-def html_writer():
-   # schreibt eine HTML-Datei (ohne Header und Footer)
-   if options.verbose:
-       print('Starting HTML writer Task')
-   html_file = open(options.html, 'a')
-   if options.fahrenheit:
-      unit = 'F'
-   else:
-      unit = '°C'
-   while True:
-      item_time, chksum_is, type, temp1, temp2 =  html_queue.get()
-      print(time.strftime('%c:',time.localtime(item_time)), type, '-', chksum_is, '- Temperatur 1:', temp1, unit, 'Temperatur 2:', temp2, unit, '<br>', file=html_file)
-      html_file.flush()
-      html_queue.task_done()
-
-def sqlite_writer():
-   # speichert die Empfangenen Daten in eine SQlite Datei
-   if options.verbose:
-       print('Starting SQLite writer Task')
-   sqlite_conn = sqlite3.connect(options.sqlite)
-   sqlite_c = sqlite_conn.cursor()
-   sqlite_c.execute('''CREATE TABLE IF NOT EXISTS maverick
-             (date integer, type text, id integer, temperature_1 real, temperature_2 real)''')
-   while True:
-      item_time, chksum_is, type, temp1, temp2 =  sqlite_queue.get()
-      sqlite_c.execute("INSERT INTO maverick VALUES (?, ?, ?, ?, ?)", (int(item_time), type,  chksum_is, temp1, temp2))
-      sqlite_conn.commit()
-      sqlite_queue.task_done()
-
-def thingspeak_writer():
-    global options
-    # postet die Daten auf Thingspeak
-    unit_list = {}
-    if options.verbose:
-        print('Starting ThingSpeak writer Task')
-    while True:
-        queueempty = False
-        # Bei neuen Daten sofort senden, ansonsten nach 15s (Mindestintervall, anonsten werden die gesendeten Daten ignoriert
-        try:
-            item_time, chksum_is, type, temp1, temp2 = thingspeak_queue.get(True, 15)
-        except queue.Empty:
-            queueempty = True
-        # Neue Daten verarbeiten
-        # Es werden maximal 4 Empfänger mit je 2 Kanälen unterstützt, da ThingSpeak 8 Kanäle (Felder) unterstützt
-        if not queueempty:
-            id = 4
-            if chksum_is in unit_list:
-                if options.verbose:
-                    print('Unit in List')
-                unit_list[chksum_is]['timestamp'] = int(item_time)
-                unit_list[chksum_is]['temp1'] = temp1
-                unit_list[chksum_is]['temp2'] = temp2
-                id = unit_list[chksum_is]['id']
-            else:
-                if len(unit_list) >= 4:
-                    if options.verbose:
-                        print('Maximum Number of Unit reached')
-                    maxage = int(time.time() - 20)
-                    oldestage = time.time()
-                    oldestchksum = 0
-                    for chksum, unit in unit_list.items():
-                        if unit['timestamp'] <= maxage and unit['timestamp'] < oldestage:
-                            oldestchksum = chksum
-                            oldestage = unit['timestamp']
-                            id = unit['id']
-                    if oldestchksum != 0:
-                        del unit_list[oldestchksum]
-                    else:
-                        print('All Slots in use, ignoring Device ', chksum_is)
-                        continue
-                else:
-                    if options.verbose:
-                        print('Adding Unit to List')
-                    slots = list(range(4))
-                    for chksum, unit in unit_list.items():
-                        slots.remove(unit['id'])
-                    id = slots[0]
-                unit_list[chksum_is] = {'timestamp': int(item_time), 'id': id, 'temp1': temp1, 'temp2': temp2}
-        # Keine neuen Daten empfangen, damit nichts verloren geht trotzdem in den letzten 30s empfangene Daten senden
         else:
-            if options.verbose:
+            with open(options.json, 'a') as json_file:
+                json_file.write(json.dumps(reading.as_dict()) + ',')
+                json_file.flush()
+
+
+class HtmlWriter(QueueWriter):
+    # schreibt eine HTML-Datei (ohne Header und Footer)
+    def write(self, reading):
+        unit = 'F' if self.options.fahrenheit else '°C'
+        with open(self.options.html, 'a') as html_file:
+            print(time.strftime('%c:', time.localtime(reading.time)), reading.type, '-', reading.checksum,
+                  '- Temperatur 1:', reading.temperature_1, unit, 'Temperatur 2:', reading.temperature_2, unit,
+                  '<br>', file=html_file)
+
+
+class SqliteWriter(QueueWriter):
+    # speichert die empfangenen Daten in eine SQLite-Datei
+    def run(self):
+        import sqlite3
+        conn = sqlite3.connect(self.options.sqlite)
+        cursor = conn.cursor()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS maverick
+                 (date integer, type text, id integer, temperature_1 real, temperature_2 real)''')
+        while True:
+            r = self.queue.get()
+            cursor.execute("INSERT INTO maverick VALUES (?, ?, ?, ?, ?)",
+                           (int(r.time), r.type, r.checksum, r.temperature_1, r.temperature_2))
+            conn.commit()
+            self.queue.task_done()
+
+
+class ThingSpeakWriter(QueueWriter):
+    """Postet die Daten auf ThingSpeak: bis zu 4 Sender mit je 2 Kanälen (8 Felder)."""
+
+    def run(self):
+        import urllib.parse
+        import urllib.request
+        options = self.options
+        unit_list = {}
+        while True:
+            # Bei neuen Daten sofort senden, sonst nach 15 s (Mindestintervall von ThingSpeak)
+            try:
+                r = self.queue.get(True, 15)
+            except queue.Empty:
+                r = None
+            if r is not None:
+                if r.checksum in unit_list:
+                    unit_list[r.checksum].update(timestamp=int(r.time), temp1=r.temperature_1, temp2=r.temperature_2)
+                else:
+                    if len(unit_list) >= 4:
+                        maxage = int(time.time() - 20)
+                        oldestage = time.time()
+                        oldestchksum = 0
+                        for checksum, unit in unit_list.items():
+                            if unit['timestamp'] <= maxage and unit['timestamp'] < oldestage:
+                                oldestchksum = checksum
+                                oldestage = unit['timestamp']
+                                id = unit['id']
+                        if oldestchksum != 0:
+                            del unit_list[oldestchksum]
+                        else:
+                            print('All Slots in use, ignoring Device ', r.checksum)
+                            continue
+                    else:
+                        slots = list(range(4))
+                        for unit in unit_list.values():
+                            slots.remove(unit['id'])
+                        id = slots[0]
+                    unit_list[r.checksum] = {'timestamp': int(r.time), 'id': id,
+                                             'temp1': r.temperature_1, 'temp2': r.temperature_2}
+            elif options.verbose:
                 print('Nothing new received')
-        status = ''
-        fields = {}
-        tosend = False
-        # Welche Sender wurden in den letzten 30s empfangen
-        for chksum, unit in unit_list.items():
-            if unit['timestamp'] >= time.time() - 30:
-                tosend = True
-                fields.update({'field' + str(unit['id']*2+1): unit['temp1'], 'field' + str(unit['id']*2+2): unit['temp2']})
-            # Im Statusfeld wird ein Zuordnung der Kanäle zu den Sendern übermittelt
-            status += str(unit['id']*2+1) + '/' + str(unit['id']*2+2) + ':' + str(chksum) + ' '
-        if options.verbose:
-            print('Statusstring: ', status)
-        data = {'api_key':options.thingspeak, 'status': status}
-        data.update(fields)
-        params = urllib.parse.urlencode(data)
-        params = params.encode('utf-8')
-        headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
-        request = urllib.request.Request('http://api.thingspeak.com/update', params, headers)
-        # Wenn Daten vorliegen, senden
-        if tosend:
-            if options.verbose:
-                print('Sending to ThingSpeak')
-            with urllib.request.urlopen(request) as response:
-                pass
+            # in den letzten 30 s empfangene Sender senden; der Status ordnet die Kanäle den Sendern zu
+            status = ''
+            fields = {}
+            tosend = False
+            for checksum, unit in unit_list.items():
+                if unit['timestamp'] >= time.time() - 30:
+                    tosend = True
+                    fields.update({'field' + str(unit['id'] * 2 + 1): unit['temp1'],
+                                   'field' + str(unit['id'] * 2 + 2): unit['temp2']})
+                status += str(unit['id'] * 2 + 1) + '/' + str(unit['id'] * 2 + 2) + ':' + str(checksum) + ' '
+            data = {'api_key': options.thingspeak, 'status': status}
+            data.update(fields)
+            request = urllib.request.Request('http://api.thingspeak.com/update',
+                                             urllib.parse.urlencode(data).encode('utf-8'),
+                                             {"Content-type": "application/x-www-form-urlencoded",
+                                              "Accept": "text/plain"})
+            if tosend:
+                if options.verbose:
+                    print('Sending to ThingSpeak')
+                with urllib.request.urlopen(request):
+                    pass
 
 
 def main():
-    global html_queue, json, json_queue, oldtick, options, packet_queue
-    global sqlite3, sqlite_queue, thingspeak_queue, urllib
     parser = argparse.ArgumentParser(description='Receives Wireless BBQ Thermometer Telegrams via RF-Receiver')
     parser.add_argument('--html', nargs='?', const='maverick.html', help='Writes a HTML file')
     parser.add_argument('--json', nargs='?', const='maverick.json', help='Writes a JSON file')
@@ -582,61 +602,34 @@ def main():
     parser.add_argument('--fahrenheit', action='store_true', help='Sets the Output to Fahrenheit')
     parser.add_argument('--noappend', action='store_true', help='Don´t append to file')
     parser.add_argument('--verbose', action='store_true', help='Print more Information to stdout')
-
     options = parser.parse_args()
-
     if options.debug:
-       print(options)
+        print(options)
 
-    # Globals für die Pinchange-Routine
-    oldtick = 0
+    writers = []
+    for option, cls in (('html', HtmlWriter), ('json', JsonWriter), ('sqlite', SqliteWriter),
+                        ('thingspeak', ThingSpeakWriter)):
+        if getattr(options, option) is not None:
+            if options.verbose:
+                print('Starting {} writer Task'.format(option))
+            writers.append(cls(options))
 
-    # Queue für fertige Pakete
-    packet_queue = queue.Queue()
-                    #TODO Fehlerhandling
+    def on_reading(reading):
+        for writer in writers:
+            writer.put(reading)
 
-    pi = pigpio.pi() # connect to local Pi
-    oldtick = pi.get_current_tick()
-    pi.set_mode(options.pin, pigpio.INPUT)
-    pi.set_noise_filter(options.pin, 4500, 400000)
-    callback1 = pi.callback(options.pin, pigpio.EITHER_EDGE, pinchange)
-    start = time.time()
-
-    if options.html != None:
-       html_queue = queue.Queue()
-       html_writer_worker = threading.Thread(target=html_writer)
-       html_writer_worker.daemon = True
-       html_writer_worker.start()
-
-    if options.json != None:
-       import json
-       json_queue = queue.Queue()
-       json_writer_worker = threading.Thread(target=json_writer)
-       json_writer_worker.daemon = True
-       json_writer_worker.start()
-
-    if options.sqlite != None:
-       import sqlite3
-       sqlite_queue = queue.Queue()
-       sqlite_writer_worker = threading.Thread(target=sqlite_writer)
-       sqlite_writer_worker.daemon = True
-       sqlite_writer_worker.start()
-
-    if options.thingspeak != None:
-        import urllib.request
-        import urllib.parse
-        thingspeak_queue = queue.Queue()
-        thingspeak_writer_worker = threading.Thread(target=thingspeak_writer)
-        thingspeak_writer_worker.daemon = True
-        thingspeak_writer_worker.start()
-
-    worker1 = threading.Thread(target=worker)
-    worker1.daemon = True
-    worker1.start()
-
-    while (1):
-       time.sleep(0.2)
-    pi.stop()
+    pi = pigpio.pi()
+    receiver = MaverickReceiver(pi, on_reading, pin=options.pin, nosync=options.nosync,
+                                fahrenheit=options.fahrenheit, debug=options.debug, verbose=options.verbose)
+    receiver.start()
+    try:
+        while True:
+            time.sleep(0.2)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        receiver.stop()
+        pi.stop()
 
 
 if __name__ == '__main__':
