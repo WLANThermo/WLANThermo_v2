@@ -8,6 +8,10 @@ bisher, sie erscheinen so in der Pitmaster-Datei ("0%" bzw. "0.0%").
 """
 from abc import ABC, abstractmethod
 
+from ..i18n import PITMASTER, translator
+
+_ = translator(PITMASTER)
+
 PID_MIN = 0
 PID_MAX = 100
 

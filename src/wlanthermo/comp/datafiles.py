@@ -13,6 +13,10 @@ import os
 import time
 from collections import namedtuple
 
+from ..i18n import COMP, translator
+
+_ = translator(COMP)
+
 logger = logging.getLogger('WLANthermo.datafiles')
 
 LOG_DIR = '/var/log/WLAN_Thermo'

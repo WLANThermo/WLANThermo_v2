@@ -9,6 +9,10 @@ from abc import ABC, abstractmethod
 
 import pigpio
 
+from ..i18n import PITMASTER, translator
+
+_ = translator(PITMASTER)
+
 
 def clamp(value, minimum, maximum):
     return max(min(maximum, value), minimum)

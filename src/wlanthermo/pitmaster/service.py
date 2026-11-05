@@ -27,7 +27,6 @@ der Übergabedatei von wlanthermo-comp lesen, Stellwert berechnen, setzen und in
 die Pitmaster-Datei schreiben. Mit dem Argument 1 läuft der zweite Pitmaster.
 """
 import codecs
-import gettext
 import logging
 import os
 import signal
@@ -38,9 +37,12 @@ import traceback
 import pigpio
 
 from ..config import CONFIG_FILE, ConfigWatcher, make_parser, read_config_file
+from ..i18n import PITMASTER, translator
 from .actuators import GPIOS, Output, create_actuator
 from .controller import CONTROLLERS, OpenLidDetector, limit_rate
 from .settings import parse_pitmaster_settings, section_suffix
+
+_ = translator(PITMASTER)
 
 logger = None
 
@@ -263,8 +265,6 @@ def process_running(pid):
 
 
 def main():
-    gettext.install('wlt_2_pitmaster', localedir='/usr/share/WLANThermo/locale/')
-
     # Wir laufen als root, auch andere müssen die Config schreiben!
     os.umask(0)
 

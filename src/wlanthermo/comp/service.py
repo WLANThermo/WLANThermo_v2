@@ -22,7 +22,6 @@
 
 Ein Messzyklus (Comp.cycle) läuft alle [Messen] delay Sekunden.
 """
-import gettext
 import logging
 import os
 import platform
@@ -36,6 +35,7 @@ import psutil
 import wlanthermo
 from ..config import CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser, read_config_file
 from ..core.hub import MEASUREMENT, Measurement
+from ..i18n import COMP, translator
 from ..sensors.catalog import load_sensor_types
 from .alarm import AlarmMonitor, ChannelStatus, NotificationSchedule, safe_format
 from .channels import Channels
@@ -43,6 +43,8 @@ from .datafiles import CurrentTempFile, PitmasterReader, TemperatureLog
 from .hardware import Board
 from .notify import NotificationWorker, build_notifiers
 from .settings import parse_settings, parse_startup_settings
+
+_ = translator(COMP)
 
 PIDFILE = '/var/run/wlt_2_comp.pid'
 # Vom Webinterface angelegt: Alarme quittieren bzw. Testnachricht senden
@@ -280,8 +282,6 @@ def claim_pidfile():
 
 
 def main():
-    gettext.install('wlt_2_comp', localedir='/usr/share/WLANThermo/locale/')
-
     # Wir laufen als root, auch andere müssen die Config schreiben!
     os.umask(0)
 
