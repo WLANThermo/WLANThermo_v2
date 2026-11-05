@@ -13,7 +13,6 @@ dependencies = [
     "bitstring",
     "nextion>=2.0,<3",  # 3.x enthält einen Fehler im Firmware-Upload
     "psutil",
-    "pyinotify",
 ]
 
 [project.optional-dependencies]

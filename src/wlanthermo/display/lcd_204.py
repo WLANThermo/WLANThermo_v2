@@ -26,9 +26,10 @@ import string
 import logging
 import RPi.GPIO as GPIO
 import re
-import pyinotify
 import signal
 import gettext
+
+from .data import DisplayData
 import codecs
 
 HIGH = True  # HIGH-Pegel
@@ -68,16 +69,6 @@ def check_pid(pid):
         return False
     else:
         return True
-
-class PTmp(pyinotify.ProcessEvent):
-    def process_IN_CLOSE_WRITE(self, event):
-        logger.debug("IN_CLOSE_WRITE: %s " % os.path.join(event.path, event.name))
-        show_values()
-        
-    def process_IN_MOVED_TO(self, event):
-        logger.debug("IN_MOVED_TO: %s " % os.path.join(event.path, event.name))
-        show_values()
-
 
 def lcd_init():  # Initialisierung Display und Definition Sonderzeichen Pfeil runter ASCII 0 und Pfeil hoch ASCII 1
     lcd_byte(0x33,LCD_CMD) # Noch im 8 Bit Modus also 30 30 
@@ -214,24 +205,14 @@ def show_values():
             # Alarm values ok, hi, lo, er
             alarm_values = [chr(1), chr(0), '', '']
             
-            if os.path.isfile(curPath + '/' + curFile):
+            values = display_data.temps(channel_count)
+            if values is not None:
                 logger.debug(_('Data from WLANThermo is available to show on the display'))
-                ft = codecs.open(curPath + '/' + curFile, 'r', 'utf_8').read()
                 temps = []
-                temps_raw = ft.split(';')
                 for i in range (8):
-                    try:
-                        temps.append('{:0.1f}\xdf'.format(float(temps_raw[i+1])))
-                    except ValueError:
-                        temps.append(error_val)
-                    if temps_raw[i + 1 + channel_count] == 'ok':
-                        alarm.append('')
-                    elif temps_raw[i + 1 + channel_count] == 'hi':
-                        alarm.append(chr(1))
-                    elif temps_raw[i + 1 + channel_count] == 'lo':
-                        alarm.append(chr(0))
-                    elif temps_raw[i + 1 + channel_count] == 'er':
-                        alarm.append('')
+                    value = values[i]['value']
+                    temps.append('{:0.1f}\xdf'.format(float(value)) if value is not None else error_val)
+                    alarm.append({'hi': chr(1), 'lo': chr(0)}.get(values[i]['alert'], ''))
                     
                 lcd_byte(LCD_LINE_1, LCD_CMD)
                 lcd_string('C0:' +  str_len(alarm[0] + temps[0], sLen, ' ') + 'C1:' + str_len(alarm[1] + temps[1], sLen, ' '), 2)
@@ -243,11 +224,11 @@ def show_values():
                 Config.read_file(codecs.open('/var/www/conf/WLANThermo.conf', 'r', 'utf_8'))
                 lcd_byte(LCD_LINE_4, LCD_CMD)
                 if (Config.getboolean('ToDo', 'pit_on')):
-                    if os.path.isfile(curPath + '/' + pitFile):
+                    pit = display_data.pitmaster(0)
+                    if pit is not None:
                         logger.debug(_('Pitmaster is running, showing the values in the 4th line'))
-                        fp = codecs.open(curPath + '/' + pitFile, 'r', 'utf_8').read()
-                        pits = fp.split(';')
-                        lcd_string('Pit: S:' + str("%.0f" % float(pits[1])) + ' I:' + str("%.0f" % float(pits[2])) + ' ' + pits[3],2)
+                        now = '%.0f' % pit['now'] if pit['now'] is not None else '-'
+                        lcd_string('Pit: S:%.0f I:%s %.0f%%' % (pit['set'], now, pit['new']), 2)
                 else:
                     lcd_string('C6:' +  str_len(alarm[6] + temps[6], sLen, ' ') + 'C7:' + str_len(alarm[7] + temps[7], sLen, ' '), 2)
         counter = counter + 1
@@ -267,7 +248,7 @@ def lan_getvalues():
 
 
 def main():
-    global Config, channel_count, curFile, curPath, error_val, logger, pitFile
+    global Config, channel_count, curFile, curPath, error_val, logger, pitFile, display_data
     gettext.install('wlt_2_lcd_204', localedir='/usr/share/WLANThermo/locale/')
 
     GPIO.setwarnings(False)
@@ -337,8 +318,6 @@ def main():
 
 
     #File System Watcher
-    wm = pyinotify.WatchManager()
-    mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
 
     #Einlesen Displayeinstellungen
     LCD = Config.getboolean('Display','lcd_present')
@@ -355,6 +334,8 @@ def main():
     # Pfad fuer die uebergabedateien auslesen
     curPath,curFile = os.path.split(Config.get('filepath','current_temp'))
     pitPath,pitFile = os.path.split(Config.get('filepath','pitmaster'))
+    display_data = DisplayData(None, Config.get('filepath', 'current_temp'), [Config.get('filepath', 'pitmaster')],
+                               '/var/www/conf/WLANThermo.conf')
 
     # Wenn das display Verzeichniss im Ram Drive nicht exisitiert erstelle es
     if not os.path.exists(curPath):
@@ -414,19 +395,16 @@ def main():
 
         time.sleep(3) # 3 second delay
 
-        notifier = pyinotify.Notifier(wm, PTmp())
-        wdd = wm.add_watch(curPath, mask) #, rec=True)
-
+        # Neu anzeigen bei jeder neuen Messung, Pitmaster-Änderung oder Konfigurationsänderung
+        display_data.on_change = lambda name: show_values()
+        display_data.start()
         show_values()
-        while True:
-            try:
-                notifier.process_events()
-                if notifier.check_events():
-                    notifier.read_events()
-            except KeyboardInterrupt:
-                notifier.stop()
-                os.unlink(pidfilename)
-                break
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            display_data.stop()
+            os.unlink(pidfilename)
     logger.info(_('Display stopped!'))
 
 

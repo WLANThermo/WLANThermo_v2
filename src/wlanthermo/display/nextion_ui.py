@@ -21,7 +21,6 @@ import configparser
 import os
 import time
 import logging
-import pyinotify
 import subprocess
 import threading
 import re
@@ -33,6 +32,7 @@ import random
 import string
 import codecs
 
+from .data import CONFIG, TEMPS, DisplayData
 from .device import Display
 from ..config import config_lock, write_config_file
 
@@ -48,46 +48,6 @@ configdefaults = {'dim' : '90',
 
 configfile = '/var/www/conf/WLANThermo.conf'
 
-
-class FileEvent(pyinotify.ProcessEvent):
-    def process_IN_CLOSE_WRITE(self, event):
-        global temps, channels, pitmaster, pitconf, Config, configfile
-        global temps_event, channels_event, pitmaster_event, pitconf_event, logger
-        logger.debug("IN_CLOSE_WRITE: %s " % os.path.join(event.path, event.name))
-        if event.path == curPath and event.name == curFile:
-            logger.debug(_('New temperature values available'))
-            temps_event.set()
-        elif event.path == confPath and event.name == confFile:
-            logger.debug(_('New configuration data available'))
-            channels_event.set()
-            pitconf_event.set()
-            config_event.set()
-        elif event.path == pitPath and event.name == pitFile:
-            logger.debug(_('New pitmaster data available'))
-            pitmaster_event.set()
-        elif event.path == pit2Path and event.name == pit2File:
-            logger.debug(_('New pitmaster data available'))
-            pitmaster2_event.set()
-    
-    def process_IN_MOVED_TO(self, event):
-        global temps, channels, pitmaster, pitconf, Config, configfile
-        global temps_event, channels_event, pitmaster_event, pitconf_event, logger
-        logger.debug("IN_MOVED_TO: %s " % os.path.join(event.path, event.name))
-        if event.path == curPath and event.name == curFile:
-            logger.debug(_('New temperature values available'))
-            temps_event.set()
-        elif event.path == confPath and event.name == confFile:
-            logger.debug(_('New configuration data available'))
-            channels_event.set()
-            pitconf_event.set()
-            pitconf2_event.set()
-            config_event.set()
-        elif event.path == pitPath and event.name == pitFile:
-            logger.debug(_('New pitmaster data available'))
-            pitmaster_event.set()
-        elif event.path == pit2Path and event.name == pit2File:
-            logger.debug(_('New pitmaster 2 data available'))
-            pitmaster2_event.set()
 
 def set_hwclock():
     localtime = time.localtime()
@@ -138,35 +98,8 @@ def sensors_getvalues():
 
 
 def temp_getvalues(channel_count):
-    global logger, curPath, curFile
-    temps = dict()
-    if os.path.isfile(curPath + '/' + curFile):
-        logger.debug(_('Data from WLANThermo is available to show on the display'))
-        ft = codecs.open(curPath + '/' + curFile, 'r', 'utf_8').read()
-        temps_raw = ft.split(';')
-        temps = dict()
-        temps['timestamp'] = time.mktime(time.strptime(temps_raw[0],'%d.%m.%y %H:%M:%S'))
-        for count in range(channel_count):
-            try:
-                alert = temps_raw[count + channel_count + 1]
-            except IndexError:
-                alert = 'er'
-            try:
-                if temps_raw[count+1] == '':
-                    value = None
-                else:
-                    try:
-                        value = str(round(float(temps_raw[count+1]),1))
-                    except ValueError:
-                        value = None
-            except IndexError:
-                value = None
-            temps[count] = {'alert': alert, 'value': value}
-    else:
-        return None
-    
-    return temps
-
+    """Temperaturen für das Display, None ohne Daten (siehe display/data.py)."""
+    return display_data.temps(channel_count)
 
 def config_getvalues():
     global configfile, configfile_lock
@@ -359,39 +292,10 @@ def pitmaster_config_getvalues(id = 0):
 
 
 def pitmaster_getvalues(id):
-    global logger, pitPath, pitFile
-
-    if id == 0:
-        filename = pitPath + '/' + pitFile
-    elif id == 1:
-        filename = pit2Path + '/' + pit2File
-    else:
+    """Werte des Pitmasters id, None wenn er nicht läuft (siehe display/data.py)."""
+    if id not in (0, 1):
         return None
-
-    if os.path.isfile(filename):
-        logger.debug(_('Data from the pitmaster is available to show on the display'))
-        fp = codecs.open(filename, 'r', 'utf_8').read()
-        pitmaster_raw = fp.split(';',4)
-        # Es trägt sich zu, das im Lande WLANThermo manchmal nix im Pitmaster File steht
-        # Dann einfach munter so tun als ob einfach nix da ist
-        #TODO Fix everything
-        if pitmaster_raw[0] == '':
-            return None
-        else:
-            timestamp = time.mktime(time.strptime(pitmaster_raw[0],'%d.%m.%y %H:%M:%S'))
-        
-        if pitmaster_raw[2] == '':
-            now = None
-        else:
-            now = float(pitmaster_raw[2])
-            
-        pitmaster = {'timestamp': timestamp, 'set': float(pitmaster_raw[1]), 'now': now, 'new': float(pitmaster_raw[3].rstrip('%')),'msg': pitmaster_raw[4]}
-        
-    else:
-        return None
-    
-    return pitmaster
-
+    return display_data.pitmaster(id)
 
 def lan_getvalues():
     interfacelist = ['eth0', 'eth1', 'wlan0', 'wlan1']
@@ -1172,7 +1076,7 @@ def main():
     global confFile, confPath, config_event, configfile_lock, curFile, curPath
     global logger, nx, pit2File, pit2Path, pitFile, pitPath, pitconf
     global pitconf2_event, pitconf_event, pitmaster, pitmaster2_event
-    global pitmaster_event, stop_event, temps, temps_event, version
+    global pitmaster_event, stop_event, temps, temps_event, version, display_data
     gettext.install('wlt_2_nextion', localedir='/usr/share/WLANThermo/locale/')
 
     # Version is set by build script
@@ -1261,6 +1165,27 @@ def main():
     pit2Path, pit2File = os.path.split(Config.get('filepath','pitmaster2'))
     confPath, confFile = os.path.split(configfile)
 
+    # Neue Werte vom Kernprozess (oder aus den Übergabedateien) melden die Events
+    def on_change(name):
+        if name == TEMPS:
+            logger.debug(_('New temperature values available'))
+            temps_event.set()
+        elif name == CONFIG:
+            logger.debug(_('New configuration data available'))
+            channels_event.set()
+            pitconf_event.set()
+            pitconf2_event.set()
+            config_event.set()
+        elif name == 'pit':
+            logger.debug(_('New pitmaster data available'))
+            pitmaster_event.set()
+        elif name == 'pit2':
+            logger.debug(_('New pitmaster 2 data available'))
+            pitmaster2_event.set()
+    display_data = DisplayData(on_change, Config.get('filepath', 'current_temp'),
+                               [Config.get('filepath', 'pitmaster'), Config.get('filepath', 'pitmaster2')],
+                               configfile)
+
     # Wenn das display Verzeichniss im Ram Drive nicht exisitiert erstelle es
     if not os.path.exists(curPath):
         os.makedirs(curPath)
@@ -1320,19 +1245,7 @@ def main():
             sys.excepthook(*sys.exc_info())
 
         logger.debug(_('Starting file watcher'))
-        wm = pyinotify.WatchManager()
-        mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
-        notifier = pyinotify.ThreadedNotifier(wm, FileEvent())
-        try:
-            notifier.start()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            sys.excepthook(*sys.exc_info())
-
-        wdd = wm.add_watch(curPath, mask)
-        wdd2 = wm.add_watch(pitPath, mask)
-        wdd3 = wm.add_watch(confPath, mask)
+        display_data.start()
 
         while not stop_event.is_set():
             # Hauptschleife
@@ -1354,7 +1267,7 @@ def main():
 
         NX_switchpage('boot')
 
-        notifier.stop()
+        display_data.stop()
         # Signal zum stoppen geben
 
         logger.debug(_('Waiting for Threads...'))

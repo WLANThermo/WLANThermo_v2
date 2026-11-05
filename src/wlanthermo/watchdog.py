@@ -18,7 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import codecs
 import os
-import pyinotify
 import subprocess
 import configparser
 import time
@@ -32,6 +31,10 @@ import gettext
 from wlanthermo.config import update_config
 import random
 import string
+
+# s zwischen den Prüfungen der Konfiguration bzw. des Display-Prozesses
+CONFIG_POLL_INTERVAL = 1
+DISPLAY_CHECK_INTERVAL = 10
 
 # Werte von [Display] lcd_type (vom Webinterface gesetzt) -> Modul im Paket wlanthermo
 DISPLAY_MODULES = {
@@ -52,17 +55,6 @@ def check_pid(pid):
         return False
     else:
         return True
-
-
-class fs_wd(pyinotify.ProcessEvent):
-    def process_IN_CLOSE_WRITE(self, event):
-        if (os.path.join(event.path, event.name) == "/var/www/conf/WLANThermo.conf"):
-            #print "IN_CLOSE_WRITE: %s " % os.path.join(event.path, event.name)
-            read_config()
-    def process_IN_MOVED_TO(self, event):
-        if (os.path.join(event.path, event.name) == "/var/www/conf/WLANThermo.conf"):
-            #print "IN_MOVED_TO: %s " % os.path.join(event.path, event.name)
-            read_config()
 
 
 def get_random_filename(filename):
@@ -348,9 +340,6 @@ def main():
 
     display_proc = None
 
-    wm = pyinotify.WatchManager()
-    #mask = pyinotify.IN_DELETE | pyinotify.IN_CREATE | pyinotify.IN_CLOSE_WRITE
-    mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_MOVED_TO
 
     # Wir laufen als root, auch andere müssen die Config schreiben!
     os.umask (0)
@@ -411,10 +400,6 @@ def main():
 
     signal.signal(15, raise_keyboard)
 
-    notifier = pyinotify.Notifier(wm, fs_wd())
-
-    wdd = wm.add_watch('/var/www/conf', mask) #, rec=True)
-
     GPIO.add_event_detect(27, GPIO.RISING, callback=shutdown_button, bouncetime=1000)
 
     Config.read_file(codecs.open(cf, 'r', 'utf_8'))
@@ -426,16 +411,26 @@ def main():
     except OSError:
         pass
 
+    # Änderungen der Konfiguration erkennen (bisher inotify). Der Stand beim Start
+    # gilt als bekannt, damit alte [ToDo]-Flags nicht ausgeführt werden.
+    config_mtime = os.path.getmtime(cf)
+    last_display_check = time.monotonic()
     while True:
         try:
-            Config.read_file(codecs.open(cf, 'r', 'utf_8'))
-            notifier.process_events()
-            if notifier.check_events():
-                notifier.read_events()
+            mtime = os.path.getmtime(cf)
+            if mtime != config_mtime:
+                config_mtime = mtime
+                read_config()
+                last_display_check = time.monotonic()
+            elif time.monotonic() - last_display_check >= DISPLAY_CHECK_INTERVAL:
+                # abgestürzten Display-Prozess auch ohne Konfigurationsänderung neu starten
+                Config.read_file(codecs.open(cf, 'r', 'utf_8'))
+                check_display()
+                last_display_check = time.monotonic()
+            time.sleep(CONFIG_POLL_INTERVAL)
         except KeyboardInterrupt:
-            notifier.stop()
             if (Config.getboolean('Display', 'lcd_present')):
-                if display_proc.poll() == None:
+                if display_proc is not None and display_proc.poll() == None:
                     logger.info(_('Stopping Display'))
                     display_proc.terminate()
                     display_proc.wait()
@@ -444,7 +439,6 @@ def main():
             logging.shutdown()
             os.unlink(pidfilename)
             break
-
 
 if __name__ == '__main__':
     main()
