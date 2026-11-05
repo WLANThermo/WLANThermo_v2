@@ -68,9 +68,6 @@ class PidfileTest(GettextTest):
         super().setUp()
         self.dir = tempfile.mkdtemp()
         self.pidfile = os.path.join(self.dir, 'comp.pid')
-        patcher = mock.patch.object(comp, 'PIDFILE', self.pidfile)
-        patcher.start()
-        self.addCleanup(patcher.stop)
 
     def tearDown(self):
         shutil.rmtree(self.dir)
@@ -85,25 +82,25 @@ class PidfileTest(GettextTest):
             return f.read()
 
     def test_new(self):
-        comp.claim_pidfile()
+        comp.claim_pidfile(self.pidfile)
         self.assertEqual(self.read(), str(os.getpid()))
 
     def test_stale_or_invalid(self):
         self.write('999999999')
         with mock.patch.object(comp, 'process_running', return_value=False):
-            comp.claim_pidfile()
+            comp.claim_pidfile(self.pidfile)
         self.assertEqual(self.read(), str(os.getpid()))
         for text in ('kaputt', ''):
             self.write(text)
             with self.assertLogs('WLANthermo', 'WARNING'):
-                comp.claim_pidfile()
+                comp.claim_pidfile(self.pidfile)
             self.assertEqual(self.read(), str(os.getpid()))
 
     def test_already_running(self):
         self.write('1234')
         with mock.patch.object(comp, 'process_running', return_value=True), \
                 mock.patch('builtins.print'), self.assertRaises(SystemExit):
-            comp.claim_pidfile()
+            comp.claim_pidfile(self.pidfile)
         self.assertEqual(self.read(), '1234')
 
 

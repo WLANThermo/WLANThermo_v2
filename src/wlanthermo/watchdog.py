@@ -83,7 +83,6 @@ def reboot_pi():
     
     #Stoppe die Dienste
     handle_service('WLANThermo', 'stop')
-    handle_service('WLANThermoPIT', 'stop')
     #Schreibe aufs LCD
     tmp_filename = get_random_filename('/var/www/tmp/display/wd')
     while True:
@@ -112,7 +111,6 @@ def halt_pi():
     logger.info(_('Shutting down the Raspberry'))
     #Stoppe die Dienste
     handle_service('WLANThermo', 'stop')
-    handle_service('WLANThermoPIT', 'stop')
     #Schreibe aufs LCD
     tmp_filename = get_random_filename('/var/www/tmp/display/wd')
     while True:
@@ -139,7 +137,6 @@ def halt_v3_pi():
     logger.info(_('Shutting down the Raspberry, Power Off (v3)'))
     # Stoppe die Dienste
     handle_service('WLANThermo', 'stop')
-    handle_service('WLANThermoPIT', 'stop')
     # Schreibe aufs LCD
     tmp_filename = get_random_filename('/var/www/tmp/display/wd')
     while True:
@@ -189,11 +186,6 @@ def read_config():
                 continue
             break
 
-        if Config.get('Hardware', 'version') in ['miniV2']:
-            pitmaster_count = 2
-        else:
-            pitmaster_count = 1
-            
         if (Config.getboolean('ToDo', 'restart_thermo')):
             logger.info(_('Restart WLANThermo process!'))
             handle_service('WLANThermo', 'restart')
@@ -202,24 +194,6 @@ def read_config():
             
             Config.set('ToDo', 'restart_thermo', 'False')
             update_config({'ToDo': {'restart_thermo': 'False'}}, cf)
-        
-        if (Config.getboolean('ToDo', 'restart_pitmaster')):
-            logger.info(_('Restart pitmaster!'))
-            handle_service('WLANThermoPIT', 'restart')
-            time.sleep(3)
-            logger.info(_('Changing restart_pitmaster to False again!'))
-
-            Config.set('ToDo', 'restart_pitmaster', 'False')
-            update_config({'ToDo': {'restart_pitmaster': 'False'}}, cf)
-            
-        if (Config.getboolean('ToDo', 'restart_pitmaster2')):
-            logger.info(_('Restart pitmaster 2!'))
-            handle_service('WLANThermoPIT2', 'restart')
-            time.sleep(3)
-            logger.info(_('Changing restart_pitmaster2 to False again!'))
-
-            Config.set('ToDo', 'restart_pitmaster2', 'False')
-            update_config({'ToDo': {'restart_pitmaster2': 'False'}}, cf)
         
         if (Config.getboolean('ToDo', 'raspi_shutdown')):
             Config.set('ToDo', 'raspi_shutdown', 'False')
@@ -279,11 +253,6 @@ def read_config():
             
             logger.info(_('Finished creation of new logfile'))
 
-        for id in range(pitmaster_count):
-            logger.info(_('Check Pitmaster {}!'.format(id + 1)))
-            check_pitmaster(id)
-        
-        check_maverick()
             
     except:
         logger.info(_('Unexpected error: ') +str(sys.exc_info()[0]))
@@ -356,61 +325,6 @@ def check_display():
             display_proc.terminate()
             display_proc.wait()
             display_proc = None
-
-
-def check_pitmaster(id):
-    if id == 0:
-        id_string = ''
-    else:
-        id_string = str(id + 1)
-    logger.debug(_('Checking pitmaster {}'.format(id + 1)))
-    
-    # gleicher Unit-Name wie beim Starten: WLANThermoPIT, WLANThermoPIT2
-    pitmasterStatus = subprocess.call(('/bin/systemctl', 'status',  'WLANThermoPIT{}.service'.format(id_string)))
-    bashCommandPit = tuple()
-    if (Config.getboolean('ToDo', 'pit{}_on'.format(id_string))):
-        if pitmasterStatus != 0:
-            logger.info(_('Start pitmaster {}'.format(id + 1)))
-            bashCommandPit = ('/usr/bin/systemd-run', '--unit', 'WLANThermoPIT{}.service'.format(id_string), sys.executable, '-m', 'wlanthermo.pitmaster', str(id))
-        else:
-            logger.info(_('Pitmaster {} already running'.format(id + 1)))
-    else:
-        if pitmasterStatus == 0:
-            logger.info(_('Stopping pitmaster {}'.format(id + 1)))
-            bashCommandPit = ('/bin/systemctl', 'stop', 'WLANThermoPIT{}.service'.format(id_string))
-        else:
-            logger.info(_('Pitmaster {} already stopped'.format(id + 1)))
-    if (len(bashCommandPit) > 0):
-        retcodeO = subprocess.call(bashCommandPit)
-        if retcodeO < 0:
-            logger.info(_('Pitmaster {} terminated by signal'.format(id + 1)))
-        else:
-            logger.info(_('Child returned: ') + str(retcodeO))
-
-
-def check_maverick():
-    logger.debug(_('Checking Maverick'))
-    
-    pitmasterStatus = subprocess.call(('/bin/systemctl', 'status',  'WLANThermoMAVERICK.service'))
-    bashCommandPit = tuple()
-    if (Config.getboolean('ToDo', 'maverick_enabled')):
-        if pitmasterStatus != 0:
-            logger.info(_('Start Maverick'))
-            bashCommandPit = ('/usr/bin/systemd-run', '--unit', 'WLANThermoMAVERICK.service', sys.executable, '-m', 'wlanthermo.sensors.maverick.receiver', '--json',  '/var/www/tmp/maverick.json' , '--noappend')
-        else:
-            logger.info(_('Maverick already running'))
-    else:
-        if pitmasterStatus == 0:
-            logger.info(_('Stopping Maverick'))
-            bashCommandPit = ('/bin/systemctl', 'stop', 'WLANThermoMAVERICK.service')
-        else:
-            logger.info(_('Maverick already stopped'))
-    if (len(bashCommandPit) > 0):
-        retcodeO = subprocess.call(bashCommandPit)
-        if retcodeO < 0:
-            logger.info(_('Maverick terminated by signal'))
-        else:
-            logger.info(_('Child returned: ') + str(retcodeO))
 
 
 def raise_keyboard(signum, frame):
@@ -505,15 +419,6 @@ def main():
 
     Config.read_file(codecs.open(cf, 'r', 'utf_8'))
     check_display()
-    check_maverick()
-
-    if Config.get('Hardware', 'version') in ['miniV2']:
-        pitmaster_count = 2
-    else:
-        pitmaster_count = 1
-
-    for id in range(pitmaster_count):
-        check_pitmaster(id)
 
     # Lösche Rebootflag
     try:

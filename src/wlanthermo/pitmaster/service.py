@@ -37,9 +37,11 @@ import traceback
 import pigpio
 
 from ..config import CONFIG_FILE, ConfigWatcher, make_parser, read_config_file
+from ..core.hub import PitState, pit_topic
 from ..i18n import PITMASTER, translator
 from .actuators import GPIOS, Output, create_actuator
 from .controller import CONTROLLERS, OpenLidDetector, limit_rate
+from .inputs import FileInput, HubInput
 from .settings import parse_pitmaster_settings, section_suffix
 
 _ = translator(PITMASTER)
@@ -60,23 +62,23 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
     logger.critical('{0}: {1}'.format(ex_cls, ex))
 
 
-def check_temp(temp):
-    """Temperatur aus der Übergabedatei; ältere Formate hatten zwei Zeichen vor dem Wert."""
-    try:
-        return float(temp)
-    except ValueError:
-        return float(temp[2:])
-
-
 class Pitmaster:
-    def __init__(self, instance, gpios, current_temp_file, pit_file, channel_count, pi, log):
+    """Regelzyklus eines Pitmasters.
+
+    input liefert die Isttemperatur (FileInput oder HubInput). Mit hub wird
+    jeder Zyklus zusätzlich als PitState veröffentlicht. sleep wartet zwischen
+    den Zyklen; im Kernprozess ein Event.wait, damit stop() sofort wirkt.
+    """
+
+    def __init__(self, instance, gpios, input, pit_file, pi, log, hub=None, sleep=None):
         self.instance = instance
         self.gpios = gpios
-        self.current_temp_file = current_temp_file
+        self.input = input
         self.pit_file = pit_file
-        self.channel_count = channel_count
         self.logger = log
         self.pi = pi
+        self.hub = hub
+        self.sleep = sleep if sleep is not None else time.sleep
         self.config = ConfigWatcher(CONFIG_FILE, lambda config: parse_pitmaster_settings(config, instance, log))
         self.settings = None
         self.pit_type = None
@@ -89,6 +91,10 @@ class Pitmaster:
         self.off_seen = False
         self.stopping = False
 
+    def stop(self):
+        """Beendet run() nach dem laufenden Zyklus (aus einem anderen Thread)."""
+        self.stopping = True
+
     def run(self):
         try:
             while not self.stopping:
@@ -98,6 +104,8 @@ class Pitmaster:
         finally:
             # Ausgänge auch nach einem Fehler abschalten, pigpiod behält sonst den letzten Wert
             self.output.stop()
+            if self.hub is not None:
+                self.hub.publish(pit_topic(self.instance), None)
         try:
             os.unlink(self.pit_file)
         except OSError:
@@ -107,14 +115,17 @@ class Pitmaster:
     def cycle(self):
         time_start = time.time()
         msg = ''
-        line = self.read_current_temp()
-        if len(line) > 5:
+        if self.input.available():
             settings = self.config.current()
             if settings is not self.settings:
                 self.configure(settings)
-            now, msg = self.process_value(line)
+            now, msg = self.input.value(settings.channel)
             msg += self.control(now)
             self.write_pit_file(now, msg)
+            if self.hub is not None:
+                self.hub.publish(pit_topic(self.instance), PitState(
+                    instance=self.instance, time=time.time(), setpoint=settings.setpoint,
+                    current=now, output=self.target, message=msg))
             if not settings.on:
                 # Pitmaster wurde abgeschaltet: nach einem weiteren Zyklus beenden
                 if self.off_seen:
@@ -124,14 +135,6 @@ class Pitmaster:
         if len(msg) > 0:
             self.logger.debug(msg)
         self.wait(time_start)
-
-    def read_current_temp(self):
-        while True:
-            try:
-                with codecs.open(self.current_temp_file, 'r', 'utf_8') as f:
-                    return f.readline()
-            except OSError:
-                time.sleep(1)
 
     def configure(self, settings):
         self.logger.debug(_('Loading configuration...'))
@@ -144,19 +147,6 @@ class Pitmaster:
             self.logger.debug(_('Restarting pit...'))
             self.pit_type = settings.pit_type
             self.output.change(actuator)
-
-    def process_value(self, line):
-        """(Isttemperatur oder None, Meldung) aus der Zeile der Übergabedatei."""
-        channel = self.settings.channel
-        temps = line.split(';')
-        if temps[channel + 1 + self.channel_count] in ('er', 'no'):
-            self.logger.info(_('No signal on channel {}').format(channel))
-            return None, _('|no probe connected to channel {}!').format(channel)
-        try:
-            return float(check_temp(temps[channel + 1])), ''
-        except ValueError:
-            self.logger.info(_('Error parsing value on channel {}').format(channel))
-            return None, _('|no valid value on channel {}!').format(channel)
 
     def control(self, now):
         """Stellwert berechnen und setzen; liefert die Meldung."""
@@ -210,7 +200,7 @@ class Pitmaster:
         else:
             self.logger.debug('pitmaster loop remaining time {time_remaining}s of {delay}s'.format(
                 delay=delay, time_remaining=time_remaining))
-            time.sleep(time_remaining)
+            self.sleep(time_remaining)
 
 
 def setup_logging(config, suffix):
@@ -218,27 +208,31 @@ def setup_logging(config, suffix):
     level = config.get('daemon_logging', 'level_PIT')
     if level in ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'):
         log.setLevel(level)
-    handler = logging.FileHandler(config.get('daemon_logging', 'log_file'))
-    handler.setLevel(logging.DEBUG)
-    handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-    log.addHandler(handler)
+    if not log.handlers:   # im Kernprozess wird ein Pitmaster mehrfach gestartet
+        handler = logging.FileHandler(config.get('daemon_logging', 'log_file'))
+        handler.setLevel(logging.DEBUG)
+        handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+        log.addHandler(handler)
     return log
 
 
-def run(instance):
+def create_pitmaster(instance, hub=None, max_age=None, sleep=None):
+    """Pitmaster nach der Konfiguration, None wenn die Hardware diese Instanz nicht hat.
+
+    Ohne hub liest er die Übergabedatei von comp, mit hub den DataHub.
+    """
     global logger
     config = make_parser()
     read_config_file(config, CONFIG_FILE)
     suffix = section_suffix(instance)
     logger = setup_logging(config, suffix)
-    sys.excepthook = log_uncaught_exceptions
 
     version = config.get('Hardware', 'version')
     try:
         gpios = GPIOS[version][instance]
     except KeyError:
         logger.error('Instance {} undefined in hardware configuration "{}"'.format(instance, version))
-        return False
+        return None
 
     logger.info(_('WLANThermoPID started'))
     logger.info(_('Pitmaster start'))
@@ -247,12 +241,18 @@ def run(instance):
     # liegt im RAM-Laufwerk und fehlt nach einem Neustart
     if not os.path.exists(os.path.dirname(pit_file)):
         os.makedirs(os.path.dirname(pit_file))
-    pitmaster = Pitmaster(instance, gpios,
-                          current_temp_file=config.get('filepath', 'current_temp'),
-                          pit_file=pit_file,
-                          channel_count=12 if version == 'miniV2' else 10,
-                          pi=pigpio.pi(),
-                          log=logger)
+    if hub is None:
+        input = FileInput(config.get('filepath', 'current_temp'), 12 if version == 'miniV2' else 10, logger)
+    else:
+        input = HubInput(hub, max_age, logger)
+    return Pitmaster(instance, gpios, input, pit_file, pigpio.pi(), logger, hub=hub, sleep=sleep)
+
+
+def run(instance):
+    sys.excepthook = log_uncaught_exceptions
+    pitmaster = create_pitmaster(instance)
+    if pitmaster is None:
+        return False
     pitmaster.run()
 
 

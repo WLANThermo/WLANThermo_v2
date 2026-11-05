@@ -25,6 +25,7 @@ Homepage = "https://wlanthermo.de/"
 Forum = "https://forum.wlanthermo.de/"
 
 [project.scripts]
+wlanthermo-core = "wlanthermo.core.service:main"
 wlanthermo-comp = "wlanthermo.comp.service:main"
 wlanthermo-nextion = "wlanthermo.display.nextion_ui:main"
 wlanthermo-lcd204 = "wlanthermo.display.lcd_204:main"

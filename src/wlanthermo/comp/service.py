@@ -35,6 +35,7 @@ import psutil
 import wlanthermo
 from ..config import CONFIG_FILE, SENSOR_FILE, ConfigWatcher, make_parser, read_config_file
 from ..core.hub import MEASUREMENT, Measurement
+from ..core.sources import MaverickHubSource, PitHubReader
 from ..i18n import COMP, translator
 from ..sensors.catalog import load_sensor_types
 from .alarm import AlarmMonitor, ChannelStatus, NotificationSchedule, safe_format
@@ -113,11 +114,16 @@ def build_message(settings, temperatures, evaluation, pits, hostname):
 
 
 class Comp:
-    def __init__(self, startup, sensor_types, board, hub=None):
+    def __init__(self, startup, sensor_types, board, hub=None, sleep=None):
+        """hub: DataHub des Kernprozesses, None wenn comp allein läuft (dann über Dateien).
+
+        sleep wartet zwischen den Zyklen; im Kernprozess ein Event.wait, damit stop() sofort wirkt.
+        """
         self.startup = startup
         self.board = board
-        # DataHub des Kernprozesses, None wenn comp allein läuft
         self.hub = hub
+        self.sleep = sleep if sleep is not None else time.sleep
+        self.stopping = False
         self.notifications = NotificationWorker()
         self.config = ConfigWatcher(
             CONFIG_FILE, lambda config: parse_settings(config, sensor_types, startup.channel_count))
@@ -125,11 +131,19 @@ class Comp:
         self.schedule = NotificationSchedule()
         self.test_alarm = False
 
-        self.channels = Channels(startup, board)
+        if hub is None:
+            self.channels = Channels(startup, board)
+            self.pit_readers = [PitmasterReader(path) for path in startup.pit_files]
+        else:
+            self.channels = Channels(startup, board, MaverickHubSource(hub))
+            self.pit_readers = [PitHubReader(hub, instance) for instance in range(len(startup.pit_files))]
 
         self.current_temp_file = None
         self.temperature_log = None
-        self.pit_readers = [PitmasterReader(path) for path in startup.pit_files]
+
+    def stop(self):
+        """Beendet run() nach dem laufenden Zyklus (aus einem anderen Thread)."""
+        self.stopping = True
 
     def start(self):
         if self.startup.beeper_on_start:
@@ -143,7 +157,7 @@ class Comp:
     def run(self):
         self.start()
         try:
-            while True:
+            while not self.stopping:
                 self.cycle()
         finally:
             self.notifications.close()
@@ -230,8 +244,7 @@ class Comp:
         self.temperature_log.append(line)
         logger.debug(line)
 
-    @staticmethod
-    def wait(time_start, delay):
+    def wait(self, time_start, delay):
         time_remaining = time_start + delay - time.time()
         if time_remaining < 0:
             logger.warning('measuring loop running longer than {delay}s, remaining time {time_remaining}s'.format(
@@ -239,7 +252,7 @@ class Comp:
         else:
             logger.debug('measuring loop remaining time {time_remaining}s of {delay}s'.format(
                 delay=delay, time_remaining=time_remaining))
-            time.sleep(time_remaining)
+            self.sleep(time_remaining)
 
 
 def setup_logging(startup):
@@ -259,29 +272,30 @@ def process_running(pid):
     return True
 
 
-def claim_pidfile():
+def claim_pidfile(path=PIDFILE):
     """Beendet das Programm, wenn der Dienst schon läuft, sonst wird die eigene PID eingetragen."""
     try:
-        with open(PIDFILE) as f:
+        with open(path) as f:
             old_pid = int(f.readline())
     except FileNotFoundError:
         old_pid = None
     except ValueError:
-        logger.warning('{} is invalid, ignoring it'.format(PIDFILE))
+        logger.warning('{} is invalid, ignoring it'.format(path))
         old_pid = None
     if old_pid is not None:
         if process_running(old_pid):
-            print(_('%s already exists, Process is running, exiting') % PIDFILE)
-            logger.error('%s already exists, Process is running, exiting' % PIDFILE)
+            print(_('%s already exists, Process is running, exiting') % path)
+            logger.error('%s already exists, Process is running, exiting' % path)
             sys.exit()
-        logger.info('%s already exists, Process is NOT running, resuming operation' % PIDFILE)
+        logger.info('%s already exists, Process is NOT running, resuming operation' % path)
     else:
-        logger.debug('%s written' % PIDFILE)
-    with open(PIDFILE, 'w') as f:
+        logger.debug('%s written' % path)
+    with open(path, 'w') as f:
         f.write(str(os.getpid()))
 
 
-def main():
+def prepare():
+    """Konfiguration lesen und Logging einrichten; (StartupSettings, Fühlertypen)."""
     # Wir laufen als root, auch andere müssen die Config schreiben!
     os.umask(0)
 
@@ -293,8 +307,11 @@ def main():
 
     setup_logging(startup)
     logger.info('WLANThermo started')
-    sensor_types = load_sensor_types(sensor_config)
+    return startup, load_sensor_types(sensor_config)
 
+
+def main():
+    startup, sensor_types = prepare()
     claim_pidfile()
     sys.excepthook = log_uncaught_exceptions
     # systemd beendet den Dienst mit SIGTERM, dann ebenfalls aufräumen

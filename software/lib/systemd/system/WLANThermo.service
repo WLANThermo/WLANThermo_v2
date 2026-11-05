@@ -1,10 +1,13 @@
 [Unit]
-Description=WLANThermo main service
+Description=WLANThermo main service (measurement, pitmaster, Maverick receiver)
 Requires=pigpiod.service
 After=pigpiod.service
 
 [Service]
-ExecStart=/usr/local/bin/wlanthermo-comp
+ExecStart=/usr/local/bin/wlanthermo-core
+# Fällt ein Dienst im Kernprozess aus, beendet er sich mit Exit-Code 1 (Ausgänge aus)
+Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target

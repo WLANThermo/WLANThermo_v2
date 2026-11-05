@@ -19,9 +19,12 @@ MAVERICK_CHANNELS = 2
 class Channels:
     """Die Fühler aller Kanäle, None wo kein Fühler verfügbar ist."""
 
-    def __init__(self, startup, board):
+    def __init__(self, startup, board, maverick_source=None):
+        """maverick_source: Quelle der Maverick-Werte, sonst maverick.json."""
         self.sampler = AdcSampler(board.adc, startup.version)
-        self.maverick = MaverickFile() if startup.maverick else None
+        self.maverick = None
+        if startup.maverick:
+            self.maverick = maverick_source if maverick_source is not None else MaverickFile()
         maverick_probes = [MaverickProbe(self.maverick, n + 1) if self.maverick else None
                            for n in range(MAVERICK_CHANNELS)]
         thermocouples = []
